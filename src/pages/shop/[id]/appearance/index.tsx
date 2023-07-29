@@ -42,7 +42,7 @@ const Appearance: NextPage = (probs: any) => {
   const [img, setImg] = useState<any>(null);
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [invoiceType, setInvoiceType] = useState("receipt")
-  const invoiceOptions = [{value: "receipt", label: "Receipt"}, {value: "a4", label: "Invoice A4"}]
+  const invoiceOptions: any = [{value: "receipt", label: "Receipt"}, {value: "a4", label: "Invoice A4"}]
   useEffect(() => {
     const inv: string = localStorage.getItem("invoiceType")
     if(inv) setInvoiceType(JSON.parse(inv))
