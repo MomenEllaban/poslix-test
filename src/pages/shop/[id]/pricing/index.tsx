@@ -13,36 +13,38 @@ import { Toastify } from 'src/libs/allToasts';
 import { apiFetchCtr } from 'src/libs/dbUtils';
 import * as cookie from 'cookie'
 import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/checkUtils';
+import PricingModal from 'src/components/pos/modals/PricingGroupsModal';
 
 const PricingGroups = (props) => {
+  console.log(props);
   
     const { shopId, rules } = props;
     const [locationSettings, setLocationSettings] = useState<ILocationSettings>({ value: 0, label: "", currency_decimal_places: 0, currency_code: '', currency_id: 0, currency_rate: 1, currency_symbol: '' })
     const router = useRouter()
     const [customersList, setCustomers] = useState<{ id: number, name: string, mobile: string }[]>([])
+    const [pricingGroups, setPricingGroups] = useState<{ id: number, name: string }[]>
+      ([{id: 1, name: "Pricing Group 1"}, {id: 2, name: "Pricing Group 2"}, {id: 3, name: "Pricing Group 3"}])
     
     const [show, setShow] = useState(false);
     const [selectId, setSelectId] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
   
     const [showType, setShowType] = useState(String);
-    const [customer, setCustomer] = useState<{
-      value: string;
-      label: string;
-      isNew: boolean;
-    }>({ value: "1", label: "walk-in customer", isNew: false });
+    const [currentPricingGroup, setCurrentPricingGroup] = useState<{
+      id: string;
+      name: string;
+    }>();
     const { customers } = useContext(ProductContext);
   
-    const [customerIsModal, setCustomerIsModal] = useState<boolean>(false);
-    const customerModalHandler = (status: any) => {
-      setCustomerIsModal(false);
+    const [addPricingModal, setAddPricingModal] = useState<boolean>(false);
+    const pricingModalHandler = (status: any) => {
+      setAddPricingModal(false);
       initDataPage();
     };
   
     const columns: GridColDef[] = [
       { field: "id", headerName: "#", minWidth: 50 },
       { field: "name", headerName: "Name", flex: 1 },
-      { field: "mobile", headerName: "Mobile", flex: 1 },
       {
         field: "action",
         headerName: "Action ",
@@ -57,13 +59,12 @@ const PricingGroups = (props) => {
                   onClick={(event) => {
                     // router.push('/shop/' + shopId + '/customers/edit/' + row.id)
                     event.stopPropagation();
-                    setCustomer({
-                      value: row.id,
-                      label: "walk-in customer",
-                      isNew: false,
+                    setCurrentPricingGroup({
+                      id: row.id,
+                      name: row.name,
                     });
                     setShowType("edit");
-                    setCustomerIsModal(true);
+                    setAddPricingModal(true);
                   }}
                 >
                   <FontAwesomeIcon icon={faPenToSquare} />
@@ -73,8 +74,14 @@ const PricingGroups = (props) => {
                 <Button
                   onClick={(event) => {
                     event.stopPropagation();
-                    setSelectId(row.id);
-                    setShow(true);
+                    // setSelectId(row.id);
+                    // setShow(true);
+                    const _data = [...pricingGroups]
+                    const idx = _data.findIndex((itm: any) => itm.id == row.id);
+                    if (idx != -1) {
+                      _data.splice(idx, 1);
+                      setPricingGroups(_data)
+                    }
                   }}
                 >
                   <FontAwesomeIcon icon={faTrash} />
@@ -84,7 +91,7 @@ const PricingGroups = (props) => {
               <Button
                 onClick={() => {
                   router.push(
-                      "/shop/" + shopId + "/customers/" + row.id
+                      "/shop/" + shopId + "/pricing/" + row.id
                     )
                 }}
               >
@@ -151,7 +158,7 @@ const PricingGroups = (props) => {
                 className="btn btn-primary p-3"
                 onClick={() => {
                   setShowType("add");
-                  setCustomerIsModal(true);
+                  setAddPricingModal(true);
                 }}
               >
                 <FontAwesomeIcon icon={faPlus} /> Add New Pricing Group{" "}
@@ -172,7 +179,7 @@ const PricingGroups = (props) => {
                       border: "none",
                     },
                   }}
-                  rows={customersList}
+                  rows={pricingGroups}
                   columns={columns}
                   pageSize={10}
                   rowsPerPageOptions={[10]}
@@ -188,13 +195,15 @@ const PricingGroups = (props) => {
             </div>
           )}
         </AdminLayout>
-        <Customermodal
+        <PricingModal
           shopId={shopId}
           showType={showType}
-          userdata={customer}
+          userdata={currentPricingGroup}
           customers={customers}
-          statusDialog={customerIsModal}
-          openDialog={customerModalHandler}
+          statusDialog={addPricingModal}
+          openDialog={pricingModalHandler}
+          pricingGroups={pricingGroups}
+          setPricingGroups={setPricingGroups}
         />
       </>
     );

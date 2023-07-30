@@ -266,12 +266,12 @@ export function SidebarNav(probs: any): any {
           </SidebarNavGroup>
         )}
 
-        {/* {permiss.hasCustomers && (
+        {permiss.hasCustomers && (
           <SidebarNavItem icon={faUser} href={"/shop/" + shopId + "/pricing"}>
             Pricing Groups
             <small className="ms-auto"></small>
           </SidebarNavItem>
-        )} */}
+        )}
 
         {(permiss.hasSalesList || permiss.hasPurchases || permiss.hasCats) && (
           <SidebarNavGroup toggleIcon={faChartPie} toggleText="Sales">
