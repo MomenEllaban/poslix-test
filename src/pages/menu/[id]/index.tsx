@@ -1,29 +1,29 @@
-import type { NextPage } from "next";
-import Head from "next/head";
-import Script from "next/script";
-import { useRecoilState } from "recoil";
-import { OrdersComponent } from "../../../components/pos/CartComponent";
-import { ItemList } from "../../../components/pos/ItemList";
-import NavMenu from "../../../components/pos/parts/NavMenu";
-import "remixicon/fonts/remixicon.css";
-import { useContext, useEffect, useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCashRegister } from "@fortawesome/free-solid-svg-icons";
-import { cartJobType } from "../../../recoil/atoms";
-import { apiFetchCtr, apiInsert, apiInsertCtr } from "src/libs/dbUtils";
-import { ProductContext } from "../../../context/ProductContext";
-import * as cookie from "cookie";
+import type { NextPage } from 'next';
+import Head from 'next/head';
+import Script from 'next/script';
+import { useRecoilState } from 'recoil';
+import { OrdersComponent } from '../../../components/pos/CartComponent';
+import { ItemList } from '../../../components/pos/ItemList';
+import NavMenu from '../../../components/pos/parts/NavMenu';
+import 'remixicon/fonts/remixicon.css';
+import { useContext, useEffect, useState } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCashRegister } from '@fortawesome/free-solid-svg-icons';
+import { cartJobType } from '../../../recoil/atoms';
+import { apiFetchCtr, apiInsert, apiInsertCtr } from 'src/libs/dbUtils';
+import { ProductContext } from '../../../context/ProductContext';
+import * as cookie from 'cookie';
 import {
   hasPermissions,
   isNumber,
   keyValueRules,
   locationPermission,
   verifayTokens,
-} from "../../api/checkUtils";
-import { ITokenVerfy } from "@models/common-model";
-import { UserContext } from "src/context/UserContext";
-import { Toastify } from "src/libs/allToasts";
-import { MenuOrderComponent } from "src/components/pos/MenuCartComponent";
+} from '../../api/checkUtils';
+import { ITokenVerfy } from '@models/common-model';
+import { UserContext } from 'src/context/UserContext';
+import { Toastify } from 'src/libs/allToasts';
+import { MenuOrderComponent } from 'src/components/pos/MenuCartComponent';
 
 const Home: NextPage = (probs: any) => {
   const { shopId } = probs;
@@ -39,12 +39,8 @@ const Home: NextPage = (probs: any) => {
     setVariations,
     setPackageItems,
   } = useContext(ProductContext);
-  const {
-    setLocationSettings,
-    setTailoringSizes,
-    setInvoicDetails,
-    setTailoringExtras,
-  } = useContext(UserContext);
+  const { setLocationSettings, setTailoringSizes, setInvoicDetails, setTailoringExtras } =
+    useContext(UserContext);
   const [isLoading, setIsLoading] = useState(true);
   const [cashHand, setCashHand] = useState(0);
 
@@ -54,12 +50,12 @@ const Home: NextPage = (probs: any) => {
   }, [jobType]);
   async function initData() {
     const { success, data } = await apiFetchCtr({
-      fetch: "pos",
-      subType: "getPosInit",
+      fetch: 'pos',
+      subType: 'getPosInit',
       shopId,
     });
     if (!success) {
-      Toastify("error", "error..Try Again");
+      Toastify('error', 'error..Try Again');
       return;
     }
     setCats(data.cats);
@@ -70,22 +66,19 @@ const Home: NextPage = (probs: any) => {
     setVariations(data.variations);
     setPackageItems(data.packageItems);
     setTailoringExtras(data.tailoring_extras);
-    setCustomers([
-      { value: "1", label: "walk-in customer", isNew: false },
-      ...data.customers,
-    ]);
+    setCustomers([{ value: '1', label: 'walk-in customer', isNew: false }, ...data.customers]);
     setTailoringSizes(data.AllSizes);
     if (data.invoiceDetails != null && data.invoiceDetails.length > 10) {
       const invoiceDetails = { ...JSON.parse(data.invoiceDetails) };
       if (!invoiceDetails.txtDiscount) {
-        invoiceDetails.txtDiscount = "Discount";
-        invoiceDetails.txtDiscount2 = "الخصم";
+        invoiceDetails.txtDiscount = 'Discount';
+        invoiceDetails.txtDiscount2 = 'الخصم';
       }
       setInvoicDetails(invoiceDetails);
     } else {
-      console.log("errorrrr default invoice");
+      console.log('errorrrr default invoice');
     }
-    var _locs = JSON.parse(localStorage.getItem("userlocs") || "[]");
+    var _locs = JSON.parse(localStorage.getItem('userlocs') || '[]');
     if (_locs.toString().length > 10)
       setLocationSettings(
         _locs[
@@ -94,27 +87,27 @@ const Home: NextPage = (probs: any) => {
           })
         ]
       );
-    else Toastify("error", "errorr location settings");
+    else Toastify('error', 'errorr location settings');
 
     setIsLoading(false);
-    if (data.cash.length > 0 && data.cash[0].status == "open") {
+    if (data.cash.length > 0 && data.cash[0].status == 'open') {
       setIsOpenRegister(true);
       setIsLoading(false);
     }
   }
   async function openRegister() {
     const { success } = await apiInsertCtr({
-      type: "customer",
-      subType: "opens",
+      type: 'customer',
+      subType: 'opens',
       cashHand,
       shopId,
     });
     if (!success) {
-      console.log("has error in open Register");
-      alert("error..Try Again");
+      console.log('has error in open Register');
+      alert('error..Try Again');
       return;
     }
-    localStorage.setItem("hand_in_cash", cashHand.toString());
+    localStorage.setItem('hand_in_cash', cashHand.toString());
     setIsOpenRegister(true);
     setIsLoading(false);
   }
@@ -124,14 +117,7 @@ const Home: NextPage = (probs: any) => {
   return (
     <>
       <Head>
-        <title>Poslix App</title>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <link
-          href="../libs/swiper/swiper-bundle.min.css"
-          rel="stylesheet"
-          type="text/css"
-        />
+        <link href="../libs/swiper/swiper-bundle.min.css" rel="stylesheet" type="text/css" />
         <link
           href="../css/bootstrap.min.css"
           id="bootstrap-style"
@@ -139,35 +125,16 @@ const Home: NextPage = (probs: any) => {
           type="text/css"
         />
         <link href="../css/icons`.min.css" rel="stylesheet" type="text/css" />
-        <link
-          href="../css/app.css"
-          id="app-style"
-          rel="stylesheet"
-          type="text/css"
-        />
+        <link href="../css/app.css" id="app-style" rel="stylesheet" type="text/css" />
         <link
           rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css"
         />
         <meta name="description" content="Poslix App" />
         <link rel="icon" href="/favicon.ico" />
-        <link
-          rel="apple-touch-icon"
-          sizes="180x180"
-          href="/apple-touch-icon.png"
-        />
-        <link
-          rel="icon"
-          type="image/png"
-          sizes="32x32"
-          href="/favicon-32x32.png"
-        />
-        <link
-          rel="icon"
-          type="image/png"
-          sizes="16x16"
-          href="/favicon-16x16.png"
-        />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
         <link rel="manifest" href="/site.webmanifest"></link>
       </Head>
       <div id="layout-wrapper">
@@ -197,11 +164,8 @@ const Home: NextPage = (probs: any) => {
                       setCashHand(+e.target.value);
                     }}
                   />
-                  <button
-                    className="btn btn-primary p-3"
-                    onClick={() => openRegister()}
-                  >
-                    <FontAwesomeIcon icon={faCashRegister} /> Open Register{" "}
+                  <button className="btn btn-primary p-3" onClick={() => openRegister()}>
+                    <FontAwesomeIcon icon={faCashRegister} /> Open Register{' '}
                   </button>
                 </div>
               </div>
@@ -227,20 +191,18 @@ const Home: NextPage = (probs: any) => {
 };
 export default Home;
 export async function getServerSideProps(context: any) {
-  const parsedCookies = cookie.parse(context.req.headers.cookie || "[]");
+  const parsedCookies = cookie.parse(context.req.headers.cookie || '[]');
   var _isOk = true,
     _hasPer = true,
     locHasAccess = false;
   //check page params
   var shopId = context.query.id;
-  if (shopId == undefined)
-    return { redirect: { permanent: false, destination: "/page403" } };
-  if (!isNumber(shopId))
-    return { redirect: { permanent: false, destination: "/page403" } };
+  if (shopId == undefined) return { redirect: { permanent: false, destination: '/page403' } };
+  if (!isNumber(shopId)) return { redirect: { permanent: false, destination: '/page403' } };
   //check user permissions
   var _userRules = {};
   await verifayTokens(
-    { headers: { authorization: "Bearer " + parsedCookies.tokend } },
+    { headers: { authorization: 'Bearer ' + parsedCookies.tokend } },
     (repo: ITokenVerfy) => {
       _isOk = repo.status;
       if (locationPermission(repo.data.locs, shopId) != -1) locHasAccess = true;
@@ -249,7 +211,7 @@ export async function getServerSideProps(context: any) {
         if (
           _rules[-2] != undefined &&
           _rules[-2][0].stuff != undefined &&
-          _rules[-2][0].stuff == "owner"
+          _rules[-2][0].stuff == 'owner'
         ) {
           _hasPer = true;
           _userRules = {
@@ -259,24 +221,18 @@ export async function getServerSideProps(context: any) {
             hasInsert: true,
           };
         } else if (_rules[shopId] != undefined) {
-          var _stuf = "";
+          var _stuf = '';
           _rules[shopId].forEach((dd: any) => (_stuf += dd.stuff));
-          const { userRules, hasPermission } = hasPermissions(
-            _stuf,
-            "products"
-          );
+          const { userRules, hasPermission } = hasPermissions(_stuf, 'products');
           _hasPer = hasPermission;
           _userRules = userRules;
         } else _hasPer = false;
       }
     }
   );
-  if (!locHasAccess)
-    return { redirect: { permanent: false, destination: "/page403" } };
-  if (!_isOk)
-    return { redirect: { permanent: false, destination: "/user/login" } };
-  if (!_hasPer)
-    return { redirect: { permanent: false, destination: "/page403" } };
+  if (!locHasAccess) return { redirect: { permanent: false, destination: '/page403' } };
+  if (!_isOk) return { redirect: { permanent: false, destination: '/user/login' } };
+  if (!_hasPer) return { redirect: { permanent: false, destination: '/page403' } };
   return {
     props: { shopId: context.query.id, rules: _userRules },
   };
