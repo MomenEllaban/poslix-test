@@ -27,10 +27,8 @@ export default async function handler(
   try {
     verifayTokens(req, async (repo: ITokenVerfy) => {
       if (repo.status === true) {
-        console.log(req.body);
 
         const { shopId, subType } = req.body;
-        console.log(shopId, repo.data.locs, subType);
         if (locationPermission(repo.data.locs, shopId) != -1) {
           if (subType == "addPurchase") {
             const { totalOrder, lines, expenses, taxes } = req.body.data;
@@ -106,7 +104,6 @@ export default async function handler(
                 .promise()
                 .query(sqlCondi, [sqlValues])
                 .then((rows: any, fields: any) => {
-                  console.log("lines ", rows);
                   for (let i = 0; i < rows[0].affectedRows; i++)
                     StockVal[i][1] = rows[0].insertId + i;
                 })
@@ -126,7 +123,6 @@ export default async function handler(
                 .promise()
                 .query(stockSql, [StockVal])
                 .then((rows: any, fields: any) => {
-                  console.log("stocks ", rows);
                 })
                 .catch((err: QueryError) => {
                   manageError(res, con, "");
@@ -176,10 +172,6 @@ export default async function handler(
                 )
                 .then((rows: any, fields: any) => {
                   affectedRows = rows[0].affectedRows > 0;
-                  console.log(
-                    "inserting purchase done! ",
-                    rows[0].affectedRows
-                  );
                 })
                 .catch((err: QueryError) => {
                   manageError(res, con, "");
@@ -195,7 +187,6 @@ export default async function handler(
               return;
             }
 
-            console.log("inserting purchase error! ");
             res.setHeader("Content-Type", "application/json");
             res
               .status(200)
@@ -272,7 +263,6 @@ export default async function handler(
             let _isOk = false,
               is_paid = false,
               transaction_id = 0;
-            console.log("okkk_inja");
 
             var con = doConnect();
             await con
@@ -311,7 +301,6 @@ export default async function handler(
                 })
                 .catch(console.log("erorrr0"));
 
-              console.log("inserting stock done! ", is_paid);
               res.setHeader("Content-Type", "application/json");
               res
                 .status(200)
@@ -332,7 +321,6 @@ export default async function handler(
               con.end();
               return;
             } else {
-              console.log("add payment has error");
               res.setHeader("Content-Type", "application/json");
               res
                 .status(200)
@@ -347,7 +335,6 @@ export default async function handler(
             const { data } = req.body;
             const { items, details, paymentRows, orderEditDetails, orderNote } =
               data;
-            console.log(details);
             var con = doConnect();
             var transaction_id = 0;
 
@@ -372,7 +359,6 @@ export default async function handler(
                   ]
                 )
                 .then((rows: any, fields: any) => {
-                  console.log("updaedd");
                 })
                 .catch();
 
@@ -407,41 +393,29 @@ export default async function handler(
                   ]
                 )
                 .then((rows: any, fields: any) => {
-                  console.log("updaedd");
                   transaction_id = rows[0].insertId;
                 })
                 .catch();
 
               paymentRows.map((pay: any) => {
-                if (pay.amount > 0)
-                  valueForPayment.push([
-                    transaction_id,
-                    pay.method,
-                    pay.amount,
-                    pay.notes,
-                    repo.data.id,
-                    new Date().toISOString().slice(0, 19).replace('T', ' '),
-                  ]);
+                valueForPayment.push([
+                  transaction_id,
+                  pay.method,
+                  pay.amount,
+                  pay.notes,
+                  repo.data.id,
+                  new Date().toISOString().slice(0, 19).replace('T', ' '),
+                ]);
               });
             }
 
-            if (valueForPayment.length == 0) {
-              console.log('nooooooooooooooooo');
-              
-              //error
-              //return
-            }
-
             let isExchange = details.totalAmount - orderEditDetails.total_price;
-            console.log(isExchange);
-            
             //pay when is not exchange(payment is zero)
             if (isExchange != 0) {
               await con
                 .promise()
                 .query(sqlForPayment, [valueForPayment])
                 .then((rows: any, fields: any) => {
-                  console.log("add successfuly payments");
                 })
                 .catch();
             }
@@ -572,7 +546,6 @@ export default async function handler(
                       Math.abs(elt.quantity2) *
                       items.quantity[idx].freezeTailoringCutsom.fabric_length;
                     //thats mean more than one stock id for update
-                    console.log("_totalAmount ", _totalAmount, "ids ", ids);
 
                     let _remaining = 0,
                       _tmp = 0;
@@ -604,14 +577,6 @@ export default async function handler(
                         }
                       }
                     }
-                    console.log(
-                      "_remaining",
-                      _remaining,
-                      " _totalAmount ",
-                      _totalAmount,
-                      " ids ",
-                      ids
-                    );
                     // let _newIDs = ids.reverse().filter((dd: any) => dd.increased_qty != -99)
                     items.quantity[idx].freezeTailoringCutsom.stock_ids = ids
                       .reverse()
@@ -639,7 +604,6 @@ export default async function handler(
                 }
               });
             });
-            console.log("_fabricQty ", _fabricQty, " lines ", sqlValuesForNew);
             // return
             //exceute update query if has return products
             if (sqlValuesForUpdate.length > 0) {
@@ -668,7 +632,6 @@ export default async function handler(
                   .query(sqlUpdateStockTailoring, [valUpdateStockTailoring])
                   .then((rows: any, fields: any) => {})
                   .catch((err: QueryError) => {
-                    console.log("errror return tail pack ", err);
                   });
               }
             }
@@ -677,7 +640,6 @@ export default async function handler(
                 .promise()
                 .query(sqlCondiTailoringUser, [sqlValuesTailoringUser])
                 .then((rows: any, fields: any) => {
-                  console.log("insert tailoring sizes ", rows);
                 })
                 .catch((err: QueryError) => {
                   console.log(err);
@@ -732,13 +694,6 @@ export default async function handler(
                   console.log("erre: ", err);
                 });
 
-              console.log(
-                "_fabricQty ",
-                _fabricQty,
-                "insertedIds ",
-                insertedIds,
-                _customTailringArray
-              );
               //if has tailoring package
               await Promise.all(
                 _fabricQty.map(async (fb: any, i: number) => {
@@ -853,7 +808,6 @@ export default async function handler(
               );
             }
 
-            console.log("the 2 id ", transaction_id);
             res
               .status(200)
               .json({

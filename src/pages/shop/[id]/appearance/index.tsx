@@ -5,7 +5,7 @@ import { faCancel } from "@fortawesome/free-solid-svg-icons";
 import { Form, Card } from "react-bootstrap";
 import { Container, Row, Col, Tab, Tabs } from "react-bootstrap";
 import Spinner from "react-bootstrap/Spinner";
-
+import Select, { StylesConfig } from 'react-select';
 import React, { useState, useEffect } from "react";
 import { apiFetchCtr, apiUpdateCtr } from "../../../../libs/dbUtils";
 import { useRouter } from "next/router";
@@ -41,6 +41,15 @@ const Appearance: NextPage = (probs: any) => {
   const [isOpenPriceDialog, setIsOpenPriceDialog] = useState(false);
   const [img, setImg] = useState<any>(null);
   const [previewUrl, setPreviewUrl] = useState<string>("");
+  const [invoiceType, setInvoiceType] = useState("receipt")
+  const invoiceOptions: any = [{value: "receipt", label: "Receipt"}, {value: "a4", label: "Invoice A4"}]
+  useEffect(() => {
+    const inv: string = localStorage.getItem("invoiceType")
+    if(inv) setInvoiceType(JSON.parse(inv))
+    else {
+      localStorage.setItem("invoiceType", JSON.stringify({value: "receipt", label: "Receipt"}))
+    }
+  }, [])
 
   async function initDataPage() {
     const { success, data } = await apiFetchCtr({
@@ -145,18 +154,27 @@ const Appearance: NextPage = (probs: any) => {
         <ToastContainer />
         {!isLoading ? (
           <>
+            <Select
+              className="mt-3"
+              options={invoiceOptions}
+              value={invoiceType}
+              onChange={(e: any) => {
+                localStorage.setItem("invoiceType", JSON.stringify(e))
+                setInvoiceType(e)                
+              }}
+            />
             <Tabs
               id="controlled-tab-example"
               activeKey={key}
               onSelect={(k) => setKey(k)}
               className="mb-3"
             >
-              <Tab eventKey="Recipt" title="Recipt">
+              <Tab eventKey="Recipt" title="Receipt">
                 <div className="row">
                   <div className="col-md-12">
                     <Card>
                       <Card.Header className="p-3 bg-white">
-                        <h5>Print Recipt</h5>
+                        <h5>Print Receipt</h5>
                         <div className="appear-toolbar">
                           <div className="toolitem"></div>
                           <div className="toolitem"></div>

@@ -241,10 +241,14 @@ export const OrdersComponent = (probs: any) => {
 
   // start recipt template
   const componentRef = React.useRef(null);
+  let invoiceType = JSON.parse(localStorage.getItem("invoiceType"))
+  // useEffect(() => {
+    
+  // }, [])
   class ComponentToPrint extends React.PureComponent {
     render() {
       return (
-        <div className="bill">
+        invoiceType.value == "receipt" ? <div className="bill">
           <div className="brand-logo">
             <img src={invoicDetails.logo} />
           </div>
@@ -378,6 +382,143 @@ export const OrdersComponent = (probs: any) => {
           </p>
           <p className="recipt-footer">{orderNote}</p>
           <br />
+        </div>
+        : <div className="appear-body-item a4">
+          <div className="bill2">
+            <div className="brand-logo">
+              <img src={invoicDetails.logo} />
+              <div className="invoice-print">
+                INVOICE
+                <div>
+                  <table className="GeneratedTable">
+                    <tbody>
+                      <tr>
+                        <td className="td_bg">
+                          INVOICE NUMBER{" "}
+                        </td>
+                        <td>
+                        <div>
+                          {invoicDetails.orderNo}{" "}
+                          {invoicDetails.isMultiLang && invoicDetails.orderNo2}
+                        </div>
+                        <div>{orderId}</div></td>
+                      </tr>
+                      <tr>
+                        <td className="td_bg">
+                          INVOICE DATE{" "}
+                        </td>
+                        <td>
+                          {new Date()
+                            .toISOString()
+                            .slice(0, 10)}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <br />
+            <div className="up_of_table flex justify-between">
+              <div className="left_up_of_table">
+                <div>Billed From</div>
+                <div>{invoicDetails.name}</div>
+                <div>info@poslix.com</div>
+                <div>{invoicDetails.tell}</div>
+                <div>
+                  Office 21-22, Building 532, Mazoon St.
+                  Muscat, Oman
+                </div>
+                <div>VAT Number: OM1100270001</div>
+              </div>
+              <div className="right_up_of_table">
+                <div>Billed To</div>
+                <div>{customer.label}</div>
+                {/* <span>Billed To</span> */}
+              </div>
+            </div>
+            <br />
+
+            <table className="GeneratedTable2">
+              <thead>
+                <tr>
+                  <th>Description</th>
+                  <th>
+                    {" "}
+                    {invoicDetails.txtQty}
+                    <br />
+                    {invoicDetails.isMultiLang && invoicDetails.txtQty2}
+                  </th>
+                  <th>Unit Price</th>
+                  {/* <th> {invoicDetails.txtItem}<br />{invoicDetails.isMultiLang && invoicDetails.txtItem2}</th> */}
+                  <th>Tax</th>
+                  <th>
+                    {" "}
+                    {invoicDetails.txtAmount}
+                    <br />
+                    {invoicDetails.isMultiLang &&
+                      invoicDetails.txtAmount2}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  {/* <td>{invoicDetails.txtTax} {invoicDetails.isMultiLang && invoicDetails.txtTax2}</td> */}
+                  <td
+                    colSpan={4}
+                    className="txt_bold_invoice"
+                  >
+                    Sub Total
+                  </td>
+                  <td>
+                    {Number(
+                      __WithDiscountFeature__total + (totalAmount - subTotal)
+                    ).toFixed(locationSettings.currency_decimal_places)}
+                  </td>
+                </tr>
+                <tr>
+                  <td
+                    colSpan={4}
+                    className="txt_bold_invoice"
+                  >
+                    Total
+                  </td>
+                  <td className="txt_bold_invoice">
+                    {Number(
+                      __WithDiscountFeature__total + (totalAmount - subTotal)
+                    ).toFixed(locationSettings.currency_decimal_places)}
+                  </td>
+                </tr>
+                <tr>
+                  <td
+                    colSpan={4}
+                    className="txt_bold_invoice"
+                  >
+                    Total Due
+                  </td>
+                  <td className="txt_bold_invoice">
+                  {Number(
+                    __WithDiscountFeature__total +
+                      (totalAmount - subTotal) -
+                      (amount && totalPaid)
+                  ) > 0
+                    ? Number(
+                        __WithDiscountFeature__total +
+                          +(totalAmount - subTotal) -
+                          (amount && totalPaid)
+                      ).toFixed(locationSettings.currency_decimal_places)
+                    : 0}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <p className="recipt-footer">
+              {invoicDetails.footer}
+              {invoicDetails.isMultiLang && invoicDetails.footer2}
+            </p>
+            {/* <p className="recipt-footer">{formObj.notes}</p> */}
+            <br />
+          </div>
         </div>
       );
     }
