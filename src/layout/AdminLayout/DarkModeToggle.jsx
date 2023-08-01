@@ -1,8 +1,8 @@
-import { faCircleHalfStroke, faLightbulb, faMoon, faSun } from '@fortawesome/free-solid-svg-icons';
+import { faMoon, faSun } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React, { useEffect, useContext } from 'react';
-import { darkModeContext } from '../../context/DarkModeContext.jsx';
 import clsx from 'clsx';
+import { useContext, useEffect } from 'react';
+import { darkModeContext } from '../../context/DarkModeContext.jsx';
 
 const DarkModeToggle = () => {
   const { toggleDarkMode, darkMode, setDarkMode } = useContext(darkModeContext);

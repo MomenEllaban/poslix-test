@@ -20,6 +20,8 @@ import {
 import { apiInsertCtr, apiLogin } from '../../libs/dbUtils';
 import MainLabel from 'src/components/form/_atoms/MainLabel';
 import { clearLocalStorageItems } from './_utils/clearLocalStorageItems';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 
 const colourStyles = {
   control: (style: any, state: any) => ({
@@ -340,7 +342,7 @@ export default function RegisterPage() {
               />
               {warnemail && <p>Please enter a valid email address.</p>}
             </div>
-            <div className="input_text">
+            <div className="input_text position-relative">
               <MainLabel htmlFor="login-password-input">Enter Password</MainLabel>
               <input
                 id="login-password-input"
@@ -350,7 +352,11 @@ export default function RegisterPage() {
                 value={inputs.password}
                 onChange={inputEvent}
               />
-              <i onClick={Eye} className={`fa ${eye ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+              <button
+                onClick={Eye}
+                className="border-0 position-absolute w-xs end-0 top-50 translate-middle-y">
+                <FontAwesomeIcon icon={eye ? faEye : faEyeSlash} />
+              </button>
               {warnpass && (
                 <p>
                   Password must contain at least one digit,lowercase letter,uppercase letter and be
