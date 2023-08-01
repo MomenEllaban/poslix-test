@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import Spinner from 'react-bootstrap/Spinner';
 import Form from 'react-bootstrap/Form';
 import Select from 'react-select';
-import { faTrash, faFloppyDisk, faPlus, faEye, faSpinner, faEdit } from '@fortawesome/free-solid-svg-icons'
+import { faTrash, faFloppyDisk, faPlus, faEye, faSpinner, faEdit, faSave } from '@fortawesome/free-solid-svg-icons'
 import { Button, ButtonGroup, Card } from 'react-bootstrap'
 import React, { useState, useEffect, useContext, useRef } from 'react'
 import AlertDialog from 'src/components/utils/AlertDialog';
@@ -98,9 +98,10 @@ const PaymentMethods: NextPage = (props: any) => {
         setPaymentMethods([...paymentMethods, {id: paymentMethods.length, name: '', enabled: false}])
     }
 
-    useEffect(() => {
-        console.log(paymentMethods);
-    },[paymentMethods])
+    const saveMethods = () => {
+        const finalMethods = paymentMethods.filter(method => method.enabled)
+        localStorage.setItem("paymentMethods", JSON.stringify(finalMethods))
+    }
 
     return (
         <>
@@ -155,7 +156,10 @@ const PaymentMethods: NextPage = (props: any) => {
                             })
                             }
                         </tbody>
-                        <div className='m-3'><button className='btn m-btn btn-primary p-3' onClick={() => addNewMethod()}><FontAwesomeIcon icon={faPlus} /> Add New Method </button></div>
+                        <div className='d-flex'>
+                            <div className='m-3'><button style={{boxShadow: 'unset', backgroundColor: '#004e46'}} className='btn m-btn btn-primary btn-dark p-2' onClick={() => addNewMethod()}><FontAwesomeIcon icon={faPlus} /> Add New Method </button></div>
+                            <div className='m-3'><button style={{boxShadow: 'unset', backgroundColor: '#004e46'}} className='btn m-btn btn-primary p-2' onClick={() => saveMethods()}><FontAwesomeIcon icon={faSave} /> Save </button></div>
+                        </div>
                     </Table>
                         : <div className='d-flex justify-content-around' ><Spinner animation="grow" /></div>}
             </AdminLayout >

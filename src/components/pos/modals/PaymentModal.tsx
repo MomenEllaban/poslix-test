@@ -63,7 +63,16 @@ const PaymentModal = (probs: any) => {
     }),
     menu: (base: any) => ({ ...base, fontSize: "12px" }),
   };
-  const [paymentMethods] = useState(paymentTypeData);
+  const [paymentMethods, setPaymentMethods] = useState(paymentTypeData);
+  useEffect(() => {
+    const methods = JSON.parse(localStorage.getItem('paymentMethods'))
+    const finalMethods = methods?.map(method => {
+      return {label: method.name, value: method.name.toLowerCase() }
+    })
+    console.log(finalMethods);
+    
+    if(finalMethods) setPaymentMethods(finalMethods)
+  }, [])
   const { products, setProducts, variations, setVariations } =
     useContext(ProductContext);
   const [holdItems, setHoldItems] = useState<IHold[]>([]);
