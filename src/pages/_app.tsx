@@ -23,7 +23,6 @@ import '../../public/css/products.modules.css';
 // Next.js blocks this from happening anyway so you might as well not even try.
 // See https://fontawesome.com/v6/docs/web/use-with/react/use-with#next-js
 config.autoAddCss = false;
-
 const initialLocationState = {
   value: 0,
   label: '',
@@ -86,6 +85,8 @@ function MyApp({ Component, pageProps }: AppProps) {
     setPackageItems,
   };
 
+  console.log('------------------');
+  console.log(locationSettings);
   return (
     <RecoilRoot>
       <SSRProvider>
