@@ -369,6 +369,11 @@ export function SidebarNav(probs: any): any {
                 Category & Brands
               </SidebarNavItem>
             )}
+            {permiss.hasTaxes && (
+              <SidebarNavItem href={"/shop/" + shopId + "/payment"}>
+                Payment Methods
+              </SidebarNavItem>
+            )}
           </SidebarNavGroup>
         )}
         {permiss.hasPOS && (

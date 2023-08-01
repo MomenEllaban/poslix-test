@@ -144,6 +144,22 @@ const Product: NextPage = (probs: any) => {
       renderCell: (params) =>
         Number(params.value).toFixed(locationSettings?.currency_decimal_places),
     },
+    {
+      field: "min_price",
+      headerName: "Min",
+      flex: 1,
+      headerClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}` ,
+      cellClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}`,
+      renderCell: ({row}) => row.min_price
+    },
+    {
+      field: "max_price",
+      headerName: "Max",
+      flex: 1,
+      headerClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}` ,
+      cellClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}`,
+      renderCell: ({row}) => row.max_price
+    },
     { field: "category", headerName: "Category", flex: 1, 
     headerClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}` ,
     cellClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}` 

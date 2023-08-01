@@ -131,13 +131,22 @@ export default async function handler(
                             });
                     } else if (subType == 'addItemsToLocation') {
                         var con = doConnect();
-                        await con.promise().query(`insert into products (name,subproductname,type,is_tailoring,location_id,image,tax,never_tax,sku,barcode_type, unit_id, brand_id,category_id,alert_quantity,created_by,cost_price,sell_price,is_service,is_fabric,sell_over_stock,is_selling_multi_price,is_fifo,qty_over_sold)
+                        for (let index = 0; index < req.body.data.items.length; index++) {
+                            const item = req.body.data.items[index];
+                            let insertId;
+                            await con.promise().query(`insert into products (name,subproductname,type,is_tailoring,location_id,image,tax,never_tax,sku,barcode_type, unit_id, brand_id,category_id,alert_quantity,created_by,cost_price,sell_price,is_service,is_fabric,sell_over_stock,is_selling_multi_price,is_fifo,qty_over_sold)
                                 select name,subproductname,type,is_tailoring,?,image,tax,never_tax,sku,barcode_type, unit_id, brand_id,category_id,0,created_by,cost_price,sell_price,is_service,is_fabric,sell_over_stock,is_selling_multi_price,is_fifo,qty_over_sold
                                 from products
-                                where id IN (?)
-                                `, [req.body.data.newShopId, req.body.data.items])
-                            .then()
-                            .catch()
+                                where id = ?
+                                `, [req.body.data.newShopId, item])
+                                .then((data) => insertId = data[0].insertId)
+                                .catch()
+                            await con.promise().query(`insert into product_variations (location_id,parent_id,name,name2,sku,cost,price,sell_over_stock,is_selling_multi_price,is_service)
+                                select ?,?,name,name2,sku,cost,price,sell_over_stock,is_selling_multi_price,is_service
+                                from product_variations
+                                where parent_id = ? and location_id = ?
+                                `, [req.body.data.newShopId, insertId, item, req.body.shopId])   
+                        }
                         res.setHeader('Content-Type', 'application/json');
                         res.json({
                             success: true, msg: 'done!',
