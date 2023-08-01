@@ -1,30 +1,27 @@
-import { NextPage } from 'next'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faUser } from '@fortawesome/free-regular-svg-icons'
-import { faLock } from '@fortawesome/free-solid-svg-icons'
-import {
-  Button,
-  Col, Container, Form, InputGroup, Row,
-} from 'react-bootstrap'
-import Link from 'next/link'
-import { SyntheticEvent, useState } from 'react'
-import { useRouter } from 'next/router'
+import { NextPage } from 'next';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUser } from '@fortawesome/free-regular-svg-icons';
+import { faLock } from '@fortawesome/free-solid-svg-icons';
+import { Button, Col, Container, Form, InputGroup, Row } from 'react-bootstrap';
+import Link from 'next/link';
+import { SyntheticEvent, useState } from 'react';
+import { useRouter } from 'next/router';
 
 const Login: NextPage = () => {
-  const router = useRouter()
-  const [submitting, setSubmitting] = useState(false)
+  const router = useRouter();
+  const [submitting, setSubmitting] = useState(false);
 
   const login = (e: SyntheticEvent) => {
-    e.stopPropagation()
-    e.preventDefault()
+    e.stopPropagation();
+    e.preventDefault();
 
-    setSubmitting(true)
+    setSubmitting(true);
 
     setTimeout(() => {
-      setSubmitting(false)
-      router.push('/')
-    }, 2000)
-  }
+      setSubmitting(false);
+      router.push('/');
+    }, 2000);
+  };
 
   return (
     <div className="bg-light min-vh-100 d-flex flex-row align-items-center dark:bg-transparent">
@@ -40,10 +37,7 @@ const Login: NextPage = () => {
                   <form onSubmit={login}>
                     <InputGroup className="mb-3">
                       <InputGroup.Text>
-                        <FontAwesomeIcon
-                          icon={faUser}
-                          fixedWidth
-                        />
+                        <FontAwesomeIcon icon={faUser} fixedWidth />
                       </InputGroup.Text>
                       <Form.Control
                         name="username"
@@ -56,10 +50,7 @@ const Login: NextPage = () => {
 
                     <InputGroup className="mb-3">
                       <InputGroup.Text>
-                        <FontAwesomeIcon
-                          icon={faLock}
-                          fixedWidth
-                        />
+                        <FontAwesomeIcon icon={faLock} fixedWidth />
                       </InputGroup.Text>
                       <Form.Control
                         type="password"
@@ -73,12 +64,17 @@ const Login: NextPage = () => {
 
                     <Row>
                       <Col xs={6}>
-                        <Button className="px-4" variant="primary" type="submit" disabled={submitting}>Login</Button>
+                        <Button
+                          className="px-4"
+                          variant="primary"
+                          type="submit"
+                          disabled={submitting}>
+                          Login
+                        </Button>
                       </Col>
                       <Col xs={6} className="text-end">
                         <Button className="px-0" variant="link" type="submit">
-                          Forgot
-                          password?
+                          Forgot password?
                         </Button>
                       </Col>
                     </Row>
@@ -87,13 +83,12 @@ const Login: NextPage = () => {
               </Col>
               <Col
                 md={5}
-                className="bg-primary text-white d-flex align-items-center justify-content-center p-5"
-              >
+                className="bg-primary text-white d-flex align-items-center justify-content-center p-5">
                 <div className="text-center">
                   <h2>Sign up</h2>
                   <p>
-                    Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-                    tempor incididunt ut labore et dolore magna aliqua.
+                    Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor
+                    incididunt ut labore et dolore magna aliqua.
                   </p>
                   <Link href="/register">
                     <button className="btn btn-lg btn-outline-light mt-3" type="button">
@@ -107,7 +102,7 @@ const Login: NextPage = () => {
         </Row>
       </Container>
     </div>
-  )
-}
+  );
+};
 
-export default Login
+export default Login;
