@@ -231,7 +231,7 @@ export async function getServerSideProps(context: any) {
     }
   );
   if (!locHasAccess) return { redirect: { permanent: false, destination: '/page403' } };
-  if (!_isOk) return { redirect: { permanent: false, destination: '/user/login' } };
+  if (!_isOk) return { redirect: { permanent: false, destination: '/user/auth' } };
   if (!_hasPer) return { redirect: { permanent: false, destination: '/page403' } };
   return {
     props: { shopId: context.query.id, rules: _userRules },
