@@ -1,8 +1,12 @@
 import { ILocationSettings, ITailoringExtra, IinvoiceDetails } from '@models/common-model';
-import { createContext } from 'react';
+import { createContext, useContext } from 'react';
 
 export const UserContext = createContext({
-  user: [],
+  user: {
+    id: '',
+    level: '',
+    locs: [],
+  },
   setUser: (user: any) => {},
   locationSettings: {
     value: 0,
@@ -52,3 +56,11 @@ export const UserContext = createContext({
   tailoringExtras: [],
   setTailoringExtras: (tailoringExtras: ITailoringExtra[]) => {},
 });
+
+export const useUser = () => {
+  const context = useContext(UserContext);
+  if (!context) {
+    throw new Error('useUserContext must be used within a UserContextProvider');
+  }
+  return context;
+};

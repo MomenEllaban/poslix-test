@@ -1,92 +1,80 @@
-import type { NextPage } from "next";
-import { AdminLayout } from "@layout";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCancel } from "@fortawesome/free-solid-svg-icons";
-import { Form, Card } from "react-bootstrap";
-import { Container, Row, Col, Tab, Tabs } from "react-bootstrap";
-import Spinner from "react-bootstrap/Spinner";
+import type { NextPage } from 'next';
+import { AdminLayout } from '@layout';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCancel } from '@fortawesome/free-solid-svg-icons';
+import { Form, Card } from 'react-bootstrap';
+import { Container, Row, Col, Tab, Tabs } from 'react-bootstrap';
+import Spinner from 'react-bootstrap/Spinner';
 import Select, { StylesConfig } from 'react-select';
-import React, { useState, useEffect } from "react";
-import { apiFetchCtr, apiUpdateCtr } from "../../../../libs/dbUtils";
-import { useRouter } from "next/router";
-import AlertDialog from "src/components/utils/AlertDialog";
-import { ITokenVerfy, IinvoiceDetails } from "@models/common-model";
-import {
-  hasPermissions,
-  keyValueRules,
-  verifayTokens,
-} from "src/pages/api/checkUtils";
-import * as cookie from "cookie";
-import ShowPriceListModal from "src/components/dashboard/modal/ShowPriceListModal";
-import { Toastify } from "src/libs/allToasts";
-import { ToastContainer } from "react-toastify";
-import { defaultInvoiceDetials } from "@models/data";
-import storage from "firebaseConfig";
-import {
-  ref,
-  deleteObject,
-  uploadBytesResumable,
-  getDownloadURL,
-} from "firebase/storage";
-import { generateUniqueString } from "src/libs/toolsUtils";
+import React, { useState, useEffect } from 'react';
+import { apiFetchCtr, apiUpdateCtr } from '../../../../libs/dbUtils';
+import { useRouter } from 'next/router';
+import AlertDialog from 'src/components/utils/AlertDialog';
+import { ITokenVerfy, IinvoiceDetails } from '@models/common-model';
+import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/checkUtils';
+import * as cookie from 'cookie';
+import ShowPriceListModal from 'src/components/dashboard/modal/ShowPriceListModal';
+import { Toastify } from 'src/libs/allToasts';
+import { ToastContainer } from 'react-toastify';
+import { defaultInvoiceDetials } from '@models/data';
+import storage from 'firebaseConfig';
+import { ref, deleteObject, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { generateUniqueString } from 'src/libs/toolsUtils';
 
 const Appearance: NextPage = (probs: any) => {
   const { shopId } = probs;
   const router = useRouter();
-  const [key, setKey] = useState("Recipt");
-  const [formObj, setFormObj] = useState<IinvoiceDetails>(
-    defaultInvoiceDetials
-  );
+  const [key, setKey] = useState('Recipt');
+  const [formObj, setFormObj] = useState<IinvoiceDetails>(defaultInvoiceDetials);
   const [isLoading, setIsLoading] = useState(true);
   const [isOpenPriceDialog, setIsOpenPriceDialog] = useState(false);
   const [img, setImg] = useState<any>(null);
-  const [previewUrl, setPreviewUrl] = useState<string>("");
-  const [invoiceType, setInvoiceType] = useState("receipt")
-  const invoiceOptions: any = [{value: "receipt", label: "Receipt"}, {value: "a4", label: "Invoice A4"}]
+  const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [invoiceType, setInvoiceType] = useState('receipt');
+  const invoiceOptions: any = [
+    { value: 'receipt', label: 'Receipt' },
+    { value: 'a4', label: 'Invoice A4' },
+  ];
   useEffect(() => {
-    const inv: string = localStorage.getItem("invoiceType")
-    if(inv) setInvoiceType(JSON.parse(inv))
+    const inv: string = localStorage.getItem('invoiceType');
+    if (inv) setInvoiceType(JSON.parse(inv));
     else {
-      localStorage.setItem("invoiceType", JSON.stringify({value: "receipt", label: "Receipt"}))
+      localStorage.setItem('invoiceType', JSON.stringify({ value: 'receipt', label: 'Receipt' }));
     }
-  }, [])
+  }, []);
 
   async function initDataPage() {
     const { success, data } = await apiFetchCtr({
-      fetch: "pos",
-      subType: "getAppearance",
+      fetch: 'pos',
+      subType: 'getAppearance',
       shopId,
     });
     if (!success) {
-      Toastify("error", "Somthing wrong!!, try agian");
+      Toastify('error', 'Somthing wrong!!, try agian');
       return;
     }
-    if (
-      data.details != undefined &&
-      data.details != null &&
-      data.details.length > 10
-    ) {
+    if (data.details != undefined && data.details != null && data.details.length > 10) {
       const _data = JSON.parse(data.details);
       setFormObj({ ...formObj, ..._data });
     }
     setIsLoading(false);
   }
-  async function editInvice(url = "0") {
+  async function editInvice(url = '0') {
     if (isLoading) return;
     setIsLoading(true);
     const { success } = await apiUpdateCtr({
-      type: "pos",
-      subType: "EditAppearance",
+      type: 'pos',
+      subType: 'EditAppearance',
       shopId,
       data: { formObj, url },
     });
     if (!success) {
-      Toastify("error", "Somthing wrong!!, try agian");
+      Toastify('error', 'Somthing wrong!!, try agian');
       return;
     }
     setIsLoading(false);
-    setPreviewUrl("");
-    Toastify("success", "successfully updated");
+    setPreviewUrl('');
+    Toastify('success', 'successfully updated');
   }
   const imageChange = (e: any) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -117,26 +105,21 @@ const Appearance: NextPage = (probs: any) => {
   };
   async function handleUpload() {
     if (previewUrl.length < 2) {
-      console.log("select first");
-      Toastify("error", "Error ,Please Select Logo First");
+      console.log('select first');
+      Toastify('error', 'Error ,Please Select Logo First');
     } else {
-      const storageRef = ref(
-        storage,
-        `/files/logo/${generateUniqueString(12)}${shopId}`
-      );
+      const storageRef = ref(storage, `/files/logo/${generateUniqueString(12)}${shopId}`);
       const uploadTask = uploadBytesResumable(storageRef, img);
       uploadTask.on(
-        "state_changed",
+        'state_changed',
         (snapshot: any) => {
-          const percent = Math.round(
-            (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-          );
+          const percent = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
           console.log(percent);
           // setPercent(percent);
         },
         (err) => {
           console.log(err);
-          Toastify("error", "error occurred while uploading the logo...");
+          Toastify('error', 'error occurred while uploading the logo...');
         },
         async () => {
           await getDownloadURL(uploadTask.snapshot.ref).then((url) => {
@@ -159,16 +142,15 @@ const Appearance: NextPage = (probs: any) => {
               options={invoiceOptions}
               value={invoiceType}
               onChange={(e: any) => {
-                localStorage.setItem("invoiceType", JSON.stringify(e))
-                setInvoiceType(e)                
+                localStorage.setItem('invoiceType', JSON.stringify(e));
+                setInvoiceType(e);
               }}
             />
             <Tabs
               id="controlled-tab-example"
               activeKey={key}
               onSelect={(k) => setKey(k)}
-              className="mb-3"
-            >
+              className="mb-3">
               <Tab eventKey="Recipt" title="Receipt">
                 <div className="row">
                   <div className="col-md-12">
@@ -183,15 +165,14 @@ const Appearance: NextPage = (probs: any) => {
                       </Card.Header>
                       <Card.Body>
                         {isLoading ? (
-                          "loading..."
+                          'loading...'
                         ) : (
                           <div className="appear-body">
                             <div className="appear-body-item">
                               {previewUrl.length == 0 ? (
                                 <div>
                                   <label>
-                                    Your Logo:{" "}
-                                    <span className="text-danger">*</span>
+                                    Your Logo: <span className="text-danger">*</span>
                                   </label>
                                   <input
                                     type="file"
@@ -207,17 +188,15 @@ const Appearance: NextPage = (probs: any) => {
                                   <button
                                     type="button"
                                     className="btn btn-danger p-2"
-                                    onClick={() => setPreviewUrl("")}
-                                    style={{ width: "100%", maxWidth: "100%" }}
-                                  >
+                                    onClick={() => setPreviewUrl('')}
+                                    style={{ width: '100%', maxWidth: '100%' }}>
                                     <FontAwesomeIcon icon={faCancel} /> Cancel
                                   </button>
                                 </div>
                               )}
                               <div className="form-group2">
                                 <label>
-                                  Business Name:{" "}
-                                  <span className="text-danger">*</span>
+                                  Business Name: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -254,8 +233,7 @@ const Appearance: NextPage = (probs: any) => {
                               </div>
                               <div className="form-group2">
                                 <label>
-                                  Customer:{" "}
-                                  <span className="text-danger">*</span>
+                                  Customer: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -271,8 +249,7 @@ const Appearance: NextPage = (probs: any) => {
                               </div>
                               <div className="form-group2">
                                 <label>
-                                  Order No:{" "}
-                                  <span className="text-danger">*</span>
+                                  Order No: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -288,8 +265,7 @@ const Appearance: NextPage = (probs: any) => {
                               </div>
                               <div className="form-group2">
                                 <label>
-                                  Order Date:{" "}
-                                  <span className="text-danger">*</span>
+                                  Order Date: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -422,8 +398,7 @@ const Appearance: NextPage = (probs: any) => {
                                 <>
                                   <div className="form-group2">
                                     <label>
-                                      Customer:{" "}
-                                      <span className="text-danger">*</span>
+                                      Customer: <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -439,8 +414,7 @@ const Appearance: NextPage = (probs: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                      Order No:{" "}
-                                      <span className="text-danger">*</span>
+                                      Order No: <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -457,8 +431,7 @@ const Appearance: NextPage = (probs: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                      Order Date:{" "}
-                                      <span className="text-danger">*</span>
+                                      Order Date: <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -475,8 +448,7 @@ const Appearance: NextPage = (probs: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                      Qty:{" "}
-                                      <span className="text-danger">*</span>
+                                      Qty: <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -492,8 +464,7 @@ const Appearance: NextPage = (probs: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                      Item:{" "}
-                                      <span className="text-danger">*</span>
+                                      Item: <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -509,8 +480,7 @@ const Appearance: NextPage = (probs: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                      Amount:{" "}
-                                      <span className="text-danger">*</span>
+                                      Amount: <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -526,8 +496,7 @@ const Appearance: NextPage = (probs: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                      Tax:{" "}
-                                      <span className="text-danger">*</span>
+                                      Tax: <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -543,8 +512,7 @@ const Appearance: NextPage = (probs: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                      Total:{" "}
-                                      <span className="text-danger">*</span>
+                                      Total: <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -560,8 +528,7 @@ const Appearance: NextPage = (probs: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                      Footer:{" "}
-                                      <span className="text-danger">*</span>
+                                      Footer: <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -582,11 +549,10 @@ const Appearance: NextPage = (probs: any) => {
                                 className="btn btn-primary p-2"
                                 onClick={() => handleSave()}
                                 style={{
-                                  width: "100%",
-                                  maxWidth: "100%",
-                                  marginTop: "10px",
-                                }}
-                              >
+                                  width: '100%',
+                                  maxWidth: '100%',
+                                  marginTop: '10px',
+                                }}>
                                 Save
                               </button>
                             </div>
@@ -598,64 +564,50 @@ const Appearance: NextPage = (probs: any) => {
                                   <img src={formObj.logo} />
                                 )}
                                 <div className="top-content">
-                                  <h6 className="text-primary">
-                                    {formObj.name}
-                                  </h6>
-                                  <h6 className="text-primary">
-                                    {formObj.tell}
-                                  </h6>
+                                  <h6 className="text-primary">{formObj.name}</h6>
+                                  <h6 className="text-primary">{formObj.tell}</h6>
                                 </div>
                                 <div className="order-details-top">
                                   <div className="order-details-top-item">
                                     <div>
-                                      {formObj.txtCustomer}{" "}
-                                      {formObj.isMultiLang &&
-                                        formObj.txtCustomer2}
+                                      {formObj.txtCustomer}{' '}
+                                      {formObj.isMultiLang && formObj.txtCustomer2}
                                     </div>
                                     <div>Walk-in-customer</div>
                                   </div>
                                   <div className="order-details-top-item">
                                     <div>
-                                      {formObj.orderNo}{" "}
-                                      {formObj.isMultiLang && formObj.orderNo2}
+                                      {formObj.orderNo} {formObj.isMultiLang && formObj.orderNo2}
                                     </div>
                                     <div>1518</div>
                                   </div>
                                   <div className="order-details-top-item">
                                     <div>
-                                      {formObj.txtDate}{" "}
-                                      {formObj.isMultiLang && formObj.txtDate2}
+                                      {formObj.txtDate} {formObj.isMultiLang && formObj.txtDate2}
                                     </div>
                                     <div>2023-03-31</div>
                                   </div>
                                 </div>
-                                <div
-                                  className="order-details-top"
-                                  style={{ marginTop: "5px" }}
-                                >
+                                <div className="order-details-top" style={{ marginTop: '5px' }}>
                                   <div className="order-details-top-item">
                                     <div>
-                                      {formObj.txtQty}{" "}
-                                      {formObj.isMultiLang && formObj.txtQty2}
+                                      {formObj.txtQty} {formObj.isMultiLang && formObj.txtQty2}
                                     </div>
                                     <div>
-                                      {formObj.txtItem}{" "}
-                                      {formObj.isMultiLang && formObj.txtItem2}
+                                      {formObj.txtItem} {formObj.isMultiLang && formObj.txtItem2}
                                     </div>
                                     <div>
-                                      {formObj.txtAmount}{" "}
-                                      {formObj.isMultiLang &&
-                                        formObj.txtAmount2}
+                                      {formObj.txtAmount}{' '}
+                                      {formObj.isMultiLang && formObj.txtAmount2}
                                     </div>
                                   </div>
                                 </div>
                                 <div
                                   className="order-details-top"
                                   style={{
-                                    marginTop: "5px",
-                                    borderBottom: "1px solid #eaeaea",
-                                  }}
-                                >
+                                    marginTop: '5px',
+                                    borderBottom: '1px solid #eaeaea',
+                                  }}>
                                   <div className="order-details-top-item">
                                     <div>1</div>
                                     <div>Product Name 1</div>
@@ -665,10 +617,9 @@ const Appearance: NextPage = (probs: any) => {
                                 <div
                                   className="order-details-top"
                                   style={{
-                                    marginTop: "5px",
-                                    borderBottom: "1px solid #eaeaea",
-                                  }}
-                                >
+                                    marginTop: '5px',
+                                    borderBottom: '1px solid #eaeaea',
+                                  }}>
                                   <div className="order-details-top-item">
                                     <div>1</div>
                                     <div>Product Name 2</div>
@@ -678,15 +629,13 @@ const Appearance: NextPage = (probs: any) => {
                                 <div
                                   className="order-details-top"
                                   style={{
-                                    marginTop: "5px",
-                                    borderBottom: "1px solid #696969",
-                                  }}
-                                >
+                                    marginTop: '5px',
+                                    borderBottom: '1px solid #696969',
+                                  }}>
                                   <div className="order-details-top-item">
                                     <div></div>
                                     <div>
-                                      {formObj.txtTax}{" "}
-                                      {formObj.isMultiLang && formObj.txtTax2}
+                                      {formObj.txtTax} {formObj.isMultiLang && formObj.txtTax2}
                                     </div>
                                     <div>0.540</div>
                                   </div>
@@ -694,15 +643,13 @@ const Appearance: NextPage = (probs: any) => {
                                 <div
                                   className="order-details-top"
                                   style={{
-                                    marginTop: "5px",
-                                    borderBottom: "1px solid #696969",
-                                  }}
-                                >
+                                    marginTop: '5px',
+                                    borderBottom: '1px solid #696969',
+                                  }}>
                                   <div className="order-details-top-item">
                                     <div></div>
                                     <div>
-                                      {formObj.txtTotal}{" "}
-                                      {formObj.isMultiLang && formObj.txtTotal2}
+                                      {formObj.txtTotal} {formObj.isMultiLang && formObj.txtTotal2}
                                     </div>
                                     <div>9.540</div>
                                   </div>
@@ -710,10 +657,9 @@ const Appearance: NextPage = (probs: any) => {
                                 <div
                                   className="top-content"
                                   style={{
-                                    marginTop: "20px",
-                                    marginBottom: "20px",
-                                  }}
-                                >
+                                    marginTop: '20px',
+                                    marginBottom: '20px',
+                                  }}>
                                   <h6 className="text-primary">
                                     {formObj.footer}
                                     <br />
@@ -743,15 +689,14 @@ const Appearance: NextPage = (probs: any) => {
                       </Card.Header>
                       <Card.Body>
                         {isLoading ? (
-                          "loading..."
+                          'loading...'
                         ) : (
                           <div className="appear-body">
                             <div className="appear-body-item">
                               {previewUrl.length == 0 ? (
                                 <div>
                                   <label>
-                                    Your Logo:{" "}
-                                    <span className="text-danger">*</span>
+                                    Your Logo: <span className="text-danger">*</span>
                                   </label>
                                   <input
                                     type="file"
@@ -767,17 +712,15 @@ const Appearance: NextPage = (probs: any) => {
                                   <button
                                     type="button"
                                     className="btn btn-danger p-2"
-                                    onClick={() => setPreviewUrl("")}
-                                    style={{ width: "100%", maxWidth: "100%" }}
-                                  >
+                                    onClick={() => setPreviewUrl('')}
+                                    style={{ width: '100%', maxWidth: '100%' }}>
                                     <FontAwesomeIcon icon={faCancel} /> Cancel
                                   </button>
                                 </div>
                               )}
                               <div className="form-group2">
                                 <label>
-                                  Business Name:{" "}
-                                  <span className="text-danger">*</span>
+                                  Business Name: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -814,8 +757,7 @@ const Appearance: NextPage = (probs: any) => {
                               </div>
                               <div className="form-group2">
                                 <label>
-                                  Customer:{" "}
-                                  <span className="text-danger">*</span>
+                                  Customer: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -831,8 +773,7 @@ const Appearance: NextPage = (probs: any) => {
                               </div>
                               <div className="form-group2">
                                 <label>
-                                  Order No:{" "}
-                                  <span className="text-danger">*</span>
+                                  Order No: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -848,8 +789,7 @@ const Appearance: NextPage = (probs: any) => {
                               </div>
                               <div className="form-group2">
                                 <label>
-                                  Order Date:{" "}
-                                  <span className="text-danger">*</span>
+                                  Order Date: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -982,8 +922,7 @@ const Appearance: NextPage = (probs: any) => {
                                 <>
                                   <div className="form-group2">
                                     <label>
-                                      Customer:{" "}
-                                      <span className="text-danger">*</span>
+                                      Customer: <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -999,8 +938,7 @@ const Appearance: NextPage = (probs: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                      Order No:{" "}
-                                      <span className="text-danger">*</span>
+                                      Order No: <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -1017,8 +955,7 @@ const Appearance: NextPage = (probs: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                      Order Date:{" "}
-                                      <span className="text-danger">*</span>
+                                      Order Date: <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -1035,8 +972,7 @@ const Appearance: NextPage = (probs: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                      Qty:{" "}
-                                      <span className="text-danger">*</span>
+                                      Qty: <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -1052,8 +988,7 @@ const Appearance: NextPage = (probs: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                      Item:{" "}
-                                      <span className="text-danger">*</span>
+                                      Item: <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -1069,8 +1004,7 @@ const Appearance: NextPage = (probs: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                      Amount:{" "}
-                                      <span className="text-danger">*</span>
+                                      Amount: <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -1086,8 +1020,7 @@ const Appearance: NextPage = (probs: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                      Tax:{" "}
-                                      <span className="text-danger">*</span>
+                                      Tax: <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -1103,8 +1036,7 @@ const Appearance: NextPage = (probs: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                      Total:{" "}
-                                      <span className="text-danger">*</span>
+                                      Total: <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -1120,8 +1052,7 @@ const Appearance: NextPage = (probs: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                      Footer:{" "}
-                                      <span className="text-danger">*</span>
+                                      Footer: <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -1142,11 +1073,10 @@ const Appearance: NextPage = (probs: any) => {
                                 className="btn btn-primary p-2"
                                 onClick={() => handleSave()}
                                 style={{
-                                  width: "100%",
-                                  maxWidth: "100%",
-                                  marginTop: "10px",
-                                }}
-                              >
+                                  width: '100%',
+                                  maxWidth: '100%',
+                                  marginTop: '10px',
+                                }}>
                                 Save
                               </button>
                             </div>
@@ -1160,20 +1090,12 @@ const Appearance: NextPage = (probs: any) => {
                                       <table className="GeneratedTable">
                                         <tbody>
                                           <tr>
-                                            <td className="td_bg">
-                                              INVOICE NUMBER{" "}
-                                            </td>
+                                            <td className="td_bg">INVOICE NUMBER </td>
                                             <td>{formObj.orderNo}</td>
                                           </tr>
                                           <tr>
-                                            <td className="td_bg">
-                                              INVOICE DATE{" "}
-                                            </td>
-                                            <td>
-                                              {new Date()
-                                                .toISOString()
-                                                .slice(0, 10)}
-                                            </td>
+                                            <td className="td_bg">INVOICE DATE </td>
+                                            <td>{new Date().toISOString().slice(0, 10)}</td>
                                           </tr>
                                         </tbody>
                                       </table>
@@ -1187,10 +1109,7 @@ const Appearance: NextPage = (probs: any) => {
                                     <div>{formObj.name}</div>
                                     <div>info@poslix.com</div>
                                     <div>{formObj.tell}</div>
-                                    <div>
-                                      Office 21-22, Building 532, Mazoon St.
-                                      Muscat, Oman
-                                    </div>
+                                    <div>Office 21-22, Building 532, Mazoon St. Muscat, Oman</div>
                                     <div>VAT Number: OM1100270001</div>
                                   </div>
                                   <div className="right_up_of_table">
@@ -1206,7 +1125,7 @@ const Appearance: NextPage = (probs: any) => {
                                     <tr>
                                       <th>Description</th>
                                       <th>
-                                        {" "}
+                                        {' '}
                                         {formObj.txtQty}
                                         <br />
                                         {formObj.isMultiLang && formObj.txtQty2}
@@ -1215,36 +1134,28 @@ const Appearance: NextPage = (probs: any) => {
                                       {/* <th> {invoicDetails.txtItem}<br />{invoicDetails.isMultiLang && invoicDetails.txtItem2}</th> */}
                                       <th>Tax</th>
                                       <th>
-                                        {" "}
+                                        {' '}
                                         {formObj.txtAmount}
                                         <br />
-                                        {formObj.isMultiLang &&
-                                          formObj.txtAmount2}
+                                        {formObj.isMultiLang && formObj.txtAmount2}
                                       </th>
                                     </tr>
                                   </thead>
                                   <tbody>
                                     <tr>
                                       {/* <td>{invoicDetails.txtTax} {invoicDetails.isMultiLang && invoicDetails.txtTax2}</td> */}
-                                      <td
-                                        colSpan={4}
-                                        className="txt_bold_invoice"
-                                      >
+                                      <td colSpan={4} className="txt_bold_invoice">
                                         Sub Total
                                       </td>
                                       <td></td>
                                     </tr>
                                     <tr>
-                                      <td
-                                        colSpan={4}
-                                        className="txt_bold_invoice"
-                                      >
+                                      <td colSpan={4} className="txt_bold_invoice">
                                         Total
                                       </td>
                                       <td className="txt_bold_invoice">
-                                        {formObj.txtTotal}{" "}
-                                        {formObj.isMultiLang &&
-                                          formObj.txtTotal2}
+                                        {formObj.txtTotal}{' '}
+                                        {formObj.isMultiLang && formObj.txtTotal2}
                                       </td>
                                     </tr>
                                   </tbody>
@@ -1329,18 +1240,17 @@ const Appearance: NextPage = (probs: any) => {
 };
 export default Appearance;
 export async function getServerSideProps(context: any) {
-  const parsedCookies = cookie.parse(context.req.headers.cookie || "[]");
+  const parsedCookies = cookie.parse(context.req.headers.cookie || '[]');
   var _isOk = true,
     _rule = true;
   //check page params
   var shopId = context.query.id;
-  if (shopId == undefined)
-    return { redirect: { permanent: false, destination: "/page403" } };
+  if (shopId == undefined) return { redirect: { permanent: false, destination: '/page403' } };
 
   //check user permissions
   var _userRules = {};
   await verifayTokens(
-    { headers: { authorization: "Bearer " + parsedCookies.tokend } },
+    { headers: { authorization: 'Bearer ' + parsedCookies.tokend } },
     (repo: ITokenVerfy) => {
       _isOk = repo.status;
 
@@ -1350,7 +1260,7 @@ export async function getServerSideProps(context: any) {
         if (
           _rules[-2] != undefined &&
           _rules[-2][0].stuff != undefined &&
-          _rules[-2][0].stuff == "owner"
+          _rules[-2][0].stuff == 'owner'
         ) {
           _rule = true;
           _userRules = {
@@ -1360,23 +1270,18 @@ export async function getServerSideProps(context: any) {
             hasInsert: true,
           };
         } else if (_rules[shopId] != undefined) {
-          var _stuf = "";
+          var _stuf = '';
           _rules[shopId].forEach((dd: any) => (_stuf += dd.stuff));
-          const { userRules, hasPermission } = hasPermissions(
-            _stuf,
-            "appearance"
-          );
+          const { userRules, hasPermission } = hasPermissions(_stuf, 'appearance');
           _rule = hasPermission;
           _userRules = userRules;
         } else _rule = false;
       }
     }
   );
-  console.log("_isOk22    ", _isOk);
-  if (!_isOk)
-    return { redirect: { permanent: false, destination: "/user/login" } };
-  if (!_rule)
-    return { redirect: { permanent: false, destination: "/page403" } };
+  console.log('_isOk22    ', _isOk);
+  if (!_isOk) return { redirect: { permanent: false, destination: '/user/auth' } };
+  if (!_rule) return { redirect: { permanent: false, destination: '/page403' } };
   return {
     props: { shopId: context.query.id, rules: _userRules },
   };

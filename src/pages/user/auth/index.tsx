@@ -1,15 +1,17 @@
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import DarkModeToggle from '@layout/AdminLayout/DarkModeToggle';
 import { BusinessTypeData } from '@models/data';
 import clsx from 'clsx';
 import { deleteCookie, setCookie } from 'cookies-next';
-import type { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { useContext, useEffect, useState } from 'react';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 import Select from 'react-select';
+import MainLabel from 'src/components/form/_atoms/MainLabel';
 import { darkModeContext } from 'src/context/DarkModeContext';
-import { UserContext } from 'src/context/UserContext';
+import { UserContext, useUser } from 'src/context/UserContext';
 import { Toastify } from 'src/libs/allToasts';
 import {
   validateEmail,
@@ -17,42 +19,10 @@ import {
   validatePassword,
   validatePhoneNumber,
 } from 'src/libs/toolsUtils';
-import { apiInsertCtr, apiLogin } from '../../libs/dbUtils';
-import MainLabel from 'src/components/form/_atoms/MainLabel';
-import { clearLocalStorageItems } from './_utils/clearLocalStorageItems';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
-
-const colourStyles = {
-  control: (style: any, state: any) => ({
-    ...style,
-    borderRadius: '10px',
-    background: '#f5f5f5',
-    height: '50px',
-    borderColor: state.isFocused ? '2px solid #045c54' : '#eaeaea',
-    boxShadow: 'none',
-    '&:hover': {
-      border: '2px solid #045c54 ',
-    },
-  }),
-  menu: (provided: any, state: any) => ({
-    ...provided,
-    borderRadius: '10px',
-    padding: '10px',
-    border: '1px solid #c9ced2',
-  }),
-  option: (provided: any, state: any) => ({
-    ...provided,
-    backgroundColor: state.isSelected ? '#e6efee' : 'white',
-    color: '#2e776f',
-    borderRadius: '10px',
-    '&:hover': {
-      backgroundColor: '#e6efee',
-      color: '#2e776f',
-      borderRadius: '10px',
-    },
-  }),
-};
+import { ELocalStorageKeys } from 'src/utils/app-contants';
+import { apiInsertCtr, apiLogin } from '../../../libs/dbUtils';
+import { clearLocalStorageItems } from '../_utils/clearLocalStorageItems';
+import { colourStyles } from '../_utils/color.style';
 
 const initalInputState = {
   id: '',
@@ -68,7 +38,7 @@ const initalInputState = {
 export default function RegisterPage() {
   const router = useRouter();
 
-  const { setUser } = useContext(UserContext);
+  const { setUser } = useUser();
   const { darkMode } = useContext(darkModeContext);
 
   const [eye, seteye] = useState(true);
@@ -163,6 +133,7 @@ export default function RegisterPage() {
       return;
     }
   };
+
   const Eye = () => {
     if (pass == 'password') {
       setpass('text');
@@ -185,13 +156,8 @@ export default function RegisterPage() {
       return;
     }
     const { newdata } = result;
-    setCookie('tokend', newdata.token);
-    setUser(newdata.user);
-    localStorage.setItem('userlocs', JSON.stringify(newdata.myBusiness));
-    localStorage.setItem('userinfo', newdata.token);
-    localStorage.setItem('userfullname', newdata.user.name);
-    localStorage.setItem('username', newdata.user.username);
-    localStorage.setItem('levels', newdata.user.level);
+
+    setUserAuth(newdata, setUser);
 
     if (newdata.user.level == 'user') router.push('/shop/' + newdata.myBusiness[0].value);
     else router.push('/' + newdata.user.username + '/business');
@@ -483,4 +449,16 @@ export default function RegisterPage() {
       </div>
     </div>
   );
+}
+
+function setUserAuth(userData: any, setUser: (user: any) => void) {
+  setCookie('tokend', userData.token);
+  setUser(userData.user);
+
+  localStorage.setItem('userdata', JSON.stringify(userData.user));
+  localStorage.setItem(ELocalStorageKeys.USER_LOCATIONS, JSON.stringify(userData.myBusiness));
+  localStorage.setItem(ELocalStorageKeys.TOKEN, userData.token);
+  localStorage.setItem(ELocalStorageKeys.FULL_NAME, userData.user.name);
+  localStorage.setItem(ELocalStorageKeys.USER_NAME, userData.user.username);
+  localStorage.setItem(ELocalStorageKeys.LEVELS, userData.user.level);
 }
