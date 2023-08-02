@@ -4,20 +4,18 @@ import { AdminLayout } from '@layout';
 import { ILocationSettings, ITokenVerfy } from '@models/common-model';
 import { DataGrid, GridColDef, GridRowParams } from '@mui/x-data-grid';
 import { useRouter } from 'next/router';
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react';
 import { Button, ButtonGroup, Spinner, ToastContainer } from 'react-bootstrap';
 import Customermodal from 'src/components/pos/modals/Customermodal';
 import AlertDialog from 'src/components/utils/AlertDialog';
 import { ProductContext } from 'src/context/ProductContext';
 import { Toastify } from 'src/libs/allToasts';
 import { apiFetchCtr } from 'src/libs/dbUtils';
-import * as cookie from 'cookie'
+import * as cookie from 'cookie';
 import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/checkUtils';
 import PricingModal from 'src/components/pos/modals/PricingGroupsModal';
 
 const PricingGroups = (props) => {
-  console.log(props);
-  
     const { shopId, rules } = props;
     const [locationSettings, setLocationSettings] = useState<ILocationSettings>({ value: 0, label: "", currency_decimal_places: 0, currency_code: '', currency_id: 0, currency_rate: 1, currency_symbol: '' })
     const router = useRouter()
@@ -208,38 +206,42 @@ const PricingGroups = (props) => {
       </>
     );
   }
-  export default PricingGroups;
-  export async function getServerSideProps(context: any) {
-    const parsedCookies = cookie.parse(context.req.headers.cookie || '[]');
-    var _isOk = true, _rule = true;
-    var shopId = context.query.id;
-    if (shopId == undefined)
-      return { redirect: { permanent: false, destination: "/page403" } }
-    var _userRules = {}
-    await verifayTokens({ headers: { authorization: 'Bearer ' + parsedCookies.tokend } }, (repo: ITokenVerfy) => {
+export default PricingGroups;
+export async function getServerSideProps(context: any) {
+  const parsedCookies = cookie.parse(context.req.headers.cookie || '[]');
+  var _isOk = true,
+    _rule = true;
+  var shopId = context.query.id;
+  if (shopId == undefined) return { redirect: { permanent: false, destination: '/page403' } };
+  var _userRules = {};
+  await verifayTokens(
+    { headers: { authorization: 'Bearer ' + parsedCookies.tokend } },
+    (repo: ITokenVerfy) => {
       _isOk = repo.status;
       if (_isOk) {
         var _rules = keyValueRules(repo.data.rules || []);
-        if (_rules[-2] != undefined && _rules[-2][0].stuff != undefined && _rules[-2][0].stuff == 'owner') {
+        if (
+          _rules[-2] != undefined &&
+          _rules[-2][0].stuff != undefined &&
+          _rules[-2][0].stuff == 'owner'
+        ) {
           _rule = true;
           _userRules = { hasDelete: true, hasEdit: true, hasView: true, hasInsert: true };
-        }
-        else if (_rules[shopId] != undefined) {
+        } else if (_rules[shopId] != undefined) {
           var _stuf = '';
-          _rules[shopId].forEach((dd: any) => _stuf += dd.stuff)
-          const { userRules, hasPermission } = hasPermissions(_stuf, 'customers')
-          _rule = hasPermission
-          _userRules = userRules
-        } else
-          _rule = false
+          _rules[shopId].forEach((dd: any) => (_stuf += dd.stuff));
+          const { userRules, hasPermission } = hasPermissions(_stuf, 'customers');
+          _rule = hasPermission;
+          _userRules = userRules;
+        } else _rule = false;
       }
-  
-    })
-    if (!_isOk) return { redirect: { permanent: false, destination: "/user/login" } }
-    if (!_rule) return { redirect: { permanent: false, destination: "/page403" } }
-  
-    //status ok
-    return {
-      props: { shopId, rules: _userRules },
-    };
+    }
+  );
+  if (!_isOk) return { redirect: { permanent: false, destination: '/user/auth' } };
+  if (!_rule) return { redirect: { permanent: false, destination: '/page403' } };
+
+  //status ok
+  return {
+    props: { shopId, rules: _userRules },
+  };
 }

@@ -1,29 +1,52 @@
-import type { NextPage } from 'next'
-import { AdminLayout } from '@layout'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import type { NextPage } from 'next';
+import { AdminLayout } from '@layout';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Spinner from 'react-bootstrap/Spinner';
-import { faTrash, faPenToSquare, faPlus, faTag, faBarcode ,faEye } from '@fortawesome/free-solid-svg-icons'
-import { Button, ButtonGroup } from 'react-bootstrap'
-import React, { useState, useEffect, useContext } from 'react'
-import { apiFetchCtr } from "../../../../libs/dbUtils";
-import { useRouter } from 'next/router'
+import {
+  faTrash,
+  faPenToSquare,
+  faPlus,
+  faTag,
+  faBarcode,
+  faEye,
+} from '@fortawesome/free-solid-svg-icons';
+import { Button, ButtonGroup } from 'react-bootstrap';
+import React, { useState, useEffect, useContext } from 'react';
+import { apiFetchCtr } from '../../../../libs/dbUtils';
+import { useRouter } from 'next/router';
 import AlertDialog from 'src/components/utils/AlertDialog';
 import { ILocationSettings, ITokenVerfy } from '@models/common-model';
 import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/checkUtils';
-import * as cookie from 'cookie'
+import * as cookie from 'cookie';
 import { Toastify } from 'src/libs/allToasts';
 import { ToastContainer } from 'react-toastify';
-import { DataGrid, GridColDef, GridRowParams, GridToolbarColumnsButton, GridToolbarContainer, GridToolbarExport } from '@mui/x-data-grid';
-import { ProductContext } from "../../../../context/ProductContext";
-import Customermodal from "../../../../components/pos/modals/Customermodal";
+import {
+  DataGrid,
+  GridColDef,
+  GridRowParams,
+  GridToolbarColumnsButton,
+  GridToolbarContainer,
+  GridToolbarExport,
+} from '@mui/x-data-grid';
+import { ProductContext } from '../../../../context/ProductContext';
+import Customermodal from '../../../../components/pos/modals/Customermodal';
 
 const Product: NextPage = (props: any) => {
-
   const { shopId, rules } = props;
-  const [locationSettings, setLocationSettings] = useState<ILocationSettings>({ value: 0, label: "", currency_decimal_places: 0, currency_code: '', currency_id: 0, currency_rate: 1, currency_symbol: '' })
-  const router = useRouter()
-  const [customersList, setCustomers] = useState<{ id: number, name: string, mobile: string }[]>([])
-  
+  const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
+    value: 0,
+    label: '',
+    currency_decimal_places: 0,
+    currency_code: '',
+    currency_id: 0,
+    currency_rate: 1,
+    currency_symbol: '',
+  });
+  const router = useRouter();
+  const [customersList, setCustomers] = useState<{ id: number; name: string; mobile: string }[]>(
+    []
+  );
+
   const [show, setShow] = useState(false);
   const [selectId, setSelectId] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -33,7 +56,7 @@ const Product: NextPage = (props: any) => {
     value: string;
     label: string;
     isNew: boolean;
-  }>({ value: "1", label: "walk-in customer", isNew: false });
+  }>({ value: '1', label: 'walk-in customer', isNew: false });
   const { customers } = useContext(ProductContext);
 
   const [customerIsModal, setCustomerIsModal] = useState<boolean>(false);
@@ -43,12 +66,12 @@ const Product: NextPage = (props: any) => {
   };
 
   const columns: GridColDef[] = [
-    { field: "id", headerName: "#", minWidth: 50 },
-    { field: "name", headerName: "Name", flex: 1 },
-    { field: "mobile", headerName: "Mobile", flex: 1 },
+    { field: 'id', headerName: '#', minWidth: 50 },
+    { field: 'name', headerName: 'Name', flex: 1 },
+    { field: 'mobile', headerName: 'Mobile', flex: 1 },
     {
-      field: "action",
-      headerName: "Action ",
+      field: 'action',
+      headerName: 'Action ',
       sortable: false,
       disableExport: true,
       flex: 1,
@@ -62,13 +85,12 @@ const Product: NextPage = (props: any) => {
                   event.stopPropagation();
                   setCustomer({
                     value: row.id,
-                    label: "walk-in customer",
+                    label: 'walk-in customer',
                     isNew: false,
                   });
-                  setShowType("edit");
+                  setShowType('edit');
                   setCustomerIsModal(true);
-                }}
-              >
+                }}>
                 <FontAwesomeIcon icon={faPenToSquare} />
               </Button>
             )}
@@ -78,22 +100,16 @@ const Product: NextPage = (props: any) => {
                   event.stopPropagation();
                   setSelectId(row.id);
                   setShow(true);
-                }}
-              >
+                }}>
                 <FontAwesomeIcon icon={faTrash} />
               </Button>
-
             )}
             <Button
               onClick={() => {
-                router.push(
-                    "/shop/" + shopId + "/customers/" + row.id
-                  )
-              }}
-            >
+                router.push('/shop/' + shopId + '/customers/' + row.id);
+              }}>
               <FontAwesomeIcon icon={faEye} />
             </Button>
-
           </ButtonGroup>
         </>
       ),
@@ -108,38 +124,46 @@ const Product: NextPage = (props: any) => {
     );
   }
   async function initDataPage() {
-    const { success, newdata } = await apiFetchCtr({ fetch: 'customer', subType: 'getCustomerlist', shopId })
+    const { success, newdata } = await apiFetchCtr({
+      fetch: 'customer',
+      subType: 'getCustomerlist',
+      shopId,
+    });
     if (!success) {
-      Toastify('error', 'Somthing wrong!!, try agian')
-      return
+      Toastify('error', 'Somthing wrong!!, try agian');
+      return;
     }
-    setCustomers(newdata)
-    setIsLoading(false)
+    setCustomers(newdata);
+    setIsLoading(false);
   }
 
   useEffect(() => {
     var _locs = JSON.parse(localStorage.getItem('userlocs') || '[]');
     if (_locs.toString().length > 10)
-      setLocationSettings(_locs[_locs.findIndex((loc: any) => { return loc.value == shopId })])
-    else alert("errorr location settings")
+      setLocationSettings(
+        _locs[
+          _locs.findIndex((loc: any) => {
+            return loc.value == shopId;
+          })
+        ]
+      );
+    else alert('errorr location settings');
     initDataPage();
-  }, [router.asPath])
+  }, [router.asPath]);
 
   const handleDeleteFuc = (result: boolean, msg: string, section: string) => {
     if (result) {
-      const _data = [...customersList]
+      const _data = [...customersList];
       const idx = _data.findIndex((itm: any) => itm.id == selectId);
       if (idx != -1) {
         _data.splice(idx, 1);
-        setCustomers(_data)
+        setCustomers(_data);
       }
     }
-    if (msg.length > 0)
-      Toastify(result ? 'success' : 'error', msg)
-    setShow(false)
-  }
-  const onRowsSelectionHandler = (ids: any) => {
+    if (msg.length > 0) Toastify(result ? 'success' : 'error', msg);
+    setShow(false);
   };
+  const onRowsSelectionHandler = (ids: any) => {};
   return (
     <>
       <AdminLayout shopId={shopId}>
@@ -150,8 +174,7 @@ const Product: NextPage = (props: any) => {
           shopId={shopId}
           id={selectId}
           type="customer"
-          subType="deleteCustomer"
-        >
+          subType="deleteCustomer">
           Are you Sure You Want Delete This Customer ?
         </AlertDialog>
         {/* start */}
@@ -161,11 +184,10 @@ const Product: NextPage = (props: any) => {
             <button
               className="btn btn-primary p-3"
               onClick={() => {
-                setShowType("add");
+                setShowType('add');
                 setCustomerIsModal(true);
-              }}
-            >
-              <FontAwesomeIcon icon={faPlus} /> Add New Customer{" "}
+              }}>
+              <FontAwesomeIcon icon={faPlus} /> Add New Customer{' '}
             </button>
           </div>
         )}
@@ -176,20 +198,18 @@ const Product: NextPage = (props: any) => {
               <DataGrid
                 className="datagrid-style"
                 sx={{
-                  ".MuiDataGrid-columnSeparator": {
-                    display: "none",
+                  '.MuiDataGrid-columnSeparator': {
+                    display: 'none',
                   },
-                  "&.MuiDataGrid-root": {
-                    border: "none",
+                  '&.MuiDataGrid-root': {
+                    border: 'none',
                   },
                 }}
                 rows={customersList}
                 columns={columns}
                 pageSize={10}
                 rowsPerPageOptions={[10]}
-                onSelectionModelChange={(ids: any) =>
-                  onRowsSelectionHandler(ids)
-                }
+                onSelectionModelChange={(ids: any) => onRowsSelectionHandler(ids)}
                 components={{ Toolbar: CustomToolbar }}
               />
             </div>
@@ -210,40 +230,43 @@ const Product: NextPage = (props: any) => {
       />
     </>
   );
-}
+};
 export default Product;
 export async function getServerSideProps(context: any) {
   const parsedCookies = cookie.parse(context.req.headers.cookie || '[]');
-  var _isOk = true, _rule = true;
+  var _isOk = true,
+    _rule = true;
   var shopId = context.query.id;
-  if (shopId == undefined)
-    return { redirect: { permanent: false, destination: "/page403" } }
-  var _userRules = {}
-  await verifayTokens({ headers: { authorization: 'Bearer ' + parsedCookies.tokend } }, (repo: ITokenVerfy) => {
-    _isOk = repo.status;
-    if (_isOk) {
-      var _rules = keyValueRules(repo.data.rules || []);
-      if (_rules[-2] != undefined && _rules[-2][0].stuff != undefined && _rules[-2][0].stuff == 'owner') {
-        _rule = true;
-        _userRules = { hasDelete: true, hasEdit: true, hasView: true, hasInsert: true };
+  if (shopId == undefined) return { redirect: { permanent: false, destination: '/page403' } };
+  var _userRules = {};
+  await verifayTokens(
+    { headers: { authorization: 'Bearer ' + parsedCookies.tokend } },
+    (repo: ITokenVerfy) => {
+      _isOk = repo.status;
+      if (_isOk) {
+        var _rules = keyValueRules(repo.data.rules || []);
+        if (
+          _rules[-2] != undefined &&
+          _rules[-2][0].stuff != undefined &&
+          _rules[-2][0].stuff == 'owner'
+        ) {
+          _rule = true;
+          _userRules = { hasDelete: true, hasEdit: true, hasView: true, hasInsert: true };
+        } else if (_rules[shopId] != undefined) {
+          var _stuf = '';
+          _rules[shopId].forEach((dd: any) => (_stuf += dd.stuff));
+          const { userRules, hasPermission } = hasPermissions(_stuf, 'customers');
+          _rule = hasPermission;
+          _userRules = userRules;
+        } else _rule = false;
       }
-      else if (_rules[shopId] != undefined) {
-        var _stuf = '';
-        _rules[shopId].forEach((dd: any) => _stuf += dd.stuff)
-        const { userRules, hasPermission } = hasPermissions(_stuf, 'customers')
-        _rule = hasPermission
-        _userRules = userRules
-      } else
-        _rule = false
     }
-
-  })
-  if (!_isOk) return { redirect: { permanent: false, destination: "/user/login" } }
-  if (!_rule) return { redirect: { permanent: false, destination: "/page403" } }
+  );
+  if (!_isOk) return { redirect: { permanent: false, destination: '/user/auth' } };
+  if (!_rule) return { redirect: { permanent: false, destination: '/page403' } };
 
   //status ok
   return {
     props: { shopId, rules: _userRules },
   };
-
 }
