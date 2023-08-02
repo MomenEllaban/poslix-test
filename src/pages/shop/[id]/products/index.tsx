@@ -162,10 +162,6 @@ const Product: NextPage = (probs: any) => {
       cellClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}`,
       renderCell: ({row}) => row.max_price
     },
-    { field: "category", headerName: "Category", flex: 1, 
-    headerClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}` ,
-    cellClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}` 
-  },
     {
       field: 'category',
       headerName: 'Category',
