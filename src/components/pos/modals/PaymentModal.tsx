@@ -4,7 +4,7 @@ import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import { IHold, IpaymentRow } from "../../../models/common-model";
-import { apiInsertCtr } from "../../../libs/dbUtils";
+import { apiFetchCtr, apiInsertCtr } from "../../../libs/dbUtils";
 import { cartJobType } from "../../../recoil/atoms";
 import Select from "react-select";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -63,15 +63,19 @@ const PaymentModal = (probs: any) => {
     }),
     menu: (base: any) => ({ ...base, fontSize: "12px" }),
   };
-  const [paymentMethods, setPaymentMethods] = useState(paymentTypeData);
+  const [paymentMethods, setPaymentMethods] = useState([]);
+  
+  async function initDataPage() {
+    var result = await apiFetchCtr({ fetch: 'payment', subType: 'getPayments', shopId })
+    const { success, data } = result;
+    if (success) {
+      setPaymentMethods(data?.payments?.filter(method => method.enabled).map(method => {
+        return {label: method.name, value: method.name.toLowerCase() }
+      }))
+    }
+  }
   useEffect(() => {
-    const methods = JSON.parse(localStorage.getItem('paymentMethods'))
-    const finalMethods = methods?.map(method => {
-      return {label: method.name, value: method.name.toLowerCase() }
-    })
-    console.log(finalMethods);
-    
-    if(finalMethods) setPaymentMethods(finalMethods)
+    initDataPage()
   }, [])
   const { products, setProducts, variations, setVariations } =
     useContext(ProductContext);

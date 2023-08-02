@@ -4,14 +4,9 @@ import { AdminLayout } from '@layout'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import Spinner from 'react-bootstrap/Spinner';
 import Form from 'react-bootstrap/Form';
-import Select from 'react-select';
-import { faTrash, faFloppyDisk, faPlus, faEye, faSpinner, faEdit, faSave } from '@fortawesome/free-solid-svg-icons'
-import { Button, ButtonGroup, Card } from 'react-bootstrap'
+import { faPlus, faSave, faTrash } from '@fortawesome/free-solid-svg-icons'
 import React, { useState, useEffect, useContext, useRef } from 'react'
-import AlertDialog from 'src/components/utils/AlertDialog';
-import AddGroupModal from 'src/components/utils/AddGroupModal';
-import ShowDialog from 'src/components/utils/ShowDialog';
-import { ITax, ITokenVerfy } from '@models/common-model';
+import { ITokenVerfy } from '@models/common-model';
 import { apiFetch, apiFetchCtr, apiInsertCtr } from 'src/libs/dbUtils';
 import { useRouter } from 'next/router'
 import * as cookie from 'cookie'
@@ -19,68 +14,35 @@ import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/chec
 import { Toastify } from 'src/libs/allToasts';
 import { ToastContainer } from 'react-toastify';
 import { darkModeContext } from "../../../../context/DarkModeContext";
-import { DataGrid, GridColDef, GridRowParams } from '@mui/x-data-grid';
-import { paymentTypeData } from '@models/data';
+import { Button } from 'react-bootstrap';
 
 const PaymentMethods: NextPage = (props: any) => {
     const { shopId, rules } = props;
     const [isLoading, setIsLoading] = useState(true)
-    const { darkMode } = useContext(darkModeContext);
-    const dataGridRef = useRef(null);
     const [paymentMethods, setPaymentMethods] = useState([
-        { id: 0, name: "Card", enabled: true },
-        { id: 1, name: "Cash", enabled: true },
-        { id: 2, name: "Bank", enabled: true },
-        { id: 3, name: "Cheque", enabled: true }
+        { name: "Card", enabled: true },
+        { name: "Cash", enabled: true },
+        { name: "Bank", enabled: true },
+        { name: "Cheque", enabled: true }
     ]);
 
     async function initDataPage() {
-        var result = await apiFetchCtr({ fetch: 'taxes', subType: 'getTaxs', shopId })
-        const { success, newdata } = result;
+        var result = await apiFetchCtr({ fetch: 'payment', subType: 'getPayments', shopId })
+        const { success, data } = result;
         if (success) {
-            if (rules.hasInsert) {
-                newdata.push({ id: 0, name: '', amount: 0, type: '', isPrimary: false, taxType: 'primary', isNew: 1 })
-                newdata.push({ id: 0, name: '', amount: 0, type: '', isPrimary: false, taxType: 'excise', isNew: 1 })
-                newdata.push({ id: 0, name: '', amount: 0, type: '', amountType: "percentage", isPrimary: false, taxType: 'service', isNew: 1 })
-            }
+            setPaymentMethods(data?.payments?.length > 0 ? data.payments : [
+                { name: "Card", enabled: true },
+                { name: "Cash", enabled: true },
+                { name: "Bank", enabled: true },
+                { name: "Cheque", enabled: true }
+            ])
             setIsLoading(false)
         }
-
     }
 
     useEffect(() => {
         initDataPage();
     }, [])
-
-    const columns: GridColDef[] = [
-        { field: "label", headerName: "Method",
-            minWidth: 50, 
-            headerClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}`,
-            cellClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}`,
-        },
-            { field: "enabled", headerName: "Enabled",
-            flex: 0.5,
-            headerClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}`,
-            cellClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}`,
-            renderCell: ({row}) => (
-                <input type="checkbox" />
-            ),
-        }
-      ];
-      const onRowsSelectionHandler = (ids: any) => {
-        // setSelectedItems(ids)
-      };
-      const handleCellClick = (params, event) => {
-        // if (params.field === "qty") {
-        //   let index = products.findIndex((p) => params.id == p.id);
-        //   if (index == -1) return;
-        //   if (products[index].type != "package" && products[index].qty > 0) {
-        //     setSelectId(products[index].id);
-        //     setType(products[index].type);
-        //     setIsOpenPriceDialog(true);
-        //   }
-        // }
-      };
 
     const handleInputChange = (e: any, i: number) => {
         const _paymentMethods = [...paymentMethods];
@@ -94,74 +56,66 @@ const PaymentMethods: NextPage = (props: any) => {
         setPaymentMethods(_paymentMethods)
     }
 
-    const addNewMethod = (id = 0) => {
-        setPaymentMethods([...paymentMethods, {id: paymentMethods.length, name: '', enabled: false}])
+    const addNewMethod = () => {
+        setPaymentMethods([...paymentMethods, { name: '', enabled: false}])
     }
 
-    const saveMethods = () => {
-        const finalMethods = paymentMethods.filter(method => method.enabled)
-        localStorage.setItem("paymentMethods", JSON.stringify(finalMethods))
+    const removeMethod = (index) => {
+        setPaymentMethods(paymentMethods.filter((payment, i) => i !== index))
     }
 
+    const saveMethods = async () => {
+        // const finalMethods = paymentMethods.filter(method => method.enabled)
+        setIsLoading(true)
+        let {success, msg} = await apiInsertCtr({ type: 'payment', subType: 'insertPayment', shopId,
+            data: paymentMethods
+        })
+        if (msg.length > 0) Toastify(success ? "success" : "error", msg);
+        setIsLoading(false)
+    }
     return (
         <>
             <AdminLayout shopId={shopId}>
                 <ToastContainer />
-                {/* {!isLoading ? (
-                    <>
-                        <div className="page-content-style card">
-                        <h5>Payment Options</h5>
-                        <DataGrid
-                            ref={dataGridRef}
-                            className="datagrid-style"
-                            sx={{
-                            ".MuiDataGrid-columnSeparator": {
-                                display: "none",
-                            },
-                            "&.MuiDataGrid-root": {
-                                border: "none",
-                            },
-                            }}
-                            rows={paymentMethods}
-                            columns={columns}
-                            pageSize={10}
-                            rowsPerPageOptions={[10]}
-                            onSelectionModelChange={(ids: any) =>
-                            onRowsSelectionHandler(ids)
-                            }
-                            onCellClick={handleCellClick}
-                        />
+                {!isLoading ?
+                <Table className="table table-hover remove-last-del-icon" style={{width: '80%'}} responsive>
+                    <thead className="thead-dark">
+                        <tr>
+                            <th style={{ width: '50%' }} >Method</th>
+                            <th style={{ width: '15%' }}></th>
+                            <th style={{ width: '15%' }}></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {paymentMethods?.map((method: any, i: number) => {
+                            return (
+                                <tr key={i}>
+                                    <td><input type="text" name="tax-name" className="form-control p-2" disabled={!rules.hasInsert} placeholder="Enter New Method Name" value={method.name} onChange={(e) => { handleInputChange(e, i) }} /></td>
+                                    <td className='d-flex justify-content-center pt-3'><Form.Check type="switch" id="custom-switch" disabled={!rules.hasInsert} className="custom-switch" checked={method.enabled ? true : false} onChange={(e) => { handlePrimarySwitchChange(e, i) }} /></td>
+                                    <td>
+                                        <Button className='m-buttons-style'
+                                            onClick={() => removeMethod(i)}><FontAwesomeIcon icon={faTrash} />
+                                        </Button>
+                                    </td>
+                                </tr>
+                            )
+                        })
+                        }
+                    </tbody>
+                    <div className='d-flex'>
+                        <div className='m-3'>
+                            <button style={{boxShadow: 'unset', backgroundColor: '#004e46'}} className='btn m-btn btn-primary btn-dark p-2' onClick={() => addNewMethod()}>
+                                <FontAwesomeIcon icon={faPlus} /> Add New Method
+                            </button>
                         </div>
-                    </>
-                    ) : (
-                    <div className="d-flex justify-content-around">
-                        <Spinner animation="grow" />
+                        <div className='m-3'>
+                            <button style={{boxShadow: 'unset', backgroundColor: '#004e46'}} className='btn m-btn btn-primary p-2' onClick={() => saveMethods()}>
+                                <FontAwesomeIcon icon={faSave} /> Save
+                            </button>
+                        </div>
                     </div>
-                    )} */}
-                    {!isLoading ? <Table className="table table-hover remove-last-del-icon" responsive>
-                        <thead className="thead-dark">
-                            <tr>
-                                <th style={{ width: '50%' }} >Method</th>
-                                <th style={{ width: '15%' }}>Enabled</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {paymentMethods.map((method: any, i: number) => {
-                                return (
-                                    <tr key={i} style={{ background: method.id < 4 ? '#c6e9e6' : '', pointerEvents: method.id < 4 ? 'none' : 'auto' }}>
-                                        <td><input type="text" name="tax-name" className="form-control p-2" disabled={!rules.hasInsert} placeholder="Enter New Method Name" value={method.name} onChange={(e) => { handleInputChange(e, i) }} /></td>
-                                        <td><Form.Check type="switch" id="custom-switch" disabled={!rules.hasInsert} className="custom-switch" checked={method.enabled ? true : false} onChange={(e) => { handlePrimarySwitchChange(e, i) }} /></td>
-                                    </tr>
-                                )
-                            })
-                            }
-                        </tbody>
-                        <div className='d-flex'>
-                            <div className='m-3'><button style={{boxShadow: 'unset', backgroundColor: '#004e46'}} className='btn m-btn btn-primary btn-dark p-2' onClick={() => addNewMethod()}><FontAwesomeIcon icon={faPlus} /> Add New Method </button></div>
-                            <div className='m-3'><button style={{boxShadow: 'unset', backgroundColor: '#004e46'}} className='btn m-btn btn-primary p-2' onClick={() => saveMethods()}><FontAwesomeIcon icon={faSave} /> Save </button></div>
-                        </div>
-                    </Table>
-                        : <div className='d-flex justify-content-around' ><Spinner animation="grow" /></div>}
+                </Table>
+                    : <div className='d-flex justify-content-around' ><Spinner animation="grow" /></div>}
             </AdminLayout >
         </>
     )
