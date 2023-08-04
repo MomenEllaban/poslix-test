@@ -1,5 +1,5 @@
 import { AdminLayout } from '@layout'
-import { ITokenVerfy } from '@models/common-model';
+import { ILocationSettings, ITokenVerfy } from '@models/common-model';
 import React, { useEffect, useState } from 'react'
 import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/checkUtils';
 import * as cookie from 'cookie'
@@ -11,10 +11,27 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 const PricingGroup = (props: any) => {
   const { shopId, rules } = props;
   const [isLoading, setIsLoading] = useState(true);
+  const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
+    value: 0,
+    label: '',
+    currency_decimal_places: 0,
+    currency_code: '',
+    currency_id: 0,
+    currency_rate: 1,
+    currency_symbol: '',
+  });
   const [products, setProducts] = useState()
   const columns: GridColDef[] = [
     { field: "id", headerName: "#", minWidth: 50 },
     { field: "name", headerName: "Name", flex: 1 },
+    {
+      field: 'sell_price',
+      headerName: 'Sell',
+      flex: 1,
+      renderCell: ({ row }: Partial<GridRowParams>) => (
+        Number(row.sell_price).toFixed(locationSettings?.currency_decimal_places)
+      )
+    },
     { field: "price", headerName: "Price", flex: 1,
       renderCell: ({row}: Partial<GridRowParams>) => (
         <input type='number' />
@@ -33,7 +50,6 @@ const PricingGroup = (props: any) => {
                 onClick={(event) => {
                   // router.push('/shop/' + shopId + '/customers/edit/' + row.id)
                   event.stopPropagation();
-                  console.log(row);
                 }}
               >
                 <FontAwesomeIcon icon={faPenToSquare} />
@@ -53,11 +69,23 @@ const PricingGroup = (props: any) => {
       shopId,
     });
     if(success) setProducts(data.products);
+    console.log(data.products);
+    
     setIsLoading(false)
   }
   useEffect(() => {
-    initDataPage()
-  }, [])
+    var _locs = JSON.parse(localStorage.getItem('userlocs') || '[]');
+    if (_locs.toString().length > 10)
+      setLocationSettings(
+        _locs[
+          _locs.findIndex((loc: any) => {
+            return loc.value == shopId;
+          })
+        ]
+      );
+    else alert('errorr location settings');
+    initDataPage();
+  }, []);
   return (
     <>
       <AdminLayout shopId={shopId}>
