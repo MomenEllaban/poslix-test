@@ -63,20 +63,20 @@ const PaymentModal = (probs: any) => {
     }),
     menu: (base: any) => ({ ...base, fontSize: "12px" }),
   };
-  const [paymentMethods, setPaymentMethods] = useState([]);
+  const [paymentMethods, setPaymentMethods] = useState(paymentTypeData);
   
-  async function initDataPage() {
-    var result = await apiFetchCtr({ fetch: 'payment', subType: 'getPayments', shopId })
-    const { success, data } = result;
-    if (success) {
-      setPaymentMethods(data?.payments?.filter(method => method.enabled).map(method => {
-        return {label: method.name, value: method.name.toLowerCase() }
-      }))
-    }
-  }
-  useEffect(() => {
-    initDataPage()
-  }, [])
+  // async function initDataPage() {
+  //   var result = await apiFetchCtr({ fetch: 'payment', subType: 'getPayments', shopId })
+  //   const { success, data } = result;
+  //   if (success) {
+  //     setPaymentMethods(data?.payments?.filter(method => method.enabled).map(method => {
+  //       return {label: method.name, value: method.name.toLowerCase() }
+  //     }))
+  //   }
+  // }
+  // useEffect(() => {
+  //   initDataPage()
+  // }, [])
   const { products, setProducts, variations, setVariations } =
     useContext(ProductContext);
   const [holdItems, setHoldItems] = useState<IHold[]>([]);
