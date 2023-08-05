@@ -28,9 +28,14 @@ const PricingGroup = (props: any) => {
       field: 'sell_price',
       headerName: 'Sell',
       flex: 1,
-      renderCell: ({ row }: Partial<GridRowParams>) => (
-        Number(row.sell_price).toFixed(locationSettings?.currency_decimal_places)
-      )
+      renderCell: ({ row }: Partial<GridRowParams>) => {
+        if(row.type == "single") return Number(row.sell_price).toFixed(locationSettings?.currency_decimal_places)
+        else return(
+          Number(row.min_price).toFixed(locationSettings?.currency_decimal_places)
+          + ' - ' +
+          Number(row.max_price).toFixed(locationSettings?.currency_decimal_places)
+        )
+      }
     },
     { field: "price", headerName: "Price", flex: 1,
       renderCell: ({row}: Partial<GridRowParams>) => (

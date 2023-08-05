@@ -346,7 +346,14 @@ export default async function handler(
             if (details.isReturn > 0) {
               //update factor details
               transaction_id = details.isReturn;
-
+              if(req.body.editing) {
+                await con.promise().query(
+                  `DELETE FROM transaction_payments WHERE transaction_id = ?`,
+                  [transaction_id]
+                )
+                .then((rows: any, fields: any) => {})
+                .catch();
+              }
               await con
                 .promise()
                 .query(

@@ -334,6 +334,7 @@ const PaymentModal = (probs: any) => {
         orderNote,
       },
       shopId,
+      editing: true
     });
     if (result.success) {
       Toastify("success", "successfully done");

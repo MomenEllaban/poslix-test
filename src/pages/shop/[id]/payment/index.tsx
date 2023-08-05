@@ -19,6 +19,8 @@ import { Button } from 'react-bootstrap';
 const PaymentMethods: NextPage = (props: any) => {
     const { shopId, rules } = props;
     const [isLoading, setIsLoading] = useState(true)
+    const { darkMode } = useContext(darkModeContext);
+    const [currentPaymentMethods, setCurrentPaymentMethods] = useState([])
     const [paymentMethods, setPaymentMethods] = useState([
         { name: "Card", enabled: true },
         { name: "Cash", enabled: true },
@@ -29,15 +31,14 @@ const PaymentMethods: NextPage = (props: any) => {
     async function initDataPage() {
         var result = await apiFetchCtr({ fetch: 'payment', subType: 'getPayments', shopId })
         const { success, data } = result;
+        console.log(data);
+        
         if (success) {
-            setPaymentMethods(data?.payments?.length > 0 ? data.payments : [
-                { name: "Card", enabled: true },
-                { name: "Cash", enabled: true },
-                { name: "Bank", enabled: true },
-                { name: "Cheque", enabled: true }
-            ])
+            setCurrentPaymentMethods(data?.payments)
+            setPaymentMethods(data?.payments || [])
             setIsLoading(false)
         }
+
     }
 
     useEffect(() => {
@@ -60,62 +61,53 @@ const PaymentMethods: NextPage = (props: any) => {
         setPaymentMethods([...paymentMethods, { name: '', enabled: false}])
     }
 
-    const removeMethod = (index) => {
-        setPaymentMethods(paymentMethods.filter((payment, i) => i !== index))
+    const saveMethods = () => {
+        const finalMethods = paymentMethods.filter(method => method.enabled)
+        localStorage.setItem("paymentMethods", JSON.stringify(finalMethods))
     }
 
-    const saveMethods = async () => {
-        // const finalMethods = paymentMethods.filter(method => method.enabled)
-        setIsLoading(true)
-        let {success, msg} = await apiInsertCtr({ type: 'payment', subType: 'insertPayment', shopId,
-            data: paymentMethods
-        })
-        if (msg.length > 0) Toastify(success ? "success" : "error", msg);
-        setIsLoading(false)
-    }
     return (
         <>
             <AdminLayout shopId={shopId}>
                 <ToastContainer />
-                {!isLoading ?
-                <Table className="table table-hover remove-last-del-icon" style={{width: '80%'}} responsive>
-                    <thead className="thead-dark">
-                        <tr>
-                            <th style={{ width: '50%' }} >Method</th>
-                            <th style={{ width: '15%' }}></th>
-                            <th style={{ width: '15%' }}></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {paymentMethods?.map((method: any, i: number) => {
-                            return (
-                                <tr key={i}>
-                                    <td><input type="text" name="tax-name" className="form-control p-2" disabled={!rules.hasInsert} placeholder="Enter New Method Name" value={method.name} onChange={(e) => { handleInputChange(e, i) }} /></td>
-                                    <td className='d-flex justify-content-center pt-3'><Form.Check type="switch" id="custom-switch" disabled={!rules.hasInsert} className="custom-switch" checked={method.enabled ? true : false} onChange={(e) => { handlePrimarySwitchChange(e, i) }} /></td>
-                                    <td>
-                                        <Button className='m-buttons-style'
-                                            onClick={() => removeMethod(i)}><FontAwesomeIcon icon={faTrash} />
-                                        </Button>
-                                    </td>
-                                </tr>
-                            )
-                        })
-                        }
-                    </tbody>
-                    <div className='d-flex'>
-                        <div className='m-3'>
-                            <button style={{boxShadow: 'unset', backgroundColor: '#004e46'}} className='btn m-btn btn-primary btn-dark p-2' onClick={() => addNewMethod()}>
-                                <FontAwesomeIcon icon={faPlus} /> Add New Method
-                            </button>
+                    {!isLoading ? <Table className="table table-hover remove-last-del-icon" responsive>
+                        <thead className="thead-dark">
+                            <tr>
+                                <th style={{ width: '50%' }} >Method</th>
+                                <th style={{ width: '15%' }}></th>
+                                <th style={{ width: '15%' }}></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {paymentMethods?.map((method: any, i: number) => {
+                                return (
+                                    <tr key={i}>
+                                        <td><input type="text" name="tax-name" className="form-control p-2" disabled={!rules.hasInsert} placeholder="Enter New Method Name" value={method.name} onChange={(e) => { handleInputChange(e, i) }} /></td>
+                                        <td className='d-flex justify-content-center pt-3'><Form.Check type="switch" id="custom-switch" disabled={!rules.hasInsert} className="custom-switch" checked={method.enabled ? true : false} onChange={(e) => { handlePrimarySwitchChange(e, i) }} /></td>
+                                        <td>
+                                            <Button className='m-buttons-style'
+                                                onClick={() => {}}><FontAwesomeIcon icon={faTrash} />
+                                            </Button>
+                                        </td>
+                                    </tr>
+                                )
+                            })
+                            }
+                        </tbody>
+                        <div className='d-flex'>
+                            <div className='m-3'>
+                                <button style={{boxShadow: 'unset', backgroundColor: '#004e46'}} className='btn m-btn btn-primary btn-dark p-2' onClick={() => addNewMethod()}>
+                                    <FontAwesomeIcon icon={faPlus} /> Add New Method
+                                </button>
+                            </div>
+                            <div className='m-3'>
+                                <button style={{boxShadow: 'unset', backgroundColor: '#004e46'}} className='btn m-btn btn-primary p-2' onClick={() => saveMethods()}>
+                                    <FontAwesomeIcon icon={faSave} /> Save
+                                </button>
+                            </div>
                         </div>
-                        <div className='m-3'>
-                            <button style={{boxShadow: 'unset', backgroundColor: '#004e46'}} className='btn m-btn btn-primary p-2' onClick={() => saveMethods()}>
-                                <FontAwesomeIcon icon={faSave} /> Save
-                            </button>
-                        </div>
-                    </div>
-                </Table>
-                    : <div className='d-flex justify-content-around' ><Spinner animation="grow" /></div>}
+                    </Table>
+                        : <div className='d-flex justify-content-around' ><Spinner animation="grow" /></div>}
             </AdminLayout >
         </>
     )
