@@ -28,22 +28,22 @@ const PaymentMethods: NextPage = (props: any) => {
         { name: "Cheque", enabled: true }
     ]);
 
-    async function initDataPage() {
-        var result = await apiFetchCtr({ fetch: 'payment', subType: 'getPayments', shopId })
-        const { success, data } = result;
-        console.log(data);
+    // async function initDataPage() {
+    //     var result = await apiFetchCtr({ fetch: 'payment', subType: 'getPayments', shopId })
+    //     const { success, data } = result;
+    //     console.log(data);
         
-        if (success) {
-            setCurrentPaymentMethods(data?.payments)
-            setPaymentMethods(data?.payments || [])
-            setIsLoading(false)
-        }
+    //     if (success) {
+    //         setCurrentPaymentMethods(data?.payments)
+    //         setPaymentMethods(data?.payments || [])
+    //         setIsLoading(false)
+    //     }
 
-    }
+    // }
 
-    useEffect(() => {
-        initDataPage();
-    }, [])
+    // useEffect(() => {
+    //     initDataPage();
+    // }, [])
 
     const handleInputChange = (e: any, i: number) => {
         const _paymentMethods = [...paymentMethods];
@@ -70,7 +70,8 @@ const PaymentMethods: NextPage = (props: any) => {
         <>
             <AdminLayout shopId={shopId}>
                 <ToastContainer />
-                    {!isLoading ? <Table className="table table-hover remove-last-del-icon" responsive>
+                    {/* {!isLoading ? */}
+                    <Table className="table table-hover remove-last-del-icon" responsive>
                         <thead className="thead-dark">
                             <tr>
                                 <th style={{ width: '50%' }} >Method</th>
@@ -107,7 +108,8 @@ const PaymentMethods: NextPage = (props: any) => {
                             </div>
                         </div>
                     </Table>
-                        : <div className='d-flex justify-content-around' ><Spinner animation="grow" /></div>}
+                        {/* : <div className='d-flex justify-content-around' ><Spinner animation="grow" /></div> */}
+                    {/* } */}
             </AdminLayout >
         </>
     )
