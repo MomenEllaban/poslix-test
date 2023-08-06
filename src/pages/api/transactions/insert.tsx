@@ -370,7 +370,7 @@ export default async function handler(
                 .catch();
 
               let sign =
-                details.totalAmount > orderEditDetails.total_price ? 1 : -1;
+                req.body.editing && details.totalAmount > orderEditDetails.total_price ? 1 : -1;
               paymentRows.map((pay: any) => {
                 if (pay.amount > 0)
                   valueForPayment.push([
@@ -614,9 +614,14 @@ export default async function handler(
             // return
             //exceute update query if has return products
             if (sqlValuesForUpdate.length > 0) {
-              const upRetu = await con
+              try {
+                const upRetu = await con
                 .promise()
                 .query(sqlCondiForUpdate, [sqlValuesForUpdate]);
+              } catch (error) {
+                console.log('test error', error);
+                
+              }
 
               if (sqlValuesUpdateStock.length > 0) {
                 await con
