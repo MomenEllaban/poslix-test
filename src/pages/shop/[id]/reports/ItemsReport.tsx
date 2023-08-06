@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState, useEffect } from 'react';
 import {
   DataGrid,
   GridColDef,
@@ -9,51 +9,37 @@ import {
   GridToolbar,
   GridToolbarFilterButton,
   GridToolbarQuickFilter,
-} from "@mui/x-data-grid";
-import { AdminLayout } from "@layout";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faTrash,
-  faPenToSquare,
-  faPlus,
-  faEye,
-} from "@fortawesome/free-solid-svg-icons";
-import FormControl from "@mui/material/FormControl";
-import InputLabel from "@mui/material/InputLabel";
-import Select, { SelectChangeEvent } from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
-import { Button, ButtonGroup } from "react-bootstrap";
-import { useRouter } from "next/router";
-import AlertDialog from "src/components/utils/AlertDialog";
-import { apiFetch, apiFetchCtr } from "src/libs/dbUtils";
-import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-} from "@mui/material";
-import { ILocationSettings, ITokenVerfy } from "@models/common-model";
-import * as cookie from "cookie";
-import {
-  hasPermissions,
-  keyValueRules,
-  verifayTokens,
-} from "src/pages/api/checkUtils";
-import { UserContext } from "src/context/UserContext";
-import { useReactToPrint } from "react-to-print";
-import DatePicker from "src/components/filters/Date";
+} from '@mui/x-data-grid';
+import { AdminLayout } from '@layout';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrash, faPenToSquare, faPlus, faEye } from '@fortawesome/free-solid-svg-icons';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import { Button, ButtonGroup } from 'react-bootstrap';
+import { useRouter } from 'next/router';
+import AlertDialog from 'src/components/utils/AlertDialog';
+import { apiFetch, apiFetchCtr } from 'src/libs/dbUtils';
+import { Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { ILocationSettings, ITokenVerfy } from '@models/common-model';
+import * as cookie from 'cookie';
+import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/checkUtils';
+import { UserContext } from 'src/context/UserContext';
+import { useReactToPrint } from 'react-to-print';
+import DatePicker from 'src/components/filters/Date';
 
 // Eslam 20
 export default function ItemsReport(props: any) {
   const { shopId, rules } = props;
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
     value: 0,
-    label: "",
+    label: '',
     currency_decimal_places: 0,
-    currency_code: "",
+    currency_code: '',
     currency_id: 0,
     currency_rate: 1,
-    currency_symbol: "",
+    currency_symbol: '',
   });
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const handleClose = () => {
@@ -67,107 +53,98 @@ export default function ItemsReport(props: any) {
   const [show, setShow] = useState(false);
   const [isLoadItems, setIsLoadItems] = useState(false);
   const [showViewPopUp, setShowViewPopUp] = useState(false);
-  const [handleSearchTxt, setHandleSearchTxt] = useState("");
+  const [handleSearchTxt, setHandleSearchTxt] = useState('');
   const [details, setDetails] = useState({ subTotal: 1, tax: 0, cost: 0 });
   const { setInvoicDetails, invoicDetails } = useContext(UserContext);
 
   const [filteredSales, setFilteredSales] = useState<any>([]);
   const [selectedRange, setSelectedRange] = useState(null);
   const [strSelectedDate, setStrSelectedDate] = useState([]);
-  const [selectedDateVlaue, setSelectedDateValue] = useState("");
-  const [selectedCustomer, setSelectedCustomer] = useState("");
+  const [selectedDateVlaue, setSelectedDateValue] = useState('');
+  const [selectedCustomer, setSelectedCustomer] = useState('');
   const [customersOptions, setCustomersOptions] = useState([]);
 
-    useEffect(() => {
-      let localFilteredSales = [];
-      if (strSelectedDate.length === 2) {
-        const filteredList = sales.filter((sale) => {
-          const dateCreated = sale.created_at.split(" ")[0];
-          return (
-            new Date(dateCreated).getDate() >=
-              new Date(strSelectedDate[0]).getDate() &&
-            new Date(dateCreated).getMonth() >=
-              new Date(strSelectedDate[0]).getMonth() &&
-            new Date(dateCreated).getFullYear() >=
-              new Date(strSelectedDate[0]).getFullYear() &&
-            new Date(dateCreated).getDate() <=
-              new Date(strSelectedDate[1]).getDate() &&
-            new Date(dateCreated).getMonth() <=
-              new Date(strSelectedDate[1]).getMonth() &&
-            new Date(dateCreated).getFullYear() <=
-              new Date(strSelectedDate[1]).getFullYear()
-          );
-        });
-        setSelectedDateValue(`${strSelectedDate[0]} - ${strSelectedDate[1]}`);
-        localFilteredSales = filteredList;
-      } else if (strSelectedDate.length === 1) {
-        const filteredList = sales.filter((sale) => {
-          const dateCreated = sale.created_at.split(" ")[0];
-          return (
-            new Date(dateCreated).getDate() ===
-              new Date(strSelectedDate[0]).getDate() &&
-            new Date(dateCreated).getMonth() ===
-              new Date(strSelectedDate[0]).getMonth() &&
-            new Date(dateCreated).getFullYear() ===
-              new Date(strSelectedDate[0]).getFullYear()
-          );
-        });
-        setSelectedDateValue(strSelectedDate[0]);
-        localFilteredSales = filteredList;
-      } else {
-        localFilteredSales = sales;
-      }
-      if (selectedCustomer) {
-        localFilteredSales = localFilteredSales.filter(
-          (sale) => sale.customer_name === selectedCustomer
+  useEffect(() => {
+    let localFilteredSales = [];
+    if (strSelectedDate.length === 2) {
+      const filteredList = sales.filter((sale) => {
+        const dateCreated = sale.created_at.split(' ')[0];
+        return (
+          new Date(dateCreated).getDate() >= new Date(strSelectedDate[0]).getDate() &&
+          new Date(dateCreated).getMonth() >= new Date(strSelectedDate[0]).getMonth() &&
+          new Date(dateCreated).getFullYear() >= new Date(strSelectedDate[0]).getFullYear() &&
+          new Date(dateCreated).getDate() <= new Date(strSelectedDate[1]).getDate() &&
+          new Date(dateCreated).getMonth() <= new Date(strSelectedDate[1]).getMonth() &&
+          new Date(dateCreated).getFullYear() <= new Date(strSelectedDate[1]).getFullYear()
         );
-      }
-      //Eslam 19
-      let totalPrice = 0;
-      let taxAmount = 0;
-      localFilteredSales.forEach((obj) => {
-        const price = parseFloat(obj.total_price);
-        const tax = parseFloat(obj.tax_amount);
-        totalPrice += price;
-        taxAmount += tax;
       });
-      const totalPriceAndTax = totalPrice + taxAmount;
-      setDetails({
-        subTotal: totalPrice,
-        tax: taxAmount,
-        cost: totalPriceAndTax,
+      setSelectedDateValue(`${strSelectedDate[0]} - ${strSelectedDate[1]}`);
+      localFilteredSales = filteredList;
+    } else if (strSelectedDate.length === 1) {
+      const filteredList = sales.filter((sale) => {
+        const dateCreated = sale.created_at.split(' ')[0];
+        return (
+          new Date(dateCreated).getDate() === new Date(strSelectedDate[0]).getDate() &&
+          new Date(dateCreated).getMonth() === new Date(strSelectedDate[0]).getMonth() &&
+          new Date(dateCreated).getFullYear() === new Date(strSelectedDate[0]).getFullYear()
+        );
       });
-      setFilteredSales(localFilteredSales);
-    }, [strSelectedDate, selectedCustomer]);
+      setSelectedDateValue(strSelectedDate[0]);
+      localFilteredSales = filteredList;
+    } else {
+      localFilteredSales = sales;
+    }
+    if (selectedCustomer) {
+      localFilteredSales = localFilteredSales.filter(
+        (sale) => sale.customer_name === selectedCustomer
+      );
+    }
+    //Eslam 19
+    let totalPrice = 0;
+    let taxAmount = 0;
+    localFilteredSales.forEach((obj) => {
+      const price = parseFloat(obj.total_price);
+      const tax = parseFloat(obj.tax_amount);
+      totalPrice += price;
+      taxAmount += tax;
+    });
+    const totalPriceAndTax = totalPrice + taxAmount;
+    setDetails({
+      subTotal: totalPrice,
+      tax: taxAmount,
+      cost: totalPriceAndTax,
+    });
+    setFilteredSales(localFilteredSales);
+  }, [strSelectedDate, selectedCustomer]);
 
-    const handleChangeCustomer = (event: SelectChangeEvent<string>) => {
-      setSelectedCustomer(event.target.value);
-    };
+  const handleChangeCustomer = (event: SelectChangeEvent<string>) => {
+    setSelectedCustomer(event.target.value);
+  };
 
-    const resetFilters = () => {
-      // setFilteredSales(sales);
-      setSelectedCustomer("");
-      setSelectedRange(null);
-      setStrSelectedDate([]);
-    };
+  const resetFilters = () => {
+    // setFilteredSales(sales);
+    setSelectedCustomer('');
+    setSelectedRange(null);
+    setStrSelectedDate([]);
+  };
 
   //table columns
   const columns: GridColDef[] = [
-    { field: "Product", headerName: "Product", flex: 1 },
-    { field: "SKU", headerName: "SKU", flex: 1 },
-    { field: "Category", headerName: "Category", flex: 1 },
-    { field: "Brand", headerName: "Brand", flex: 1 },
-    { field: "Description", headerName: "Description", flex: 1 },
-    { field: "Purchase Date", headerName: "Purchase Date", flex: 1 },
-    { field: "Purchase", headerName: "Purchase", flex: 1 },
-    { field: "Supplier", headerName: "Supplier", flex: 1 },
-    { field: "Purchase Price", headerName: "Purchase Price", flex: 1 },
-    { field: "Sale Date", headerName: "Sale Date", flex: 1 },
-    { field: "Sale", headerName: "Sale", flex: 1 },
-    { field: "Customer", headerName: "Customer", flex: 1 },
-    { field: "Quantity", headerName: "Quantity", flex: 1 },
-    { field: "Selling price", headerName: "Selling price", flex: 1 },
-    { field: "Subtotal", headerName: "Subtotal", flex: 1 },
+    { field: 'Product', headerName: 'Product', flex: 1 },
+    { field: 'SKU', headerName: 'SKU', flex: 1 },
+    { field: 'Category', headerName: 'Category', flex: 1 },
+    { field: 'Brand', headerName: 'Brand', flex: 1 },
+    { field: 'Description', headerName: 'Description', flex: 1 },
+    { field: 'Purchase Date', headerName: 'Purchase Date', flex: 1 },
+    { field: 'Purchase', headerName: 'Purchase', flex: 1 },
+    { field: 'Supplier', headerName: 'Supplier', flex: 1 },
+    { field: 'Purchase Price', headerName: 'Purchase Price', flex: 1 },
+    { field: 'Sale Date', headerName: 'Sale Date', flex: 1 },
+    { field: 'Sale', headerName: 'Sale', flex: 1 },
+    { field: 'Customer', headerName: 'Customer', flex: 1 },
+    { field: 'Quantity', headerName: 'Quantity', flex: 1 },
+    { field: 'Selling price', headerName: 'Selling price', flex: 1 },
+    { field: 'Subtotal', headerName: 'Subtotal', flex: 1 },
   ];
 
   const componentRef = React.useRef(null);
@@ -186,22 +163,20 @@ export default function ItemsReport(props: any) {
           <div className="bill-details">
             <div className="flex justify-between">
               <div>
-                {invoicDetails.txtCustomer}{" "}
+                {invoicDetails.txtCustomer}{' '}
                 {invoicDetails.isMultiLang && invoicDetails.txtCustomer2}
               </div>
               <div>{selectRow.customer_name}</div>
             </div>
             <div className="flex justify-between">
               <div>
-                {invoicDetails.orderNo}{" "}
-                {invoicDetails.isMultiLang && invoicDetails.orderNo2}
+                {invoicDetails.orderNo} {invoicDetails.isMultiLang && invoicDetails.orderNo2}
               </div>
               <div>{selectRow.id}</div>
             </div>
             <div className="flex justify-between">
               <div>
-                {invoicDetails.txtDate}{" "}
-                {invoicDetails.isMultiLang && invoicDetails.txtDate2}
+                {invoicDetails.txtDate} {invoicDetails.isMultiLang && invoicDetails.txtDate2}
               </div>
               <div>{new Date().toISOString().slice(0, 10)}</div>
             </div>
@@ -240,8 +215,7 @@ export default function ItemsReport(props: any) {
               <tr className="net-amount">
                 <td></td>
                 <td>
-                  {invoicDetails.txtTax}{" "}
-                  {invoicDetails.isMultiLang && invoicDetails.txtTax2}
+                  {invoicDetails.txtTax} {invoicDetails.isMultiLang && invoicDetails.txtTax2}
                 </td>
                 <td></td>
                 {/* <td>{(selectRow.total_price).toFixed(locationSettings.currency_decimal_places)}</td> */}
@@ -249,14 +223,11 @@ export default function ItemsReport(props: any) {
               <tr className="net-amount">
                 <td></td>
                 <td className="txt-bold">
-                  {invoicDetails.txtTotal}{" "}
-                  {invoicDetails.isMultiLang && invoicDetails.txtTotal2}
+                  {invoicDetails.txtTotal} {invoicDetails.isMultiLang && invoicDetails.txtTotal2}
                 </td>
                 <td></td>
                 <td className="txt-bold">
-                  {Number(selectRow.total_price).toFixed(
-                    locationSettings.currency_decimal_places
-                  )}
+                  {Number(selectRow.total_price).toFixed(locationSettings.currency_decimal_places)}
                 </td>
               </tr>
             </thead>
@@ -275,7 +246,7 @@ export default function ItemsReport(props: any) {
   async function viewTransaction() {
     setShowViewPopUp(true);
     var result = await apiFetch({
-      fetch: "getSellLinesByTransactionId",
+      fetch: 'getSellLinesByTransactionId',
       data: { id: selectId },
     });
     const { success, newdata } = result;
@@ -285,7 +256,7 @@ export default function ItemsReport(props: any) {
   }
   // init sales data
   async function initDataPage() {
-    var _locs = JSON.parse(localStorage.getItem("userlocs") || "[]");
+    var _locs = JSON.parse(localStorage.getItem('userlocs') || '[]');
     if (_locs.toString().length > 10)
       setLocationSettings(
         _locs[
@@ -296,8 +267,8 @@ export default function ItemsReport(props: any) {
       );
 
     const { success, data } = await apiFetchCtr({
-      fetch: "reports",
-      subType: "getItemsReport",
+      fetch: 'reports',
+      subType: 'getItemsReport',
       shopId,
     });
     if (success) {
@@ -309,8 +280,8 @@ export default function ItemsReport(props: any) {
   async function getItems(id: number) {
     setIsLoadItems(true);
     const { success, newdata } = await apiFetchCtr({
-      fetch: "transactions",
-      subType: "getSaleItems",
+      fetch: 'transactions',
+      subType: 'getSaleItems',
       shopId,
       id,
     });
@@ -321,7 +292,7 @@ export default function ItemsReport(props: any) {
   }
 
   useEffect(() => {
-    var _locs = JSON.parse(localStorage.getItem("userlocs") || "[]");
+    var _locs = JSON.parse(localStorage.getItem('userlocs') || '[]');
     if (_locs.toString().length > 10)
       setLocationSettings(
         _locs[
@@ -330,7 +301,7 @@ export default function ItemsReport(props: any) {
           })
         ]
       );
-    else alert("errorr location settings");
+    else alert('errorr location settings');
     initDataPage();
   }, []);
 
@@ -358,7 +329,7 @@ export default function ItemsReport(props: any) {
   };
   return (
     <AdminLayout shopId={shopId}>
-      <div className="flex" style={{ alignItems: "center" }}>
+      <div className="flex" style={{ alignItems: 'center' }}>
         <FormControl sx={{ m: 1, width: 220 }}>
           <InputLabel id="customer-select-label">Supplier</InputLabel>
           <Select
@@ -366,8 +337,7 @@ export default function ItemsReport(props: any) {
             id="Supplier-select"
             value={selectedCustomer}
             label="Supplier"
-            onChange={handleChangeCustomer}
-          >
+            onChange={handleChangeCustomer}>
             {/* {customersOptions.map((customer) => (
               <MenuItem key={customer} value={customer}>
                 {customer}
@@ -382,7 +352,7 @@ export default function ItemsReport(props: any) {
             selectedRange,
             setSelectedRange,
             hiden: true,
-            placeHolder: "Purchase Date",
+            placeHolder: 'Purchase Date',
           }}
         />
         <FormControl sx={{ m: 1, width: 220 }}>
@@ -392,8 +362,7 @@ export default function ItemsReport(props: any) {
             id="customer-select"
             value={selectedCustomer}
             label="Customer"
-            onChange={handleChangeCustomer}
-          >
+            onChange={handleChangeCustomer}>
             {/* {customersOptions.map((customer) => (
               <MenuItem key={customer} value={customer}>
                 {customer}
@@ -408,7 +377,7 @@ export default function ItemsReport(props: any) {
             selectedRange,
             setSelectedRange,
             hiden: true,
-            placeHolder: "Sale Date",
+            placeHolder: 'Sale Date',
           }}
         />
         <FormControl sx={{ m: 1, width: 220 }}>
@@ -418,8 +387,7 @@ export default function ItemsReport(props: any) {
             id="BusinessLocation-select"
             value={selectedCustomer}
             label="Business Location"
-            onChange={handleChangeCustomer}
-          >
+            onChange={handleChangeCustomer}>
             {/* {customersOptions.map((customer) => (
               <MenuItem key={customer} value={customer}>
                 {customer}
@@ -434,8 +402,7 @@ export default function ItemsReport(props: any) {
             id="category-select"
             value={selectedCustomer}
             label="Category"
-            onChange={handleChangeCustomer}
-          >
+            onChange={handleChangeCustomer}>
             {/* {customersOptions.map((category) => (
               <MenuItem key={customer} value={customer}>
                 {customer}
@@ -450,8 +417,7 @@ export default function ItemsReport(props: any) {
             id="Brand-select"
             value={selectedCustomer}
             label="Brand"
-            onChange={handleChangeCustomer}
-          >
+            onChange={handleChangeCustomer}>
             {/* {customersOptions.map((customer) => (
               <MenuItem key={customer} value={customer}>
                 {customer}
@@ -459,10 +425,7 @@ export default function ItemsReport(props: any) {
             ))} */}
           </Select>
         </FormControl>
-        <Button
-          onClick={resetFilters}
-          style={{ height: "56px", marginLeft: "auto" }}
-        >
+        <Button onClick={resetFilters} style={{ height: '56px', marginLeft: 'auto' }}>
           CLEAR
         </Button>
       </div>
@@ -471,12 +434,11 @@ export default function ItemsReport(props: any) {
         alertFun={(e: boolean) => setShow(e)}
         id={selectId}
         type="deleteSale"
-        products={sales}
-      >
+        products={sales}>
         Are you Sure You Want Delete This Item ?
       </AlertDialog>
       {
-        <div style={{ display: "none" }}>
+        <div style={{ display: 'none' }}>
           <ComponentToPrint ref={componentRef} />
         </div>
       }
@@ -507,11 +469,11 @@ export default function ItemsReport(props: any) {
         <DataGrid
           className="datagrid-style"
           sx={{
-            ".MuiDataGrid-columnSeparator": {
-              display: "none",
+            '.MuiDataGrid-columnSeparator': {
+              display: 'none',
             },
-            "&.MuiDataGrid-root": {
-              border: "none",
+            '&.MuiDataGrid-root': {
+              border: 'none',
             },
           }}
           rows={sales}
@@ -522,22 +484,12 @@ export default function ItemsReport(props: any) {
         />
       </div>
       {/* FOR VIEW ELEMENT */}
-      <Dialog
-        open={showViewPopUp}
-        fullWidth={true}
-        className="poslix-modal"
-        onClose={handleClose}
-      >
-        <DialogTitle className="poslix-modal text-primary">
-          Sale Details
-        </DialogTitle>
+      <Dialog open={showViewPopUp} fullWidth={true} className="poslix-modal" onClose={handleClose}>
+        <DialogTitle className="poslix-modal text-primary">Sale Details</DialogTitle>
         <DialogContent className="poslix-modal-content">
           <div className="poslix-modal">
             <div className="top-section-details">
-              <img
-                src={invoicDetails.logo}
-                style={{ width: "80px", marginBottom: "10px" }}
-              />
+              <img src={invoicDetails.logo} style={{ width: '80px', marginBottom: '10px' }} />
               <div className="item-sections">
                 <div className="top-detials-invoice">
                   <div className="top-detials-item">
@@ -562,10 +514,7 @@ export default function ItemsReport(props: any) {
                     <p>Customer Name :</p>
                     <p>{selectRow.customer_name}</p>
                   </div>
-                  <div
-                    className="top-detials-item"
-                    style={{ fontSize: "13px" }}
-                  >
+                  <div className="top-detials-item" style={{ fontSize: '13px' }}>
                     <p>Order Note</p>
                     <p>{selectRow.notes}</p>
                   </div>
@@ -575,10 +524,9 @@ export default function ItemsReport(props: any) {
                 <Button
                   onClick={() => {
                     handlePrint();
-                  }}
-                >
+                  }}>
                   Print Recipt
-                </Button>{" "}
+                </Button>{' '}
                 <Button>Print Invoice</Button>
               </div>
             </div>
@@ -599,10 +547,7 @@ export default function ItemsReport(props: any) {
                       </div>
                     );
                   })}
-                  <div
-                    className="header-titles under_items"
-                    style={{ marginTop: "20px" }}
-                  >
+                  <div className="header-titles under_items" style={{ marginTop: '20px' }}>
                     <div></div>
                     <div>Total</div>
                     <div>{selectRow.total_price}</div>
@@ -618,8 +563,7 @@ export default function ItemsReport(props: any) {
           <Button
             onClick={() => {
               setShowViewPopUp(false);
-            }}
-          >
+            }}>
             Cancel
           </Button>
         </DialogActions>
@@ -628,18 +572,17 @@ export default function ItemsReport(props: any) {
   );
 }
 export async function getServerSideProps(context: any) {
-  const parsedCookies = cookie.parse(context.req.headers.cookie || "[]");
+  const parsedCookies = cookie.parse(context.req.headers.cookie || '[]');
   var _isOk = true,
     _rule = true;
   //check page params
   var shopId = context.query.id;
-  if (shopId == undefined)
-    return { redirect: { permanent: false, destination: "/page403" } };
+  if (shopId == undefined) return { redirect: { permanent: false, destination: '/page403' } };
 
   //check user permissions
   var _userRules = {};
   await verifayTokens(
-    { headers: { authorization: "Bearer " + parsedCookies.tokend } },
+    { headers: { authorization: 'Bearer ' + parsedCookies.tokend } },
     (repo: ITokenVerfy) => {
       _isOk = repo.status;
 
@@ -649,7 +592,7 @@ export async function getServerSideProps(context: any) {
         if (
           _rules[-2] != undefined &&
           _rules[-2][0].stuff != undefined &&
-          _rules[-2][0].stuff == "owner"
+          _rules[-2][0].stuff == 'owner'
         ) {
           _rule = true;
           _userRules = {
@@ -659,19 +602,17 @@ export async function getServerSideProps(context: any) {
             hasInsert: true,
           };
         } else if (_rules[shopId] != undefined) {
-          var _stuf = "";
+          var _stuf = '';
           _rules[shopId].forEach((dd: any) => (_stuf += dd.stuff));
-          const { userRules, hasPermission } = hasPermissions(_stuf, "sales");
+          const { userRules, hasPermission } = hasPermissions(_stuf, 'sales');
           _rule = hasPermission;
           _userRules = userRules;
         } else _rule = false;
       }
     }
   );
-  if (!_isOk)
-    return { redirect: { permanent: false, destination: "/user/login" } };
-  if (!_rule)
-    return { redirect: { permanent: false, destination: "/page403" } };
+  if (!_isOk) return { redirect: { permanent: false, destination: '/user/auth' } };
+  if (!_rule) return { redirect: { permanent: false, destination: '/page403' } };
   return {
     props: { shopId: context.query.id, rules: _userRules },
   };

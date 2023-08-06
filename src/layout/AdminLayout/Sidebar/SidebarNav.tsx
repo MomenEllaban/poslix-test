@@ -266,12 +266,12 @@ export function SidebarNav(probs: any): any {
           </SidebarNavGroup>
         )}
 
-        {/* {permiss.hasCustomers && (
+        {permiss.hasCustomers && (
           <SidebarNavItem icon={faUser} href={"/shop/" + shopId + "/pricing"}>
             Pricing Groups
             <small className="ms-auto"></small>
           </SidebarNavItem>
-        )} */}
+        )}
 
         {(permiss.hasSalesList || permiss.hasPurchases || permiss.hasCats) && (
           <SidebarNavGroup toggleIcon={faChartPie} toggleText="Sales">
@@ -369,6 +369,11 @@ export function SidebarNav(probs: any): any {
                 Category & Brands
               </SidebarNavItem>
             )}
+            {permiss.hasTaxes && (
+              <SidebarNavItem href={"/shop/" + shopId + "/payment"}>
+                Payment Methods
+              </SidebarNavItem>
+            )}
           </SidebarNavGroup>
         )}
         {permiss.hasPOS && (
@@ -400,13 +405,13 @@ export function OwnerSidebarNav({ username2 }: any) {
         Dashboard
         <small className="ms-auto"></small>
       </SidebarNavItem> */}
-      <SidebarNavItem icon={faChartPie} href={"/" + username + "/business"}>
+      <SidebarNavItem icon={faChartPie} href={username ? "/" + username + "/business" : ''}>
         My Businesses
       </SidebarNavItem>
-      <SidebarNavItem icon={faUser} href={"/" + username + "/rules"}>
+      <SidebarNavItem icon={faUser} href={username ? "/" + username + "/rules" : ''}>
         Rules<small className="ms-auto"></small>
       </SidebarNavItem>
-      <SidebarNavItem icon={faUser} href={"/" + username + "/users"}>
+      <SidebarNavItem icon={faUser} href={username ? "/" + username + "/users" : ''}>
         Users<small className="ms-auto"></small>
       </SidebarNavItem>
     </ul>

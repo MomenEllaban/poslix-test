@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState, useEffect } from 'react';
 import {
   DataGrid,
   GridColDef,
@@ -9,49 +9,40 @@ import {
   GridToolbar,
   GridToolbarFilterButton,
   GridToolbarQuickFilter,
-} from "@mui/x-data-grid";
-import { AdminLayout } from "@layout";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+} from '@mui/x-data-grid';
+import { AdminLayout } from '@layout';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faTrash,
   faPenToSquare,
   faPlus,
   faEye,
   faCheck,
-  faXmark
-} from "@fortawesome/free-solid-svg-icons";
-import { Button, ButtonGroup } from "react-bootstrap";
-import { useRouter } from "next/router";
-import AlertDialog from "src/components/utils/AlertDialog";
-import { apiFetch, apiFetchCtr } from "src/libs/dbUtils";
-import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-} from "@mui/material";
-import { ILocationSettings, ITokenVerfy } from "@models/common-model";
-import * as cookie from "cookie";
-import {
-  hasPermissions,
-  keyValueRules,
-  verifayTokens,
-} from "src/pages/api/checkUtils";
-import { UserContext } from "src/context/UserContext";
-import { useReactToPrint } from "react-to-print";
-import { Toastify } from "src/libs/allToasts";
-import { ToastContainer } from "react-toastify";
+  faXmark,
+} from '@fortawesome/free-solid-svg-icons';
+import { Button, ButtonGroup } from 'react-bootstrap';
+import { useRouter } from 'next/router';
+import AlertDialog from 'src/components/utils/AlertDialog';
+import { apiFetch, apiFetchCtr } from 'src/libs/dbUtils';
+import { Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { ILocationSettings, ITokenVerfy } from '@models/common-model';
+import * as cookie from 'cookie';
+import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/checkUtils';
+import { UserContext } from 'src/context/UserContext';
+import { useReactToPrint } from 'react-to-print';
+import { Toastify } from 'src/libs/allToasts';
+import { ToastContainer } from 'react-toastify';
 
 export default function SalesList(props: any) {
   const { shopId, rules } = props;
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
     value: 0,
-    label: "",
+    label: '',
     currency_decimal_places: 0,
-    currency_code: "",
+    currency_code: '',
     currency_id: 0,
     currency_rate: 1,
-    currency_symbol: "",
+    currency_symbol: '',
   });
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const handleClose = () => {
@@ -66,20 +57,20 @@ export default function SalesList(props: any) {
   const [edit, setEdit] = useState(false);
   const [isLoadItems, setIsLoadItems] = useState(false);
   const [showViewPopUp, setShowViewPopUp] = useState(false);
-  const [handleSearchTxt, setHandleSearchTxt] = useState("");
+  const [handleSearchTxt, setHandleSearchTxt] = useState('');
   const { setInvoicDetails, invoicDetails } = useContext(UserContext);
 
   console.log(locationSettings.currency_decimal_places);
 
   //table columns
   const columns: GridColDef[] = [
-    { field: "id", headerName: "#", minWidth: 50 },
-    { field: "customer_name", headerName: "Customer Name", flex: 1 },
-    { field: "sale_date", headerName: "Quotation Date", flex: 1 },
+    { field: 'id', headerName: '#', minWidth: 50 },
+    { field: 'customer_name', headerName: 'Customer Name', flex: 1 },
+    { field: 'sale_date', headerName: 'Quotation Date', flex: 1 },
     {
       flex: 1,
-      field: "status",
-      headerName: "Status",
+      field: 'status',
+      headerName: 'Status',
       renderCell: ({ row }: Partial<GridRowParams>) => {
         if (Number(+row.total_price - +row.amount) === 0) {
           return (
@@ -87,9 +78,7 @@ export default function SalesList(props: any) {
               <div className="sty_Accepted">Accepted</div>
             </>
           );
-        } else if (
-          Number(+row.total_price - +row.amount) === Number(row.total_price)
-        ) {
+        } else if (Number(+row.total_price - +row.amount) === Number(row.total_price)) {
           return (
             <>
               <div className="sty_Cancled">Cancled</div>
@@ -106,8 +95,8 @@ export default function SalesList(props: any) {
     },
     {
       flex: 1,
-      field: "action",
-      headerName: "Action ",
+      field: 'action',
+      headerName: 'Action ',
       filterable: false,
       sortable: false,
       disableExport: true,
@@ -116,39 +105,34 @@ export default function SalesList(props: any) {
           <ButtonGroup className="mb-2 m-buttons-style">
             <Button
               onClick={() => {
-                 console.log(row);
-              }}
-            >
+                console.log(row);
+              }}>
               <FontAwesomeIcon icon={faPenToSquare} />
             </Button>
             {rules.hasDelete && (
               <Button
                 onClick={() => {
-                   console.log(row);
-                }}
-              >
+                  console.log(row);
+                }}>
                 <FontAwesomeIcon icon={faTrash} />
               </Button>
             )}
             <Button
               onClick={() => {
-                 console.log(row);
-              }}
-            >
+                console.log(row);
+              }}>
               <FontAwesomeIcon icon={faEye} />
             </Button>
             <Button
               onClick={() => {
                 console.log(row);
-              }}
-            >
+              }}>
               <FontAwesomeIcon icon={faCheck} />
             </Button>
             <Button
               onClick={() => {
                 console.log(row);
-              }}
-            >
+              }}>
               <FontAwesomeIcon icon={faXmark} />
             </Button>
           </ButtonGroup>
@@ -174,22 +158,20 @@ export default function SalesList(props: any) {
           <div className="bill-details">
             <div className="flex justify-between">
               <div>
-                {invoicDetails.txtCustomer}{" "}
+                {invoicDetails.txtCustomer}{' '}
                 {invoicDetails.isMultiLang && invoicDetails.txtCustomer2}
               </div>
               <div>{selectRow.customer_name}</div>
             </div>
             <div className="flex justify-between">
               <div>
-                {invoicDetails.orderNo}{" "}
-                {invoicDetails.isMultiLang && invoicDetails.orderNo2}
+                {invoicDetails.orderNo} {invoicDetails.isMultiLang && invoicDetails.orderNo2}
               </div>
               <div>{selectRow.id}</div>
             </div>
             <div className="flex justify-between">
               <div>
-                {invoicDetails.txtDate}{" "}
-                {invoicDetails.isMultiLang && invoicDetails.txtDate2}
+                {invoicDetails.txtDate} {invoicDetails.isMultiLang && invoicDetails.txtDate2}
               </div>
               <div>{new Date().toISOString().slice(0, 10)}</div>
             </div>
@@ -228,8 +210,7 @@ export default function SalesList(props: any) {
               <tr className="net-amount">
                 <td></td>
                 <td>
-                  {invoicDetails.txtTax}{" "}
-                  {invoicDetails.isMultiLang && invoicDetails.txtTax2}
+                  {invoicDetails.txtTax} {invoicDetails.isMultiLang && invoicDetails.txtTax2}
                 </td>
                 <td></td>
                 {/* <td>{(selectRow.total_price).toFixed(locationSettings.currency_decimal_places)}</td> */}
@@ -237,14 +218,11 @@ export default function SalesList(props: any) {
               <tr className="net-amount">
                 <td></td>
                 <td className="txt-bold">
-                  {invoicDetails.txtTotal}{" "}
-                  {invoicDetails.isMultiLang && invoicDetails.txtTotal2}
+                  {invoicDetails.txtTotal} {invoicDetails.isMultiLang && invoicDetails.txtTotal2}
                 </td>
                 <td></td>
                 <td className="txt-bold">
-                  {Number(selectRow.total_price).toFixed(
-                    locationSettings.currency_decimal_places
-                  )}
+                  {Number(selectRow.total_price).toFixed(locationSettings.currency_decimal_places)}
                 </td>
               </tr>
             </thead>
@@ -329,7 +307,7 @@ export default function SalesList(props: any) {
               <tr>
                 <th>Description</th>
                 <th>
-                  {" "}
+                  {' '}
                   {invoicDetails.txtQty}
                   <br />
                   {invoicDetails.isMultiLang && invoicDetails.txtQty2}
@@ -338,7 +316,7 @@ export default function SalesList(props: any) {
                 {/* <th> {invoicDetails.txtItem}<br />{invoicDetails.isMultiLang && invoicDetails.txtItem2}</th> */}
                 <th>Tax</th>
                 <th>
-                  {" "}
+                  {' '}
                   {invoicDetails.txtAmount}
                   <br />
                   {invoicDetails.isMultiLang && invoicDetails.txtAmount2}
@@ -368,13 +346,10 @@ export default function SalesList(props: any) {
               </tr>
               <tr>
                 <td colSpan={4} className="txt_bold_invoice">
-                  {invoicDetails.txtTotal}{" "}
-                  {invoicDetails.isMultiLang && invoicDetails.txtTotal2}
+                  {invoicDetails.txtTotal} {invoicDetails.isMultiLang && invoicDetails.txtTotal2}
                 </td>
                 <td className="txt_bold_invoice">
-                  {Number(selectRow.total_price).toFixed(
-                    locationSettings.currency_decimal_places
-                  )}
+                  {Number(selectRow.total_price).toFixed(locationSettings.currency_decimal_places)}
                 </td>
               </tr>
             </tbody>
@@ -435,7 +410,7 @@ export default function SalesList(props: any) {
   async function viewTransaction() {
     setShowViewPopUp(true);
     var result = await apiFetch({
-      fetch: "getSellLinesByTransactionId",
+      fetch: 'getSellLinesByTransactionId',
       data: { id: selectId },
     });
     const { success, newdata } = result;
@@ -446,8 +421,8 @@ export default function SalesList(props: any) {
   // init sales data
   async function initDataPage() {
     const { success, newdata } = await apiFetchCtr({
-      fetch: "transactions",
-      subType: "getSales",
+      fetch: 'transactions',
+      subType: 'getSales',
       shopId,
     });
     if (success) {
@@ -460,8 +435,8 @@ export default function SalesList(props: any) {
   async function getItems(id: number) {
     setIsLoadItems(true);
     const { success, newdata } = await apiFetchCtr({
-      fetch: "transactions",
-      subType: "getSaleItems",
+      fetch: 'transactions',
+      subType: 'getSaleItems',
       shopId,
       id,
     });
@@ -472,7 +447,7 @@ export default function SalesList(props: any) {
   }
 
   useEffect(() => {
-    var _locs = JSON.parse(localStorage.getItem("userlocs") || "[]");
+    var _locs = JSON.parse(localStorage.getItem('userlocs') || '[]');
     if (_locs.toString().length > 10)
       setLocationSettings(
         _locs[
@@ -481,7 +456,7 @@ export default function SalesList(props: any) {
           })
         ]
       );
-    else alert("errorr location settings");
+    else alert('errorr location settings');
     initDataPage();
   }, [router.asPath]);
 
@@ -495,7 +470,7 @@ export default function SalesList(props: any) {
         setsales(_data);
       }
     }
-    if (msg.length > 0) Toastify(result ? "success" : "error", msg);
+    if (msg.length > 0) Toastify(result ? 'success' : 'error', msg);
     setShow(false);
   };
 
@@ -534,17 +509,16 @@ export default function SalesList(props: any) {
         id={selectId}
         type="transactions"
         subType="deleteSale"
-        products={sales}
-      >
+        products={sales}>
         Are you Sure You Want Delete This Item ?
       </AlertDialog>
       {
-        <div style={{ display: "none" }}>
+        <div style={{ display: 'none' }}>
           <ComponentToPrint ref={componentRef} />
         </div>
       }
       {
-        <div style={{ display: "none" }}>
+        <div style={{ display: 'none' }}>
           <ComponentToPrint2 ref={componentRef2} />
         </div>
       }
@@ -553,11 +527,11 @@ export default function SalesList(props: any) {
         <DataGrid
           className="datagrid-style"
           sx={{
-            ".MuiDataGrid-columnSeparator": {
-              display: "none",
+            '.MuiDataGrid-columnSeparator': {
+              display: 'none',
             },
-            "&.MuiDataGrid-root": {
-              border: "none",
+            '&.MuiDataGrid-root': {
+              border: 'none',
             },
           }}
           rows={sales}
@@ -571,22 +545,14 @@ export default function SalesList(props: any) {
         />
       </div>
       {/* FOR VIEW ELEMENT */}
-      <Dialog
-        open={showViewPopUp}
-        fullWidth={true}
-        className="poslix-modal"
-        onClose={handleClose}
-      >
+      <Dialog open={showViewPopUp} fullWidth={true} className="poslix-modal" onClose={handleClose}>
         <DialogTitle className="poslix-modal text-primary">
-          {edit ? "Edit Sale" : "Sale Details"}
+          {edit ? 'Edit Sale' : 'Sale Details'}
         </DialogTitle>
         <DialogContent className="poslix-modal-content">
           <div className="poslix-modal">
             <div className="top-section-details">
-              <img
-                src={invoicDetails.logo}
-                style={{ width: "80px", marginBottom: "10px" }}
-              />
+              <img src={invoicDetails.logo} style={{ width: '80px', marginBottom: '10px' }} />
               <div className="item-sections">
                 <div className="top-detials-invoice">
                   <div className="top-detials-item">
@@ -596,11 +562,7 @@ export default function SalesList(props: any) {
                   <div className="top-detials-item pe-2">
                     <p>Invoice Date :</p>
                     {edit ? (
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={selectRow.sale_date}
-                      />
+                      <input type="text" className="form-control" value={selectRow.sale_date} />
                     ) : (
                       <p>{selectRow.sale_date}</p>
                     )}
@@ -608,11 +570,7 @@ export default function SalesList(props: any) {
                   <div className="top-detials-item pe-2">
                     <p>Added By :</p>
                     {edit ? (
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={selectRow.added_by}
-                      />
+                      <input type="text" className="form-control" value={selectRow.added_by} />
                     ) : (
                       <p>{selectRow.added_by}</p>
                     )}
@@ -622,11 +580,7 @@ export default function SalesList(props: any) {
                   <div className="top-detials-item">
                     <p>Final Total :</p>
                     {edit ? (
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={selectRow.total_price}
-                      />
+                      <input type="text" className="form-control" value={selectRow.total_price} />
                     ) : (
                       <p>{selectRow.total_price}</p>
                     )}
@@ -634,26 +588,15 @@ export default function SalesList(props: any) {
                   <div className="top-detials-item">
                     <p>Customer Name :</p>
                     {edit ? (
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={selectRow.customer_name}
-                      />
+                      <input type="text" className="form-control" value={selectRow.customer_name} />
                     ) : (
                       <p>{selectRow.customer_name}</p>
                     )}
                   </div>
-                  <div
-                    className="top-detials-item"
-                    style={{ fontSize: "13px" }}
-                  >
+                  <div className="top-detials-item" style={{ fontSize: '13px' }}>
                     <p>Order Note</p>
                     {edit ? (
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={selectRow.notes}
-                      />
+                      <input type="text" className="form-control" value={selectRow.notes} />
                     ) : (
                       <p>{selectRow.notes}</p>
                     )}
@@ -666,15 +609,13 @@ export default function SalesList(props: any) {
                     className="mr-right"
                     onClick={() => {
                       handlePrint();
-                    }}
-                  >
+                    }}>
                     Print Recipt
                   </Button>
                   <Button
                     onClick={() => {
                       handlePrint2();
-                    }}
-                  >
+                    }}>
                     Print Invoice
                   </Button>
                 </div>
@@ -695,11 +636,7 @@ export default function SalesList(props: any) {
                         <div>{line.name}</div>
                         <div>
                           {edit ? (
-                            <input
-                              type="text"
-                              className="form-control"
-                              value={Number(line.qty)}
-                            />
+                            <input type="text" className="form-control" value={Number(line.qty)} />
                           ) : (
                             Number(line.qty)
                           )}
@@ -713,19 +650,12 @@ export default function SalesList(props: any) {
                       </div>
                     );
                   })}
-                  <div
-                    className="header-titles under_items"
-                    style={{ marginTop: "20px" }}
-                  >
+                  <div className="header-titles under_items" style={{ marginTop: '20px' }}>
                     <div></div>
                     <div>Total</div>
                     <div>
                       {edit ? (
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={selectRow.total_price}
-                        />
+                        <input type="text" className="form-control" value={selectRow.total_price} />
                       ) : (
                         selectRow.total_price
                       )}
@@ -744,8 +674,7 @@ export default function SalesList(props: any) {
               onClick={() => {
                 setShowViewPopUp(false);
                 setEdit(false);
-              }}
-            >
+              }}>
               Save
             </Button>
           )}
@@ -753,8 +682,7 @@ export default function SalesList(props: any) {
             onClick={() => {
               setEdit(false);
               setShowViewPopUp(false);
-            }}
-          >
+            }}>
             Cancel
           </Button>
         </DialogActions>
@@ -763,18 +691,17 @@ export default function SalesList(props: any) {
   );
 }
 export async function getServerSideProps(context: any) {
-  const parsedCookies = cookie.parse(context.req.headers.cookie || "[]");
+  const parsedCookies = cookie.parse(context.req.headers.cookie || '[]');
   var _isOk = true,
     _rule = true;
   //check page params
   var shopId = context.query.id;
-  if (shopId == undefined)
-    return { redirect: { permanent: false, destination: "/page403" } };
+  if (shopId == undefined) return { redirect: { permanent: false, destination: '/page403' } };
 
   //check user permissions
   var _userRules = {};
   await verifayTokens(
-    { headers: { authorization: "Bearer " + parsedCookies.tokend } },
+    { headers: { authorization: 'Bearer ' + parsedCookies.tokend } },
     (repo: ITokenVerfy) => {
       _isOk = repo.status;
 
@@ -784,7 +711,7 @@ export async function getServerSideProps(context: any) {
         if (
           _rules[-2] != undefined &&
           _rules[-2][0].stuff != undefined &&
-          _rules[-2][0].stuff == "owner"
+          _rules[-2][0].stuff == 'owner'
         ) {
           _rule = true;
           _userRules = {
@@ -794,19 +721,17 @@ export async function getServerSideProps(context: any) {
             hasInsert: true,
           };
         } else if (_rules[shopId] != undefined) {
-          var _stuf = "";
+          var _stuf = '';
           _rules[shopId].forEach((dd: any) => (_stuf += dd.stuff));
-          const { userRules, hasPermission } = hasPermissions(_stuf, "sales");
+          const { userRules, hasPermission } = hasPermissions(_stuf, 'sales');
           _rule = hasPermission;
           _userRules = userRules;
         } else _rule = false;
       }
     }
   );
-  if (!_isOk)
-    return { redirect: { permanent: false, destination: "/user/login" } };
-  if (!_rule)
-    return { redirect: { permanent: false, destination: "/page403" } };
+  if (!_isOk) return { redirect: { permanent: false, destination: '/user/auth' } };
+  if (!_rule) return { redirect: { permanent: false, destination: '/page403' } };
   return {
     props: { shopId: context.query.id, rules: _userRules },
   };

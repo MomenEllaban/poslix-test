@@ -1,15 +1,10 @@
-import type { NextPage } from "next";
-import Image from "next/image";
-import Table from "react-bootstrap/Table";
-import { AdminLayout } from "@layout";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import Spinner from "react-bootstrap/Spinner";
-import {
-  faTrash,
-  faPenToSquare,
-  faPlus,
-  faEye,
-} from "@fortawesome/free-solid-svg-icons";
+import type { NextPage } from 'next';
+import Image from 'next/image';
+import Table from 'react-bootstrap/Table';
+import { AdminLayout } from '@layout';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import Spinner from 'react-bootstrap/Spinner';
+import { faTrash, faPenToSquare, faPlus, faEye } from '@fortawesome/free-solid-svg-icons';
 import {
   DataGrid,
   GridColDef,
@@ -17,40 +12,31 @@ import {
   GridToolbarColumnsButton,
   GridToolbarContainer,
   GridToolbarExport,
-} from "@mui/x-data-grid";
-import { Button, ButtonGroup, Card } from "react-bootstrap";
-import React, { useState, useEffect } from "react";
-import { apiFetchCtr } from "../../../../libs/dbUtils";
-import { useRouter } from "next/router";
-import AlertDialog from "src/components/utils/AlertDialog";
-import { redirectToLogin } from "../../../../libs/loginlib";
-import {
-  ILocationSettings,
-  IPageRules,
-  ITokenVerfy,
-  ITransferItem,
-} from "@models/common-model";
-import {
-  hasPermissions,
-  keyValueRules,
-  verifayTokens,
-} from "src/pages/api/checkUtils";
-import * as cookie from "cookie";
-import ShowPriceListModal from "src/components/dashboard/modal/ShowPriceListModal";
-import { Toastify } from "src/libs/allToasts";
-import { ToastContainer } from "react-toastify";
-import Transfermodal from "../../../../components/pos/modals/Transfermodal";
+} from '@mui/x-data-grid';
+import { Button, ButtonGroup, Card } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { apiFetchCtr } from '../../../../libs/dbUtils';
+import { useRouter } from 'next/router';
+import AlertDialog from 'src/components/utils/AlertDialog';
+import { redirectToLogin } from '../../../../libs/loginlib';
+import { ILocationSettings, IPageRules, ITokenVerfy, ITransferItem } from '@models/common-model';
+import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/checkUtils';
+import * as cookie from 'cookie';
+import ShowPriceListModal from 'src/components/dashboard/modal/ShowPriceListModal';
+import { Toastify } from 'src/libs/allToasts';
+import { ToastContainer } from 'react-toastify';
+import Transfermodal from '../../../../components/pos/modals/Transfermodal';
 const Product: NextPage = (probs: any) => {
   const { shopId, rules } = probs;
   const myLoader = (img: any) => img.src;
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
     value: 0,
-    label: "",
+    label: '',
     currency_decimal_places: 0,
-    currency_code: "",
+    currency_code: '',
     currency_id: 0,
     currency_rate: 1,
-    currency_symbol: "",
+    currency_symbol: '',
   });
   const router = useRouter();
   const [products, setProducts] = useState<
@@ -58,18 +44,18 @@ const Product: NextPage = (probs: any) => {
   >([]);
   const [show, setShow] = useState(false);
   const [selectId, setSelectId] = useState(0);
-  const [type, setType] = useState("");
+  const [type, setType] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isOpenPriceDialog, setIsOpenPriceDialog] = useState(false);
 
   async function initDataPage() {
     const { success, data } = await apiFetchCtr({
-      fetch: "products",
-      subType: "getProducts",
+      fetch: 'products',
+      subType: 'getProducts',
       shopId,
     });
     if (!success) {
-      Toastify("error", "Somthing wrong!!, try agian");
+      Toastify('error', 'Somthing wrong!!, try agian');
       return;
     }
     setProducts(data.products);
@@ -77,7 +63,7 @@ const Product: NextPage = (probs: any) => {
   }
 
   useEffect(() => {
-    var _locs = JSON.parse(localStorage.getItem("userlocs") || "[]");
+    var _locs = JSON.parse(localStorage.getItem('userlocs') || '[]');
     if (_locs.toString().length > 10)
       setLocationSettings(
         _locs[
@@ -86,20 +72,20 @@ const Product: NextPage = (probs: any) => {
           })
         ]
       );
-    else alert("errorr location settings");
+    else alert('errorr location settings');
     initDataPage();
   }, [router.asPath]);
 
   const [customerIsModal, setCustomerIsModal] = useState<boolean>(false);
   const customerModalHandler = (trans: ITransferItem) => {
     setCustomerIsModal(false);
-    setTransferList(prev => prev.concat(trans));
+    setTransferList((prev) => prev.concat(trans));
 
     // initDataPage();
   };
 
   const handleClick = (index: number) => {
-    if (products[index].type != "package" && products[index].qty > 0) {
+    if (products[index].type != 'package' && products[index].qty > 0) {
       setSelectId(products[index].id);
       setType(products[index].type);
       setIsOpenPriceDialog(true);
@@ -115,26 +101,41 @@ const Product: NextPage = (probs: any) => {
         setProducts(_data);
       }
     }
-    if (msg.length > 0) Toastify(result ? "success" : "error", msg);
+    if (msg.length > 0) Toastify(result ? 'success' : 'error', msg);
     setShow(false);
   };
 
-  const [transferList, setTransferList] = useState<ITransferItem[]>([])
+  const [transferList, setTransferList] = useState<ITransferItem[]>([]);
 
   const columns: GridColDef[] = [
-    { field: "id", headerName: "#", minWidth: 50 },
-    { field: "date", headerName: "Date", flex: 1 },
-    { field: "refNo", headerName: "Refrence No", flex: 1 },
-    { field: "status", headerName: "Status", flex: 1 },
-    { field: "loctionFrom", headerName: "Loction From", flex: 1 },
-    { field: "loctionTo", headerName: "Loction To", flex: 1 },
-    { field: "name", headerName: "Product", flex: 1, valueGetter: params => params.row.product.name },
-    { field: "qty", headerName: "Quantity", flex: 1,valueGetter: params => params.row.product.qty },
-    { field: "totalPrice", headerName: "Total Price", flex: 1, valueGetter: params => params.row.product.totalPrice},
+    { field: 'id', headerName: '#', minWidth: 50 },
+    { field: 'date', headerName: 'Date', flex: 1 },
+    { field: 'refNo', headerName: 'Refrence No', flex: 1 },
+    { field: 'status', headerName: 'Status', flex: 1 },
+    { field: 'loctionFrom', headerName: 'Loction From', flex: 1 },
+    { field: 'loctionTo', headerName: 'Loction To', flex: 1 },
+    {
+      field: 'name',
+      headerName: 'Product',
+      flex: 1,
+      valueGetter: (params) => params.row.product.name,
+    },
+    {
+      field: 'qty',
+      headerName: 'Quantity',
+      flex: 1,
+      valueGetter: (params) => params.row.product.qty,
+    },
+    {
+      field: 'totalPrice',
+      headerName: 'Total Price',
+      flex: 1,
+      valueGetter: (params) => params.row.product.totalPrice,
+    },
 
     {
-      field: "action",
-      headerName: "Action ",
+      field: 'action',
+      headerName: 'Action ',
       sortable: false,
       disableExport: true,
       flex: 1,
@@ -146,8 +147,7 @@ const Product: NextPage = (probs: any) => {
                 onClick={(event) => {
                   // router.push('/shop/' + shopId + '/customers/edit/' + row.id)
                   event.stopPropagation();
-                }}
-              >
+                }}>
                 <FontAwesomeIcon icon={faPenToSquare} />
               </Button>
             )}
@@ -157,16 +157,14 @@ const Product: NextPage = (probs: any) => {
                   event.stopPropagation();
                   setSelectId(row.id);
                   setShow(true);
-                }}
-              >
+                }}>
                 <FontAwesomeIcon icon={faTrash} />
               </Button>
             )}
             <Button
               onClick={() => {
                 //   router.push("/shop/" + shopId + "/customers/" + row.id);
-              }}
-            >
+              }}>
               <FontAwesomeIcon icon={faEye} />
             </Button>
           </ButtonGroup>
@@ -192,8 +190,7 @@ const Product: NextPage = (probs: any) => {
           shopId={shopId}
           id={selectId}
           type="products"
-          subType="deleteProduct"
-        >
+          subType="deleteProduct">
           Are you Sure You Want Delete This Item ?
         </AlertDialog>
         {!isLoading && rules.hasInsert && (
@@ -202,9 +199,8 @@ const Product: NextPage = (probs: any) => {
               className="btn btn-primary p-3"
               onClick={() => {
                 setCustomerIsModal(true);
-              }}
-            >
-              <FontAwesomeIcon icon={faPlus} /> Add New Transfer{" "}
+              }}>
+              <FontAwesomeIcon icon={faPlus} /> Add New Transfer{' '}
             </button>
           </div>
         )}
@@ -214,11 +210,11 @@ const Product: NextPage = (probs: any) => {
             <DataGrid
               className="datagrid-style"
               sx={{
-                ".MuiDataGrid-columnSeparator": {
-                  display: "none",
+                '.MuiDataGrid-columnSeparator': {
+                  display: 'none',
                 },
-                "&.MuiDataGrid-root": {
-                  border: "none",
+                '&.MuiDataGrid-root': {
+                  border: 'none',
                 },
               }}
               rows={transferList}
@@ -236,7 +232,7 @@ const Product: NextPage = (probs: any) => {
       </AdminLayout>
       <Transfermodal
         shopId={shopId}
-        showType={"add"}
+        showType={'add'}
         userdata={{}}
         customers={{}}
         statusDialog={customerIsModal}
@@ -247,18 +243,17 @@ const Product: NextPage = (probs: any) => {
 };
 export default Product;
 export async function getServerSideProps(context: any) {
-  const parsedCookies = cookie.parse(context.req.headers.cookie || "[]");
+  const parsedCookies = cookie.parse(context.req.headers.cookie || '[]');
   var _isOk = true,
     _rule = true;
   //check page params
   var shopId = context.query.id;
-  if (shopId == undefined)
-    return { redirect: { permanent: false, destination: "/page403" } };
+  if (shopId == undefined) return { redirect: { permanent: false, destination: '/page403' } };
 
   //check user permissions
   var _userRules = {};
   await verifayTokens(
-    { headers: { authorization: "Bearer " + parsedCookies.tokend } },
+    { headers: { authorization: 'Bearer ' + parsedCookies.tokend } },
     (repo: ITokenVerfy) => {
       _isOk = repo.status;
 
@@ -268,7 +263,7 @@ export async function getServerSideProps(context: any) {
         if (
           _rules[-2] != undefined &&
           _rules[-2][0].stuff != undefined &&
-          _rules[-2][0].stuff == "owner"
+          _rules[-2][0].stuff == 'owner'
         ) {
           _rule = true;
           _userRules = {
@@ -278,23 +273,18 @@ export async function getServerSideProps(context: any) {
             hasInsert: true,
           };
         } else if (_rules[shopId] != undefined) {
-          var _stuf = "";
+          var _stuf = '';
           _rules[shopId].forEach((dd: any) => (_stuf += dd.stuff));
-          const { userRules, hasPermission } = hasPermissions(
-            _stuf,
-            "products"
-          );
+          const { userRules, hasPermission } = hasPermissions(_stuf, 'products');
           _rule = hasPermission;
           _userRules = userRules;
         } else _rule = false;
       }
     }
   );
-  console.log("_isOk22    ", _isOk);
-  if (!_isOk)
-    return { redirect: { permanent: false, destination: "/user/login" } };
-  if (!_rule)
-    return { redirect: { permanent: false, destination: "/page403" } };
+  console.log('_isOk22    ', _isOk);
+  if (!_isOk) return { redirect: { permanent: false, destination: '/user/auth' } };
+  if (!_rule) return { redirect: { permanent: false, destination: '/page403' } };
   return {
     props: { shopId: context.query.id, rules: _userRules },
   };

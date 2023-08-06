@@ -67,11 +67,7 @@ export default function AdminLayout({ children, shopId }: any) {
 
   return (
     <>
-      <Head>
-        <title>Poslix App</title>
-        <meta name="description" content="Poslix App" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+     
       <div ref={ref} className="position-absolute w-100" />
 
       <Sidebar

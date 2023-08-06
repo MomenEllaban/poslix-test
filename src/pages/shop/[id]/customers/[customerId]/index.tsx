@@ -1,18 +1,18 @@
-import type { NextPage } from 'next'
-import { AdminLayout } from '@layout'
+import type { NextPage } from 'next';
+import { AdminLayout } from '@layout';
 import Spinner from 'react-bootstrap/Spinner';
-import { Container, Row, Col, Tab, Tabs } from "react-bootstrap";
-import React, { useState, useEffect, useContext, Fragment, useMemo } from 'react'
-import { apiFetchCtr } from "../../../../../libs/dbUtils";
-import { useRouter } from 'next/router'
+import { Container, Row, Col, Tab, Tabs } from 'react-bootstrap';
+import React, { useState, useEffect, useContext, Fragment, useMemo } from 'react';
+import { apiFetchCtr } from '../../../../../libs/dbUtils';
+import { useRouter } from 'next/router';
 import { ILocationSettings, ITokenVerfy } from '@models/common-model';
 import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/checkUtils';
-import * as cookie from 'cookie'
+import * as cookie from 'cookie';
 import { Toastify } from 'src/libs/allToasts';
 import { ToastContainer } from 'react-toastify';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
-import { Pie } from "react-chartjs-2";
-import QRCode from "react-qr-code";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { Pie } from 'react-chartjs-2';
+import QRCode from 'react-qr-code';
 import {
   DataGrid,
   GridColDef,
@@ -23,8 +23,8 @@ import {
   GridToolbar,
   GridToolbarFilterButton,
   GridToolbarQuickFilter,
-} from "@mui/x-data-grid";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+} from '@mui/x-data-grid';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faTrash,
   faPenToSquare,
@@ -32,65 +32,64 @@ import {
   faEye,
   faCheck,
   faXmark,
-} from "@fortawesome/free-solid-svg-icons";
-import { Button, ButtonGroup } from "react-bootstrap";
-import SalesListTable from "src/components/dashboard/SalesListTable";
-import OrdersTable from "src/components/dashboard/OrdersTable";
+} from '@fortawesome/free-solid-svg-icons';
+import { Button, ButtonGroup } from 'react-bootstrap';
+import SalesListTable from 'src/components/dashboard/SalesListTable';
+import OrdersTable from 'src/components/dashboard/OrdersTable';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-
 const Customer: NextPage = (props: any) => {
   const { shopId, rules, customerId } = props;
-  const [key, setKey] = useState("profile");
+  const [key, setKey] = useState('profile');
   const [isOrder, setIsOrder] = useState(false);
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
     value: 0,
-    label: "",
+    label: '',
     currency_decimal_places: 0,
-    currency_code: "",
+    currency_code: '',
     currency_id: 0,
     currency_rate: 1,
-    currency_symbol: "",
+    currency_symbol: '',
   });
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const customerTemplate = {
     id: 0,
-    firstName: "",
-    lastName: "",
-    mobile: "",
-    addr1: "",
-    addr2: "",
-    city: "",
-    state: "",
-    country: "",
-    zipCode: "",
-    shipAddr: "",
+    firstName: '',
+    lastName: '',
+    mobile: '',
+    addr1: '',
+    addr2: '',
+    city: '',
+    state: '',
+    country: '',
+    zipCode: '',
+    shipAddr: '',
   };
   const [customerInfo, setCustomerInfo] = useState(customerTemplate);
 
   const data_bar = {
-    labels: ["Paid", "Unpaid", "Partial", "Canceled", "Draft"],
+    labels: ['Paid', 'Unpaid', 'Partial', 'Canceled', 'Draft'],
     datasets: [
       {
-        label: "# of Votes",
+        label: '# of Votes',
         data: [12, 19, 3, 5, 2, 3],
         backgroundColor: [
-          "rgba(255, 99, 132, 0.2)",
-          "rgba(54, 162, 235, 0.2)",
-          "rgba(255, 206, 86, 0.2)",
-          "rgba(75, 192, 192, 0.2)",
-          "rgba(153, 102, 255, 0.2)",
-          "rgba(255, 159, 64, 0.2)",
+          'rgba(255, 99, 132, 0.2)',
+          'rgba(54, 162, 235, 0.2)',
+          'rgba(255, 206, 86, 0.2)',
+          'rgba(75, 192, 192, 0.2)',
+          'rgba(153, 102, 255, 0.2)',
+          'rgba(255, 159, 64, 0.2)',
         ],
         borderColor: [
-          "rgba(255, 99, 132, 1)",
-          "rgba(54, 162, 235, 1)",
-          "rgba(255, 206, 86, 1)",
-          "rgba(75, 192, 192, 1)",
-          "rgba(153, 102, 255, 1)",
-          "rgba(255, 159, 64, 1)",
+          'rgba(255, 99, 132, 1)',
+          'rgba(54, 162, 235, 1)',
+          'rgba(255, 206, 86, 1)',
+          'rgba(75, 192, 192, 1)',
+          'rgba(153, 102, 255, 1)',
+          'rgba(255, 159, 64, 1)',
         ],
         borderWidth: 1,
       },
@@ -101,8 +100,8 @@ const Customer: NextPage = (props: any) => {
     setIsLoading(true);
     setCustomerInfo(customerTemplate);
     var result = await apiFetchCtr({
-      fetch: "customer",
-      subType: "getCustomerInfo",
+      fetch: 'customer',
+      subType: 'getCustomerInfo',
       theId,
       shopId,
     });
@@ -126,18 +125,18 @@ const Customer: NextPage = (props: any) => {
       setIsLoading(false);
       console.log(result.newdata[0].mobile);
     } else {
-      Toastify("error", "has error, Try Again...");
+      Toastify('error', 'has error, Try Again...');
     }
   }
 
   const columns: GridColDef[] = [
-    { field: "id", headerName: "#", minWidth: 50 },
-    { field: "customer_name", headerName: "Customer Name", flex: 1 },
-    { field: "sale_date", headerName: "Quotation Date", flex: 1 },
+    { field: 'id', headerName: '#', minWidth: 50 },
+    { field: 'customer_name', headerName: 'Customer Name', flex: 1 },
+    { field: 'sale_date', headerName: 'Quotation Date', flex: 1 },
     {
       flex: 1,
-      field: "status",
-      headerName: "Status",
+      field: 'status',
+      headerName: 'Status',
       renderCell: ({ row }: Partial<GridRowParams>) => {
         if (Number(+row.total_price - +row.amount) === 0) {
           return (
@@ -145,9 +144,7 @@ const Customer: NextPage = (props: any) => {
               <div className="sty_Accepted">Accepted</div>
             </>
           );
-        } else if (
-          Number(+row.total_price - +row.amount) === Number(row.total_price)
-        ) {
+        } else if (Number(+row.total_price - +row.amount) === Number(row.total_price)) {
           return (
             <>
               <div className="sty_Cancled">Cancled</div>
@@ -164,8 +161,8 @@ const Customer: NextPage = (props: any) => {
     },
     {
       flex: 1,
-      field: "action",
-      headerName: "Action ",
+      field: 'action',
+      headerName: 'Action ',
       filterable: false,
       sortable: false,
       disableExport: true,
@@ -175,38 +172,33 @@ const Customer: NextPage = (props: any) => {
             <Button
               onClick={() => {
                 console.log(row);
-              }}
-            >
+              }}>
               <FontAwesomeIcon icon={faPenToSquare} />
             </Button>
             {rules.hasDelete && (
               <Button
                 onClick={() => {
                   console.log(row);
-                }}
-              >
+                }}>
                 <FontAwesomeIcon icon={faTrash} />
               </Button>
             )}
             <Button
               onClick={() => {
                 console.log(row);
-              }}
-            >
+              }}>
               <FontAwesomeIcon icon={faEye} />
             </Button>
             <Button
               onClick={() => {
                 console.log(row);
-              }}
-            >
+              }}>
               <FontAwesomeIcon icon={faCheck} />
             </Button>
             <Button
               onClick={() => {
                 console.log(row);
-              }}
-            >
+              }}>
               <FontAwesomeIcon icon={faXmark} />
             </Button>
           </ButtonGroup>
@@ -219,8 +211,8 @@ const Customer: NextPage = (props: any) => {
   // init sales data
   async function initDataPage() {
     const { success, newdata } = await apiFetchCtr({
-      fetch: "transactions",
-      subType: "getSales",
+      fetch: 'transactions',
+      subType: 'getSales',
       shopId,
     });
     if (success) {
@@ -229,7 +221,7 @@ const Customer: NextPage = (props: any) => {
   }
 
   useEffect(() => {
-    var _locs = JSON.parse(localStorage.getItem("userlocs") || "[]");
+    var _locs = JSON.parse(localStorage.getItem('userlocs') || '[]');
     if (_locs.toString().length > 10)
       setLocationSettings(
         _locs[
@@ -238,12 +230,12 @@ const Customer: NextPage = (props: any) => {
           })
         ]
       );
-    else alert("errorr location settings");
+    else alert('errorr location settings');
     initDataPage();
-    const order = localStorage.getItem("orders");
+    const order = localStorage.getItem('orders');
     if (order !== null) {
       setIsOrder(JSON.parse(order));
-    } 
+    }
   }, [router.asPath]);
 
   function CustomToolbar() {
@@ -257,7 +249,7 @@ const Customer: NextPage = (props: any) => {
   }
 
   useEffect(() => {
-    var _locs = JSON.parse(localStorage.getItem("userlocs") || "[]");
+    var _locs = JSON.parse(localStorage.getItem('userlocs') || '[]');
     if (_locs.toString().length > 10)
       setLocationSettings(
         _locs[
@@ -266,7 +258,7 @@ const Customer: NextPage = (props: any) => {
           })
         ]
       );
-    else alert("errorr location settings");
+    else alert('errorr location settings');
     getCustomerInfo(customerId);
   }, [router.asPath]);
 
@@ -281,8 +273,7 @@ const Customer: NextPage = (props: any) => {
               id="controlled-tab-example"
               activeKey={key}
               onSelect={(k) => setKey(k)}
-              className="mb-3"
-            >
+              className="mb-3">
               <Tab eventKey="profile" title="Profile">
                 <Container fluid>
                   <Row>
@@ -315,49 +306,37 @@ const Customer: NextPage = (props: any) => {
                               <Container fluid>
                                 <Row>
                                   <Col xs={12}>
-                                    <h6 className="d-inline-block">
-                                      First Name:
-                                    </h6>{" "}
+                                    <h6 className="d-inline-block">First Name:</h6>{' '}
                                     {customerInfo.firstName}
                                   </Col>
                                   <Col xs={12}>
-                                    <h6 className="d-inline-block">
-                                      Last Name:
-                                    </h6>{" "}
+                                    <h6 className="d-inline-block">Last Name:</h6>{' '}
                                     {customerInfo.lastName}
                                   </Col>
                                   <Col xs={12}>
-                                    <h6 className="d-inline-block">City:</h6>{" "}
-                                    {customerInfo.city}
+                                    <h6 className="d-inline-block">City:</h6> {customerInfo.city}
                                   </Col>
                                   <Col xs={12}>
-                                    <h6 className="d-inline-block">State:</h6>{" "}
-                                    {customerInfo.state}
+                                    <h6 className="d-inline-block">State:</h6> {customerInfo.state}
                                   </Col>
                                   <Col xs={12}>
-                                    <h6 className="d-inline-block">
-                                      Address 1:
-                                    </h6>{" "}
+                                    <h6 className="d-inline-block">Address 1:</h6>{' '}
                                     {customerInfo.addr1}
                                   </Col>
                                   <Col xs={12}>
-                                    <h6 className="d-inline-block">
-                                      Address 2:
-                                    </h6>{" "}
+                                    <h6 className="d-inline-block">Address 2:</h6>{' '}
                                     {customerInfo.addr2}
                                   </Col>
                                   <Col xs={12}>
-                                    <h6 className="d-inline-block">zipCode:</h6>{" "}
+                                    <h6 className="d-inline-block">zipCode:</h6>{' '}
                                     {customerInfo.zipCode}
                                   </Col>
                                   <Col xs={12}>
-                                    <h6 className="d-inline-block">country:</h6>{" "}
+                                    <h6 className="d-inline-block">country:</h6>{' '}
                                     {customerInfo.country}
                                   </Col>
                                   <Col xs={12}>
-                                    <h6 className="d-inline-block">
-                                      shipAddr:
-                                    </h6>{" "}
+                                    <h6 className="d-inline-block">shipAddr:</h6>{' '}
                                     {customerInfo.shipAddr}
                                   </Col>
                                 </Row>
@@ -413,11 +392,11 @@ const Customer: NextPage = (props: any) => {
                   <DataGrid
                     className="datagrid-style"
                     sx={{
-                      ".MuiDataGrid-columnSeparator": {
-                        display: "none",
+                      '.MuiDataGrid-columnSeparator': {
+                        display: 'none',
                       },
-                      "&.MuiDataGrid-root": {
-                        border: "none",
+                      '&.MuiDataGrid-root': {
+                        border: 'none',
                       },
                     }}
                     rows={sales}
@@ -432,11 +411,13 @@ const Customer: NextPage = (props: any) => {
                 </div>
               </Tab>
               <Tab eventKey="Sales" title="Sales">
-                <SalesListTable shopId={shopId} rules={rules}/>
+                <SalesListTable shopId={shopId} rules={rules} />
               </Tab>
-              {isOrder && <Tab eventKey="Orders" title="Orders">
-                <OrdersTable shopId={shopId} rules={rules}/>
-              </Tab>}
+              {isOrder && (
+                <Tab eventKey="Orders" title="Orders">
+                  <OrdersTable shopId={shopId} rules={rules} />
+                </Tab>
+              )}
               <Tab eventKey="loyaltycard" title="Loyalty card">
                 <div className="card">
                   <div className="card-body">
@@ -446,62 +427,21 @@ const Customer: NextPage = (props: any) => {
                       </header>
 
                       <figure className="punchcard">
-                        <div
-                          className="punches"
-                          aria-labelledby="punchcard-summary"
-                        >
-                          <span
-                            className="punch punched"
-                            title="Punched"
-                          ></span>
-                          <span
-                            className="punch punched"
-                            title="Punched"
-                          ></span>
-                          <span
-                            className="punch punched"
-                            title="Punched"
-                          ></span>
-                          <span
-                            className="punch not-punched"
-                            title="Not Punched"
-                          ></span>
-                          <span
-                            className="punch not-punched"
-                            title="Not Punched"
-                          ></span>
-                          <span
-                            className="punch not-punched"
-                            title="Not Punched"
-                          ></span>
-                          <span
-                            className="punch not-punched"
-                            title="Not Punched"
-                          ></span>
-                          <span
-                            className="punch not-punched"
-                            title="Not Punched"
-                          ></span>
-                          <span
-                            className="punch not-punched"
-                            title="Not Punched"
-                          ></span>
-                          <span
-                            className="punch not-punched"
-                            title="Not Punched"
-                          ></span>
-                          <span
-                            className="punch not-punched"
-                            title="Not Punched"
-                          ></span>
-                          <span
-                            className="punch not-punched"
-                            title="Not Punched"
-                          ></span>
+                        <div className="punches" aria-labelledby="punchcard-summary">
+                          <span className="punch punched" title="Punched"></span>
+                          <span className="punch punched" title="Punched"></span>
+                          <span className="punch punched" title="Punched"></span>
+                          <span className="punch not-punched" title="Not Punched"></span>
+                          <span className="punch not-punched" title="Not Punched"></span>
+                          <span className="punch not-punched" title="Not Punched"></span>
+                          <span className="punch not-punched" title="Not Punched"></span>
+                          <span className="punch not-punched" title="Not Punched"></span>
+                          <span className="punch not-punched" title="Not Punched"></span>
+                          <span className="punch not-punched" title="Not Punched"></span>
+                          <span className="punch not-punched" title="Not Punched"></span>
+                          <span className="punch not-punched" title="Not Punched"></span>
                         </div>
-                        <figcaption id="punchcard-summary">
-                          3 punched out of 12 total
-                        </figcaption>
+                        <figcaption id="punchcard-summary">3 punched out of 12 total</figcaption>
                       </figure>
 
                       <footer>
@@ -526,41 +466,44 @@ const Customer: NextPage = (props: any) => {
       </AdminLayout>
     </>
   );
-}
+};
 export default Customer;
 export async function getServerSideProps(context: any) {
   const parsedCookies = cookie.parse(context.req.headers.cookie || '[]');
-  var _isOk = true, _rule = true;
+  var _isOk = true,
+    _rule = true;
   var customerId = context.query.customerId;
   var shopId = context.query.id;
-  if (shopId == undefined)
-    return { redirect: { permanent: false, destination: "/page403" } }
-  var _userRules = {}
-  await verifayTokens({ headers: { authorization: 'Bearer ' + parsedCookies.tokend } }, (repo: ITokenVerfy) => {
-    _isOk = repo.status;
-    if (_isOk) {
-      var _rules = keyValueRules(repo.data.rules || []);
-      if (_rules[-2] != undefined && _rules[-2][0].stuff != undefined && _rules[-2][0].stuff == 'owner') {
-        _rule = true;
-        _userRules = { hasDelete: true, hasEdit: true, hasView: true, hasInsert: true };
+  if (shopId == undefined) return { redirect: { permanent: false, destination: '/page403' } };
+  var _userRules = {};
+  await verifayTokens(
+    { headers: { authorization: 'Bearer ' + parsedCookies.tokend } },
+    (repo: ITokenVerfy) => {
+      _isOk = repo.status;
+      if (_isOk) {
+        var _rules = keyValueRules(repo.data.rules || []);
+        if (
+          _rules[-2] != undefined &&
+          _rules[-2][0].stuff != undefined &&
+          _rules[-2][0].stuff == 'owner'
+        ) {
+          _rule = true;
+          _userRules = { hasDelete: true, hasEdit: true, hasView: true, hasInsert: true };
+        } else if (_rules[shopId] != undefined) {
+          var _stuf = '';
+          _rules[shopId].forEach((dd: any) => (_stuf += dd.stuff));
+          const { userRules, hasPermission } = hasPermissions(_stuf, 'customers');
+          _rule = hasPermission;
+          _userRules = userRules;
+        } else _rule = false;
       }
-      else if (_rules[shopId] != undefined) {
-        var _stuf = '';
-        _rules[shopId].forEach((dd: any) => _stuf += dd.stuff)
-        const { userRules, hasPermission } = hasPermissions(_stuf, 'customers')
-        _rule = hasPermission
-        _userRules = userRules
-      } else
-        _rule = false
     }
-
-  })
-  if (!_isOk) return { redirect: { permanent: false, destination: "/user/login" } }
-  if (!_rule) return { redirect: { permanent: false, destination: "/page403" } }
+  );
+  if (!_isOk) return { redirect: { permanent: false, destination: '/user/auth' } };
+  if (!_rule) return { redirect: { permanent: false, destination: '/page403' } };
 
   //status ok
   return {
     props: { shopId, rules: _userRules, customerId },
   };
-
 }
