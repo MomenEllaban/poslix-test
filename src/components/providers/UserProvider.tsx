@@ -1,9 +1,13 @@
+import { IUserBusiness } from '@models/auth.types';
 import { ILocationSettings, ITailoringExtra } from '@models/common-model';
 import { defaultInvoiceDetials } from '@models/data';
+import { ICustomResponse } from '@models/global.types';
+import { AxiosResponse } from 'axios';
 import { setCookie } from 'cookies-next';
 import { useEffect, useState } from 'react';
 import { UserContext } from 'src/context/UserContext';
-import { getDecodedToken, getToken } from 'src/libs/loginlib';
+import { getDecodedToken, getToken, getUserData } from 'src/libs/loginlib';
+import { api } from 'src/utils/app-api';
 import { ELocalStorageKeys } from 'src/utils/app-contants';
 
 const initialLocationState = {
@@ -38,13 +42,24 @@ export default function UserProvider({ children }) {
   };
 
   useEffect(() => {
-    const user = getDecodedToken();
-
+    const user = getUserData();
+    console.log('I am in the provider', user);
     if (user) {
       setCookie(ELocalStorageKeys.TOKEN_COOKIE, getToken() ?? '');
       setUser(user);
+      getBusiness();
     }
   }, []);
 
   return <UserContext.Provider value={userContext}>{children}</UserContext.Provider>;
+}
+
+async function getBusiness() {
+  const { data } = await api.get<any, AxiosResponse<ICustomResponse<IUserBusiness>>, any>(
+    '/business'
+  );
+
+  const { success, result } = data;
+  const { locations } = result;
+  localStorage.setItem(ELocalStorageKeys.USER_LOCATIONS, JSON.stringify(locations));
 }

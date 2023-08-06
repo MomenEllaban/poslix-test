@@ -1,12 +1,20 @@
+'use client';
 import jwtDecode from 'jwt-decode';
 import Router from 'next/router';
 import { ELocalStorageKeys } from 'src/utils/app-contants';
 import { ROUTES } from 'src/utils/app-routes';
 
+/**
+ * OLD METHOD : token holds all data
+ * NEW METHOD : token holds only token
+ *            : user holds all data
+ *
+ */
+
 export const getToken = () => {
   const ownToken = localStorage.getItem(ELocalStorageKeys.TOKEN);
-  if (ownToken != null) return ownToken;
-  else return '';
+  console.log('get token', ownToken);
+  return ownToken ?? '';
 };
 
 export const getUsername = () => {
@@ -38,7 +46,13 @@ export const getmyUsername = (qury: any): string => {
 
 export const getDecodedToken = () => {
   const token = getToken();
+
   if (token == '') return null;
   const _token = jwtDecode(token);
   return _token;
+};
+export const getUserData = () => {
+  const user = localStorage.getItem(ELocalStorageKeys.USER);
+  if (user == null) return null;
+  return JSON.parse(user);
 };

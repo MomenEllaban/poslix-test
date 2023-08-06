@@ -1,17 +1,15 @@
-import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import DarkModeToggle from '@layout/AdminLayout/DarkModeToggle';
 import { BusinessTypeData } from '@models/data';
 import clsx from 'clsx';
 import { deleteCookie, setCookie } from 'cookies-next';
+import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import { useContext, useEffect, useState } from 'react';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 import Select from 'react-select';
-import MainLabel from 'src/components/form/_atoms/MainLabel';
 import { darkModeContext } from 'src/context/DarkModeContext';
-import { UserContext, useUser } from 'src/context/UserContext';
+import { useUser } from 'src/context/UserContext';
 import { Toastify } from 'src/libs/allToasts';
 import {
   validateEmail,
@@ -19,12 +17,15 @@ import {
   validatePassword,
   validatePhoneNumber,
 } from 'src/libs/toolsUtils';
+import LoginView from 'src/modules/auth/_views/login-view';
 import { ELocalStorageKeys } from 'src/utils/app-contants';
+import { clearLocalStorageItems } from 'src/utils/clearLocalStorageItems';
+import { colourStyles } from 'src/utils/color.style';
 import { apiInsertCtr, apiLogin } from '../../../libs/dbUtils';
-import { colourStyles } from 'src/_utils/color.style';
-import { clearLocalStorageItems } from 'src/_utils/clearLocalStorageItems';
-
-
+import { api } from 'src/utils/app-api';
+import { AxiosResponse } from 'axios';
+import { ICustomResponse } from '@models/global.types';
+import { IUserBusiness } from '@models/auth.types';
 
 const initalInputState = {
   id: '',
@@ -40,13 +41,12 @@ const initalInputState = {
 export default function RegisterPage() {
   const router = useRouter();
 
-  const { setUser } = useUser();
+  const { user, setUser } = useUser();
   const { darkMode } = useContext(darkModeContext);
 
-  const [eye, seteye] = useState(true);
   const [phone, setPhone] = useState('');
   const [isStep1, setIsStep1] = useState(true);
-  const [pass, setpass] = useState('password');
+
   const [warName, setWarName] = useState(false);
   const [warnpass, setwarnpass] = useState(false);
   const [warPhone, setWarPhone] = useState(false);
@@ -60,6 +60,7 @@ export default function RegisterPage() {
   const [showLoginDialog, setShowLoginDialog] = useState(true);
   const [warBusinessName, setWarBusinessName] = useState(false);
   const [busniessType, setBusniessType] = useState(BusinessTypeData);
+  const { data: session } = useSession();
 
   const inputEvent = (event: any) => {
     const name = event.target.name;
@@ -92,7 +93,7 @@ export default function RegisterPage() {
       }
       if (inputs.mail.length < 3 || !validateEmail(inputs.mail)) {
         setwarnemail(true);
-      } else signin();
+      }
     } else {
       if (isStep1) {
         let isOK = true;
@@ -136,35 +137,6 @@ export default function RegisterPage() {
     }
   };
 
-  const Eye = () => {
-    if (pass == 'password') {
-      setpass('text');
-      seteye(false);
-    } else {
-      setpass('password');
-      seteye(true);
-    }
-  };
-
-  async function signin() {
-    if (isWaiting) return;
-    setIsWaiting(true);
-    setHasError(false);
-    const result = await apiLogin({ type: 'signin', data: inputs });
-    if (!result.success) {
-      setHasError(true);
-      setHasErrorMsg(result.msg);
-      setIsWaiting(false);
-      return;
-    }
-    const { newdata } = result;
-
-    setUserAuth(newdata, setUser);
-
-    if (newdata.user.level == 'user') router.push('/shop/' + newdata.myBusiness[0].value);
-    else router.push('/' + newdata.user.username + '/business');
-  }
-
   async function registeration(steps: string) {
     if (isWaiting) return;
     const { success, newdata, msg } = await apiInsertCtr({
@@ -187,7 +159,7 @@ export default function RegisterPage() {
       setSuccessMsg(true);
       setIsStep1(true);
       setShowLoginDialog(true);
-      signin();
+      // signin();
     }
   }
 
@@ -294,54 +266,7 @@ export default function RegisterPage() {
   };
   const RenderForm = () => {
     // a refactor but that behaviour is not the best one
-    if (showLoginDialog)
-      return (
-        <form onSubmit={submitForm}>
-          <div className="login-content">
-            <div className="input_text">
-              <MainLabel htmlFor="login-email-input">Enter your E-mail</MainLabel>
-              <input
-                id="login-email-input"
-                type="text"
-                placeholder="Enter Email"
-                name="mail"
-                value={inputs.mail}
-                onChange={inputEvent}
-              />
-              {warnemail && <p>Please enter a valid email address.</p>}
-            </div>
-            <div className="input_text position-relative">
-              <MainLabel htmlFor="login-password-input">Enter Password</MainLabel>
-              <input
-                id="login-password-input"
-                type={pass}
-                placeholder="Enter Password"
-                name="password"
-                value={inputs.password}
-                onChange={inputEvent}
-              />
-              <button
-                onClick={Eye}
-                className="border-0 position-absolute w-xs end-0 top-50 translate-middle-y">
-                <FontAwesomeIcon icon={eye ? faEye : faEyeSlash} />
-              </button>
-              {warnpass && (
-                <p>
-                  Password must contain at least one digit,lowercase letter,uppercase letter and be
-                  at least 6 characters
-                </p>
-              )}
-            </div>
-            <div className="recovery">
-              <p>Recovery Password</p>
-            </div>
-          </div>
-          <button className="btn-login mt-auto" type="submit">
-            {isWaiting && <img className="login-loading" src={'/images/loading.gif'} />}
-            Sign in
-          </button>
-        </form>
-      );
+    if (showLoginDialog) return <LoginView />;
 
     return (
       <div className="regformform">
@@ -349,6 +274,43 @@ export default function RegisterPage() {
       </div>
     );
   };
+
+  async function getBusiness(user) {
+    const { data } = await api.get<any, AxiosResponse<ICustomResponse<IUserBusiness>>, any>(
+      '/business'
+    );
+    console.log(data.result);
+    const { success, result } = data;
+    const { locations } = result;
+    localStorage.setItem(ELocalStorageKeys.USER_LOCATIONS, JSON.stringify(locations));
+    if (user.user_type === 'user') {
+      router.push('/shop/' + result[0].id);
+    } else router.push('/' + user.username + '/business');
+  }
+
+  useEffect(() => {
+    if (session) {
+      const { user } = session;
+      console.log(session);
+      console.log(user);
+      setCookie('tokend', user.token);
+      setUser(user);
+
+      localStorage.setItem('userdata', JSON.stringify(user));
+      localStorage.setItem(ELocalStorageKeys.TOKEN, user.token);
+      localStorage.setItem(
+        ELocalStorageKeys.FULL_NAME,
+        `${user.first_name} ${user.last_name ?? ''}`
+      );
+      localStorage.setItem(ELocalStorageKeys.USER_NAME, user.username);
+      localStorage.setItem(ELocalStorageKeys.LEVELS, user.user_type);
+      console.log(user.user_type);
+      getBusiness(user);
+
+      // if (newdata.user.level == 'user') router.push('/shop/' + newdata.myBusiness[0].value);
+      // else router.push('/' + newdata.user.username + '/business');
+    }
+  }, [session]);
 
   useEffect(() => {
     setSuccessMsg(false);
@@ -362,9 +324,20 @@ export default function RegisterPage() {
   }, [phone]);
 
   useEffect(() => {
-    deleteCookie('tokend');
-    clearLocalStorageItems();
+    // this is in logout only
+    // deleteCookie('tokend');
+    // clearLocalStorageItems();
   }, []);
+
+  // if the user already logged then redirect to another page
+
+  if (user) {
+    getBusiness(user);
+    // console.log(user, 'user in aaaaaaaaaaaaaa');
+    // if (user.user_type === 'user') {
+    //   router.push('/shop/' + result[0].id);
+    // } else router.push('/' + user.username + '/business');
+  }
 
   return (
     <div>

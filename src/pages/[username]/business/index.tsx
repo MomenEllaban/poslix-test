@@ -1,20 +1,24 @@
+import { faFolderOpen, faGear, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { OwnerAdminLayout } from '@layout';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { useContext, useEffect, useState } from 'react';
 import { Button, ButtonGroup, Card, Spinner, Table } from 'react-bootstrap';
 import { apiFetchCtr } from 'src/libs/dbUtils';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faFolderOpen, faGear } from '@fortawesome/free-solid-svg-icons';
-import { getmyUsername } from '../../../libs/loginlib';
-import { OwnerAdminLayout } from '@layout';
-import Link from 'next/link';
-import { verifayTokens } from 'src/pages/api/checkUtils';
-import { ITokenVerfy } from '@models/common-model';
-import * as cookie from 'cookie';
-import { useRouter } from 'next/router';
 
 import { darkModeContext } from 'src/context/DarkModeContext';
+import { useUser } from 'src/context/UserContext';
+import withAuth from 'src/HOCs/withAuth';
+import { useBusinessList } from 'src/services';
 
-const Mybusinesses = ({ username }: any) => {
+const MyBusinessesPage = () => {
   const { darkMode } = useContext(darkModeContext);
+  const { user } = useUser();
+  const { businessList, isLoading, error, refetch } = useBusinessList({
+    suspense: !user.username,
+  });
+  const username = user?.username;
 
   const router = useRouter();
   const [locations, setLocations] = useState<{ id: number; name: string }[]>([]);
@@ -64,125 +68,93 @@ const Mybusinesses = ({ username }: any) => {
   }, []);
 
   return (
-    <>
-      <OwnerAdminLayout>
-        <div className="row">
-          <div className="col-md-12">
-            <Link href={'/' + username + '/business/create'} className="btn btn-primary p-3 mb-3">
-              <FontAwesomeIcon icon={faPlus} /> Add New Business{' '}
-            </Link>
-            <Card className={darkMode ? 'dark-mode-body' : ''}>
-              <Card.Header
-                className={`p-3 bg-white ${darkMode ? 'dark-mode-body' : 'light-mode-body'}`}>
-                <h5>My Business</h5>
-              </Card.Header>
-              <Card.Body className={darkMode ? 'dark-mode-body rounded-3' : ''}>
-                {locations.length > 0 ? (
-                  <Table className="table table-hover rounded-3" responsive>
-                    <thead className="thead-dark rounded-3">
-                      <tr className={darkMode ? 'dark-mode-body rounded-3' : ''}>
-                        <th style={{ width: '6%' }}>#</th>
-                        <th>Name</th>
-                        <th>type</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {locations.map((busi: any, i: number) => {
-                        if (busi.isHead) {
-                          return (
-                            <tr key={i} style={{ background: '#e4edec' }}>
-                              <th scope="row">{busi.data.business_id}</th>
-                              <td>{busi.data.business_name}</td>
-                              <td>{busi.data.business_type}</td>
-                              <td>
-                                <ButtonGroup className="mb-2 m-buttons-style">
-                                  <Button
-                                    onClick={() => {
-                                      router.push(
-                                        '/' +
-                                          username +
-                                          '/business/' +
-                                          busi.data.business_id +
-                                          '/settings'
-                                      );
-                                    }}>
-                                    <FontAwesomeIcon icon={faGear} />
-                                  </Button>
-                                  <Button
-                                    onClick={() =>
-                                      router.push(
-                                        '/' +
-                                          username +
-                                          '/business/' +
-                                          busi.data.business_id +
-                                          '/add'
-                                      )
-                                    }>
-                                    <FontAwesomeIcon icon={faPlus} /> Add New Location
-                                  </Button>
-                                </ButtonGroup>
-                              </td>
-                            </tr>
-                          );
-                        }
+    <OwnerAdminLayout>
+      <div className="row">
+        <div className="col-md-12">
+          <Link href={'/' + username + '/business/create'} className="btn btn-primary p-3 mb-3">
+            <FontAwesomeIcon icon={faPlus} /> Add New Business{' '}
+          </Link>
+          <Card className={darkMode ? 'dark-mode-body' : ''}>
+            <Card.Header
+              className={`p-3 bg-white ${darkMode ? 'dark-mode-body' : 'light-mode-body'}`}>
+              <h5>My Business</h5>
+            </Card.Header>
+            <Card.Body className={darkMode ? 'dark-mode-body rounded-3' : ''}>
+              {locations.length > 0 ? (
+                <Table className="table table-hover rounded-3" responsive>
+                  <thead className="thead-dark rounded-3">
+                    <tr className={darkMode ? 'dark-mode-body rounded-3' : ''}>
+                      <th style={{ width: '6%' }}>#</th>
+                      <th>Name</th>
+                      <th>type</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {locations.map((busi: any, i: number) => {
+                      if (busi.isHead) {
                         return (
-                          <tr key={i}>
-                            <th scope="row"></th>
-                            <td>{busi.loc_name}</td>
-                            <td>{busi.state}</td>
+                          <tr key={i} style={{ background: '#e4edec' }}>
+                            <th scope="row">{busi.data.business_id}</th>
+                            <td>{busi.data.business_name}</td>
+                            <td>{busi.data.business_type}</td>
                             <td>
                               <ButtonGroup className="mb-2 m-buttons-style">
                                 <Button
                                   onClick={() => {
-                                    router.push('/shop/' + busi.loc_id + '/products/');
+                                    router.push(
+                                      '/' +
+                                        username +
+                                        '/business/' +
+                                        busi.data.business_id +
+                                        '/settings'
+                                    );
                                   }}>
-                                  <FontAwesomeIcon icon={faFolderOpen} />
+                                  <FontAwesomeIcon icon={faGear} />
+                                </Button>
+                                <Button
+                                  onClick={() =>
+                                    router.push(
+                                      '/' + username + '/business/' + busi.data.business_id + '/add'
+                                    )
+                                  }>
+                                  <FontAwesomeIcon icon={faPlus} /> Add New Location
                                 </Button>
                               </ButtonGroup>
                             </td>
                           </tr>
                         );
-                      })}
-                    </tbody>
-                  </Table>
-                ) : (
-                  <div className="d-flex justify-content-around">
-                    <Spinner animation="grow" />
-                  </div>
-                )}
-              </Card.Body>
-            </Card>
-          </div>
+                      }
+                      return (
+                        <tr key={i}>
+                          <th scope="row"></th>
+                          <td>{busi.loc_name}</td>
+                          <td>{busi.state}</td>
+                          <td>
+                            <ButtonGroup className="mb-2 m-buttons-style">
+                              <Button
+                                onClick={() => {
+                                  router.push('/shop/' + busi.loc_id + '/products/');
+                                }}>
+                                <FontAwesomeIcon icon={faFolderOpen} />
+                              </Button>
+                            </ButtonGroup>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </Table>
+              ) : (
+                <div className="d-flex justify-content-around">
+                  <Spinner animation="grow" />
+                </div>
+              )}
+            </Card.Body>
+          </Card>
         </div>
-      </OwnerAdminLayout>
-    </>
+      </div>
+    </OwnerAdminLayout>
   );
 };
-export default Mybusinesses;
-export async function getServerSideProps(context: any) {
-  if (context.query.username == undefined) {
-    return {
-      redirect: {
-        permanent: false,
-        destination: '/user/auth',
-      },
-    };
-  }
-  //check token
-  let _isOk = true;
-  const parsedCookies = cookie.parse(context.req.headers.cookie || '[]');
-  await verifayTokens(
-    { headers: { authorization: 'Bearer ' + parsedCookies.tokend } },
-    (repo: ITokenVerfy) => {
-      _isOk = repo.status;
-    }
-  );
-  if (!_isOk) return { redirect: { permanent: false, destination: '/user/auth' } };
-  //end
-
-  let username = getmyUsername(context.query);
-  return {
-    props: { username },
-  };
-}
+export default withAuth(MyBusinessesPage);

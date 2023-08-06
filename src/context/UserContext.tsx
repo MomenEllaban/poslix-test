@@ -1,13 +1,14 @@
+import { IUser } from '@models/auth.types';
 import { ILocationSettings, ITailoringExtra, IinvoiceDetails } from '@models/common-model';
 import { createContext, useContext } from 'react';
 
 export const UserContext = createContext({
   user: {
-    id: '',
+    id: 0,
     level: '',
     locs: [],
-  },
-  setUser: (user: any) => {},
+  } as any as IUser,
+  setUser: (user: IUser) => {},
   locationSettings: {
     value: 0,
     label: '',

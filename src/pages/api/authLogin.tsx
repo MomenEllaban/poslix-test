@@ -44,6 +44,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         [data.mail, data.password]
       )
       .then((rows: any) => {
+        console.log('ROWS==>', rows);
         if (rows[0].length > 0) {
           _userStuffs = rows[0];
         } else {
@@ -51,14 +52,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         }
       })
       .catch((err: QueryError) => {
+        console.log(err);
         returnWrong(401, con, res);
       });
 
     if (_userStuffs != null) {
+      console.log('USERS ===>', _userStuffs);
       _user = _userStuffs[0];
       const isOwner = _user.user_type == 'owner';
       const _finalRules: any = [];
-
       // get locations
       await con
         .promise()

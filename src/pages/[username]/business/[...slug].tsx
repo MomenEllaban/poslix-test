@@ -251,7 +251,7 @@ export function getServerSideProps(context: any) {
   let username = getmyUsername(context.query);
   if (username == undefined || username == '0') okUsername = false;
 
-  if (!okUsername) return { redirect: { permanent: false, destination: ROUTES.AUTH } };
+  // if (!okUsername) return { redirect: { permanent: false, destination: ROUTES.AUTH } };
 
   return {
     props: { username },
