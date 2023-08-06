@@ -5,11 +5,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useContext, useEffect, useState } from 'react';
 import { Button, ButtonGroup, Card, Spinner, Table } from 'react-bootstrap';
-import { apiFetchCtr } from 'src/libs/dbUtils';
-
+import withAuth from 'src/HOCs/withAuth';
 import { darkModeContext } from 'src/context/DarkModeContext';
 import { useUser } from 'src/context/UserContext';
-import withAuth from 'src/HOCs/withAuth';
+import { apiFetchCtr } from 'src/libs/dbUtils';
 import { useBusinessList } from 'src/services';
 
 const MyBusinessesPage = () => {
@@ -17,6 +16,9 @@ const MyBusinessesPage = () => {
   const { user } = useUser();
   const { businessList, isLoading, error, refetch } = useBusinessList({
     suspense: !user.username,
+    onSuccess(data, key, config) {
+      console.log(data);
+    },
   });
   const username = user?.username;
 
@@ -64,7 +66,7 @@ const MyBusinessesPage = () => {
     setLocations(_newdata);
   }
   useEffect(() => {
-    initDataPage();
+    // initDataPage();
   }, []);
 
   return (
