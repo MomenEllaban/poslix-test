@@ -10,6 +10,12 @@ $enable-negative-margins: true;
 
 @import '_custom';
 
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
+
+body {
+  font-family: 'Open Sans', sans-serif;
+}
+
 /* For WebKit based browsers (Google Chrome, Safari) */
 ::-webkit-scrollbar {
   width: 8px; /* Width of the scrollbar */
