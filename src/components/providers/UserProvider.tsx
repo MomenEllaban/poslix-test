@@ -6,7 +6,7 @@ import { AxiosResponse } from 'axios';
 import { setCookie } from 'cookies-next';
 import { useEffect, useState } from 'react';
 import { UserContext } from 'src/context/UserContext';
-import { getDecodedToken, getToken, getUserData } from 'src/libs/loginlib';
+import { getToken, getUserData } from 'src/libs/loginlib';
 import { api } from 'src/utils/app-api';
 import { ELocalStorageKeys } from 'src/utils/app-contants';
 

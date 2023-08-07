@@ -5,6 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Link from 'next/link';
 import { PropsWithChildren } from 'react';
 import { Dropdown, Nav, NavItem } from 'react-bootstrap';
+import { ROUTES } from 'src/utils/app-routes';
 
 type NavItemProps = {
   icon: IconDefinition;
@@ -48,7 +49,7 @@ export default function HeaderProfileNav() {
           </Link>
           <Dropdown.Divider />
 
-          <Link href="/user/auth" passHref legacyBehavior>
+          <Link href={ROUTES.AUTH} passHref legacyBehavior>
             <Dropdown.Item>
               <ProfileDropdownItem icon={faPowerOff}>Logout</ProfileDropdownItem>
             </Dropdown.Item>

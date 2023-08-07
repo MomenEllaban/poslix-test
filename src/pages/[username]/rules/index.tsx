@@ -19,6 +19,7 @@ import { IRoles } from '@models/common-model';
 import { verifayTokens } from 'src/pages/api/checkUtils';
 import { ITokenVerfy } from '@models/common-model';
 import * as cookie from 'cookie';
+import { ROUTES } from 'src/utils/app-routes';
 const Roles = ({ username }: any) => {
   const [stuffs, setStuffs] = useState<IRoles[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -140,7 +141,7 @@ export async function getServerSideProps(context: any) {
     return {
       redirect: {
         permanent: false,
-        destination: '/user/auth',
+        destination: ROUTES.AUTH,
       },
     };
   }
@@ -153,7 +154,7 @@ export async function getServerSideProps(context: any) {
       _isOk = repo.status;
     }
   );
-  if (!_isOk) return { redirect: { permanent: false, destination: '/user/auth' } };
+  if (!_isOk) return { redirect: { permanent: false, destination: ROUTES.AUTH } };
   //end
 
   let username = getmyUsername(context.query);

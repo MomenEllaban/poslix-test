@@ -10,6 +10,7 @@ import { ITokenVerfy, userDashboard } from '@models/common-model';
 import * as cookie from 'cookie';
 import { verifayTokens } from 'src/pages/api/checkUtils';
 import { ToastContainer } from 'react-toastify';
+import { ROUTES } from 'src/utils/app-routes';
 
 const Locations = ({ username }: any) => {
   const [users, setUsers] = useState<userDashboard[]>([]);
@@ -113,7 +114,7 @@ export async function getServerSideProps(context: any) {
     return {
       redirect: {
         permanent: false,
-        destination: '/user/auth',
+        destination: ROUTES.AUTH,
       },
     };
   }
@@ -126,7 +127,7 @@ export async function getServerSideProps(context: any) {
       _isOk = repo.status;
     }
   );
-  if (!_isOk) return { redirect: { permanent: false, destination: '/user/auth' } };
+  if (!_isOk) return { redirect: { permanent: false, destination: ROUTES.AUTH } };
   //end
 
   let username = getmyUsername(context.query);

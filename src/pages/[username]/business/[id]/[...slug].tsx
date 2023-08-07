@@ -1,6 +1,7 @@
-import { getMyShopId, getmyUsername } from 'src/libs/loginlib';
-import BusinessSettings from 'src/components/dashboard/BusinessSettings';
 import AddLocation from 'src/components/dashboard/AddLocation';
+import BusinessSettings from 'src/components/dashboard/BusinessSettings';
+import { getMyShopId, getmyUsername } from 'src/libs/loginlib';
+import { ROUTES } from 'src/utils/app-routes';
 
 const Locations = ({ username, businessId, pageType }: any) => {
   return (
@@ -30,7 +31,7 @@ export function getServerSideProps(context: any) {
   if (pageType != 'add' && pageType != 'settings') okSlug = false;
 
   if (!okUsername || !okBusinessId || !okSlug)
-    return { redirect: { permanent: false, destination: '/user/auth' } };
+    return { redirect: { permanent: false, destination: ROUTES.AUTH } };
 
   return {
     props: { username, businessId, pageType },
