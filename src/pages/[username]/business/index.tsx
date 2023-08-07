@@ -82,67 +82,65 @@ const MyBusinessesPage = () => {
               <h5>My Business</h5>
             </Card.Header>
             <Card.Body className={darkMode ? 'dark-mode-body rounded-3' : ''}>
-              {locations.length > 0 ? (
+              {businessList.length > 0 ? (
                 <Table className="table table-hover rounded-3" responsive>
                   <thead className="thead-dark rounded-3">
                     <tr className={darkMode ? 'dark-mode-body rounded-3' : ''}>
                       <th style={{ width: '6%' }}>#</th>
                       <th>Name</th>
-                      <th>type</th>
+                      <th className="text-center">type</th>
                       <th>Action</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {locations.map((busi: any, i: number) => {
-                      if (busi.isHead) {
-                        return (
-                          <tr key={i} style={{ background: '#e4edec' }}>
-                            <th scope="row">{busi.data.business_id}</th>
-                            <td>{busi.data.business_name}</td>
-                            <td>{busi.data.business_type}</td>
+                    {businessList.map((busi, i: number) => {
+                      return (
+                        <>
+                          <tr key={busi.id} style={{ background: '#e4edec' }}>
+                            <th scope="row">{busi.id}</th>
+
+                            <td>{busi.name}</td>
+                            <td className="text-center">{busi.type}</td>
                             <td>
                               <ButtonGroup className="mb-2 m-buttons-style">
                                 <Button
                                   onClick={() => {
                                     router.push(
-                                      '/' +
-                                        username +
-                                        '/business/' +
-                                        busi.data.business_id +
-                                        '/settings'
+                                      `/${username}/business/${busi.id}/locations/${busi.locations[0].location_id}/settings`
                                     );
                                   }}>
                                   <FontAwesomeIcon icon={faGear} />
                                 </Button>
                                 <Button
-                                  onClick={() =>
-                                    router.push(
-                                      '/' + username + '/business/' + busi.data.business_id + '/add'
-                                    )
-                                  }>
+                                  onClick={() => {
+                                    router.push(`/${username}/business/${busi.id}/settings`);
+                                  }}>
                                   <FontAwesomeIcon icon={faPlus} /> Add New Location
                                 </Button>
                               </ButtonGroup>
                             </td>
                           </tr>
-                        );
-                      }
-                      return (
-                        <tr key={i}>
-                          <th scope="row"></th>
-                          <td>{busi.loc_name}</td>
-                          <td>{busi.state}</td>
-                          <td>
-                            <ButtonGroup className="mb-2 m-buttons-style">
-                              <Button
-                                onClick={() => {
-                                  router.push('/shop/' + busi.loc_id + '/products/');
-                                }}>
-                                <FontAwesomeIcon icon={faFolderOpen} />
-                              </Button>
-                            </ButtonGroup>
-                          </td>
-                        </tr>
+                          {busi.locations.map((location, j) => {
+                            return (
+                              <tr key={location.location_id}>
+                                <th scope="row"></th>
+                                <td>{location.location_name}</td>
+                                <td className="text-center">. . .</td>
+
+                                <td>
+                                  <ButtonGroup className="mb-2 m-buttons-style">
+                                    <Button
+                                      onClick={() => {
+                                        router.push(`/shop/${location.location_id}/products/`);
+                                      }}>
+                                      <FontAwesomeIcon icon={faFolderOpen} />
+                                    </Button>
+                                  </ButtonGroup>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </>
                       );
                     })}
                   </tbody>
