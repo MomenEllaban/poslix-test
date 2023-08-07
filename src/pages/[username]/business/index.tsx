@@ -105,15 +105,13 @@ const MyBusinessesPage = () => {
                               <ButtonGroup className="mb-2 m-buttons-style">
                                 <Button
                                   onClick={() => {
-                                    router.push(
-                                      `/${username}/business/${busi.id}/locations/${busi.locations[0].location_id}/settings`
-                                    );
+                                    router.push(`/${username}/business/${busi.id}/settings`);
                                   }}>
                                   <FontAwesomeIcon icon={faGear} />
                                 </Button>
                                 <Button
                                   onClick={() => {
-                                    router.push(`/${username}/business/${busi.id}/settings`);
+                                    router.push(`/${username}/business/${busi.id}/add`);
                                   }}>
                                   <FontAwesomeIcon icon={faPlus} /> Add New Location
                                 </Button>
@@ -131,7 +129,7 @@ const MyBusinessesPage = () => {
                                   <ButtonGroup className="mb-2 m-buttons-style">
                                     <Button
                                       onClick={() => {
-                                        router.push(`/shop/${location.location_id}/products/`);
+                                        router.push(`/shop/${location.location_id}/products`);
                                       }}>
                                       <FontAwesomeIcon icon={faFolderOpen} />
                                     </Button>

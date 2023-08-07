@@ -1,16 +1,15 @@
-import { useEffect, useState } from "react";
-import { Button, ButtonGroup, Card, Spinner, Table } from 'react-bootstrap'
-import Tabs from 'react-bootstrap/Tabs';
-import Tab from 'react-bootstrap/Tab';
-import { apiFetchCtr, apiInsert, apiInsertCtr, apiUpdateCtr } from "src/libs/dbUtils";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faArrowAltCircleLeft, faEdit } from '@fortawesome/free-solid-svg-icons'
-import { redirectToLogin } from '../../libs/loginlib'
+import { faArrowAltCircleLeft, faEdit } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { OwnerAdminLayout } from "@layout";
-import Select from 'react-select';
-import { Toastify } from "src/libs/allToasts";
-import { ToastContainer } from 'react-toastify';
 import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import { Button, ButtonGroup, Card, Spinner, Table } from 'react-bootstrap';
+import Tab from 'react-bootstrap/Tab';
+import Tabs from 'react-bootstrap/Tabs';
+import Select from 'react-select';
+import { ToastContainer } from 'react-toastify';
+import { Toastify } from "src/libs/allToasts";
+import { apiFetchCtr, apiInsertCtr, apiUpdateCtr } from "src/libs/dbUtils";
 
 const BusinessSettings = ({ username, businessId }: any) => {
 
