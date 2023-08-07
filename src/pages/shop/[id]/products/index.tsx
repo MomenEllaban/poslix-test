@@ -39,6 +39,11 @@ import {
   useGridApiContext,
   useGridApiRef,
 } from '@mui/x-data-grid';
+import InputAdornment from '@mui/material/InputAdornment';
+import IconButton from '@mui/material/IconButton';
+import SearchIcon from '@mui/icons-material/Search';
+import Box from '@mui/material/Box';
+
 import { debounce } from '@mui/material/utils';
 import TextField from '@mui/material/TextField';
 import { Checkbox } from '@mui/material';
@@ -47,6 +52,7 @@ import * as XLSX from 'xlsx';
 
 /*MOHAMMED MAHER */
 import { darkModeContext } from '../../../../context/DarkModeContext';
+import { Margin } from '@mui/icons-material';
 const Product: NextPage = (probs: any) => {
   const { shopId, rules } = probs;
   const myLoader = (img: any) => img.src;
@@ -144,13 +150,15 @@ const Product: NextPage = (probs: any) => {
       headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       renderCell: ({ row }: Partial<GridRowParams>) => {
-        if(row.type == "single") return Number(row.sell_price).toFixed(locationSettings?.currency_decimal_places)
-        else return(
-          Number(row.min_price).toFixed(locationSettings?.currency_decimal_places)
-          + ' - ' +
-          Number(row.max_price).toFixed(locationSettings?.currency_decimal_places)
-        )
-      }
+        if (row.type == 'single')
+          return Number(row.sell_price).toFixed(locationSettings?.currency_decimal_places);
+        else
+          return (
+            Number(row.min_price).toFixed(locationSettings?.currency_decimal_places) +
+            ' - ' +
+            Number(row.max_price).toFixed(locationSettings?.currency_decimal_places)
+          );
+      },
     },
     // {
     //   field: "min_price",
@@ -415,7 +423,33 @@ const Product: NextPage = (probs: any) => {
               onClick={() => router.push('/shop/' + shopId + '/products/add')}>
               <FontAwesomeIcon icon={faPlus} /> Add New Product{' '}
             </button>
-            <TextField label="search name/sku" variant="filled" onChange={handleSearch} />
+            <TextField
+              id="input-with-icon-textfield"
+              label="Search name/sku"
+              variant="standard"
+              onChange={handleSearch}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                width: '70%',
+                borderTop: '1px solid #ccc', // Add border
+                // borderBottom: 'none',
+                borderRadius: '10px', // Add rounded corners
+                '& input': {
+                  textAlign: 'center', // Center text horizontally
+                  fontSize: '16px', // Adjust font size as needed
+                },
+                '& .Mui-focused': {
+                  backgroundColor: '#ffffff',
+                  // boxShadow: '0px 0px 5px rgba(0, 0, 0, 0.1)',
+                },
+              }}
+            />
           </div>
         )}
 
