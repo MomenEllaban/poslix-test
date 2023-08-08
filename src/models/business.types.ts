@@ -10,3 +10,17 @@ export interface ICurrency {
   created_at: any;
   updated_at: any;
 }
+
+export interface IBusinessLocationCreated {
+  id: number;
+  owner_id: number;
+  business_id: string;
+  currency_id: string;
+  state: string;
+
+  name: string;
+  decimal_places: string;
+
+  updated_at: string;
+  created_at: string;
+}
