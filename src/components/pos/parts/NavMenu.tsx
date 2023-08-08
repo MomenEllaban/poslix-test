@@ -53,9 +53,11 @@ const NavMenu: any = (probs: any) => {
               if (lang == en) {
                 localStorage.setItem('lang', 'ar');
                 setLang(ar);
+                document.querySelector('html').classList.add(styles.rtl);
               } else {
                 localStorage.setItem('lang', 'en');
                 setLang(en);
+                document.querySelector('html').classList.remove(styles.rtl);
               }
             }}>
             <i className="ri-global-fill"></i>{' '}
