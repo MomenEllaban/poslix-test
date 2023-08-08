@@ -45,7 +45,7 @@ export default function Sidebar(props: {
         }
       )}
       id="sidebar">
-      <div className="sidebar-brand d-none d-md-flex align-items-center justify-content-center bg-white mb-4">
+      <div className="sidebar-brand d-none d-md-flex align-items-center justify-content-center bg-light mb-4 w-50 h-75 text-center shadow-sm mb-3 m-auto">
         <img src={'/images/poslix-sm.png'} className={'logo-css-small'} />
         <img src={'/images/logo1.png'} className={'logo-css-big'} />
       </div>

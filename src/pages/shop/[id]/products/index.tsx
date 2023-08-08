@@ -53,7 +53,7 @@ import LocationModal from 'src/components/pos/modals/LocationModal';
 import * as XLSX from 'xlsx';
 import classNames from 'classnames';
 import styles from './table.module.css';
-
+import { Grid, Container } from '@mui/material';
 /*MOHAMMED MAHER */
 import { darkModeContext } from '../../../../context/DarkModeContext';
 import { Margin } from '@mui/icons-material';
@@ -302,23 +302,84 @@ const Product: NextPage = (probs: any) => {
     };
   };
   function CustomToolbar() {
+    const [isHovered, setIsHovered] = useState(false);
+
+    const divStyle = {
+      background: isHovered ? '#99CC66' : '#779933',
+      padding: '4px',
+      display: 'flex',
+      alignItems: 'center',
+      borderRadius: '12px',
+      marginRight: '0.5rem',
+      transition: 'background-color 0.3s',
+    };
     return (
       <GridToolbarContainer className="d-flex align-items-center">
-        <GridToolbarExport />
-        {/* mohamed elsayed */}
-        <MButton onClick={importFileClickHandler}>Import</MButton>
-        <input style={{ display: 'none' }} ref={fileRef} type="file" onChange={importFileHandler} />
-        {/* /////////// */}
-        <GridToolbarColumnsButton />
         <div
-          style={{ color: '#1976d2', cursor: 'pointer' }}
-          className={`${locations?.length > 1 && selectedItems.length > 0 ? 'pe-auto' : 'pe-none'}`}
+          className={styles.btnHover1}
+          style={{
+            background: '#05afa6',
+            padding: '4px',
+            display: 'flex',
+            alignItems: 'center',
+            borderRadius: '12px',
+            marginRight: '0.5rem',
+          }}>
+          <GridToolbarExport />
+        </div>
+        {/* mohamed elsayed */}
+        <MButton
+          className={styles.btnHover2}
+          onClick={importFileClickHandler}
+          style={{
+            borderRadius: '12px',
+            color: 'white',
+            backgroundColor: '#1976D2',
+            marginRight: '0.5rem',
+            padding: '8px',
+          }}>
+          Import
+        </MButton>
+        <input style={{ display: 'none' }} ref={fileRef} type="file" onChange={importFileHandler} />
+        <div
+          style={divStyle}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}>
+          <GridToolbarColumnsButton />
+        </div>
+        <div
+          style={{
+            color: 'white',
+            cursor: 'pointer',
+            padding: '10px',
+            display: 'flex',
+            alignItems: 'center',
+            borderRadius: '12px',
+            marginRight: '0.5rem',
+            background: 'green',
+          }}
+          className={classNames(
+            `${locations?.length > 1 && selectedItems.length > 0 ? 'pe-auto' : 'pe-none'}`,
+            styles.btnHover3
+          )}
           onClick={() => setLocationModal(true)}>
           SEND
         </div>
         <div
-          style={{ color: '#1976d2', cursor: 'pointer', marginLeft: '0.5rem' }}
-          className={`${locations?.length > 1 && selectedItems.length > 0 ? 'pe-auto' : 'pe-none'}`}
+          style={{
+            color: 'white',
+            cursor: 'pointer',
+            padding: '10px',
+            display: 'flex',
+            alignItems: 'center',
+            borderRadius: '12px',
+            marginRight: '0.5rem',
+            background: 'red',
+          }}
+          className={classNames(
+            `${locations?.length > 1 && selectedItems.length > 0 ? 'pe-auto' : 'pe-none'}`,
+            styles.btnHover4
+          )}
           onClick={() => setShowDeleteAll(true)}>
           DELETE
         </div>

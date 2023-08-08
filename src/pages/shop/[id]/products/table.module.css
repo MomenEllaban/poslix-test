@@ -23,3 +23,19 @@
 .idCell:hover {
   color: #1e80b5;
 }
+
+.btnHover1:hover {
+  background-color: #8ed6cf !important;
+}
+
+.btnHover2:hover {
+  background-color: rgb(45, 65, 132) !important;
+}
+
+.btnHover3:hover {
+  background-color: rgb(100, 232, 100) !important;
+}
+
+.btnHover4:hover {
+  background-color: rgb(237, 102, 102) !important;
+}
