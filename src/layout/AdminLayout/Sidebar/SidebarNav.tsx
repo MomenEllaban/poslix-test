@@ -83,7 +83,7 @@ const SidebarNavGroupToggle = (props: SidebarNavGroupToggleProps) => {
       )}
       onClick={decoratedOnClick}>
       {/* <FontAwesomeIcon className="nav-icon ms-n3" icon={icon} /> */}
-      {iconMapping[icon]}
+      {iconMapping[icon as any]}
       {children}
       <div className="nav-chevron ms-auto text-end">
         <FontAwesomeIcon size="xs" icon={faChevronUp} />
@@ -93,7 +93,7 @@ const SidebarNavGroupToggle = (props: SidebarNavGroupToggleProps) => {
 };
 
 type SidebarNavGroupProps = {
-  toggleIcon: IconDefinition;
+  toggleIcon: any;
   toggleText: string;
 } & PropsWithChildren;
 
@@ -219,7 +219,7 @@ export function SidebarNav(probs: any): any {
           permiss.hasSupplier ||
           permiss.hasExpenses ||
           permiss.hasTailoring) && (
-          <SidebarNavGroup toggleIcon="MdOutlineLocalGroceryStore" toggleText="Inventory">
+          <SidebarNavGroup toggleIcon={MdOutlineLocalGroceryStore as any} toggleText="Inventory">
             <MdOutlineLocalGroceryStore className="nav-icon ms-n3" />
             <MdOutlineLocalGroceryStore />
             {permiss.hasProducts && (

@@ -1,7 +1,7 @@
 import { IUserBusiness } from '@models/auth.types';
 import { type ICustomResponse } from '@models/global.types';
 import { type AxiosResponse } from 'axios';
-import { api } from 'src/utils/app-api';
+import api from 'src/utils/app-api';
 import useSWR, { type SWRConfiguration } from 'swr';
 type TServiceResponse<T> = AxiosResponse<ICustomResponse<T>>;
 
@@ -12,6 +12,7 @@ interface ICreateBusinessLocationPayload {
   decimal: number;
   business_id: number | string;
 }
+
 const businessService = {
   getBusinesses: async () =>
     api.get<any, TServiceResponse<IUserBusiness[]>, any>('/business').then((data) => data.data),

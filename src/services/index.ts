@@ -2,8 +2,9 @@ import { IUserBusiness } from '@models/auth.types';
 import { ICurrency } from '@models/business.types';
 import { type ICustomResponse } from '@models/global.types';
 import { type AxiosResponse } from 'axios';
-import { api } from 'src/utils/app-api';
+import api from 'src/utils/app-api';
 import useSWR, { type SWRConfiguration } from 'swr';
+
 type TServiceResponse<T> = AxiosResponse<ICustomResponse<T>>;
 
 const services = {

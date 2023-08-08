@@ -1,20 +1,73 @@
 import axios from 'axios';
-import { ELocalStorageKeys } from './app-contants';
+import { getToken, logout, refreshToken } from 'src/libs/loginlib';
 
-export const api = axios.create({
+const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+});
+export const _guestApi = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_BASE,
 });
 
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(api(token));
+    }
+  });
+
+  failedQueue = [];
+};
+
+// TO be refactored
 api.interceptors.request.use(
   async (config) => {
-    const token = localStorage.getItem(ELocalStorageKeys.TOKEN);
+    const token = await getToken();
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    logout();
+    return Promise.reject(error);
+  }
 );
+
+const responseInterceptor = api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalConfig = error.config;
+
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      if (!isRefreshing) {
+        isRefreshing = true;
+        try {
+          const newToken = await refreshToken();
+          isRefreshing = false;
+          api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+          processQueue(null, newToken);
+        } catch (refreshError) {
+          isRefreshing = false;
+          processQueue(refreshError, null);
+        }
+      }
+
+      const retryOriginalRequest = new Promise((resolve, reject) => {
+        failedQueue.push({ resolve, reject });
+      });
+
+      return retryOriginalRequest;
+    }
+
+    return Promise.reject(error);
+  }
+);
+
+export default api;

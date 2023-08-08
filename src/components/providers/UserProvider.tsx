@@ -7,7 +7,7 @@ import { setCookie } from 'cookies-next';
 import { useEffect, useState } from 'react';
 import { UserContext } from 'src/context/UserContext';
 import { getToken, getUserData } from 'src/libs/loginlib';
-import { api } from 'src/utils/app-api';
+import api from 'src/utils/app-api';
 import { ELocalStorageKeys } from 'src/utils/app-contants';
 
 const initialLocationState = {

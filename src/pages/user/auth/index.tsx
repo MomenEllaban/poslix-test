@@ -22,7 +22,7 @@ import { ELocalStorageKeys } from 'src/utils/app-contants';
 import { clearLocalStorageItems } from 'src/utils/clearLocalStorageItems';
 import { colourStyles } from 'src/utils/color.style';
 import { apiInsertCtr, apiLogin } from '../../../libs/dbUtils';
-import { api } from 'src/utils/app-api';
+import api from 'src/utils/app-api';
 import { AxiosResponse } from 'axios';
 import { ICustomResponse } from '@models/global.types';
 import { IUserBusiness } from '@models/auth.types';

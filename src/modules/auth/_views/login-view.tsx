@@ -1,18 +1,17 @@
-import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { joiResolver } from '@hookform/resolvers/joi';
+import { signIn } from 'next-auth/react';
 import Image from 'next/image';
 import { useState } from 'react';
 import { Button, Form, InputGroup } from 'react-bootstrap';
-import { joiResolver } from '@hookform/resolvers/joi';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { MdVisibility, MdVisibilityOff } from 'react-icons/md';
 import loginSchema from '../login.schema';
-import { signIn } from 'next-auth/react';
 
 type Inputs = {
   email: string;
   password: string;
 };
+
 const initState = {
   email: '',
   password: '',
@@ -37,6 +36,7 @@ export default function LoginView() {
     setLoading(true);
     signIn('credentials', { redirect: false, ...data }).finally(() => {
       setLoading(false);
+      window.location.href = '/';
     });
   };
   const onError = (errors: any, e: any) => console.log(errors, e);
