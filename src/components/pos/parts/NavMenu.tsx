@@ -5,8 +5,21 @@ import Router from 'next/router';
 import en from 'en.json';
 import ar from 'ar.json';
 import { ROUTES } from 'src/utils/app-routes';
+import styles from './NavMenu.module.css';
+import classNames from 'classnames';
 
 const NavMenu: any = (probs: any) => {
+  const [isFullScreen, setIsFullScreen] = useState(false);
+
+  const toggleFullScreen = () => {
+    if (!isFullScreen) {
+      document.documentElement.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
+    setIsFullScreen(!isFullScreen);
+  };
+
   const { shopId, lang, setLang } = probs;
   const [customerIsModal, setCustomerIsModal] = useState<boolean>(false);
   const customerModalHandler = (status: any) => {
@@ -34,7 +47,7 @@ const NavMenu: any = (probs: any) => {
         <div id="scrollbar">
           {/* Back To List</Link> */}
           <div
-            className="nav-link menu-link sty_ar"
+            className="nav-link menu-link sty_ar text-center text fs-6"
             style={{ cursor: 'pointer' }}
             onClick={() => {
               if (lang == en) {
@@ -45,8 +58,20 @@ const NavMenu: any = (probs: any) => {
                 setLang(en);
               }
             }}>
-            <i className="ri-global-fill"></i> <span>{lang == ar ? 'EN' : 'العربية'}</span>{' '}
+            <i className="ri-global-fill"></i>{' '}
+            <span className={classNames('d-block', styles.customFontSize)}>
+              {lang == ar ? 'EN' : 'العربية'}
+            </span>
           </div>
+
+          <Link className="nav-link menu-link" href="#">
+            <i
+              className={`fas ${isFullScreen ? 'fa-compress' : 'fa-expand'}`}
+              onClick={toggleFullScreen}></i>
+            <span data-key="t-dashboards">
+              {!isFullScreen ? lang.pos.navmenu.fullscreen : lang.pos.navmenu.minimize}
+            </span>
+          </Link>
           <Link className="nav-link menu-link" href={'/shop/' + shopId + '/products'}>
             <i className="ri-dashboard-2-line"></i>{' '}
             <span data-key="t-dashboards">{lang.pos.navmenu.dashboard}</span>{' '}
