@@ -47,8 +47,12 @@ import Box from '@mui/material/Box';
 import { debounce } from '@mui/material/utils';
 import TextField from '@mui/material/TextField';
 import { Checkbox } from '@mui/material';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useTheme } from '@mui/material/styles';
 import LocationModal from 'src/components/pos/modals/LocationModal';
 import * as XLSX from 'xlsx';
+import classNames from 'classnames';
+import styles from './table.module.css';
 
 /*MOHAMMED MAHER */
 import { darkModeContext } from '../../../../context/DarkModeContext';
@@ -103,14 +107,21 @@ const Product: NextPage = (probs: any) => {
       field: 'id',
       headerName: '#',
       minWidth: 50,
-      headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
-      cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
+      headerClassName: `${
+        darkMode ? 'dark-mode-body' : classNames('light-mode-body', styles.rowHeadStyling)
+      }`,
+      cellClassName: `${
+        darkMode ? 'dark-mode-body' : classNames('light-mode-body', styles.idCell)
+      }`,
+      valueGetter: (params) => `#${params.value}`,
     },
     {
       field: 'image',
       headerName: 'Image',
-      flex: 1,
-      headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
+      flex: 0.5,
+      headerClassName: `${
+        darkMode ? 'dark-mode-body' : classNames('light-mode-body', styles.rowHeadStyling)
+      }`,
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       renderCell: ({ row }: Partial<GridRowParams>) => (
         <Image
@@ -119,6 +130,10 @@ const Product: NextPage = (probs: any) => {
           width={50}
           height={50}
           src={row.image && row.image.length > 0 ? row.image : '/images/pos/placeholder.png'}
+          style={{
+            // borderRadius: '50%',
+            marginBottom: '30px',
+          }}
         />
       ),
     },
@@ -126,28 +141,36 @@ const Product: NextPage = (probs: any) => {
       field: 'type',
       headerName: 'Type',
       flex: 0.5,
-      headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
+      headerClassName: `${
+        darkMode ? 'dark-mode-body' : classNames('light-mode-body', styles.rowHeadStyling)
+      }`,
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
     },
     {
       field: 'sku',
       headerName: 'sku ',
       flex: 0.5,
-      headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
+      headerClassName: `${
+        darkMode ? 'dark-mode-body' : classNames('light-mode-body', styles.rowHeadStyling)
+      }`,
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
     },
     {
       field: 'name',
       headerName: 'name ',
       flex: 1,
-      headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
+      headerClassName: `${
+        darkMode ? 'dark-mode-body' : classNames('light-mode-body', styles.rowHeadStyling)
+      }`,
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
     },
     {
       field: 'sell_price',
       headerName: 'Sell (Min - Max)',
       flex: 1,
-      headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
+      headerClassName: `${
+        darkMode ? 'dark-mode-body' : classNames('light-mode-body', styles.rowHeadStyling)
+      }`,
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       renderCell: ({ row }: Partial<GridRowParams>) => {
         if (row.type == 'single')
@@ -180,14 +203,18 @@ const Product: NextPage = (probs: any) => {
       field: 'category',
       headerName: 'Category',
       flex: 1,
-      headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
+      headerClassName: `${
+        darkMode ? 'dark-mode-body' : classNames('light-mode-body', styles.rowHeadStyling)
+      }`,
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
     },
     {
       field: 'qty',
       headerName: 'Qty',
       flex: 0.5,
-      headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
+      headerClassName: `${
+        darkMode ? 'dark-mode-body' : classNames('light-mode-body', styles.rowHeadStyling)
+      }`,
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       renderCell: ({ row }: Partial<GridRowParams>) => (
         <>
@@ -203,7 +230,9 @@ const Product: NextPage = (probs: any) => {
       headerName: 'Action ',
       sortable: false,
       disableExport: true,
-      headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
+      headerClassName: `${
+        darkMode ? 'dark-mode-body' : classNames('light-mode-body', styles.rowHeadStyling)
+      }`,
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) => (
@@ -375,6 +404,10 @@ const Product: NextPage = (probs: any) => {
     }
   }, [searchTerm, products]);
 
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMediumScreen = useMediaQuery(theme.breakpoints.between('md', 'lg'));
+  const getRowClassName = () => styles.rowStyling;
   return (
     <>
       <AdminLayout shopId={shopId}>
@@ -436,18 +469,8 @@ const Product: NextPage = (probs: any) => {
                 ),
               }}
               sx={{
-                width: '70%',
-                borderTop: '1px solid #ccc', // Add border
-                // borderBottom: 'none',
-                borderRadius: '10px', // Add rounded corners
-                '& input': {
-                  textAlign: 'center', // Center text horizontally
-                  fontSize: '16px', // Adjust font size as needed
-                },
-                '& .Mui-focused': {
-                  backgroundColor: '#ffffff',
-                  // boxShadow: '0px 0px 5px rgba(0, 0, 0, 0.1)',
-                },
+                // width: isSmallScreen ? '80%' : isMediumScreen ? '20%' : '40%',
+                marginRight: isSmallScreen ? '10%' : isMediumScreen ? '20%' : '40%',
               }}
             />
           </div>
@@ -470,6 +493,7 @@ const Product: NextPage = (probs: any) => {
                   },
                 }}
                 rows={filteredProducts}
+                getRowClassName={getRowClassName}
                 columns={columns}
                 pageSize={10}
                 rowsPerPageOptions={[10]}
