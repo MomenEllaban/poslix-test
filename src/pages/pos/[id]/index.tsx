@@ -93,7 +93,7 @@ const Home: NextPage = (probs: any) => {
       setLocationSettings(
         _locs[
           _locs.findIndex((loc: any) => {
-            return loc.value == shopId;
+            return loc?.value == shopId;
           })
         ] ?? {}
       );
@@ -128,14 +128,14 @@ const Home: NextPage = (probs: any) => {
   }, []);
 
   const handleBussinesChange = (e: any) => {
-    let idx = cusLocs.findIndex((el) => el.bus_id == e.target.value);
+    let idx = cusLocs.findIndex((el) => el.bus_id == e.target?.value);
     let locs = cusLocs[idx].locations;
     setLocations(locs);
     setShopId(locs[0].loc_id);
   };
 
   const handelLocationChange = (e: any) => {
-    setShopId(e.target.value);
+    setShopId(e.target?.value);
   };
   return (
     <>
@@ -216,7 +216,7 @@ const Home: NextPage = (probs: any) => {
                     className="form-control"
                     placeholder="Cash in hand..."
                     onChange={(e) => {
-                      setCashHand(+e.target.value);
+                      setCashHand(+e.target?.value);
                     }}
                   />
                   <button className="btn btn-primary p-3" onClick={() => openRegister()}>

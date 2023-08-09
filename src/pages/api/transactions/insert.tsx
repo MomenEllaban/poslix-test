@@ -346,7 +346,14 @@ export default async function handler(
             if (details.isReturn > 0) {
               //update factor details
               transaction_id = details.isReturn;
-
+              if(req.body.editing) {
+                await con.promise().query(
+                  `DELETE FROM transaction_payments WHERE transaction_id = ?`,
+                  [transaction_id]
+                )
+                .then((rows: any, fields: any) => {})
+                .catch();
+              }
               await con
                 .promise()
                 .query(
@@ -430,7 +437,7 @@ export default async function handler(
             const sqlValuesTailoringUser: any = [];
             //for update lines
             const sqlCondiForUpdate =
-              "INSERT into `transactions_lines` (id,qty,qty_returned,tax_amount,tailoring_txt,note,tailoring_link_num) VALUES ? as pt ON DUPLICATE KEY UPDATE qty = transactions_lines.qty - pt.qty,qty_returned = transactions_lines.qty_returned + pt.qty_returned,tax_amount = pt.tax_amount,tailoring_txt = pt.tailoring_txt,note = pt.note,tailoring_link_num = pt.tailoring_link_num;";
+              "INSERT into `transactions_lines` (id,qty,qty_returned,tax_amount,tailoring_txt,note,tailoring_link_num) VALUES ? ON DUPLICATE KEY UPDATE qty = qty - VALUES(qty),qty_returned = qty_returned + VALUES(qty_returned),tax_amount = VALUES(tax_amount),tailoring_txt = VALUES(tailoring_txt),note = VALUES(note),tailoring_link_num = VALUES(tailoring_link_num)";
             const sqlValuesForUpdate: any = [];
             //update over selling counter
             const sqlCandiUpdateOverSell =
@@ -607,6 +614,8 @@ export default async function handler(
             // return
             //exceute update query if has return products
             if (sqlValuesForUpdate.length > 0) {
+              console.log(sqlValuesForUpdate);
+              
               const upRetu = await con
                 .promise()
                 .query(sqlCondiForUpdate, [sqlValuesForUpdate]);

@@ -34,6 +34,8 @@ import { Toastify } from "src/libs/allToasts";
 import { ToastContainer } from "react-toastify";
 import { convertDateStringToDateAndTime } from "../../models/data";
 import SalesPaymentModal from "../pos/modals/SalesPaymentModal";
+import { cartJobType } from "src/recoil/atoms";
+import { useRecoilState } from "recoil";
  
 export default function SalesListTable(props: any) {
   const { shopId, rules } = props;
@@ -54,7 +56,7 @@ export default function SalesListTable(props: any) {
   const router = useRouter();
   const [selectId, setSelectId] = useState(0);
   const [selectRow, setSelectRow] = useState<any>({});
-
+  const [, setJobType] = useRecoilState(cartJobType);
   const [lines, setLines] = useState<any>([]);
   const [show, setShow] = useState(false);
   const [edit, setEdit] = useState(false);
@@ -139,8 +141,13 @@ export default function SalesListTable(props: any) {
           <ButtonGroup className="mb-2 m-buttons-style">
             <Button
               onClick={() => {
-                setEdit(true);
-                onRowsSelectionHandler(row);
+                // setEdit(true);
+                // onRowsSelectionHandler(row);
+                setJobType({
+                  req: 3,
+                  val: row.id,
+                });
+                router.push('/pos/' + shopId)
               }}
             >
               <FontAwesomeIcon icon={faPenToSquare} />
