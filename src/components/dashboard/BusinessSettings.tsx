@@ -141,6 +141,8 @@ const BusinessSettings = ({ username, businessId }: any) => {
           });
           
           // Save the modified array back to local storage
+          console.log("testlocs", modifiedArray);
+          
           localStorage.setItem("userlocs", JSON.stringify(modifiedArray));
         } else {
             Toastify('error', 'Has Error ,try Again')

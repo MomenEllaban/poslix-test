@@ -30,7 +30,7 @@ export default function Breadcrumb(probs: any) {
       setCurrentPageName(linkPath[2])
     if (linkPath.length > 3)
       setIsSlug(true)
-    var _locs = JSON.parse(localStorage.getItem('userlocs') || '[]');
+    var _locs = JSON.parse(localStorage?.getItem('userlocs') || '[]');
     setLocations(_locs)
     setLocationIndex(_locs.findIndex((loc: any) => { return loc.value == shopId }))
   }, [router.asPath])

@@ -7,10 +7,13 @@ import { redirectToLogin } from '../../libs/loginlib'
 import { userDashboard } from "@models/common-model";
 import Select, { StylesConfig } from 'react-select';
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import { createNewData, updateData } from "src/services/crud.api";
 const AddNewRole = (probs: any) => {
 
     const [formObj, setFormObj] = useState({ isNew: true, name: '', stuff: '' });
     const [errorForm, setErrorForm] = useState({ name: false, stuff: false })
+    const [roles, setRoles] = useState([])
+    const [selectedRole, setSelectedRole] = useState(-1)
     const [pages, setPages] = useState<{ value: string, label: string, stuffs: object[], icon?: IconProp }[]>([])
     const pages2 = [
         { value: 'split', label: 'Sales List', stuffs: [], icon: faChartPie },
@@ -28,35 +31,31 @@ const AddNewRole = (probs: any) => {
         { value: 'POS', label: 'POS', stuffs: [{ label: 'Orders', value: 'orders' }, { label: 'payment', value: 'payment' }] },
     ];
     async function insertUpdateUsers() {
-        const { success, newdata, msg } = await apiInsert({ type: 'addUpdatebusinessRoles', data: { data: formObj, pages: pages } })
-        console.log(success);
-        console.log("result ", newdata);
-        if (!success) {
-            alert(msg)
-            return
-        }
-        if (formObj.isNew)
-            probs.stuffs.push(newdata);
-        else {
-            probs.stuffs[probs.index].stuff = newdata.stuff;
-            probs.stuffs[probs.index].name = newdata.name;
-        }
+        console.log(roles);
+        
+        let res;
+        if(selectedRole > -1) res = await updateData("permissions", selectedRole, {name: formObj.name, stuff: roles.sort().join(",")})
+        else res = await createNewData("permissions", {name: formObj.name, stuff: roles.sort().join(",")})
+
+        console.log("result ", res.data);
         probs.setIsAddNew(false)
 
     }
-    function handelChange(idx: number, stufIndex: number) {
-        // const { checked } = e.target;
-        var _rows: any = pages;
-        _rows[idx].stuffs[stufIndex].isChoose = !_rows[idx].stuffs[stufIndex].isChoose;
-        setPages(_rows)
-        setFormObj({ ...formObj, stuff: 'd' })
+    function handelChange(e: any, itemName: string, name: string, checked: boolean) {
+        var newRoles: any = roles;
+        const roleName = itemName+"/"+name
+        if(e.target.checked) newRoles.push(roleName)
+        else newRoles.splice(newRoles.indexOf(roleName), 1)
+        setRoles(newRoles)
+        console.log(newRoles);
+        
     }
     const showInnerRoles = (item: any, index: number) => {
         return (item.stuffs.map((st: any, stIndex: number) => {
             return (
-                <div className="form-control" onClick={() => { handelChange(index, stIndex) }}>
-                    <input className="form-check-input me-1" type="checkbox" checked={st.isChoose} />
-                    <label> {st.label}</label>
+                <div className="form-control" onClick={(e) => { handelChange(e, item.value, st.value, st.isChoose) }}>
+                    <input className="form-check-input me-1" type="checkbox" defaultChecked={st.isChoose} />
+                    <label>{st.label}</label>
                 </div>
             )
         }))
@@ -64,9 +63,10 @@ const AddNewRole = (probs: any) => {
     var errors = [];
     useEffect(() => {
         if (probs.index > -1) {
+            setSelectedRole(probs.selectedRole)
+            setRoles(probs.selectedStuff.split(","))
             setFormObj({ ...probs.stuffs[probs.index], isNew: false })
             var _userStuff = probs.stuffs[probs.index].stuff.toLowerCase();
-            console.log(_userStuff);
 
             pages2.map((pg, i) => {
                 pg.stuffs.map((st: any, stIndex: number) => {

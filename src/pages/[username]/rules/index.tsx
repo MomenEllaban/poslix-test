@@ -20,19 +20,21 @@ import { verifayTokens } from 'src/pages/api/checkUtils';
 import { ITokenVerfy } from '@models/common-model';
 import * as cookie from 'cookie';
 import { ROUTES } from 'src/utils/app-routes';
+import withAuth from 'src/HOCs/withAuth';
+import { deleteData, findAllData } from 'src/services/crud.api';
 const Roles = ({ username }: any) => {
   const [stuffs, setStuffs] = useState<IRoles[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAddNew, setIsAddNew] = useState(false);
 
   const [selectedId, setSelectedId] = useState(0);
+  const [selectedRole, setSelectedRole] = useState(0);
+  const [selectedStuff, setSelectedStuff] = useState("");
   async function initDataPage() {
-    const { success, newdata } = await apiFetch({ fetch: 'getStuffsMyBusiness' });
-    if (!success) {
-      redirectToLogin();
-      return;
-    }
-    setStuffs(newdata.myStuffs);
+    const res = await findAllData("permissions")
+    console.log("roles", res.data);
+    // const { success, newdata } = await apiFetch({ fetch: 'getStuffsMyBusiness' });
+    setStuffs(res.data.result);
     setIsLoading(false);
   }
   function showPropryRoles_test(roles: string) {
@@ -71,12 +73,16 @@ const Roles = ({ username }: any) => {
           style={{ width: '150px' }}
           onClick={() => {
             setSelectedId(-1);
+            setSelectedRole(-1);
+            setSelectedStuff("");
             setIsAddNew(!isAddNew);
           }}>
           <FontAwesomeIcon icon={!isAddNew ? faPlus : faArrowAltCircleLeft} />{' '}
           {!isAddNew ? 'Add Role' : 'Back'}
         </button>
-        {isAddNew && <AddNewRole setIsAddNew={setIsAddNew} stuffs={stuffs} index={selectedId} />}
+        {isAddNew &&
+          <AddNewRole setIsAddNew={setIsAddNew} stuffs={stuffs} index={selectedId}
+            selectedRole={selectedRole} selectedStuff={selectedStuff} />}
         {!isAddNew && (
           <div className="row">
             <div className="col-md-12">
@@ -104,11 +110,13 @@ const Roles = ({ username }: any) => {
                               <td>{showPropryRoles_test(user.stuff)}</td>
                               <td>
                                 <ButtonGroup className="mb-2 m-buttons-style">
-                                  <Button onClick={() => {}}>
+                                  <Button onClick={async () => await deleteData("permissions", user.id)}>
                                     <FontAwesomeIcon icon={faTrash} />
                                   </Button>
                                   <Button
                                     onClick={() => {
+                                      setSelectedRole(user.id);
+                                      setSelectedStuff(user.stuff);
                                       setSelectedId(i);
                                       setIsAddNew(true);
                                     }}>
@@ -135,30 +143,4 @@ const Roles = ({ username }: any) => {
     </>
   );
 };
-export default Roles;
-export async function getServerSideProps(context: any) {
-  if (context.query.username == undefined) {
-    return {
-      redirect: {
-        permanent: false,
-        destination: ROUTES.AUTH,
-      },
-    };
-  }
-  //check token
-  let _isOk = true;
-  const parsedCookies = cookie.parse(context.req.headers.cookie || '[]');
-  await verifayTokens(
-    { headers: { authorization: 'Bearer ' + parsedCookies.tokend } },
-    (repo: ITokenVerfy) => {
-      _isOk = repo.status;
-    }
-  );
-  if (!_isOk) return { redirect: { permanent: false, destination: ROUTES.AUTH } };
-  //end
-
-  let username = getmyUsername(context.query);
-  return {
-    props: { username },
-  };
-}
+export default withAuth(Roles);
