@@ -256,3 +256,22 @@ export interface IStock {
   created_at: string;
   updated_at: any;
 }
+
+export interface IExpenseCategory {
+  id: number;
+  name: string;
+  location_id: number;
+  active: any;
+}
+
+export interface IExpense {
+  id: number;
+  location_id: number;
+  name: string;
+  amount: string | number;
+  expense_id: number;
+  attach?: string;
+  date: string;
+  created_by: number;
+  created_at: string;
+}

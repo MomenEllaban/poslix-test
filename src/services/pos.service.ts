@@ -12,6 +12,8 @@ import {
   ICurrency,
   IPurchase,
   IPayment,
+  IExpenseCategory,
+  IExpense,
 } from '@models/pos.types';
 import api from 'src/utils/app-api';
 import useSWR, { type SWRConfiguration } from 'swr';
@@ -87,6 +89,14 @@ interface IGetCloseRegisteration {
   cheque: number;
   bank: number;
 }
+
+interface ICreateExpensePayload extends Partial<IExpense> {
+  name: string;
+  amount: number | string;
+  category: number;
+}
+
+interface IUpdateExpensePayload extends Partial<IExpense> {}
 
 const posSetvice = {
   getCategories: async (locId: string) =>
@@ -194,6 +204,29 @@ const posSetvice = {
   ) => api.post(`/registeration/${locId}/open`).then((data) => data.data),
   getCloseRegisteration: async (locId: string) =>
     api.get<any, TServiceResponse<IGetCloseRegisteration>, any>(`/registeration/${locId}/close`),
+
+  getExpenseCategories: async (locId: string) =>
+    api
+      .get<any, TServiceResponse<IExpenseCategory[]>, any>(`/expenses-categories/${locId}`)
+      .then((data) => data.data),
+  getExpenseCategory: async (id: string) =>
+    api.get<any, TServiceResponse<IExpenseCategory>, any>(`/expenses-categories/${id}/show`),
+  createExpenseCategory: async (locId: string, payload: { name: string }) =>
+    api.post(`/expenses-categories/${locId}`, payload).then((data) => data.data),
+  updateExpenseCategory: async (id: string, payload: { name: string }) =>
+    api.put(`/expenses-categories/${id}`, payload).then((data) => data.data),
+  deleteExpenseCategory: async (id: string) =>
+    api.delete(`/expenses-categories/${id}`).then((data) => data.data),
+
+  getExpenses: async (locId: string) =>
+    api.get<any, TServiceResponse<IExpense[]>, any>(`/expenses/${locId}`).then((data) => data.data),
+  getExpense: async (id: string) =>
+    api.get<any, TServiceResponse<IExpense>, any>(`/expenses/${id}/show`).then((data) => data.data),
+  createExpense: async (locId: string, payload: ICreateExpensePayload) =>
+    api.post(`/expenses/${locId}`, payload).then((data) => data.data),
+  updateExpense: async (id: string, payload: IUpdateExpensePayload) =>
+    api.put(`/expenses/${id}`, payload).then((data) => data.data),
+  deleteExpense: async (id: string) => api.delete(`/expenses/${id}`).then((data) => data.data),
 };
 
 export const useCategories = (locId: string, config?: SWRConfiguration) => {
@@ -480,6 +513,70 @@ export const useGetCloseRegisteration = (locId: string, config?: SWRConfiguratio
   );
   return {
     closeRegisteration: data?.result ?? [],
+    isLoading,
+    error,
+    refetch: mutate,
+  };
+};
+
+export const useExpenseCategories = (locId: string, config?: SWRConfiguration) => {
+  const { data, error, isLoading, mutate } = useSWR(
+    `/expenses-categories/${locId}`,
+    () => posSetvice.getExpenseCategories(locId),
+    {
+      ...config,
+    }
+  );
+  return {
+    expenseCategories: data?.result ?? [],
+    isLoading,
+    error,
+    refetch: mutate,
+  };
+};
+
+export const useGetExpenseCategory = (id: string, config?: SWRConfiguration) => {
+  const { data, error, isLoading, mutate } = useSWR(
+    `/expenses-categories/${id}/show`,
+    () => posSetvice.getExpenseCategory(id),
+    {
+      ...config,
+    }
+  );
+  return {
+    expenseCategory: data?.result ?? [],
+    isLoading,
+    error,
+    refetch: mutate,
+  };
+};
+
+export const useExpenses = (locId: string, config?: SWRConfiguration) => {
+  const { data, error, isLoading, mutate } = useSWR(
+    `/expenses/${locId}`,
+    () => posSetvice.getExpenses(locId),
+    {
+      ...config,
+    }
+  );
+  return {
+    expenses: data?.result ?? [],
+    isLoading,
+    error,
+    refetch: mutate,
+  };
+};
+
+export const useGetExpense = (id: string, config?: SWRConfiguration) => {
+  const { data, error, isLoading, mutate } = useSWR(
+    `/expenses/${id}/show`,
+    () => posSetvice.getExpense(id),
+    {
+      ...config,
+    }
+  );
+  return {
+    expense: data?.result ?? [],
     isLoading,
     error,
     refetch: mutate,
