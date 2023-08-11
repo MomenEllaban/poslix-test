@@ -1,16 +1,25 @@
 import { IUserBusiness } from '@models/auth.types';
 import { ILocationSettings, ITailoringExtra } from '@models/common-model';
-import { defaultInvoiceDetials } from '@models/data';
-import { ICustomResponse } from '@models/global.types';
-import { AxiosResponse } from 'axios';
 import { setCookie } from 'cookies-next';
 import { useEffect, useState } from 'react';
 import { UserContext } from 'src/context/UserContext';
-import { getToken, getUserData } from 'src/libs/loginlib';
+import authService from 'src/services/auth.service';
 import api from 'src/utils/app-api';
 import { ELocalStorageKeys } from 'src/utils/app-contants';
 
-const initialLocationState = {
+interface BusinessResponse {
+  success: boolean;
+  result: {
+    locations: IUserBusiness[];
+  };
+}
+
+interface BusinessError {
+  error: string;
+}
+
+// Initial state for location settings
+const initialLocationState: ILocationSettings = {
   value: 0,
   label: '',
   currency_decimal_places: 0,
@@ -20,13 +29,31 @@ const initialLocationState = {
   currency_symbol: '',
 };
 
-export default function UserProvider({ children }) {
+export default function UserProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<any>({});
-
-  const [tailoringSizes, setTailoringSizes] = useState([]);
-  const [tailoringExtras, setTailoringExtras] = useState<ITailoringExtra[]>();
-  const [invoicDetails, setInvoicDetails] = useState<any>(defaultInvoiceDetials);
+  const [tailoringSizes, setTailoringSizes] = useState<string[]>([]);
+  const [tailoringExtras, setTailoringExtras] = useState<ITailoringExtra[]>([]);
+  const [invoicDetails, setInvoicDetails] = useState<any>({});
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>(initialLocationState);
+
+  useEffect(() => {
+    // Load user data and initialize context values
+    const initializeUserContext = async () => {
+      try {
+        const userData = authService.getUserData();
+        console.log('User data from getUserData:', userData);
+        if (userData) {
+          setCookie(ELocalStorageKeys.TOKEN_COOKIE, authService.getToken() ?? '');
+          setUser(userData);
+          await getBusiness();
+        }
+      } catch (error) {
+        console.error('Error initializing user context:', error);
+      }
+    };
+
+    initializeUserContext();
+  }, []);
 
   const userContext = {
     user,
@@ -41,25 +68,26 @@ export default function UserProvider({ children }) {
     setTailoringExtras,
   };
 
-  useEffect(() => {
-    const user = getUserData();
-    console.log('I am in the provider', user);
-    if (user) {
-      setCookie(ELocalStorageKeys.TOKEN_COOKIE, getToken() ?? '');
-      setUser(user);
-      getBusiness();
-    }
-  }, []);
-
-  return <UserContext.Provider value={userContext}>{children}</UserContext.Provider>;
+  return (
+    <UserContext.Provider value={userContext}>
+      {/* Render child components */}
+      {children}
+    </UserContext.Provider>
+  );
 }
 
 async function getBusiness() {
-  const { data } = await api.get<any, AxiosResponse<ICustomResponse<IUserBusiness>>, any>(
-    '/business'
-  );
+  console.log('THIS IS INSIDE GET BUSINESS');
+  try {
+    const { data } = await api.get<BusinessResponse | BusinessError>('/business');
 
-  const { success, result } = data;
-  const { locations } = result;
-  localStorage.setItem(ELocalStorageKeys.USER_LOCATIONS, JSON.stringify(locations));
+    if ('result' in data && data.result.locations) {
+      const { locations } = data.result;
+      window.localStorage.setItem(ELocalStorageKeys.USER_LOCATIONS, JSON.stringify(locations));
+    } else {
+      console.error('Invalid business data response:', data);
+    }
+  } catch (error) {
+    console.error('Error fetching business data:', error);
+  }
 }

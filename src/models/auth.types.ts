@@ -24,6 +24,22 @@ export interface IUser {
   updated_at: any;
 }
 
+export interface IUser {
+  id: string | number;
+  owner_id?: string | number;
+
+  username: string;
+  user_type: 'owner' | 'user';
+  first_name: string;
+  last_name?: string;
+  contact_number: string;
+  email: string;
+
+  status: string;
+  token?: string;
+  accessToken?: string;
+}
+
 export interface IUserBusiness {
   id: string | number;
   type: string;

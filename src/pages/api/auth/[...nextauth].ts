@@ -26,7 +26,7 @@ export const authOptions: NextAuthOptions = {
           { email: string; password: string }
         >(`${process.env.API_BASE}login`, { email, password });
 
-        if (data) {
+        if (data.result) {
           const user = {
             ...data.result.user,
             token: data.result.authorization.token,
@@ -34,15 +34,12 @@ export const authOptions: NextAuthOptions = {
           console.log(user);
           return user as any;
         }
-        return null;
       },
     }),
 
     // ...add more providers here
   ],
-  session: {
-    strategy: 'jwt',
-  },
+  session: { strategy: 'jwt' },
   callbacks: {
     async jwt({ token, user, account, profile }) {
       if (user) token.user = user as any;
@@ -51,7 +48,7 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (!session) return;
-      if (token.user) session.user = token.user;
+    //   if (token.user) session.user = token.user;
 
       return session;
     },

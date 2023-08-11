@@ -32,12 +32,13 @@ export default function LoginView() {
   const [showPass, setShowPass] = useState(false);
   const [isLoading, setLoading] = useState(false);
 
-  const onSubmit: SubmitHandler<Inputs> = (data) => {
+  const onSubmit: SubmitHandler<Inputs> = async (data) => {
     setLoading(true);
-    signIn('credentials', { redirect: false, ...data }).finally(() => {
+    const res = await signIn('credentials', { redirect: false, ...data }).finally(() => {
       setLoading(false);
-      window.location.href = '/';
+      // window.location.href = '/';
     });
+    console.log(res);
   };
   const onError = (errors: any, e: any) => console.log(errors, e);
 

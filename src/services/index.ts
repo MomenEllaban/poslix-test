@@ -8,14 +8,19 @@ import useSWR, { type SWRConfiguration } from 'swr';
 type TServiceResponse<T> = AxiosResponse<ICustomResponse<T>>;
 
 const services = {
-  getBusinesses: () =>
-    api.get<any, TServiceResponse<IUserBusiness[]>, any>('/business').then((data) => data.data),
+  getBusinesses: () => {
+    console.log('service print');
+    return api
+      .get<any, TServiceResponse<IUserBusiness[]>, any>('/business')
+      .then((data) => data.data);
+  },
 
   getCurrencies: () =>
     api.get<any, TServiceResponse<ICurrency[]>, any>('/currencies').then((data) => data.data),
 };
 
 export const useBusinessList = (config?: SWRConfiguration) => {
+  console.log('this runs as business list fetching');
   const { data, error, isLoading, mutate } = useSWR(
     config?.suspense ? null : '/business',
     services.getBusinesses,

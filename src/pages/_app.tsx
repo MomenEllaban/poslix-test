@@ -7,13 +7,13 @@ import { ToastContainer } from 'react-toastify';
 import { RecoilRoot } from 'recoil';
 import { ProductProvider, UserProvider } from 'src/components/providers';
 import { DarkModeProvider } from 'src/context/DarkModeContext';
+import Head from 'next/head';
 
 // CSS
 import '@fortawesome/fontawesome-svg-core/styles.css';
 import '@styles/_pos_custom.css';
 import '@styles/globals.scss';
 import '@styles/loyalty.css';
-import Head from 'next/head';
 import '../../public/css/products.modules.css';
 
 config.autoAddCss = false;

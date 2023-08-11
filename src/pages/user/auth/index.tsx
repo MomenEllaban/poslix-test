@@ -1,8 +1,11 @@
 import DarkModeToggle from '@layout/AdminLayout/DarkModeToggle';
+import { IUserBusiness } from '@models/auth.types';
 import { BusinessTypeData } from '@models/data';
+import { ICustomResponse } from '@models/global.types';
+import { AxiosResponse } from 'axios';
 import clsx from 'clsx';
-import { deleteCookie, setCookie } from 'cookies-next';
-import { signIn, useSession } from 'next-auth/react';
+import { setCookie } from 'cookies-next';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import { useContext, useEffect, useState } from 'react';
 import PhoneInput from 'react-phone-input-2';
@@ -18,14 +21,11 @@ import {
   validatePhoneNumber,
 } from 'src/libs/toolsUtils';
 import LoginView from 'src/modules/auth/_views/login-view';
-import { ELocalStorageKeys } from 'src/utils/app-contants';
-import { clearLocalStorageItems } from 'src/utils/clearLocalStorageItems';
-import { colourStyles } from 'src/utils/color.style';
-import { apiInsertCtr, apiLogin } from '../../../libs/dbUtils';
 import api from 'src/utils/app-api';
-import { AxiosResponse } from 'axios';
-import { ICustomResponse } from '@models/global.types';
-import { IUserBusiness } from '@models/auth.types';
+import { ELocalStorageKeys } from 'src/utils/app-contants';
+import { colourStyles } from 'src/utils/color.style';
+import { apiInsertCtr } from '../../../libs/dbUtils';
+import { clearLocalStorageItems } from 'src/utils/clearLocalStorageItems';
 
 const initalInputState = {
   id: '',
@@ -326,7 +326,7 @@ export default function RegisterPage() {
   useEffect(() => {
     // this is in logout only
     // deleteCookie('tokend');
-    // clearLocalStorageItems();
+    clearLocalStorageItems();
   }, []);
 
   // if the user already logged then redirect to another page

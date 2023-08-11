@@ -21,7 +21,7 @@ const MyBusinessesPage = () => {
     },
   });
   const username = user?.username;
-
+  console.log('I am in the business page');
   const router = useRouter();
   const [locations, setLocations] = useState<{ id: number; name: string }[]>([]);
   async function initDataPage() {
