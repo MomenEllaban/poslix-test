@@ -36,10 +36,8 @@ export const authOptions: NextAuthOptions = {
         }
       },
     }),
-
-    // ...add more providers here
   ],
-  session: { strategy: 'jwt' },
+  session: { strategy: 'jwt', maxAge: 1 * 60 * 60 },
   callbacks: {
     async jwt({ token, user, account, profile }) {
       if (user) token.user = user as any;
@@ -50,19 +48,8 @@ export const authOptions: NextAuthOptions = {
       console.log('in Auth ooooooooooooooooo T', token);
       console.log('in Auth ooooooooooooooooo U', user);
       if (!session) return;
-      const _session = {
-        ...session,
-        user: {
-          ...session.user,
-          ...token.user,
-        },
-        token: token.user.token,
-      };
-      // session.token=token
-
-      console.log('in Auth ooooooooooooooooo', session);
-      console.log('in Auth returned ffffff', _session);
-      return _session;
+      if (token.user) session.user = token.user;
+      return session;
     },
   },
 };
