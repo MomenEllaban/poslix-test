@@ -1,11 +1,14 @@
 import { IUserBusiness } from '@models/auth.types';
 import { ILocationSettings, ITailoringExtra } from '@models/common-model';
 import { setCookie } from 'cookies-next';
-import { useEffect, useState } from 'react';
+import { getSession, useSession } from 'next-auth/react';
+import { useRouter } from 'next/router';
+import { useEffect, useMemo, useState } from 'react';
 import { UserContext } from 'src/context/UserContext';
 import authService from 'src/services/auth.service';
 import api from 'src/utils/app-api';
 import { ELocalStorageKeys } from 'src/utils/app-contants';
+import { ROUTES } from 'src/utils/app-routes';
 
 interface BusinessResponse {
   success: boolean;
@@ -35,25 +38,25 @@ export default function UserProvider({ children }: { children: React.ReactNode }
   const [tailoringExtras, setTailoringExtras] = useState<ITailoringExtra[]>([]);
   const [invoicDetails, setInvoicDetails] = useState<any>({});
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>(initialLocationState);
+  const router = useRouter();
+  // useEffect(() => {
+  //   // Load user data and initialize context values
+  //   const initializeUserContext = async () => {
+  //     try {
+  //       const userData = authService.getUserData();
+  //       console.log('User data from getUserData:', userData);
+  //       if (userData) {
+  //         setCookie(ELocalStorageKeys.TOKEN_COOKIE, authService.getToken() ?? '');
+  //         setUser(userData);
+  //         await getBusiness();
+  //       }
+  //     } catch (error) {
+  //       console.error('Error initializing user context:', error);
+  //     }
+  //   };
 
-  useEffect(() => {
-    // Load user data and initialize context values
-    const initializeUserContext = async () => {
-      try {
-        const userData = authService.getUserData();
-        console.log('User data from getUserData:', userData);
-        if (userData) {
-          setCookie(ELocalStorageKeys.TOKEN_COOKIE, authService.getToken() ?? '');
-          setUser(userData);
-          await getBusiness();
-        }
-      } catch (error) {
-        console.error('Error initializing user context:', error);
-      }
-    };
-
-    initializeUserContext();
-  }, []);
+  //   initializeUserContext();
+  // }, []);
 
   const userContext = {
     user,
@@ -67,6 +70,21 @@ export default function UserProvider({ children }: { children: React.ReactNode }
     tailoringExtras,
     setTailoringExtras,
   };
+  
+  useEffect(() => {
+    getSession().then((session) => {
+      console.log('session in auth provider', session);
+      if (session) {
+        setUser(session.user);
+        // setCookie(ELocalStorageKeys.TOKEN_COOKIE, authService.getToken() ?? '');
+        // getBusiness();
+      } else {
+        // setUser({});
+        // window.location.href = ROUTES.AUTH;
+        router.replace(ROUTES.AUTH);
+      }
+    });
+  }, []);
 
   return (
     <UserContext.Provider value={userContext}>
@@ -74,20 +92,4 @@ export default function UserProvider({ children }: { children: React.ReactNode }
       {children}
     </UserContext.Provider>
   );
-}
-
-async function getBusiness() {
-  console.log('THIS IS INSIDE GET BUSINESS');
-  try {
-    const { data } = await api.get<BusinessResponse | BusinessError>('/business');
-
-    if ('result' in data && data.result.locations) {
-      const { locations } = data.result;
-      window.localStorage.setItem(ELocalStorageKeys.USER_LOCATIONS, JSON.stringify(locations));
-    } else {
-      console.error('Invalid business data response:', data);
-    }
-  } catch (error) {
-    console.error('Error fetching business data:', error);
-  }
 }

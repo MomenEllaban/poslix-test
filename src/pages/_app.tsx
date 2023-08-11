@@ -19,29 +19,26 @@ import '../../public/css/products.modules.css';
 config.autoAddCss = false;
 
 export default function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
-
   return (
-    <>
-      <Head>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Poslix App</title>
-      </Head>
+    <SessionProvider session={session}>
+      <UserProvider>
+        <Head>
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <title>Poslix App</title>
+        </Head>
 
-      <SessionProvider session={session}>
-        <RecoilRoot>
+        {/* <RecoilRoot>
           <SSRProvider>
-            <DarkModeProvider>
-              <UserProvider>
-                <ProductProvider>
-                  <NextNProgress />
-                  <Component {...pageProps} />
-                  <ToastContainer />
-                </ProductProvider>
-              </UserProvider>
-            </DarkModeProvider>
+        <ProductProvider> */}
+        <DarkModeProvider>
+          <NextNProgress />
+          <Component {...pageProps} />
+          <ToastContainer />
+        </DarkModeProvider>
+        {/* </ProductProvider>
           </SSRProvider>
-        </RecoilRoot>{' '}
-      </SessionProvider>
-    </>
+        </RecoilRoot>{' '} */}
+      </UserProvider>
+    </SessionProvider>
   );
 }

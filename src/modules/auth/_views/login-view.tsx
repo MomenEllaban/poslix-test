@@ -1,5 +1,5 @@
 import { joiResolver } from '@hookform/resolvers/joi';
-import { signIn } from 'next-auth/react';
+import { getSession, signIn } from 'next-auth/react';
 import Image from 'next/image';
 import { useState } from 'react';
 import { Button, Form, InputGroup } from 'react-bootstrap';
@@ -36,7 +36,7 @@ export default function LoginView() {
     setLoading(true);
     const res = await signIn('credentials', { redirect: false, ...data }).finally(() => {
       setLoading(false);
-      // window.location.href = '/';
+      window.location.href = '/';
     });
     console.log(res);
   };
@@ -102,4 +102,26 @@ export default function LoginView() {
       </div>
     </Form>
   );
+}
+
+export async function getServerSideProps(context) {
+  const session = await getSession({ req: context.req });
+
+  if (session) {
+    if (session.user.user_type === 'owner') {
+      return {
+        redirect: { destination: '/' + session.user.username + '/business', permenant: false },
+        props: { session },
+      };
+    } else {
+      return {
+        redirect: { destination: '/shop', permenant: false },
+        props: { session },
+      };
+    }
+  }
+
+  return {
+    props: {},
+  };
 }

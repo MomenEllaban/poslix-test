@@ -15,7 +15,7 @@ const Home: NextPage = () => {
 
   useEffect(() => {
     console.log('slug', slug, isLogin());
-    if (!isLogin()) router.push(ROUTES.AUTH);
+    // if (!isLogin()) router.push(ROUTES.AUTH);
 
     if (slug != undefined) {
       //if (slug.length < 2)

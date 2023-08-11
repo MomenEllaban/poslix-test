@@ -305,7 +305,7 @@ export default function RegisterPage() {
       localStorage.setItem(ELocalStorageKeys.USER_NAME, user.username);
       localStorage.setItem(ELocalStorageKeys.LEVELS, user.user_type);
       console.log(user.user_type);
-      getBusiness(user);
+      if (user.user_type === 'owner') getBusiness(user);
 
       // if (newdata.user.level == 'user') router.push('/shop/' + newdata.myBusiness[0].value);
       // else router.push('/' + newdata.user.username + '/business');
@@ -331,12 +331,8 @@ export default function RegisterPage() {
 
   // if the user already logged then redirect to another page
 
-  if (user) {
+  if (user?.user_type === 'owner') {
     getBusiness(user);
-    // console.log(user, 'user in aaaaaaaaaaaaaa');
-    // if (user.user_type === 'user') {
-    //   router.push('/shop/' + result[0].id);
-    // } else router.push('/' + user.username + '/business');
   }
 
   return (

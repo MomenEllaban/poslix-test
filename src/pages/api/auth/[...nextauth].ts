@@ -46,11 +46,23 @@ export const authOptions: NextAuthOptions = {
 
       return token;
     },
-    async session({ session, token }) {
+    async session({ session, token, user }) {
+      console.log('in Auth ooooooooooooooooo T', token);
+      console.log('in Auth ooooooooooooooooo U', user);
       if (!session) return;
-    //   if (token.user) session.user = token.user;
+      const _session = {
+        ...session,
+        user: {
+          ...session.user,
+          ...token.user,
+        },
+        token: token.user.token,
+      };
+      // session.token=token
 
-      return session;
+      console.log('in Auth ooooooooooooooooo', session);
+      console.log('in Auth returned ffffff', _session);
+      return _session;
     },
   },
 };
