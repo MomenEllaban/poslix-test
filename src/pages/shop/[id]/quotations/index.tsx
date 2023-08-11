@@ -59,6 +59,7 @@ export default function SalesList(props: any) {
   const [showViewPopUp, setShowViewPopUp] = useState(false);
   const [handleSearchTxt, setHandleSearchTxt] = useState('');
   const { setInvoicDetails, invoicDetails } = useContext(UserContext);
+  const [accept, setAccept] = useState(false);
 
   console.log(locationSettings.currency_decimal_places);
 
@@ -113,25 +114,37 @@ export default function SalesList(props: any) {
               <Button
                 onClick={() => {
                   console.log(row);
+                  setSelectId(row.id);
+                  setShow(true);
+                  // setsales((prev) => prev.filter((r) => r.id !== row.id));
                 }}>
                 <FontAwesomeIcon icon={faTrash} />
               </Button>
             )}
             <Button
-              onClick={() => {
+              onClick={async () => {
                 console.log(row);
+                onRowsSelectionHandler(row);
               }}>
               <FontAwesomeIcon icon={faEye} />
             </Button>
             <Button
               onClick={() => {
                 console.log(row);
+                setsales((prev) =>
+                  prev.map((item) => (item.id === row.id ? { ...item, amount: 0 } : item))
+                );
               }}>
               <FontAwesomeIcon icon={faCheck} />
             </Button>
             <Button
               onClick={() => {
                 console.log(row);
+                setsales((prev) =>
+                  prev.map((item) =>
+                    item.id === row.id ? { ...item, total_price: item.amount } : item
+                  )
+                );
               }}>
               <FontAwesomeIcon icon={faXmark} />
             </Button>
@@ -463,6 +476,7 @@ export default function SalesList(props: any) {
   const handleDeleteFuc = (result: boolean, msg: string, section: string) => {
     if (result) {
       const _data = [...sales];
+      console.log(selectId);
       const idx = _data.findIndex((itm: any) => itm.id == selectId);
       console.log(idx, selectId);
       if (idx != -1) {
@@ -523,6 +537,15 @@ export default function SalesList(props: any) {
         </div>
       }
       <div className="page-content-style card">
+        <div className="mb-4">
+          <button
+            className="btn m-btn btn-primary p-3"
+            onClick={() => {
+              router.push('/shop/' + shopId + '/quotations/add');
+            }}>
+            <FontAwesomeIcon icon={faPlus} /> Add Quotation{' '}
+          </button>
+        </div>
         <h5>Quotations List</h5>
         <DataGrid
           className="datagrid-style"
@@ -595,6 +618,14 @@ export default function SalesList(props: any) {
                   </div>
                   <div className="top-detials-item" style={{ fontSize: '13px' }}>
                     <p>Order Note</p>
+                    {edit ? (
+                      <input type="text" className="form-control" value={selectRow.notes} />
+                    ) : (
+                      <p>{selectRow.notes}</p>
+                    )}
+                  </div>
+                  <div className="top-detials-item" style={{ fontSize: '13px' }}>
+                    <p>Status</p>
                     {edit ? (
                       <input type="text" className="form-control" value={selectRow.notes} />
                     ) : (
