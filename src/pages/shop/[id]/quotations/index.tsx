@@ -107,6 +107,9 @@ export default function SalesList(props: any) {
             <Button
               onClick={() => {
                 console.log(row);
+                setSelectRow(row);
+                setShowViewPopUp(true);
+                setEdit(true);
               }}>
               <FontAwesomeIcon icon={faPenToSquare} />
             </Button>
@@ -627,9 +630,9 @@ export default function SalesList(props: any) {
                   <div className="top-detials-item" style={{ fontSize: '13px' }}>
                     <p>Status</p>
                     {edit ? (
-                      <input type="text" className="form-control" value={selectRow.notes} />
+                      <input type="text" className="form-control" value={selectRow.status} />
                     ) : (
-                      <p>{selectRow.notes}</p>
+                      <p>{selectRow.status}</p>
                     )}
                   </div>
                 </div>
