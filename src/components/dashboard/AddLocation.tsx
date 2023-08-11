@@ -1,17 +1,17 @@
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { ICurrency } from '@models/business.types';
 import { setCookie } from 'cookies-next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Card, Spinner } from 'react-bootstrap';
 import Select from 'react-select';
 import { ToastContainer } from 'react-toastify';
+import { useCurrenciesList } from 'src/services/business.service';
 import { OwnerAdminLayout } from '../../layout';
 import { Toastify } from '../../libs/allToasts';
-import { apiFetchCtr, apiInsertCtr } from '../../libs/dbUtils';
-import { useCurrenciesList } from 'src/services';
-import { ICurrency } from '@models/business.types';
+import { apiInsertCtr } from '../../libs/dbUtils';
 
 const AddLocation = ({ username, businessId }: any) => {
   const [formObj, setFormObj] = useState({
@@ -34,7 +34,7 @@ const AddLocation = ({ username, businessId }: any) => {
   const { isLoading } = useCurrenciesList(null, {
     onSuccess(data, key, config) {
       const _currenciesList = data.result.map((itm: ICurrency) => {
-        return { value: itm.id, label: itm.code };
+        return { value: itm.id, label: itm.currency };
       });
 
       setCurrencies(_currenciesList);

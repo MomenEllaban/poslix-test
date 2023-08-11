@@ -47,21 +47,6 @@ export const useBusinessList = (config?: SWRConfiguration) => {
   };
 };
 
-export const useCurrenciesList = (params?: { [x: string]: any }, config?: SWRConfiguration) => {
-  const { data, error, isLoading, mutate } = useSWR(
-    config?.suspense ? null : '/currencies',
-    services.getCurrencies,
-    {
-      ...config,
-    }
-  );
 
-  return {
-    currenciesList: data?.result ?? [],
-    isLoading,
-    error,
-    refetch: mutate,
-  };
-};
 
 export default services;

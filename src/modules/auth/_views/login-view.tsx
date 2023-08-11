@@ -6,7 +6,6 @@ import { Button, Form, InputGroup } from 'react-bootstrap';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { MdVisibility, MdVisibilityOff } from 'react-icons/md';
 import loginSchema from '../login.schema';
-import { GetServerSideProps } from 'next';
 
 type Inputs = {
   email: string;
