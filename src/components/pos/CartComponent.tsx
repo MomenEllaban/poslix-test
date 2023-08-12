@@ -1353,6 +1353,7 @@ export const OrdersComponent = (probs: any) => {
       } else SetProductsItems([]);
     }, 200);
   };
+
   return (
     <div className="card" style={{ width: '40%', marginLeft: '80px', direction }}>
       {/* <button onClick={handlePrint}>Lets Print</button> */}
@@ -1593,6 +1594,9 @@ export const OrdersComponent = (probs: any) => {
                             min={0}
                             onChange={(e) => handleQty(e, i)}
                             value={quantity[i].quantity}
+                            onWheel={(e: React.WheelEvent<HTMLInputElement>) =>
+                              (e.target as HTMLInputElement).blur()
+                            }
                           />
                           <button
                             type="button"
