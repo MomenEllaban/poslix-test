@@ -69,7 +69,6 @@ const AddLocation = ({ username, businessId }: any) => {
 
   var errors = [];
   return (
-    <>
       <OwnerAdminLayout>
         <ToastContainer />
         <div className="row">
@@ -193,7 +192,6 @@ const AddLocation = ({ username, businessId }: any) => {
           </div>
         </div>
       </OwnerAdminLayout>
-    </>
   );
 };
 export default AddLocation;

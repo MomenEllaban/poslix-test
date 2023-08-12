@@ -1,27 +1,30 @@
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { OwnerAdminLayout } from '@layout';
-import { getSession } from 'next-auth/react';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { Card } from 'react-bootstrap';
 import { ToastContainer } from 'react-toastify';
-import CreateBusinessView from 'src/modules/business/create-business/create-business-view';
-import { ROUTES } from 'src/utils/app-routes';
+import AddLocation from 'src/components/dashboard/AddLocation';
+import AddBusinessLocationView from 'src/modules/business/add-location/add-location-view';
 
-export default function CreateBusinessPage({ username }: any) {
+export default function AddBusinessLocation({ username, busniessType }: any) {
+  const router = useRouter();
+  const businessId = router.query.id as string;
+
   return (
     <OwnerAdminLayout>
       <div className="row">
         <div className="col-md-12">
-          <Link href={'/' + username + '/business'} className="btn btn-primary p-3 mb-3">
+          <Link href={`/${username}/business`} className="btn btn-primary p-3 mb-3">
             <FontAwesomeIcon icon={faArrowLeft} /> Back to list{' '}
           </Link>
           <Card>
             <Card.Header className="p-3 bg-white">
-              <h5>Create Business </h5>
+              <h5>Add New Location</h5>
             </Card.Header>
             <Card.Body>
-              <CreateBusinessView />
+              <AddBusinessLocationView businessId={businessId} />
             </Card.Body>
           </Card>
         </div>
@@ -29,15 +32,5 @@ export default function CreateBusinessPage({ username }: any) {
       <ToastContainer />
     </OwnerAdminLayout>
   );
-}
-
-export async function getServerSideProps(context: any) {
-  const session = await getSession({ req: context.req });
-  if (!session) return { redirect: { permanent: false, destination: ROUTES.AUTH } };
-
-  const username = session?.user?.username;
-
-  return {
-    props: { username },
-  };
+  return <AddLocation username={username} businessId={businessId} />;
 }

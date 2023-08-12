@@ -1,7 +1,7 @@
 import React, { useId } from 'react';
 import { Form, InputGroup } from 'react-bootstrap';
 
-interface FormFieldProps {
+interface FormFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
   name: string;
   type: string;
@@ -18,7 +18,8 @@ const FormField: React.FC<FormFieldProps> = ({
   placeholder,
   register,
   errors,
-  required = false, // Set a default value for the required prop
+  required = false,
+  ...props // Set a default value for the required prop
 }) => {
   const isInvalid = !!errors[name];
   const formId = useId();
@@ -37,6 +38,7 @@ const FormField: React.FC<FormFieldProps> = ({
           placeholder={placeholder}
           type={type}
           name={name}
+          {...props}
           {...register(name)}
         />
       </InputGroup>

@@ -1,51 +1,69 @@
-import { joiResolver } from '@hookform/resolvers/joi';
 import { BusinessTypeData } from '@models/data';
+import { useSession } from 'next-auth/react';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
 import { Form } from 'react-bootstrap';
+import { default as BsImage } from 'react-bootstrap/Image';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import FormField from 'src/components/form/FormField';
 import SelectField from 'src/components/form/SelectField';
-import { useBusinessTypesList, useCurrenciesList } from 'src/services/business.service';
-import { createBusinessSchema } from './create-business.schema';
-import { default as BsImage } from 'react-bootstrap/Image';
-import styles from './create-business.module.scss';
-import { authApi } from 'src/utils/auth-api';
-import { useSession } from 'next-auth/react';
-import { toast } from 'react-toastify';
 import { Toastify } from 'src/libs/allToasts';
-import { useRouter } from 'next/router';
+import { useBusinessTypesList, useCurrenciesList } from 'src/services/business.service';
+import { authApi } from 'src/utils/auth-api';
+import styles from './add-location.module.scss';
 
 type Inputs = {
   name: string;
-  mobile: string;
-  email: string;
-  business_type_id: string | number;
-};
+  state: string;
 
-export default function CreateBusinessView() {
+  currency_id: number;
+  business_id: number;
+  decimal: number;
+};
+interface Props {
+  businessId?: string;
+}
+
+export default function AddBusinessLocationView({ businessId = '0' }: Props) {
   const router = useRouter();
   const { data: session } = useSession();
-
+  console.log(businessId);
   const [isLoading, setLoading] = useState(false);
   const [busniessTypesList, setBusniessTypesList] = useState(BusinessTypeData());
   const [countries, setCountries] = useState<{ value: number; label: string }[]>([]);
-  const { currenciesList } = useCurrenciesList(null, {
-    onSuccess(data, key, config) {
+  const [currencies, setCurrencies] = useState<{ value: number; label: string }[]>([]);
+  useCurrenciesList(null, {
+    onSuccess(data) {
+      console.log(data.result);
       const _countriesList = data.result.map((itm: any) => {
         return { value: itm.id, label: itm.country };
       });
+      const _currenciesList = data.result.map((itm: any) => {
+        return { value: itm.id, label: itm.currency };
+      });
+
       setCountries(_countriesList);
+      setCurrencies(_currenciesList);
     },
   });
+
   const {
     register,
     handleSubmit,
     formState: { errors },
+    setValue,
   } = useForm<Inputs>({
     mode: 'onTouched',
-    resolver: joiResolver(createBusinessSchema),
+    // resolver: joiResolver(createBusinessSchema),
     reValidateMode: 'onBlur',
+    defaultValues: {
+      name: '',
+      state: '',
+      decimal: 1,
+      currency_id: 0,
+      business_id: +businessId,
+    },
   });
 
   const { businessTypesList } = useBusinessTypesList({
@@ -59,10 +77,10 @@ export default function CreateBusinessView() {
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     setLoading(true);
     authApi(session)
-      .postForm('/business', data)
+      .postForm('/business/locations', data)
       .then((res) => {
         console.log(res);
-        Toastify('success', 'Business created successfully');
+        Toastify('success', 'Location created successfully');
         router.push('/[username]/business', `/${session?.user?.username}/business`);
       })
       .catch((err) => {
@@ -74,69 +92,55 @@ export default function CreateBusinessView() {
   };
   const onError = (errors: any, e: any) => console.log(errors, e);
 
+  useEffect(() => {
+    setValue('business_id', +businessId);
+  }, [businessId]);
   return (
     <Form noValidate onSubmit={handleSubmit(onSubmit, onError)} className={styles.form}>
       <div className={styles['form-image__container']}>
         <BsImage
           fluid
-          alt="createBusiness"
+          alt="createLocation"
           className={styles['form-image']}
           src="https://static.vecteezy.com/system/resources/previews/012/024/324/original/a-person-using-a-smartphone-to-fill-out-a-registration-form-registration-register-fill-in-personal-data-use-the-application-vector.jpg"
         />
       </div>
       <div className="p-2 my-2 d-flex gap-3 flex-column">
         <FormField
-          label="Business Name"
+          label="Location Name"
           name="name"
           type="text"
-          placeholder="Enter Business Name"
+          placeholder="Enter Location Name"
           register={register}
           required
           errors={errors}
         />
         <FormField
-          label="Email"
-          name="email"
+          label="State"
+          name="state"
           type="text"
-          placeholder="Enter Email"
+          placeholder="Enter State"
           register={register}
           required
           errors={errors}
         />
         <FormField
-          label="Mobile"
-          name="mobile"
-          type="text"
-          placeholder="Enter Mobile number"
-          register={register}
-          required
-          errors={errors}
-        />
-        {/* <FormField
           label="Decimal Points"
           name="decimal"
           type="number"
-          placeholder="Enter Mobile number"
+          placeholder="Enter Decimal Number"
           register={register}
           required
           errors={errors}
-        /> */}
+        />
         <SelectField
-          label="Business Type"
-          name="business_type_id"
-          options={busniessTypesList} // Pass the business types options
+          label="Currency"
+          name="currency_id"
+          options={currencies} // Pass the business types options
           register={register}
           errors={errors}
           required
         />
-        {/* <SelectField
-          label="Country"
-          name="country_id"
-          options={countries} // Pass the business types options
-          register={register}
-          errors={errors}
-          required
-        /> */}
         <button className="btn-login mt-auto" type="submit">
           {isLoading && (
             <Image
@@ -147,7 +151,7 @@ export default function CreateBusinessView() {
               src={'/images/loading.gif'}
             />
           )}
-          Create business
+          Create location
         </button>
       </div>
     </Form>

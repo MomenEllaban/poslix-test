@@ -185,7 +185,9 @@ const posSetvice = {
       .get<any, TServiceResponse<IPurchase[]>, any>(`/purchase/${locId}`)
       .then((data) => data.data),
   getPurchase: async (id: string) =>
-    api.get<any, TServiceResponse<IPurchase>, any>(`/purchase/${id}/show`),
+    api
+      .get<any, TServiceResponse<IPurchase>, any>(`/purchase/${id}/show`)
+      .then((data) => data.data),
   createPurchase: async (locId: string, payload: ICreatePurchasePayload) =>
     api.post(`/purchase/${locId}`, payload).then((data) => data.data),
   updatePurchase: async (id: string, payload: IUpdatePurchasePayload) =>
@@ -203,14 +205,18 @@ const posSetvice = {
     }
   ) => api.post(`/registeration/${locId}/open`).then((data) => data.data),
   getCloseRegisteration: async (locId: string) =>
-    api.get<any, TServiceResponse<IGetCloseRegisteration>, any>(`/registeration/${locId}/close`),
+    api
+      .get<any, TServiceResponse<IGetCloseRegisteration>, any>(`/registeration/${locId}/close`)
+      .then((data) => data.data),
 
   getExpenseCategories: async (locId: string) =>
     api
       .get<any, TServiceResponse<IExpenseCategory[]>, any>(`/expenses-categories/${locId}`)
       .then((data) => data.data),
   getExpenseCategory: async (id: string) =>
-    api.get<any, TServiceResponse<IExpenseCategory>, any>(`/expenses-categories/${id}/show`),
+    api
+      .get<any, TServiceResponse<IExpenseCategory>, any>(`/expenses-categories/${id}/show`)
+      .then((data) => data.data),
   createExpenseCategory: async (locId: string, payload: { name: string }) =>
     api.post(`/expenses-categories/${locId}`, payload).then((data) => data.data),
   updateExpenseCategory: async (id: string, payload: { name: string }) =>

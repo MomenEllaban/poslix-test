@@ -7,7 +7,7 @@ export interface ILogin {
 }
 
 export interface IUser {
-  id: string | number;
+  id: number;
   owner_id?: string | number;
 
   username: string;
@@ -22,22 +22,8 @@ export interface IUser {
   deleted_at: any;
   created_at: any;
   updated_at: any;
-}
 
-export interface IUser {
-  id: string | number;
-  owner_id?: string | number;
-
-  username: string;
-  user_type: 'owner' | 'user';
-  first_name: string;
-  last_name?: string;
-  contact_number: string;
-  email: string;
-
-  status: string;
   token?: string;
-  accessToken?: string;
 }
 
 export interface IUserBusiness {

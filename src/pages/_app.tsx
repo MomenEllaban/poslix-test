@@ -21,24 +21,23 @@ config.autoAddCss = false;
 export default function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   return (
     <SessionProvider session={session}>
-      <UserProvider>
-        <Head>
-          <meta name="viewport" content="width=device-width, initial-scale=1" />
-          <title>Poslix App</title>
-        </Head>
-
-        {/* <RecoilRoot>
-          <SSRProvider>
+      <SSRProvider>
+        <UserProvider>
+          <Head>
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
+            <title>Poslix App</title>
+          </Head>
+          {/* <RecoilRoot>
         <ProductProvider> */}
-        <DarkModeProvider>
-          <NextNProgress />
-          <Component {...pageProps} />
-          <ToastContainer />
-        </DarkModeProvider>
-        {/* </ProductProvider>
-          </SSRProvider>
+          <DarkModeProvider>
+            <NextNProgress />
+            <Component {...pageProps} />
+            <ToastContainer />
+          </DarkModeProvider>
+          {/* </ProductProvider>
         </RecoilRoot>{' '} */}
-      </UserProvider>
+        </UserProvider>
+      </SSRProvider>
     </SessionProvider>
   );
 }

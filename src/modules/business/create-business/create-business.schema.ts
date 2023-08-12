@@ -1,3 +1,4 @@
+import Joi from 'joi';
 // {
 //   name: '',
 //   mobile: '',
@@ -5,8 +6,6 @@
 //   email: '',
 //   business_type_id: '',
 // }
-
-import Joi from 'joi';
 
 // create validation schema for the previous object
 
@@ -27,8 +26,12 @@ export const createBusinessSchema = Joi.object({
     .messages({
       'string.email': 'Email must be a valid email',
       'string.empty': 'Email is required',
-
       'any.required': 'Email is required',
     }),
+  // decimal: Joi.number().required().min(0).messages({
+  //   'number.min': 'Decimal must be greater than 0',
+  //   'any.required': 'Decimal is required',
+  // }),
   business_type_id: Joi.number().required(),
+  // country_id: Joi.number().required(),
 });

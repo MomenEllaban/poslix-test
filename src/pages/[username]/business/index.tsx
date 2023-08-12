@@ -66,4 +66,5 @@ const MyBusinessesPage = () => {
     </OwnerAdminLayout>
   );
 };
+
 export default withAuth(MyBusinessesPage);
