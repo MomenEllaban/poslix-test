@@ -14,7 +14,7 @@ const services = {
     {
       const session = await getSession();
 
-      return authApi(session)
+      return (await authApi(session))
         .get<any, TServiceResponse<IUserBusiness[]>, any>('/business')
         .then((data) => data.data);
     }
@@ -23,7 +23,7 @@ const services = {
   getCurrencies: async () => {
     const session = await getSession();
 
-    return authApi(session)
+    return (await authApi(session))
       .get<any, TServiceResponse<ICurrency[]>, any>('/currencies')
       .then((data) => data.data);
   },

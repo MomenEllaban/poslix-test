@@ -1,5 +1,5 @@
 import React, { useId } from 'react';
-import { Form, InputGroup } from 'react-bootstrap';
+import { Form, InputGroup, Spinner } from 'react-bootstrap';
 
 interface FormFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
@@ -8,6 +8,7 @@ interface FormFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   placeholder: string;
   register: any;
   errors: any;
+  loading?: boolean;
   required?: boolean;
 }
 
@@ -18,8 +19,9 @@ const FormField: React.FC<FormFieldProps> = ({
   placeholder,
   register,
   errors,
+  loading = false,
   required = false,
-  ...props // Set a default value for the required prop
+  ...props
 }) => {
   const isInvalid = !!errors[name];
   const formId = useId();
@@ -33,16 +35,17 @@ const FormField: React.FC<FormFieldProps> = ({
       </Form.Label>
       <InputGroup className="mb-3">
         <Form.Control
+          {...props}
           autoComplete="off"
           isInvalid={isInvalid}
           placeholder={placeholder}
           type={type}
           name={name}
-          {...props}
           {...register(name)}
         />
       </InputGroup>
-      {isInvalid && <Form.Text className="text-danger">{errors[name]?.message}</Form.Text>}
+      {isInvalid && <Form.Text className="text-danger">{errors[name]?.message}</Form.Text>}{' '}
+      {loading && <Spinner animation="border" size="sm" />}
     </Form.Group>
   );
 };

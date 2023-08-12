@@ -75,7 +75,7 @@ export default function AddBusinessLocationView({ businessId = '0' }: Props) {
   });
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     setLoading(true);
-    authApi(session)
+    (await authApi(session))
       .postForm('/business/locations', data)
       .then((res) => {
         Toastify('success', 'Location created successfully');

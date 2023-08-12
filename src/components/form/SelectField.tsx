@@ -1,12 +1,13 @@
 import React, { useId } from 'react';
-import { Form } from 'react-bootstrap';
+import { Form, Spinner } from 'react-bootstrap';
 
-interface SelectFieldProps {
+interface SelectFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
   name: string;
   options: { value: string | number; label: string }[];
   register: any;
   errors: any;
+  loading?: boolean;
   required?: boolean;
 }
 
@@ -16,7 +17,9 @@ const SelectField: React.FC<SelectFieldProps> = ({
   options,
   register,
   errors,
+  loading = false,
   required = false,
+  ...props
 }) => {
   const isInvalid = !!errors[name];
   const formId = useId();
@@ -27,7 +30,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
         {label}
         {required && <span className="text-danger ms-2">*</span>}
       </Form.Label>
-      <Form.Select isInvalid={isInvalid} name={name} {...register(name)}>
+      <Form.Select isInvalid={isInvalid} name={name} {...register(name)} {...props}>
         {options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
@@ -35,6 +38,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
         ))}
       </Form.Select>
       {isInvalid && <Form.Text className="text-danger">{errors[name]?.message}</Form.Text>}
+      {loading && <Spinner animation="border" size="sm" />}
     </Form.Group>
   );
 };

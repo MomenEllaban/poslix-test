@@ -18,7 +18,11 @@ const NavMenu: any = (probs: any) => {
   const defaultLang = localStorage.getItem('lang') || 'en';
 
   async function logoutHandler() {
-    const res = await signOut();
+    const res = await signOut({
+      redirect: false,
+    });
+    console.log(res);
+    window.location.href = ROUTES.AUTH;
   }
   useEffect(() => {
     if (defaultLang == 'en') setLang(en);

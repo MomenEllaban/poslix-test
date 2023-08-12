@@ -98,9 +98,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
                     data.decimal_places,
                   ],
                   async function (err: QueryError, location: any) {
-                    if (err)
-                      //update token
-                      let _token: string = '';
+                    if (err) return;
+
+                    let _token: string = '';
                     let _locas: any[] = repo.data.locs == undefined ? [] : repo.data.locs;
                     let _current_type: any;
                     await con
@@ -173,21 +173,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
                   redirection(400, con, res, getMessageByErrorCode(err.errno || 0));
                 } else {
                   res.setHeader('Content-Type', 'application/json');
-                  res
-                    .status(200)
-                    .json({
-                      success: true,
-                      msg: 'record is added!',
-                      data: usertuff.insertId,
-                      userObject: {
-                        isNew: true,
-                        name: data.name,
-                        username: data.username,
-                        password: data.password,
-                        mobile: '',
-                        email: '',
-                      },
-                    });
+                  res.status(200).json({
+                    success: true,
+                    msg: 'record is added!',
+                    data: usertuff.insertId,
+                    userObject: {
+                      isNew: true,
+                      name: data.name,
+                      username: data.username,
+                      password: data.password,
+                      mobile: '',
+                      email: '',
+                    },
+                  });
                   res.end();
                   con.end();
                   return;
@@ -273,18 +271,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
                     return;
                   } else {
                     res.setHeader('Content-Type', 'application/json');
-                    res
-                      .status(200)
-                      .json({
-                        success: true,
-                        msg: 'record is added!',
-                        newdata: {
-                          value: data.user,
-                          label: '',
-                          stuff_ids: _userStuff,
-                          locationId: locationId,
-                        },
-                      });
+                    res.status(200).json({
+                      success: true,
+                      msg: 'record is added!',
+                      newdata: {
+                        value: data.user,
+                        label: '',
+                        stuff_ids: _userStuff,
+                        locationId: locationId,
+                      },
+                    });
                     res.end();
                     con.end();
                     return;

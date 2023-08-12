@@ -58,7 +58,7 @@ export default function CreateBusinessView() {
   });
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     setLoading(true);
-    authApi(session)
+    (await authApi(session))
       .postForm('/business', data)
       .then((res) => {
         Toastify('success', 'Business created successfully');

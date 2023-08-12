@@ -32,5 +32,4 @@ export default function AddBusinessLocation({ username, busniessType }: any) {
       <ToastContainer />
     </OwnerAdminLayout>
   );
-  return <AddLocation username={username} businessId={businessId} />;
 }
