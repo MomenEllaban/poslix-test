@@ -27,15 +27,15 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
             <meta name="viewport" content="width=device-width, initial-scale=1" />
             <title>Poslix App</title>
           </Head>
-          {/* <RecoilRoot>
-        <ProductProvider> */}
-          <DarkModeProvider>
-            <NextNProgress />
-            <Component {...pageProps} />
-            <ToastContainer />
-          </DarkModeProvider>
-          {/* </ProductProvider>
-        </RecoilRoot>{' '} */}
+          <RecoilRoot>
+            <ProductProvider>
+              <DarkModeProvider>
+                <NextNProgress />
+                <Component {...pageProps} />
+                <ToastContainer />
+              </DarkModeProvider>
+            </ProductProvider>
+          </RecoilRoot>
         </UserProvider>
       </SSRProvider>
     </SessionProvider>

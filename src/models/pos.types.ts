@@ -29,7 +29,7 @@ export interface ICategory {
 export interface IProduct {
   id: number;
   name: string;
-  business_id: any;
+  business_id?: number;
   location_id: number;
   Etype: string;
   is_tailoring: number;
