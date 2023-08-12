@@ -61,7 +61,6 @@ export default function CreateBusinessView() {
     authApi(session)
       .postForm('/business', data)
       .then((res) => {
-        console.log(res);
         Toastify('success', 'Business created successfully');
         router.push('/[username]/business', `/${session?.user?.username}/business`);
       })

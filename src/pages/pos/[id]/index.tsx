@@ -86,7 +86,6 @@ const Home: NextPage = (probs: any) => {
     if (data.invoiceDetails != null && data.invoiceDetails.length > 10)
       setInvoicDetails(JSON.parse(data.invoiceDetails));
     else {
-      console.log('errorrrr default invoice');
     }
     var _locs = JSON.parse(localStorage.getItem('userlocs') || '[]');
     if (_locs.toString().length > 10)
@@ -113,7 +112,6 @@ const Home: NextPage = (probs: any) => {
       shopId,
     });
     if (!success) {
-      console.log('has error in open Register');
       alert('error..Try Again');
       return;
     }

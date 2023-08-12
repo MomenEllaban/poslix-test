@@ -155,7 +155,7 @@ const Product: NextPage = (props: any) => {
     if (result) {
       const _data = [...customersList];
       const idx = _data.findIndex((itm: any) => itm.id == selectId);
-      console.log(idx, selectId);
+
       if (idx != -1) {
         _data.splice(idx, 1);
         setCustomers(_data);

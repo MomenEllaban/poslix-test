@@ -91,7 +91,6 @@ const AddTailoring: NextPage = (props: any) => {
       id,
     });
     if (success) {
-      console.log('dd ', data);
       setExtras(data.extras);
       if (id != '0') {
         setIsEdit(true);
@@ -110,7 +109,7 @@ const AddTailoring: NextPage = (props: any) => {
           ],
         });
         const extraIds = ',' + data.tailoring[0].extras;
-        console.log('extraIds', extraIds);
+
         console.log(
           'd',
           data.extras.filter((ex: any) => extraIds.includes(ex.value + ','))

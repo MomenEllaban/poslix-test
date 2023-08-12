@@ -1504,13 +1504,7 @@ export const OrdersComponent = (probs: any) => {
                     <div onClick={() => handleLinkColor()}>{isLinking ? 'Apply' : 'link'}</div>
                   </th>
                 )}
-                <th
-                  scope="col"
-                  style={{ width: 30 }}
-                  onClick={() => {
-                    console.log(orders);
-                    console.log(quantity);
-                  }}>
+                <th scope="col" style={{ width: 30 }} onClick={() => {}}>
                   #
                 </th>
                 <th scope="col" className="text-start">

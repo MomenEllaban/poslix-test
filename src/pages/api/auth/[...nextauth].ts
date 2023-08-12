@@ -38,13 +38,13 @@ export const authOptions: NextAuthOptions = {
           TLoginResponse,
           { email: string; password: string }
         >(`${process.env.API_BASE}login`, { email, password });
-        console.log(data.result);
+
         if (data.result) {
           const user = {
             ...data.result.user,
             token: data.result.authorization.token,
           };
-          console.log(user);
+
           return user as any;
         }
       },
@@ -54,22 +54,16 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user, account, profile }) {
       if (user) token.user = user as any;
-      console.log('in Auth ooo---ooo T', token);
-      console.log(token);
-      console.log(account);
 
       return token;
     },
     async session({ session, token, user }) {
-      console.log('in Auth ooooooooooooooooo T', token);
-      console.log('in Auth ooooooooooooooooo U', user);
       if (!session) return;
       if (token.user) {
         session.user = token.user;
         session.token = token.user.token;
       }
 
-      console.log('in Auth ooooooooooooooooo Session', session);
       return session;
     },
   },

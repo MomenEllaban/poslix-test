@@ -19,7 +19,6 @@ const NavMenu: any = (probs: any) => {
 
   async function logoutHandler() {
     const res = await signOut();
-    console.log(res, 'IS LOGGED OUT ');
   }
   useEffect(() => {
     if (defaultLang == 'en') setLang(en);

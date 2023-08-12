@@ -58,7 +58,6 @@ const Product: NextPage = (probs: any) => {
       { value: -1, label: 'Never Tax' },
       ...newdata.taxes,
     ]);
-    console.log(newdata);
 
     if (newdata.itm.length > 0) {
       const itm = newdata.itm[0];

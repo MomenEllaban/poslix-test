@@ -3,7 +3,6 @@ import { getSession } from 'next-auth/react';
 import { ROUTES } from 'src/utils/app-routes';
 
 export default function Shop({ user, shopId }) {
-  console.log(user, shopId);
   return (
     <div>
       <h1>Shop</h1>

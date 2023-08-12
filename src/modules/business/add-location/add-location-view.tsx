@@ -28,14 +28,13 @@ interface Props {
 export default function AddBusinessLocationView({ businessId = '0' }: Props) {
   const router = useRouter();
   const { data: session } = useSession();
-  console.log(businessId);
+
   const [isLoading, setLoading] = useState(false);
   const [busniessTypesList, setBusniessTypesList] = useState(BusinessTypeData());
   const [countries, setCountries] = useState<{ value: number; label: string }[]>([]);
   const [currencies, setCurrencies] = useState<{ value: number; label: string }[]>([]);
   useCurrenciesList(null, {
     onSuccess(data) {
-      console.log(data.result);
       const _countriesList = data.result.map((itm: any) => {
         return { value: itm.id, label: itm.country };
       });
@@ -79,7 +78,6 @@ export default function AddBusinessLocationView({ businessId = '0' }: Props) {
     authApi(session)
       .postForm('/business/locations', data)
       .then((res) => {
-        console.log(res);
         Toastify('success', 'Location created successfully');
         router.push('/[username]/business', `/${session?.user?.username}/business`);
       })

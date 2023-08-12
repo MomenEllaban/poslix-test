@@ -1,26 +1,25 @@
-import { useEffect, useState } from "react";
-import { Button, ButtonGroup, Card, Spinner, Table } from "react-bootstrap";
-import { apiFetch } from "src/libs/dbUtils";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useEffect, useState } from 'react';
+import { Button, ButtonGroup, Card, Spinner, Table } from 'react-bootstrap';
+import { apiFetch } from 'src/libs/dbUtils';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faTrash,
   faPenToSquare,
   faPlus,
   faStreetView,
   faFolderOpen,
-} from "@fortawesome/free-solid-svg-icons";
-import { redirectToLogin } from "../../libs/loginlib";
+} from '@fortawesome/free-solid-svg-icons';
+import { redirectToLogin } from '../../libs/loginlib';
 const Locations = () => {
   const [business, setBusiness] = useState<{ id: number; name: string }[]>([]);
   async function initDataPage() {
-    const { success, newdata } = await apiFetch({ fetch: "getBusiness" });
-    console.log(success);
+    const { success, newdata } = await apiFetch({ fetch: 'getBusiness' });
+
     if (!success) {
       redirectToLogin();
       return;
     }
     setBusiness(newdata);
-    console.log("result ", newdata);
   }
   useEffect(() => {
     initDataPage();
@@ -39,7 +38,7 @@ const Locations = () => {
                 <Table className="table table-hover" responsive>
                   <thead className="thead-dark">
                     <tr>
-                      <th style={{ width: "6%" }}>#</th>
+                      <th style={{ width: '6%' }}>#</th>
                       <th>Name</th>
                       <th>type</th>
                       <th>Locations</th>
@@ -58,12 +57,8 @@ const Locations = () => {
                             <ButtonGroup className="mb-2 m-buttons-style">
                               <Button
                                 onClick={() => {
-                                  console.log("this item ", busi.id);
-                                  redirectToLogin(
-                                    "/shop/" + busi.id + "/products/"
-                                  );
-                                }}
-                              >
+                                  redirectToLogin('/shop/' + busi.id + '/products/');
+                                }}>
                                 <FontAwesomeIcon icon={faFolderOpen} />
                               </Button>
                             </ButtonGroup>

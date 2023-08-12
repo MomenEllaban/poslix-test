@@ -48,7 +48,7 @@ export default function RegisterPage() {
     const { data } = await api.get<any, AxiosResponse<ICustomResponse<IUserBusiness>>, any>(
       '/business'
     );
-    console.log(data.result);
+
     const { success, result } = data;
     const { locations } = result;
     localStorage.setItem(ELocalStorageKeys.USER_LOCATIONS, JSON.stringify(locations));
@@ -60,8 +60,7 @@ export default function RegisterPage() {
   useEffect(() => {
     if (session) {
       const { user } = session;
-      console.log(session);
-      console.log(user);
+
       setCookie('tokend', user.token);
       setUser(user);
 
@@ -73,7 +72,7 @@ export default function RegisterPage() {
       );
       localStorage.setItem(ELocalStorageKeys.USER_NAME, user.username);
       localStorage.setItem(ELocalStorageKeys.LEVELS, user.user_type);
-      console.log(user.user_type);
+
       if (user.user_type === 'owner') getBusiness(user);
 
       // if (newdata.user.level == 'user') router.push('/shop/' + newdata.myBusiness[0].value);

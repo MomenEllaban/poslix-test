@@ -30,7 +30,6 @@ const services = {
 };
 
 export const useBusinessList = (config?: SWRConfiguration) => {
-  console.log('this runs as business list fetching');
   const { data, error, isLoading, mutate } = useSWR(
     config?.suspense ? null : '/business',
     services.getBusinesses,
@@ -46,7 +45,5 @@ export const useBusinessList = (config?: SWRConfiguration) => {
     refetch: mutate,
   };
 };
-
-
 
 export default services;

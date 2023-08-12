@@ -1,36 +1,25 @@
-import React, { useState, useContext, useEffect } from "react";
-import {
-  apiFetch,
-  apiUpdateCtr,
-  apiInsertCtr,
-  apiFetchCtr,
-} from "../../../libs/dbUtils";
-import Dialog from "@mui/material/Dialog";
-import DialogContent from "@mui/material/DialogContent";
-import DialogTitle from "@mui/material/DialogTitle";
-import { ProductContext } from "../../../context/ProductContext";
-import CircularProgress from "@mui/material/CircularProgress";
-import Box from "@mui/material/Box";
-import SnakeAlert from "../utils/SnakeAlert";
-import mStyle from "../../../styles/Customermodal.module.css";
-import { Toastify } from "src/libs/allToasts";
-import { Button, ButtonGroup } from "react-bootstrap";
-import { DataGrid, GridColDef, GridRowParams, GridSelectionModel } from "@mui/x-data-grid";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faTrash,
- faSearch
-} from "@fortawesome/free-solid-svg-icons";
-import { debounce } from "@mui/material";
-import { ITransferItem } from "@models/common-model";
+import React, { useState, useContext, useEffect } from 'react';
+import { apiFetch, apiUpdateCtr, apiInsertCtr, apiFetchCtr } from '../../../libs/dbUtils';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import { ProductContext } from '../../../context/ProductContext';
+import CircularProgress from '@mui/material/CircularProgress';
+import Box from '@mui/material/Box';
+import SnakeAlert from '../utils/SnakeAlert';
+import mStyle from '../../../styles/Customermodal.module.css';
+import { Toastify } from 'src/libs/allToasts';
+import { Button, ButtonGroup } from 'react-bootstrap';
+import { DataGrid, GridColDef, GridRowParams, GridSelectionModel } from '@mui/x-data-grid';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrash, faSearch } from '@fortawesome/free-solid-svg-icons';
+import { debounce } from '@mui/material';
+import { ITransferItem } from '@models/common-model';
 // const [locations, setLocations] = useState<{ value: number, label: string }[]>([])
 
 const Transfermodal = (probs: any) => {
   const { openDialog, statusDialog, userdata, showType, shopId } = probs;
 
-
-  
-  
   const [products, setProducts] = useState<
     {
       id: number;
@@ -40,34 +29,31 @@ const Transfermodal = (probs: any) => {
       subtotal?: number;
     }[]
   >([]);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [moreInfo, setMoreInfo] = useState(false);
   const [transferInfo, setTransferInfo] = useState<ITransferItem>({
-    id:0,
+    id: 0,
     date: '',
     refNo: 0,
     status: '',
     loctionFrom: 0,
     loctionTo: 0,
-    charges:0,
-    notes: "",
-    product:{
-      id:0,
-      name:'',
-      qty:0,
-      sell:0,
-      totalPrice:0
-    }
+    charges: 0,
+    notes: '',
+    product: {
+      id: 0,
+      name: '',
+      qty: 0,
+      sell: 0,
+      totalPrice: 0,
+    },
   });
-  console.log(transferInfo);
+
   const { customers, setCustomers } = useContext(ProductContext);
   const [open, setOpen] = useState(false);
   // JSON.parse(localStorage.getItem('userlocs') || '[]')
-  const [locations, setLocations] = useState<
-    { value: number; label: string }[]
-  >([]);
-  console.log("locationssssssssssss ", locations);
+  const [locations, setLocations] = useState<{ value: number; label: string }[]>([]);
 
   const [isLoading, setIsLoading] = useState(false);
   const [openSnakeBar, setOpenSnakeBar] = useState(false);
@@ -79,9 +65,10 @@ const Transfermodal = (probs: any) => {
     if (!statusDialog) return;
     // setTransferInfo(transferTemplte);
     setOpen(statusDialog);
-    if (userdata !== undefined && showType != "add" && statusDialog){}
-      // getCustomerInfo(userdata.value);
-    var _locs = JSON.parse(localStorage.getItem("userlocs") || "[]");
+    if (userdata !== undefined && showType != 'add' && statusDialog) {
+    }
+    // getCustomerInfo(userdata.value);
+    var _locs = JSON.parse(localStorage.getItem('userlocs') || '[]');
     setLocations(_locs);
   }, [statusDialog]);
 
@@ -172,40 +159,46 @@ const Transfermodal = (probs: any) => {
 
   async function initDataPage() {
     const { success, data } = await apiFetchCtr({
-      fetch: "products",
-      subType: "getProducts",
+      fetch: 'products',
+      subType: 'getProducts',
       shopId,
     });
     if (!success) {
-      Toastify("error", "Somthing wrong!!, try agian");
+      Toastify('error', 'Somthing wrong!!, try agian');
       return;
     }
 
-    
     // console.log(data.products);
-    var products = data.products.map(ele => {
+    var products = data.products.map((ele) => {
       const subtotal = ele.sell_price * 1;
-      return {id: ele.id, name: ele.name, subtotal: subtotal, unitPrice: ele.sell_price, qty: 1}
-    })
-    console.log(products);
-    
+      return { id: ele.id, name: ele.name, subtotal: subtotal, unitPrice: ele.sell_price, qty: 1 };
+    });
+
     setProducts(products);
     setFilteredProducts(products);
     setIsLoading(false);
   }
 
-
   const handelChangeQty = (event: React.ChangeEvent<HTMLInputElement>, id: number) => {
     const value = event.target.value;
     let prods = [...products];
-    let idx = prods.findIndex(ele => ele.id == id);
+    let idx = prods.findIndex((ele) => ele.id == id);
     prods[idx].qty = +value;
-    prods[idx].subtotal = +value * prods[idx].unitPrice
+    prods[idx].subtotal = +value * prods[idx].unitPrice;
     setProducts(prods);
-    if(id == transferInfo.product.id){
-      setTransferInfo({...transferInfo, product: {id: prods[idx].id, name: prods[idx].name, qty: prods[idx].qty, sell: prods[idx].unitPrice, totalPrice: prods[idx].subtotal}})
+    if (id == transferInfo.product.id) {
+      setTransferInfo({
+        ...transferInfo,
+        product: {
+          id: prods[idx].id,
+          name: prods[idx].name,
+          qty: prods[idx].qty,
+          sell: prods[idx].unitPrice,
+          totalPrice: prods[idx].subtotal,
+        },
+      });
     }
-  } 
+  };
   const columns: GridColDef[] = [
     // { field: "check", headerName: <Checkbox aria-label={"select-all"} onChange={(e: ChangeEvent<HTMLInputElement>)=>{
     //   // if(e.target.checked) setSelectedItems([...selectedItems, row.id])
@@ -219,11 +212,11 @@ const Transfermodal = (probs: any) => {
     //     else setSelectedItems(selectedItems.filter((id) => {return id !== row.id}))
     //   }} />
     // ) },
-    { field: "id", headerName: "#", minWidth: 50 },
-    { field: "name", headerName: "name ", flex: 1 },
+    { field: 'id', headerName: '#', minWidth: 50 },
+    { field: 'name', headerName: 'name ', flex: 1 },
     {
-      field: "qty",
-      headerName: "Quantity",
+      field: 'qty',
+      headerName: 'Quantity',
       flex: 0.5,
       renderCell: ({ row }: Partial<GridRowParams>) => (
         <>
@@ -233,21 +226,21 @@ const Transfermodal = (probs: any) => {
             className="form-control"
             value={row.qty}
             min={1}
-            onChange={(e => {
-              handelChangeQty(e, row.id)
-            })}
+            onChange={(e) => {
+              handelChangeQty(e, row.id);
+            }}
           />
         </>
       ),
     },
     {
-      field: "unitPrice",
-      headerName: "Unit Price",
+      field: 'unitPrice',
+      headerName: 'Unit Price',
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) => (
         <>
           <input
-          disabled
+            disabled
             type="number"
             name="unit-price"
             className="form-control"
@@ -257,13 +250,13 @@ const Transfermodal = (probs: any) => {
       ),
     },
     {
-      field: "subtotal",
-      headerName: "Subtotal",
+      field: 'subtotal',
+      headerName: 'Subtotal',
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) => (
         <>
           <input
-          disabled
+            disabled
             type="number"
             name="subtotal"
             className="form-control"
@@ -279,8 +272,8 @@ const Transfermodal = (probs: any) => {
       ),
     },
     {
-      field: "action",
-      headerName: "Action ",
+      field: 'action',
+      headerName: 'Action ',
       sortable: false,
       disableExport: true,
       flex: 1,
@@ -301,7 +294,6 @@ const Transfermodal = (probs: any) => {
     },
   ];
 
-
   const handleSearch = (event) => {
     debounceSearchTerm(event.target.value);
   };
@@ -313,9 +305,8 @@ const Transfermodal = (probs: any) => {
   // Filter products based on search term
   useEffect(() => {
     if (searchTerm.trim()) {
-      const filteredList = products.filter(
-        (product) =>
-          product.name.toLowerCase().includes(searchTerm.toLowerCase())
+      const filteredList = products.filter((product) =>
+        product.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredProducts(filteredList);
     } else {
@@ -323,38 +314,40 @@ const Transfermodal = (probs: any) => {
     }
   }, [searchTerm, products]);
 
-  const onRowsSelectionHandler = (ele: any)=>{
-    console.log(ele);
-    const idx = products.findIndex(e => e.id == ele)
-    setTransferInfo({...transferInfo, product:{id: products[idx].id, name: products[idx].name, qty: products[idx].qty, sell: products[idx].unitPrice, totalPrice: products[idx].subtotal}})
-  }
+  const onRowsSelectionHandler = (ele: any) => {
+    const idx = products.findIndex((e) => e.id == ele);
+    setTransferInfo({
+      ...transferInfo,
+      product: {
+        id: products[idx].id,
+        name: products[idx].name,
+        qty: products[idx].qty,
+        sell: products[idx].unitPrice,
+        totalPrice: products[idx].subtotal,
+      },
+    });
+  };
   return (
     <>
-      <Dialog
-        open={open}
-        className="poslix-modal"
-        onClose={handleClose}
-        maxWidth={"xl"}
-      >
+      <Dialog open={open} className="poslix-modal" onClose={handleClose} maxWidth={'xl'}>
         <DialogTitle className="poslix-modal-title text-primary">
-          {showType + " stock transfer"}
+          {showType + ' stock transfer'}
         </DialogTitle>
         <DialogContent>
           {isLoading ? (
             <Box
               sx={{
-                display: "flex",
-                justifyContent: "center",
-                margin: "20px",
-              }}
-            >
+                display: 'flex',
+                justifyContent: 'center',
+                margin: '20px',
+              }}>
               <CircularProgress />
             </Box>
           ) : (
             <div className="poslix-modal">
               <div className="modal-content">
                 <div className="modal-body">
-                  <fieldset disabled={showType == "show" ? true : false}>
+                  <fieldset disabled={showType == 'show' ? true : false}>
                     <div className="row">
                       <div className="col-lg-4 mb-3">
                         <label>Date</label>
@@ -390,11 +383,15 @@ const Transfermodal = (probs: any) => {
                       </div>
                       <div className="col-lg-4 mb-3">
                         <label>Status</label>
-                        <select className="form-select" defaultValue={transferInfo.status} onChange={(e) =>
+                        <select
+                          className="form-select"
+                          defaultValue={transferInfo.status}
+                          onChange={(e) =>
                             setTransferInfo({
                               ...transferInfo,
                               status: e.target.value,
-                            })}>
+                            })
+                          }>
                           <option value={'Draft'}>Draft</option>
                           <option value={'Processing'}>Processing</option>
                           <option value={'Received'}>Received</option>
@@ -402,31 +399,45 @@ const Transfermodal = (probs: any) => {
                       </div>
                       <div className="col-lg-6 mb-3">
                         <label>Location from</label>
-                        <select className="form-select" onChange={(e) =>
+                        <select
+                          className="form-select"
+                          onChange={(e) =>
                             setTransferInfo({
                               ...transferInfo,
                               loctionFrom: +e.target.value,
-                            })}>
+                            })
+                          }>
                           {locations.map((el, i) => {
-                            return <option key={el.value} value={el.value}>{el.label}</option>;
+                            return (
+                              <option key={el.value} value={el.value}>
+                                {el.label}
+                              </option>
+                            );
                           })}
                         </select>
                       </div>
                       <div className="col-lg-6 mb-3">
                         <label>Location to</label>
-                        <select className="form-select" onChange={(e) =>
+                        <select
+                          className="form-select"
+                          onChange={(e) =>
                             setTransferInfo({
                               ...transferInfo,
                               loctionTo: +e.target.value,
-                            })}>
+                            })
+                          }>
                           {locations.map((el, i) => {
-                            return <option key={el.value} value={el.value}>{el.label}</option>;
+                            return (
+                              <option key={el.value} value={el.value}>
+                                {el.label}
+                              </option>
+                            );
                           })}
                         </select>
                       </div>
                       <div className="col-lg-8 input-group mb-3">
                         <span className="input-group-text" id="basic-addon1">
-                        <FontAwesomeIcon icon={faSearch} />
+                          <FontAwesomeIcon icon={faSearch} />
                         </span>
                         <input
                           type="text"
@@ -440,11 +451,11 @@ const Transfermodal = (probs: any) => {
                           // checkboxSelection
                           className="datagrid-style"
                           sx={{
-                            ".MuiDataGrid-columnSeparator": {
-                              display: "none",
+                            '.MuiDataGrid-columnSeparator': {
+                              display: 'none',
                             },
-                            "&.MuiDataGrid-root": {
-                              border: "none",
+                            '&.MuiDataGrid-root': {
+                              border: 'none',
                             },
                           }}
                           checkboxSelection
@@ -454,15 +465,12 @@ const Transfermodal = (probs: any) => {
                           columns={columns}
                           // pageSize={10}
                           // rowsPerPageOptions={[10]}
-                          
-                          onSelectionModelChange={(ids: GridSelectionModel) =>
-                            {
-                              let lastId = [...ids].pop()
-                            onRowsSelectionHandler(lastId)
+
+                          onSelectionModelChange={(ids: GridSelectionModel) => {
+                            let lastId = [...ids].pop();
+                            onRowsSelectionHandler(lastId);
                             // console.log('idddddddddd', ids);
-                            }
-                            
-                          }
+                          }}
                           // onCellClick={handleCellClick}
                           // components={{ Toolbar: CustomToolbar }}
                         />
@@ -478,7 +486,7 @@ const Transfermodal = (probs: any) => {
                           onChange={(e) =>
                             setTransferInfo({
                               ...transferInfo,
-                              charges: +(e.target.value),
+                              charges: +e.target.value,
                             })
                           }
                         />
@@ -496,20 +504,17 @@ const Transfermodal = (probs: any) => {
                             setTransferInfo({
                               ...transferInfo,
                               notes: e.target.value,
-                            })}
-                        ></textarea>
+                            })
+                          }></textarea>
                       </div>
                     </div>
                   </fieldset>
                 </div>
                 <div className="modal-footer">
-                  <a
-                    className="btn btn-link link-success fw-medium"
-                    onClick={() => handleClose()}
-                  >
+                  <a className="btn btn-link link-success fw-medium" onClick={() => handleClose()}>
                     <i className="ri-close-line me-1 align-middle" /> Close
                   </a>
-                  {showType != "show" && (
+                  {showType != 'show' && (
                     <button
                       type="button"
                       className="btn btn-primary"
@@ -518,8 +523,7 @@ const Transfermodal = (probs: any) => {
                       //   if (showType == "edit") editCustomerInfo();
                       //   else insertCustomerInfo();
                       // }}
-                      onClick={handleClose}
-                    >
+                      onClick={handleClose}>
                       {showType} Transfer
                     </button>
                   )}

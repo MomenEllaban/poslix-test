@@ -105,7 +105,6 @@ const Appearance: NextPage = (probs: any) => {
   };
   async function handleUpload() {
     if (previewUrl.length < 2) {
-      console.log('select first');
       Toastify('error', 'Error ,Please Select Logo First');
     } else {
       const storageRef = ref(storage, `/files/logo/${generateUniqueString(12)}${shopId}`);
@@ -114,16 +113,14 @@ const Appearance: NextPage = (probs: any) => {
         'state_changed',
         (snapshot: any) => {
           const percent = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-          console.log(percent);
+
           // setPercent(percent);
         },
         (err) => {
-          console.log(err);
           Toastify('error', 'error occurred while uploading the logo...');
         },
         async () => {
           await getDownloadURL(uploadTask.snapshot.ref).then((url) => {
-            console.log(url);
             setFormObj({ ...formObj, logo: url });
             editInvice(url);
           });
@@ -384,7 +381,6 @@ const Appearance: NextPage = (probs: any) => {
                                       className="custom-switch"
                                       checked={formObj.isMultiLang}
                                       onChange={(e) => {
-                                        console.log(e);
                                         setFormObj({
                                           ...formObj,
                                           isMultiLang: !formObj.isMultiLang,
@@ -908,7 +904,6 @@ const Appearance: NextPage = (probs: any) => {
                                       className="custom-switch"
                                       checked={formObj.isMultiLang}
                                       onChange={(e) => {
-                                        console.log(e);
                                         setFormObj({
                                           ...formObj,
                                           isMultiLang: !formObj.isMultiLang,
@@ -1256,7 +1251,7 @@ export async function getServerSideProps(context: any) {
 
       if (_isOk) {
         var _rules = keyValueRules(repo.data.rules || []);
-        console.log(_rules);
+
         if (
           _rules[-2] != undefined &&
           _rules[-2][0].stuff != undefined &&
@@ -1279,7 +1274,7 @@ export async function getServerSideProps(context: any) {
       }
     }
   );
-  console.log('_isOk22    ', _isOk);
+
   if (!_isOk) return { redirect: { permanent: false, destination: '/user/auth' } };
   if (!_rule) return { redirect: { permanent: false, destination: '/page403' } };
   return {

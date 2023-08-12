@@ -14,14 +14,11 @@ import { useBusinessList } from 'src/services';
 const MyBusinessesPage = () => {
   const { darkMode } = useContext(darkModeContext);
   const { data: session } = useSession();
-  console.log(session?.expires);
-  console.log(session?.user);
+
   const { user } = useUser();
   const { businessList, isLoading, error, refetch } = useBusinessList({
     suspense: !user.username,
-    onSuccess(data, key, config) {
-      console.log(data);
-    },
+    onSuccess(data, key, config) {},
   });
   const username = user?.username;
 

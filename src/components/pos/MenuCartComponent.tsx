@@ -68,7 +68,8 @@ export const MenuOrderComponent = (probs: any) => {
   async function getOrderForEdit(barCodeId: number | string) {
     var hasTailFabs = 0;
     var result = await apiFetchCtr({ fetch: 'pos', subType: 'getLastOrders', barCodeId, shopId })
-    console.log("get order #", barCodeId, " resultt ", result);
+
+
     if (result.success) {
       ClearOrders();
       const _orders: IproductInfo[] = [];
@@ -218,9 +219,11 @@ export const MenuOrderComponent = (probs: any) => {
         var packageProducts: IproductInfo[] = products.products.filter((pro: IproductInfo) => ids.includes(pro.product_id))
         packageProducts.map(pp => {
           if (!pp.is_service && !pp.sell_over_stock && pp.product_id == _product_id) {
-            console.log(quantity[index].quantity, " add ", qty, " total ", _total_qty);
+
+
             if (quantity[index].quantity + qty > _total_qty) {
-              console.log("no no 403!!!");
+
+
               isAllowed = false;
               return;
             }
@@ -246,7 +249,8 @@ export const MenuOrderComponent = (probs: any) => {
           ClearOrders();
           return;
         }
-        console.log(idx, quantity[idx]);
+
+
         qty += quantity[idx].quantity
       }
       //check selected product in packages only for quantity check
@@ -256,12 +260,14 @@ export const MenuOrderComponent = (probs: any) => {
       }
       if (idx == -1 || fromHold) {
         let itm: any = products.products_multi[index1][index2];
-        console.log(itm);
+
+
 
         ordersPush.push(itm);
         setOrders([...tmpOrders, itm]);
         let _quantity = [...quantity];
-        console.log('_quantity', _quantity);
+
+
 
         if (itm.qty == 0 && itm.sell_over_stock == 1) {
           let _itm2 = { freezeQuantity: 0, quantity: 1, productIndex: index1, itemIndex: index2, prices: [{ stock_id: 0, qty: 1, price: itm.product_price, cost: itm.product_cost }], lineTotalPrice: itm.price, taxAmount: 0 }
@@ -286,14 +292,16 @@ export const MenuOrderComponent = (probs: any) => {
         index2 = varItm.findIndex((itm: any) => { return itm.variation_id == _variation_id })
       }
     })
-    console.log('found ', index1, index2);
+
+
     if (index1 != -1 && index2 != -1) {
       //search into Orders and add to card
       let tmpOrders: IproductInfo[] = [...orders];
       const idx = orders.findIndex((el: any) => { return (el.isEdit && el.quantity2 < 0 && el.variation_id == _variation_id) || (!el.isEdit && el.variation_id == _variation_id) })
       if (idx == -1) {
         var _itm: any = variations.variations_multi[index1][index2];
-        console.log(_itm, product);
+
+
         if (product.sell_over_stock == 0 && _itm.qty == 0) {
           Toastify('error', "Out OF Stock")
           return;
@@ -352,13 +360,15 @@ export const MenuOrderComponent = (probs: any) => {
         } else if (_orders[i].variation_id > 0) {
           //when variation
           addVarToCard(index1, index2, _orders[i].variation_id, _itm.name)
-          console.log('is varrrrr', _orders[i].variation_id);
+
+
         } else if (_orders[i].type == "single" || _orders[i].type == "package") {
           //when is single
           addToCard(true, index1, index2)
         }
       } else
-        console.log('not found');
+
+
 
     }
     setQuantity([...quantityPush])
@@ -375,7 +385,8 @@ export const MenuOrderComponent = (probs: any) => {
       setClear(random);
       displayOrders();
     } else if (jobType.req == 2) {
-      console.log('jobType 2 ', jobType);
+
+
 
       setOrderEditDetails({ ...orderEditDetails, orderId: Number(jobType.val2!) });
       setOrderId(Number(jobType.val2));
@@ -406,7 +417,8 @@ export const MenuOrderComponent = (probs: any) => {
       if (jobType.custom?.isPackage) {
         let f_index1 = -1, f_index2 = -1, f_id = jobType.custom?.fabric_id;
         f_length = jobType.custom?.fabric_length!
-        console.log('f_id ', f_id);
+
+
         products.products_multi.forEach((topPro: IproductInfo[], index: number) => {
           if (f_index2 == -1) {
             f_index1 = index
@@ -447,7 +459,8 @@ export const MenuOrderComponent = (probs: any) => {
         let _tailoringName = _data[_data.length - 1].value
         let tmpOrders: IproductInfo[] = [...orders];
         let _price = jobType.custom!.isPackage! ? jobType.custom!.price! : product.price;
-        console.log(jobType.custom);
+
+
         setOrders([...tmpOrders, { ...product, name: product.name, price: _price }]);
         _quantity.push({
           freezeQuantity: 0,
@@ -501,7 +514,8 @@ export const MenuOrderComponent = (probs: any) => {
     setQuantity([])
   }, []);
   useEffect(() => {
-    console.log('tailoringExtras ', tailoringExtras);
+
+
 
     let _none = 0, _primary = 0, _excises = 0, _servies_percetage = 0, _servies_fixed = 0;
     taxes.map((tx: ITax) => {
@@ -520,9 +534,11 @@ export const MenuOrderComponent = (probs: any) => {
     setTaxRate(_primary + _none + _excises + _servies_percetage)
     setReadyTaxGroup(taxGroups)
     if (invoicDetails != null) {
-      console.log(invoicDetails);
+
+
     } else {
-      console.log("is null def invoice ", invoicDetails);
+
+
     }
 
   }, [taxes]);
@@ -542,7 +558,8 @@ export const MenuOrderComponent = (probs: any) => {
             if (quantity[index].quantity + orderQty > _item.total_qty)
               hasStock = false;
             else {
-              console.log('hast ', quantity[index]);
+
+
             }
           }
         })
@@ -605,7 +622,8 @@ export const MenuOrderComponent = (probs: any) => {
       setIsOpenTailoringDialog(true)
       return
     }
-    console.log('foundt ', products.products_multi[index1][index2]);
+
+
     addToCard(false, index1, index2)
 
   }, [product])
@@ -617,7 +635,8 @@ export const MenuOrderComponent = (probs: any) => {
   }, [orders])
   //choose customer
   useEffect(() => {
-    console.log(customer);
+
+
     if (customer?.isNew)
       setCustomerIsModal(true)
   }, [customer]);
@@ -631,7 +650,8 @@ export const MenuOrderComponent = (probs: any) => {
     let subItemTotal = 0, _subTotal = 0, taxPerItem = 0;
     let hasTailFabs = 0;
     orders.map((pro, idx) => {
-      console.log(pro.isEdit, pro.quantity2);
+
+
       subItemTotal = 0;
       if (pro.isEdit && quantity[idx].freezeQuantity <= 0)
         return null
@@ -663,7 +683,8 @@ export const MenuOrderComponent = (probs: any) => {
           _taxAmount = subItemTotal
       } else {
         _taxAmount = (taxPerItem * quantity[idx].quantity) + subItemTotal;
-        console.log('new tax ', taxPerItem, quantity[idx].quantity, ' result ', (taxPerItem * quantity[idx].quantity));
+
+
 
       }
 
@@ -705,7 +726,8 @@ export const MenuOrderComponent = (probs: any) => {
       }
 
       const _pro: any = _orders[index].variation_id! > 0 ? variations.variations[_quantity[index].productIndex] : products.products[_quantity[index].productIndex];
-      console.log('_pro', _pro);
+
+
 
       //get packages only for quantity check
       if (!checkProductQtyinPackagesItems(qt, _orders[index].product_id!, _pro.total_qty)) {
@@ -715,7 +737,8 @@ export const MenuOrderComponent = (probs: any) => {
 
       //Check Package Items If Has Stock
       if (_pro.type == 'package') {
-        console.log('injaaaa', qt, _pro);
+
+
 
         if (checkPackageItemsHasStock(qt)) {
           _quantity[index].quantity = qt;
@@ -745,7 +768,8 @@ export const MenuOrderComponent = (probs: any) => {
         //if has quantity already
         let thePrices: any[];
         const isVar = _orders[index].variation_id! > 0;
-        console.log('isVar ', isVar);
+
+
 
         if (isVar)
           thePrices = JSON.parse(JSON.stringify(variations.variations_multi[_quantity[index].productIndex]))
@@ -754,7 +778,8 @@ export const MenuOrderComponent = (probs: any) => {
 
 
         let qtyToAllocate = qt;
-        console.log('start for ', qtyToAllocate);
+
+
 
         _quantity[index].prices = []
 
@@ -769,10 +794,12 @@ export const MenuOrderComponent = (probs: any) => {
               _quantity[index].prices.push({ stock_id: stockItem.stock_id, qty: qtyToAllocate, price: stockItem.price, cost: stockItem.cost })
 
             qtyToAllocate = 0;
-            console.log("from here");
+
+
 
           } else {
-            console.log("from here 2");
+
+
             // Allocate partial quantity from this stock item
             qtyToAllocate -= stockItem.qty;
             if (_quantity[index].prices.length > i)
@@ -784,11 +811,13 @@ export const MenuOrderComponent = (probs: any) => {
           }
         }
         _quantity[index].quantity = qt;
-        console.log('end ', qtyToAllocate);
+
+
         //is over selling
         if (qtyToAllocate > 0.5 && _orders[index].sell_over_stock!) {
           if (_quantity[index].prices[_quantity[index].prices.length - 1].stock_id != 0) {
-            console.log(_quantity[index].itemIndex);
+
+
             _quantity[index].prices.push({ stock_id: 0, qty: qtyToAllocate, price: isVar ? _pro.variation_price! : _pro.product_price, cost: isVar ? _pro.variation_cost! : _pro.product_cost! })
           }
           else
@@ -805,7 +834,8 @@ export const MenuOrderComponent = (probs: any) => {
       return;
     } else {
       if (quantity[index].freezeQuantity >= quantity[index].quantity) {
-        console.log('when is edit');
+
+
         if (quantity[index].quantity == 0) {
           Toastify('warning', 'this item its Full Returned!!')
           return;
@@ -817,11 +847,13 @@ export const MenuOrderComponent = (probs: any) => {
         calculateTotol()
       }
       else if (_quantity[index].quantity > 1 || orders[index].isEdit && _quantity[index].quantity > 0) {
-        console.log('when is nott edit');
+
+
         _quantity[index].quantity = _quantity[index].quantity! - 1;
         // if (orders[index].isEdit) _orders[index].quantity2 = _quantity[index].quantity - orders[index].quantity!
         var _quans = _quantity[index].prices.reverse();
-        console.log(_quans[0]);
+
+
         if (_quans[0].qty == 1) {
           _quans.splice(0, 1)
           _quantity[index].itemIndex--;
@@ -898,7 +930,8 @@ export const MenuOrderComponent = (probs: any) => {
     let _quantity = [...quantity];
     let _num = _quantity[index].selectionColor;
     _num = colors[_num!] == undefined ? 1 : _num! + 1
-    console.log("set ", _num, colors[_num!]);
+
+
 
     _quantity[index].selectionColor = _num != 6 ? _num : 0
     setQuantity(_quantity);
@@ -909,10 +942,12 @@ export const MenuOrderComponent = (probs: any) => {
     quantityChange(index, 'plus', _q, true)
   }
   const handleLinkColor = () => {
-    console.log('isLinking ', isLinking);
+
+
     if (isLinking) {
       //applay rulls
-      console.log(colors);
+
+
 
     }
     setIsLinking(!isLinking)
@@ -921,7 +956,8 @@ export const MenuOrderComponent = (probs: any) => {
     _id += e;
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => {
-      console.log('sku', _id);
+
+
       setSearchProduct(e)
       e = _id;
       if (e.length > 0) {
@@ -933,7 +969,8 @@ export const MenuOrderComponent = (probs: any) => {
           timeoutId = setTimeout(() => {
             setSearchProduct('');
             SetProductsItems([])
-            console.log('inja timeout');
+
+
             _id = "";
             setProducInfo(mfil[0]);
           }, 200)
@@ -970,8 +1007,10 @@ export const MenuOrderComponent = (probs: any) => {
               <tr>
                 {isEnableLink && <th scope="col" style={{ width: 30 }}><div onClick={() => handleLinkColor()} >{isLinking ? 'Apply' : 'link'}</div></th>}
                 <th scope="col" style={{ width: 30 }} onClick={() => {
-                  console.log(orders);
-                  console.log(quantity);
+
+
+
+
                 }}>#</th>
                 <th scope="col" className="text-start">Product</th>
                 <th scope="col">Quantity</th>

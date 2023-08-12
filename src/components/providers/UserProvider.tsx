@@ -70,7 +70,6 @@ export default function UserProvider({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     getSession().then((session) => {
-      console.log('session in auth provider', session);
       if (session) {
         setUser(session.user);
         // setCookie(ELocalStorageKeys.TOKEN_COOKIE, authService.getToken() ?? '');

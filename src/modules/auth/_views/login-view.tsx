@@ -38,7 +38,6 @@ export default function LoginView() {
       setLoading(false);
       window.location.href = '/';
     });
-    console.log(res);
   };
   const onError = (errors: any, e: any) => console.log(errors, e);
 

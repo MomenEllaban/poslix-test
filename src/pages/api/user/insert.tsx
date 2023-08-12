@@ -93,7 +93,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         [data.name, data.businesstype, data.id],
         function (err: QueryError, reg: any) {
           if (err) {
-            console.log('error', err);
             res.setHeader('Content-Type', 'application/json');
             res.status(200).json({ success: false, msg: 'error', newdata: [] });
             res.end();
@@ -119,10 +118,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       );
     }
   } catch (eer) {
-    console.log('error happen...');
-
-    console.log(eer);
-
     return;
   }
 }

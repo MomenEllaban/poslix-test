@@ -1,43 +1,28 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-import type { NextApiRequest, NextApiResponse } from "next";
-import { QueryError } from "mysql2";
-var { doConnect } = require("../../../libs/myConnection");
-import {
-  ITax,
-  Data,
-  ITokenVerfy,
-  ITailoringCustom,
-} from "../../../models/common-model";
-import {
-  locationPermission,
-  redirection,
-  verifayTokens,
-  increaseQtySold,
-} from "../checkUtils";
+import type { NextApiRequest, NextApiResponse } from 'next';
+import { QueryError } from 'mysql2';
+var { doConnect } = require('../../../libs/myConnection');
+import { ITax, Data, ITokenVerfy, ITailoringCustom } from '../../../models/common-model';
+import { locationPermission, redirection, verifayTokens, increaseQtySold } from '../checkUtils';
 
 function manageError(res: any, con: any, msg: string) {
   // con.rollback();
   redirection(403, con, res, msg);
   return;
 }
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<Data>
-) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
   try {
     verifayTokens(req, async (repo: ITokenVerfy) => {
       if (repo.status === true) {
-
         const { shopId, subType } = req.body;
         if (locationPermission(repo.data.locs, shopId) != -1) {
-          if (subType == "addPurchase") {
+          if (subType == 'addPurchase') {
             const { totalOrder, lines, expenses, taxes } = req.body.data;
-    
+
             var transaction_id = 0;
             var con = doConnect();
             // await con.beginTransaction();
-            if (totalOrder.purchaseStatus == "draft")
-              totalOrder.paymentStatus = "due";
+            if (totalOrder.purchaseStatus == 'draft') totalOrder.paymentStatus = 'due';
             await con
               .promise()
               .query(
@@ -45,7 +30,7 @@ export default async function handler(
                         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
                 [
                   shopId,
-                  "purchase",
+                  'purchase',
                   totalOrder.purchaseStatus,
                   totalOrder.paymentStatus,
                   totalOrder.supplier_id,
@@ -57,7 +42,7 @@ export default async function handler(
                   JSON.stringify(taxes),
                   repo.data.id,
                   new Date().toISOString().slice(0, 19).replace('T', ' '),
-               
+
                   totalOrder.currency_id,
                 ]
               )
@@ -65,12 +50,12 @@ export default async function handler(
                 transaction_id = rows[0].insertId;
               })
               .catch((err: QueryError) => {
-                manageError(res, con, "");
+                manageError(res, con, '');
                 return;
               });
 
             let sqlCondi =
-              "INSERT INTO transactions_lines(transaction_id,product_id,variation_id,discount_type,discount_amount,qty,group_tax_id,cost_type,cost,price) VALUES ?";
+              'INSERT INTO transactions_lines(transaction_id,product_id,variation_id,discount_type,discount_amount,qty,group_tax_id,cost_type,cost,price) VALUES ?';
             let sqlValues: any = [];
             let StockVal: any = []; // for add to stock
             lines.map((itm: any, idx: number) => {
@@ -108,30 +93,26 @@ export default async function handler(
                     StockVal[i][1] = rows[0].insertId + i;
                 })
                 .catch((err: QueryError) => {
-                  manageError(res, con, "");
+                  manageError(res, con, '');
                   return;
                 });
             }
             //if purchase is rescived
-            if (
-              StockVal.length > 0 &&
-              totalOrder.purchaseStatus == "received"
-            ) {
+            if (StockVal.length > 0 && totalOrder.purchaseStatus == 'received') {
               let stockSql =
-                "INSERT INTO stock(transaction_id,transaction_lines_id,product_id,variation_id,qty_received,qty_sold,sold_at,created_by,created_at) VALUES ?";
+                'INSERT INTO stock(transaction_id,transaction_lines_id,product_id,variation_id,qty_received,qty_sold,sold_at,created_by,created_at) VALUES ?';
               await con
                 .promise()
                 .query(stockSql, [StockVal])
-                .then((rows: any, fields: any) => {
-                })
+                .then((rows: any, fields: any) => {})
                 .catch((err: QueryError) => {
-                  manageError(res, con, "");
+                  manageError(res, con, '');
                   return;
                 });
             }
 
             sqlCondi =
-              "INSERT INTO expenses_values(location_id,transaction_id,name,value,entered_value,currency_id,currency_rate) VALUES ?";
+              'INSERT INTO expenses_values(location_id,transaction_id,name,value,entered_value,currency_id,currency_rate) VALUES ?';
             sqlValues = [];
             expenses.map((itm: any, idx: number) => {
               sqlValues.push([
@@ -150,14 +131,14 @@ export default async function handler(
                 .query(sqlCondi, [sqlValues])
                 .then((rows: any, fields: any) => {})
                 .catch((err: QueryError) => {
-                  manageError(res, con, "");
+                  manageError(res, con, '');
                   return;
                 });
             }
 
             let affectedRows: boolean = false;
 
-            if (totalOrder.purchaseStatus != "draft") {
+            if (totalOrder.purchaseStatus != 'draft') {
               await con
                 .promise()
                 .query(
@@ -174,41 +155,37 @@ export default async function handler(
                   affectedRows = rows[0].affectedRows > 0;
                 })
                 .catch((err: QueryError) => {
-                  manageError(res, con, "");
+                  manageError(res, con, '');
                   return;
                 });
             } else affectedRows = true;
 
             if (affectedRows) {
-              res.setHeader("Content-Type", "application/json");
-              res.status(200).json({ success: true, msg: "purchase inserted" });
+              res.setHeader('Content-Type', 'application/json');
+              res.status(200).json({ success: true, msg: 'purchase inserted' });
               res.end();
               con.end();
               return;
             }
 
-            res.setHeader("Content-Type", "application/json");
-            res
-              .status(200)
-              .json({ success: false, msg: "purchase not inserted" });
+            res.setHeader('Content-Type', 'application/json');
+            res.status(200).json({ success: false, msg: 'purchase not inserted' });
             res.end();
             con.end();
             return;
           }
 
-          if (subType == "addUpdateStockCheckList") {
+          if (subType == 'addUpdateStockCheckList') {
             const { purchaseId, orderLines } = req.body.data;
 
             let sqlCondi =
-              "INSERT INTO stock(transaction_id,transaction_lines_id,product_id,variation_id,qty_received,qty_sold,sold_at,created_by,created_at) VALUES ?";
+              'INSERT INTO stock(transaction_id,transaction_lines_id,product_id,variation_id,qty_received,qty_sold,sold_at,created_by,created_at) VALUES ?';
             let sqlValues: any = [];
             let isReceived = true;
             orderLines.map((itm: any, idx: number) => {
               if (
                 +Number(itm.qty).toFixed(2) !=
-                +Number(
-                  parseFloat(itm.qty_received) + parseFloat(itm.qty_entered)
-                ).toFixed(2)
+                +Number(parseFloat(itm.qty_received) + parseFloat(itm.qty_entered)).toFixed(2)
               )
                 isReceived = false;
               if (itm.qty_entered > 0) {
@@ -232,32 +209,29 @@ export default async function handler(
                 .promise()
                 .query(sqlCondi, [sqlValues])
                 .then((rows: any, fields: any) => {})
-                .catch(console.log("erorrr1"));
+                .catch(console.log('erorrr1'));
               await con
                 .promise()
-                .query(
-                  `UPDATE transactions SET status=? WHERE  id=? limit 1;`,
-                  [isReceived ? "received" : "partially_received", purchaseId]
-                )
+                .query(`UPDATE transactions SET status=? WHERE  id=? limit 1;`, [
+                  isReceived ? 'received' : 'partially_received',
+                  purchaseId,
+                ])
                 .then((rows: any, fields: any) => {})
-                .catch(console.log("erorrr2"));
+                .catch(console.log('erorrr2'));
               con.end();
             }
 
-            console.log("inserting stock done! ", isReceived);
-            res.setHeader("Content-Type", "application/json");
-            res
-              .status(200)
-              .json({
-                success: true,
-                msg: "stock inserted",
-                newdata: isReceived ? "received" : "partially_received",
-              });
+            res.setHeader('Content-Type', 'application/json');
+            res.status(200).json({
+              success: true,
+              msg: 'stock inserted',
+              newdata: isReceived ? 'received' : 'partially_received',
+            });
             res.end();
             return;
           }
 
-          if (subType == "addPayment") {
+          if (subType == 'addPayment') {
             const { data } = req.body;
             const { frm, totalLeft, purchaseId } = data;
             let _isOk = false,
@@ -269,78 +243,64 @@ export default async function handler(
               .promise()
               .query(
                 `INSERT INTO transaction_payments(transaction_id,payment_type,amount,created_by,created_at) VALUES (?,?,?,?,?)`,
-                [
-                  purchaseId,
-                  frm.payment_type,
-                  frm.amount,
-                  repo.data.id,
-                  new Date(),
-                ]
+                [purchaseId, frm.payment_type, frm.amount, repo.data.id, new Date()]
               )
               .then((rows: any, fields: any) => {
                 _isOk = true;
               })
-              .catch(console.log("erorrr0"));
+              .catch(console.log('erorrr0'));
 
             if (_isOk) {
-              if (
-                +Number(frm.amount).toFixed(2) ==
-                +Number(parseFloat(totalLeft).toFixed(2))
-              )
+              if (+Number(frm.amount).toFixed(2) == +Number(parseFloat(totalLeft).toFixed(2)))
                 is_paid = true;
 
               await con
                 .promise()
-                .query(
-                  `UPDATE transactions SET payment_status=? WHERE  id=? limit 1;`,
-                  [is_paid ? "paid" : "partially_paid", purchaseId]
-                )
+                .query(`UPDATE transactions SET payment_status=? WHERE  id=? limit 1;`, [
+                  is_paid ? 'paid' : 'partially_paid',
+                  purchaseId,
+                ])
                 .then((rows: any, fields: any) => {
                   _isOk = true;
                   transaction_id = rows[0].insertId;
                 })
-                .catch(console.log("erorrr0"));
+                .catch(console.log('erorrr0'));
 
-              res.setHeader("Content-Type", "application/json");
-              res
-                .status(200)
-                .json({
-                  success: true,
-                  msg: "stock inserted",
-                  newdata: {
-                    status: is_paid ? "paid" : "partially_paid",
-                    payment: {
-                      id: transaction_id,
-                      payment_type: frm.payment_type,
-                      amount: frm.amount,
-                      created_at: new Date().toISOString().slice(0, 19).replace('T', ' '),
-                    },
+              res.setHeader('Content-Type', 'application/json');
+              res.status(200).json({
+                success: true,
+                msg: 'stock inserted',
+                newdata: {
+                  status: is_paid ? 'paid' : 'partially_paid',
+                  payment: {
+                    id: transaction_id,
+                    payment_type: frm.payment_type,
+                    amount: frm.amount,
+                    created_at: new Date().toISOString().slice(0, 19).replace('T', ' '),
                   },
-                });
+                },
+              });
               res.end();
               con.end();
               return;
             } else {
-              res.setHeader("Content-Type", "application/json");
-              res
-                .status(200)
-                .json({ success: false, msg: "stock inserted", newdata: "" });
+              res.setHeader('Content-Type', 'application/json');
+              res.status(200).json({ success: false, msg: 'stock inserted', newdata: '' });
               res.end();
               con.end();
               return;
             }
           }
 
-          if (subType == "newPosSale") {
+          if (subType == 'newPosSale') {
             const { data } = req.body;
-            const { items, details, paymentRows, orderEditDetails, orderNote } =
-              data;
+            const { items, details, paymentRows, orderEditDetails, orderNote } = data;
             var con = doConnect();
             var transaction_id = 0;
 
             //for add payment
             const sqlForPayment =
-              "INSERT INTO transaction_payments(transaction_id,payment_type,amount,notes,created_by,created_at) VALUES ?";
+              'INSERT INTO transaction_payments(transaction_id,payment_type,amount,notes,created_by,created_at) VALUES ?';
             const valueForPayment: any = [];
 
             if (details.isReturn > 0) {
@@ -351,19 +311,12 @@ export default async function handler(
                 .promise()
                 .query(
                   `UPDATE transactions SET total_price = ?,notes = ?, sub_type= ? WHERE id = ? limit 1`,
-                  [
-                    details.totalAmount,
-                    orderNote,
-                    "sell_return",
-                    details.isReturn,
-                  ]
+                  [details.totalAmount, orderNote, 'sell_return', details.isReturn]
                 )
-                .then((rows: any, fields: any) => {
-                })
+                .then((rows: any, fields: any) => {})
                 .catch();
 
-              let sign =
-                details.totalAmount > orderEditDetails.total_price ? 1 : -1;
+              let sign = details.totalAmount > orderEditDetails.total_price ? 1 : -1;
               paymentRows.map((pay: any) => {
                 if (pay.amount > 0)
                   valueForPayment.push([
@@ -382,12 +335,12 @@ export default async function handler(
                   `INSERT INTO transactions(location_id,type,contact_id,payment_status,notes,total_price,STATUS,created_at,created_by) VALUES (?,?,?,?,?,?,?,?,?)`,
                   [
                     shopId,
-                    "sell",
+                    'sell',
                     details.customerId,
-                    "paid",
+                    'paid',
                     orderNote,
                     details.totalAmount,
-                    "received",
+                    'received',
                     new Date().toISOString().slice(0, 19).replace('T', ' '),
                     repo.data.id,
                   ]
@@ -415,34 +368,33 @@ export default async function handler(
               await con
                 .promise()
                 .query(sqlForPayment, [valueForPayment])
-                .then((rows: any, fields: any) => {
-                })
+                .then((rows: any, fields: any) => {})
                 .catch();
             }
 
             //for add new lines
             const sqlCondiForNew =
-              "INSERT INTO transactions_lines(transaction_id,product_id,variation_id,qty,tax_amount,cost,price,stock_id,tailoring_txt,tailoring_custom,status,note,tailoring_link_num) VALUES ?";
+              'INSERT INTO transactions_lines(transaction_id,product_id,variation_id,qty,tax_amount,cost,price,stock_id,tailoring_txt,tailoring_custom,status,note,tailoring_link_num) VALUES ?';
             const sqlValuesForNew: any = [];
             //for add new tailoring user size
             const sqlCondiTailoringUser =
-              "INSERT into `tailoring_user_sizes` (id,location_id,sizes,name,tailoring_type_id,create_by) VALUES ? as pt ON DUPLICATE KEY UPDATE location_id = pt.location_id,sizes = pt.sizes,name = pt.name,tailoring_type_id = pt.tailoring_type_id,create_by = pt.create_by;";
+              'INSERT into `tailoring_user_sizes` (id,location_id,sizes,name,tailoring_type_id,create_by) VALUES ? as pt ON DUPLICATE KEY UPDATE location_id = pt.location_id,sizes = pt.sizes,name = pt.name,tailoring_type_id = pt.tailoring_type_id,create_by = pt.create_by;';
             const sqlValuesTailoringUser: any = [];
             //for update lines
             const sqlCondiForUpdate =
-              "INSERT into `transactions_lines` (id,qty,qty_returned,tax_amount,tailoring_txt,note,tailoring_link_num) VALUES ? as pt ON DUPLICATE KEY UPDATE qty = transactions_lines.qty - pt.qty,qty_returned = transactions_lines.qty_returned + pt.qty_returned,tax_amount = pt.tax_amount,tailoring_txt = pt.tailoring_txt,note = pt.note,tailoring_link_num = pt.tailoring_link_num;";
+              'INSERT into `transactions_lines` (id,qty,qty_returned,tax_amount,tailoring_txt,note,tailoring_link_num) VALUES ? as pt ON DUPLICATE KEY UPDATE qty = transactions_lines.qty - pt.qty,qty_returned = transactions_lines.qty_returned + pt.qty_returned,tax_amount = pt.tax_amount,tailoring_txt = pt.tailoring_txt,note = pt.note,tailoring_link_num = pt.tailoring_link_num;';
             const sqlValuesForUpdate: any = [];
             //update over selling counter
             const sqlCandiUpdateOverSell =
-              "INSERT into `products` (id,qty_over_sold) VALUES ? as pt ON DUPLICATE KEY UPDATE qty_over_sold = products.qty_over_sold - pt.qty_over_sold;";
+              'INSERT into `products` (id,qty_over_sold) VALUES ? as pt ON DUPLICATE KEY UPDATE qty_over_sold = products.qty_over_sold - pt.qty_over_sold;';
             const sqlValuesUpdateOverSell: any = [];
 
             const sqlCondiUpdateStock =
-              "INSERT into `stock` (id,qty_sold) VALUES ? as tb ON DUPLICATE KEY UPDATE qty_sold = stock.qty_sold - tb.qty_sold;";
+              'INSERT into `stock` (id,qty_sold) VALUES ? as tb ON DUPLICATE KEY UPDATE qty_sold = stock.qty_sold - tb.qty_sold;';
             const sqlValuesUpdateStock: any = [];
             //update stock only for tailrong package
             const sqlUpdateStockTailoring =
-              "INSERT into `stock` (id,qty_sold) VALUES ? as tb ON DUPLICATE KEY UPDATE qty_sold = stock.qty_sold - tb.qty_sold;";
+              'INSERT into `stock` (id,qty_sold) VALUES ? as tb ON DUPLICATE KEY UPDATE qty_sold = stock.qty_sold - tb.qty_sold;';
             const valUpdateStockTailoring: any = [];
 
             //array for fabrics (decrease)
@@ -454,30 +406,23 @@ export default async function handler(
             //calculation
             items?.orders?.map(async (elt: any, idx: number) => {
               //insert update tailoring user sizes
-              if (
-                (elt.is_tailoring > 0 || elt.type == "tailoring_package") &&
-                !elt.isEdit
-              )
+              if ((elt.is_tailoring > 0 || elt.type == 'tailoring_package') && !elt.isEdit)
                 sqlValuesTailoringUser.push([
                   items.quantity[idx].tailoringIsEdit,
                   shopId,
                   items.quantity[idx].tailoring,
                   items.quantity[idx].tailoringName,
-                  elt.type == "tailoring_package"
-                    ? elt.tailoring_type_id
-                    : elt.is_tailoring,
+                  elt.type == 'tailoring_package' ? elt.tailoring_type_id : elt.is_tailoring,
                   repo.data.id,
                 ]);
               //for decrease fabric
               if (
-                elt.type == "tailoring_package" &&
+                elt.type == 'tailoring_package' &&
                 (elt.quantity2 > -1 || elt.quantity2 == undefined)
               ) {
                 _customTailringArray.push(items.quantity[idx].tailoringCutsom);
                 packageIndex.push(idx);
-                _tmpCutsom = JSON.stringify(
-                  items.quantity[idx].tailoringCutsom
-                );
+                _tmpCutsom = JSON.stringify(items.quantity[idx].tailoringCutsom);
                 _tmpId = items.quantity[idx].tailoringCutsom?.fabric_id!;
                 _fabricQty.push({
                   product_id: _tmpId,
@@ -500,14 +445,14 @@ export default async function handler(
                     prs.stock_id,
                     items.quantity[idx].tailoring,
                     _tmpCutsom,
-                    "pending",
-                    "",
+                    'pending',
+                    '',
                     items.quantity[idx].selectionColor,
                   ]);
                 else if (
                   elt.quantity2 < 0 ||
                   elt.is_tailoring > 0 ||
-                  elt.type == "tailoring_package"
+                  elt.type == 'tailoring_package'
                 ) {
                   //for return only(update lines)
                   sqlValuesForUpdate.push([
@@ -516,32 +461,22 @@ export default async function handler(
                     Math.abs(elt.quantity2),
                     items.quantity[idx].taxAmount,
                     items.quantity[idx].tailoring,
-                    "",
+                    '',
                     items.quantity[idx].selectionColor,
                   ]);
                   if (elt.is_service == 0 && prs.stock_id > 0)
-                    sqlValuesUpdateStock.push([
-                      prs.stock_id,
-                      Math.abs(elt.quantity2),
-                    ]);
+                    sqlValuesUpdateStock.push([prs.stock_id, Math.abs(elt.quantity2)]);
                   else if (
                     elt.is_service == 0 &&
                     (prs.stock_id == 0 || prs.stock_id == null) &&
-                    elt.type != "tailoring_package"
+                    elt.type != 'tailoring_package'
                   )
-                    sqlValuesUpdateOverSell.push([
-                      elt.product_id,
-                      Math.abs(elt.quantity2),
-                    ]);
-                  else if (elt.type == "tailoring_package") {
+                    sqlValuesUpdateOverSell.push([elt.product_id, Math.abs(elt.quantity2)]);
+                  else if (elt.type == 'tailoring_package') {
                     //full return stock (tailoring_package)
 
-                    let ids =
-                      items.quantity[
-                        idx
-                      ].freezeTailoringCutsom.stock_ids.reverse();
-                    let _fabId =
-                      items.quantity[idx].freezeTailoringCutsom.fabric_id;
+                    let ids = items.quantity[idx].freezeTailoringCutsom.stock_ids.reverse();
+                    let _fabId = items.quantity[idx].freezeTailoringCutsom.fabric_id;
                     let _totalAmount =
                       Math.abs(elt.quantity2) *
                       items.quantity[idx].freezeTailoringCutsom.fabric_length;
@@ -555,14 +490,10 @@ export default async function handler(
                           +Number(ids[i3].increased_qty).toFixed(2) >=
                           +Number(_totalAmount).toFixed(2)
                         ) {
-                          _tmp =
-                            parseFloat(ids[i3].increased_qty) - _totalAmount; //for pricess \
+                          _tmp = parseFloat(ids[i3].increased_qty) - _totalAmount; //for pricess \
                           ids[i3].increased_qty = _tmp;
                           if (ids[i3].stock_id != 0)
-                            valUpdateStockTailoring.push([
-                              ids[i3].stock_id,
-                              _tmp,
-                            ]);
+                            valUpdateStockTailoring.push([ids[i3].stock_id, _tmp]);
                           else _remaining += _totalAmount;
                           _totalAmount = 0;
                         } else {
@@ -583,20 +514,15 @@ export default async function handler(
                       .filter((dd: any) => dd.increased_qty != -99);
                     const trsa = await con
                       .promise()
-                      .query(
-                        "UPDATE transactions_lines SET tailoring_custom = ? WHERE id = ?",
-                        [
-                          JSON.stringify(
-                            items.quantity[idx].freezeTailoringCutsom
-                          ),
-                          elt.transaction_id,
-                        ]
-                      );
+                      .query('UPDATE transactions_lines SET tailoring_custom = ? WHERE id = ?', [
+                        JSON.stringify(items.quantity[idx].freezeTailoringCutsom),
+                        elt.transaction_id,
+                      ]);
                     if (_remaining > 0) {
                       const upda = await con
                         .promise()
                         .query(
-                          "UPDATE products SET qty_over_sold = qty_over_sold - ? WHERE id = ?",
+                          'UPDATE products SET qty_over_sold = qty_over_sold - ? WHERE id = ?',
                           [_remaining, _fabId]
                         );
                     }
@@ -607,9 +533,7 @@ export default async function handler(
             // return
             //exceute update query if has return products
             if (sqlValuesForUpdate.length > 0) {
-              const upRetu = await con
-                .promise()
-                .query(sqlCondiForUpdate, [sqlValuesForUpdate]);
+              const upRetu = await con.promise().query(sqlCondiForUpdate, [sqlValuesForUpdate]);
 
               if (sqlValuesUpdateStock.length > 0) {
                 await con
@@ -631,19 +555,15 @@ export default async function handler(
                   .promise()
                   .query(sqlUpdateStockTailoring, [valUpdateStockTailoring])
                   .then((rows: any, fields: any) => {})
-                  .catch((err: QueryError) => {
-                  });
+                  .catch((err: QueryError) => {});
               }
             }
             if (sqlValuesTailoringUser.length > 0) {
               await con
                 .promise()
                 .query(sqlCondiTailoringUser, [sqlValuesTailoringUser])
-                .then((rows: any, fields: any) => {
-                })
-                .catch((err: QueryError) => {
-                  console.log(err);
-                });
+                .then((rows: any, fields: any) => {})
+                .catch((err: QueryError) => {});
             }
             //exceute query for add lines
             const insertedIds: any = [];
@@ -657,16 +577,15 @@ export default async function handler(
                     insertedIds.push(rows[0].insertId + i);
                   //update stock
                   const sqlCondi =
-                    "INSERT into `stock` (id,qty_sold) VALUES ? as tb ON DUPLICATE KEY UPDATE qty_sold = stock.qty_sold + tb.qty_sold;";
+                    'INSERT into `stock` (id,qty_sold) VALUES ? as tb ON DUPLICATE KEY UPDATE qty_sold = stock.qty_sold + tb.qty_sold;';
                   const sqlValues: any = [];
                   //update over sell counter
                   const sqlCondiOverSell =
-                    "INSERT into `products` (id,qty_over_sold) VALUES ? as pt ON DUPLICATE KEY UPDATE qty_over_sold = products.qty_over_sold + pt.qty_over_sold;";
+                    'INSERT into `products` (id,qty_over_sold) VALUES ? as pt ON DUPLICATE KEY UPDATE qty_over_sold = products.qty_over_sold + pt.qty_over_sold;';
                   const sqlValueOverSell: any = [];
                   items.orders.map((elt: any, idx: number) => {
                     items.quantity[idx].prices.map((prs: any) => {
-                      if (prs.stock_id > 0)
-                        sqlValues.push([prs.stock_id, prs.qty]);
+                      if (prs.stock_id > 0) sqlValues.push([prs.stock_id, prs.qty]);
                       else if (elt.is_service == 0)
                         sqlValueOverSell.push([elt.product_id, prs.qty]);
                     });
@@ -676,23 +595,17 @@ export default async function handler(
                     .promise()
                     .query(sqlCondi, [sqlValues])
                     .then((rows: any, fields: any) => {})
-                    .catch((err: QueryError) => {
-                      console.log("err11: ", err);
-                    });
+                    .catch((err: QueryError) => {});
 
                   if (sqlValueOverSell.length > 0) {
                     await con
                       .promise()
                       .query(sqlCondiOverSell, [sqlValueOverSell])
                       .then((rows: any, fields: any) => {})
-                      .catch((err: QueryError) => {
-                        console.log("err21: ", err);
-                      });
+                      .catch((err: QueryError) => {});
                   }
                 })
-                .catch((err: QueryError) => {
-                  console.log("erre: ", err);
-                });
+                .catch((err: QueryError) => {});
 
               //if has tailoring package
               await Promise.all(
@@ -730,17 +643,12 @@ export default async function handler(
                     for (let ii = 0; ii < updatedProducts.length; ii++) {
                       await con
                         .promise()
-                        .query(
-                          "UPDATE stock SET qty_sold = qty_sold + ? WHERE id = ?",
-                          [
-                            updatedProducts[ii].increased_qty,
-                            updatedProducts[ii].stock_id,
-                          ]
-                        )
+                        .query('UPDATE stock SET qty_sold = qty_sold + ? WHERE id = ?', [
+                          updatedProducts[ii].increased_qty,
+                          updatedProducts[ii].stock_id,
+                        ])
                         .then((rows: any, fields: any) => {})
-                        .catch((err: QueryError) => {
-                          console.log("err ", err);
-                        });
+                        .catch((err: QueryError) => {});
                     }
                     //update over stock for remaining amount
                     if (remainingItems > 0) {
@@ -751,29 +659,22 @@ export default async function handler(
                       await con
                         .promise()
                         .query(
-                          "UPDATE products SET qty_over_sold = qty_over_sold + ? WHERE id = ?",
+                          'UPDATE products SET qty_over_sold = qty_over_sold + ? WHERE id = ?',
                           [remainingItems, fb.product_id]
                         )
                         .then((rows: any, fields: any) => {})
-                        .catch((err: QueryError) => {
-                          console.log("err ", err);
-                        });
+                        .catch((err: QueryError) => {});
                     }
                     //update stock ids into lines (tailroing_packs)
                     _customTailringArray[i].stock_ids = updatedProducts;
                     await con
                       .promise()
-                      .query(
-                        "UPDATE transactions_lines SET tailoring_custom = ? WHERE id = ?",
-                        [
-                          JSON.stringify(_customTailringArray[i]),
-                          insertedIds[packageIndex[i]],
-                        ]
-                      )
+                      .query('UPDATE transactions_lines SET tailoring_custom = ? WHERE id = ?', [
+                        JSON.stringify(_customTailringArray[i]),
+                        insertedIds[packageIndex[i]],
+                      ])
                       .then((rows: any, fields: any) => {})
-                      .catch((err: QueryError) => {
-                        console.log("err ", err);
-                      });
+                      .catch((err: QueryError) => {});
                   } else {
                     //update stock ids into lines (tailroing_packs)
                     _customTailringArray[i].stock_ids = [
@@ -781,45 +682,36 @@ export default async function handler(
                     ];
                     await con
                       .promise()
-                      .query(
-                        "UPDATE transactions_lines SET tailoring_custom = ? WHERE id = ?",
-                        [
-                          JSON.stringify(_customTailringArray[i]),
-                          insertedIds[packageIndex[i]],
-                        ]
-                      )
+                      .query('UPDATE transactions_lines SET tailoring_custom = ? WHERE id = ?', [
+                        JSON.stringify(_customTailringArray[i]),
+                        insertedIds[packageIndex[i]],
+                      ])
                       .then((rows: any, fields: any) => {})
-                      .catch((err: QueryError) => {
-                        console.log("errtrrtt ", err);
-                      });
+                      .catch((err: QueryError) => {});
                     //update over stock for remaining amount
                     await con
                       .promise()
-                      .query(
-                        "UPDATE products SET qty_over_sold = qty_over_sold + ? WHERE id = ?",
-                        [parseFloat(fb.qty), fb.product_id]
-                      )
+                      .query('UPDATE products SET qty_over_sold = qty_over_sold + ? WHERE id = ?', [
+                        parseFloat(fb.qty),
+                        fb.product_id,
+                      ])
                       .then((rows: any, fields: any) => {})
-                      .catch((err: QueryError) => {
-                        console.log("err ", err);
-                      });
+                      .catch((err: QueryError) => {});
                   }
                 })
               );
             }
 
-            res
-              .status(200)
-              .json({
-                success: true,
-                msg: "transaction is created",
-                newdata: transaction_id,
-              });
+            res.status(200).json({
+              success: true,
+              msg: 'transaction is created',
+              newdata: transaction_id,
+            });
             res.end();
             con.end();
             return;
           }
-          if (subType == "close") {
+          if (subType == 'close') {
             const { data } = req.body;
             var con = doConnect();
 
@@ -831,7 +723,7 @@ export default async function handler(
               [
                 shopId,
                 repo.data.id,
-                "close",
+                'close',
                 new Date().toISOString().slice(0, 19).replace('T', ' '),
                 _total,
                 card,
@@ -844,21 +736,19 @@ export default async function handler(
               function (err: QueryError, prods: any) {
                 if (err) console.log(err);
 
-                res.setHeader("Content-Type", "application/json");
-                res.status(200).json({ success: true, msg: "closed" });
+                res.setHeader('Content-Type', 'application/json');
+                res.status(200).json({ success: true, msg: 'closed' });
                 res.end();
                 con.end();
                 return;
               }
             );
           }
-        } else redirection(403, con, res, "you have not permissions");
-      } else redirection(401, con, res, "login first!");
+        } else redirection(403, con, res, 'you have not permissions');
+      } else redirection(401, con, res, 'login first!');
     });
   } catch (eer) {
-    console.log("eer", eer);
-
-    manageError(res, null, "");
+    manageError(res, null, '');
     return;
   } finally {
     //await con.end();
