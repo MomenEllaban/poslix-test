@@ -1,8 +1,7 @@
-import { apiFetch } from "src/libs/dbUtils";
+import { apiFetch } from 'src/libs/dbUtils';
 
 export async function FetchUserShops() {
-  var userShops = await apiFetch({ fetch: "userShops" });
-  console.log("userShops", userShops);
+  var userShops = await apiFetch({ fetch: 'userShops' });
 
   var shops = [];
   if (userShops.userShops && userShops.userShops.length > 0) {
@@ -16,10 +15,9 @@ export async function FetchUserShops() {
 
 export async function GetShopSubscription(shopID) {
   var userShops = await apiFetch({
-    fetch: "getShopSubscription",
+    fetch: 'getShopSubscription',
     shopID: shopID,
   });
-  console.log("userShops", userShops);
 
   var shops = [];
   if (userShops.userShops && userShops.userShops.length > 0) {
@@ -31,10 +29,9 @@ export async function GetShopSubscription(shopID) {
 
 export async function GetShopActiveSubscription(shopID) {
   var userShops = await apiFetch({
-    fetch: "getShopActiveSubscription",
+    fetch: 'getShopActiveSubscription',
     shopID: shopID,
   });
-  console.log("userShops", userShops);
 
   var shops = [];
   if (userShops.userShops && userShops.userShops.length > 0) {

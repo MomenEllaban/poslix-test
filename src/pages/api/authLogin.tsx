@@ -12,7 +12,6 @@ type Data = {
 let con: Connection;
 
 function returnWrong(status: number, con: any, res: NextApiResponse<Data>, msg = 'somthing Wrong') {
-  console.log('Somthing wrong ....');
   res.setHeader('Content-Type', 'application/json');
   res.status(status).json({ success: false, msg });
   res.end();
@@ -44,7 +43,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         [data.mail, data.password]
       )
       .then((rows: any) => {
-        console.log('ROWS==>', rows);
         if (rows[0].length > 0) {
           _userStuffs = rows[0];
         } else {
@@ -52,12 +50,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         }
       })
       .catch((err: QueryError) => {
-        console.log(err);
         returnWrong(401, con, res);
       });
 
     if (_userStuffs != null) {
-      console.log('USERS ===>', _userStuffs);
       _user = _userStuffs[0];
       const isOwner = _user.user_type == 'owner';
       const _finalRules: any = [];
@@ -124,8 +120,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         _finalRules.push({ id: -2, stuff: 'owner' });
       }
 
-      console.log('_types ', _types);
-
       _token = generateAccessToken({
         id: _user.id,
         level: _user.user_type,
@@ -143,7 +137,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         token: _token,
         myBusiness: isOwner ? _myBusiness : _UserBusiness,
       };
-      console.log(_UserBusiness);
+
       // send headers
       // console.log('final ', _finalRules, ' user ', _resObj);
       res.setHeader('Content-Type', 'application/json');

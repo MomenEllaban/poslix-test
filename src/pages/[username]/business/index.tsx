@@ -1,79 +1,32 @@
-import { faFolderOpen, faGear, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { OwnerAdminLayout } from '@layout';
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
-import { useContext, useEffect, useState } from 'react';
-import { Button, ButtonGroup, Card, Spinner, Table } from 'react-bootstrap';
+import { useContext } from 'react';
+import { Card, Spinner, Table } from 'react-bootstrap';
 import withAuth from 'src/HOCs/withAuth';
 import { darkModeContext } from 'src/context/DarkModeContext';
 import { useUser } from 'src/context/UserContext';
-import { apiFetchCtr } from 'src/libs/dbUtils';
+import BusinessRow from 'src/modules/business/business-list/business-row';
 import { useBusinessList } from 'src/services';
 
 const MyBusinessesPage = () => {
   const { darkMode } = useContext(darkModeContext);
+  const { data: session } = useSession();
+
   const { user } = useUser();
   const { businessList, isLoading, error, refetch } = useBusinessList({
     suspense: !user.username,
-    onSuccess(data, key, config) {
-      console.log(data);
-    },
+    onSuccess(data, key, config) {},
   });
   const username = user?.username;
-
-  const router = useRouter();
-  const [locations, setLocations] = useState<{ id: number; name: string }[]>([]);
-  async function initDataPage() {
-    const { success, newdata } = await apiFetchCtr({ fetch: 'owner', subType: 'getBusiness' });
-    if (!success) {
-      return;
-    }
-    var buss: any = [];
-    var _newdata = newdata;
-    console.log(newdata);
-
-    for (let j = 0; j < newdata.length; j++) {
-      var bid = newdata[j].business_id;
-      if (buss.findIndex((pp: any) => pp == bid) == -1) {
-        buss.push(bid);
-        _newdata.splice(j, 0, { isHead: true, data: newdata[j] });
-      }
-    }
-    console.log(buss);
-
-    console.log(_newdata);
-
-    var busLocs: {
-      bus_id: number;
-      bus_name: string;
-      locations: { loc_name: string; loc_id: number }[];
-    }[] = [];
-    _newdata.forEach((element) => {
-      if (element.isHead) {
-        busLocs.push({
-          bus_id: element.data.business_id,
-          bus_name: element.data.business_name,
-          locations: [],
-        });
-      } else {
-        const idx = busLocs.findIndex((e) => e.bus_id === element.business_id);
-        busLocs[idx].locations.push({ loc_id: element.loc_id, loc_name: element.loc_name });
-      }
-    });
-    console.log('bbbbbbbbbbbb', busLocs);
-    localStorage.setItem('cusLocs', JSON.stringify(busLocs));
-    setLocations(_newdata);
-  }
-  useEffect(() => {
-    // initDataPage();
-  }, []);
 
   return (
     <OwnerAdminLayout>
       <div className="row">
         <div className="col-md-12">
-          <Link href={'/' + username + '/business/create'} className="btn btn-primary p-3 mb-3">
+          <Link href={`/${username}/business/create`} className="btn btn-primary p-3 mb-3">
             <FontAwesomeIcon icon={faPlus} /> Add New Business{' '}
           </Link>
           <Card className={darkMode ? 'dark-mode-body' : ''}>
@@ -93,54 +46,9 @@ const MyBusinessesPage = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {businessList.map((busi, i: number) => {
-                      return (
-                        <>
-                          <tr key={busi.id} style={{ background: '#e4edec' }}>
-                            <th scope="row">{busi.id}</th>
-
-                            <td>{busi.name}</td>
-                            <td className="text-center">{busi.type}</td>
-                            <td>
-                              <ButtonGroup className="mb-2 m-buttons-style">
-                                <Button
-                                  onClick={() => {
-                                    router.push(`/${username}/business/${busi.id}/settings`);
-                                  }}>
-                                  <FontAwesomeIcon icon={faGear} />
-                                </Button>
-                                <Button
-                                  onClick={() => {
-                                    router.push(`/${username}/business/${busi.id}/add`);
-                                  }}>
-                                  <FontAwesomeIcon icon={faPlus} /> Add New Location
-                                </Button>
-                              </ButtonGroup>
-                            </td>
-                          </tr>
-                          {busi.locations.map((location, j) => {
-                            return (
-                              <tr key={location.location_id}>
-                                <th scope="row"></th>
-                                <td>{location.location_name}</td>
-                                <td className="text-center">. . .</td>
-
-                                <td>
-                                  <ButtonGroup className="mb-2 m-buttons-style">
-                                    <Button
-                                      onClick={() => {
-                                        router.push(`/shop/${location.location_id}/products`);
-                                      }}>
-                                      <FontAwesomeIcon icon={faFolderOpen} />
-                                    </Button>
-                                  </ButtonGroup>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </>
-                      );
-                    })}
+                    {businessList.map((business) => (
+                      <BusinessRow key={business.id} business={business} />
+                    ))}
                   </tbody>
                 </Table>
               ) : (
@@ -155,4 +63,5 @@ const MyBusinessesPage = () => {
     </OwnerAdminLayout>
   );
 };
+
 export default withAuth(MyBusinessesPage);

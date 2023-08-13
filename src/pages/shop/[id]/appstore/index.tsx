@@ -143,7 +143,7 @@ export async function getServerSideProps(context: any) {
       }
     }
   );
-  console.log('_isOk22    ', _isOk);
+
   if (!_isOk) return { redirect: { permanent: false, destination: '/user/auth' } };
   if (!_rule) return { redirect: { permanent: false, destination: '/page403' } };
   return {

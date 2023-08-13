@@ -6,12 +6,12 @@ export default Joi.object({
     .messages({
       'string.email': 'Email must be a valid email',
       'string.empty': 'Email is required',
-      
+
       'any.required': 'Email is required',
     }),
   password: Joi.string()
     .required()
-    .pattern(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{6,}$/)
+    // .pattern(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{6,}$/)
     .messages({
       'string.empty': 'Password is required',
       'string.pattern.base':

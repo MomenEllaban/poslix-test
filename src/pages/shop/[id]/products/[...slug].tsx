@@ -290,7 +290,6 @@ const Product: NextPage = (probs: any) => {
 
   async function handleUpload() {
     if (prevUrlRef.current.length < 2) {
-      console.log('select first');
     } else {
       const storageRef = ref(storage, `/files/images/${generateUniqueString(12)}${shopId}`);
       const uploadTask = uploadBytesResumable(storageRef, img);
@@ -370,8 +369,6 @@ const Product: NextPage = (probs: any) => {
 
   const imageChange = (e: any) => {
     if (e.target.files && e.target.files.length > 0) {
-      console.log('inja image', e.target.files);
-
       setImg(e.target.files[0]);
       setPreviewUrl(URL.createObjectURL(e.target.files[0]));
     } else console.log('na image', e.target.files);
@@ -524,7 +521,6 @@ const Product: NextPage = (probs: any) => {
           setFormObj({ ...formObj, img: '' });
         })
         .catch((error: any) => {
-          console.log(error);
           setFormObj({ ...formObj, img: '' });
         });
     }

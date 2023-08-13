@@ -19,41 +19,41 @@ import { Bars } from 'react-loader-spinner';
 
 export default function withAuth(Component) {
   return (props) => {
-    const router = useRouter();
+    // const router = useRouter();
 
     const { user } = useUser();
 
-    useEffect(() => {
-      console.log(user.username);
-      if (!user.username) {
-        router.push(ROUTES.AUTH);
-      }
-    }, [user]);
+    // useEffect(() => {
+    //   console.log(user.username);
+    //   if (!user.username) {
+    //     router.push(ROUTES.AUTH);
+    //   }
+    // }, [user]);
 
-    if (!user.username) {
-      return (
-        <div className="loader-container">
-          <style jsx>{`
-            .loader-container {
-              width: 100vw;
-              height: 100vh;
-              display: flex;
-              justify-content: center;
-              align-items: center;
-            }
-          `}</style>
-          <Bars
-            height="80"
-            width="80"
-            color="#4fa94d"
-            ariaLabel="bars-loading"
-            wrapperStyle={{}}
-            wrapperClass=""
-            visible={true}
-          />
-        </div>
-      );
-    }
+    // if (!user.username) {
+    //   return (
+    //     <div className="loader-container">
+    //       <style jsx>{`
+    //         .loader-container {
+    //           width: 100vw;
+    //           height: 100vh;
+    //           display: flex;
+    //           justify-content: center;
+    //           align-items: center;
+    //         }
+    //       `}</style>
+    //       <Bars
+    //         height="80"
+    //         width="80"
+    //         color="#4fa94d"
+    //         ariaLabel="bars-loading"
+    //         wrapperStyle={{}}
+    //         wrapperClass=""
+    //         visible={true}
+    //       />
+    //     </div>
+    //   );
+    // }
     return <Component {...props} user={user} />;
   };
 }

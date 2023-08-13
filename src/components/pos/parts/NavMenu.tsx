@@ -5,6 +5,7 @@ import Router from 'next/router';
 import en from 'en.json';
 import ar from 'ar.json';
 import { ROUTES } from 'src/utils/app-routes';
+import { signOut } from 'next-auth/react';
 
 const NavMenu: any = (probs: any) => {
   const { shopId, lang, setLang } = probs;
@@ -15,6 +16,14 @@ const NavMenu: any = (probs: any) => {
   // const [lang, setLang] = useState(localStorage.getItem('lang'))
 
   const defaultLang = localStorage.getItem('lang') || 'en';
+
+  async function logoutHandler() {
+    const res = await signOut({
+      redirect: false,
+    });
+    console.log(res);
+    window.location.href = ROUTES.AUTH;
+  }
   useEffect(() => {
     if (defaultLang == 'en') setLang(en);
     else setLang(ar);
@@ -60,10 +69,10 @@ const NavMenu: any = (probs: any) => {
             <i className="ri-refresh-line"></i>{' '}
             <span data-key="t-dashboards">{lang.pos.navmenu.refresh}</span>{' '}
           </Link>
-          <Link className="nav-link menu-link" href={ROUTES.AUTH}>
+          <button className="nav-link menu-link" type="button" onClick={logoutHandler}>
             <i className="ri-logout-circle-line"></i>{' '}
             <span data-key="t-dashboards">{lang.pos.navmenu.logout}</span>{' '}
-          </Link>
+          </button>
         </div>
       </div>
     </>

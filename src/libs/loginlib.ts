@@ -42,8 +42,6 @@ export function hasExpired() {
   if (!accessToken) return false; // invalid or missing is not "expired"
   const decodedToken = jwt_decode(accessToken) as any;
 
-  if (!decodedToken?.exp) return true;
-
   const now = moment();
   const expiryDate = moment.unix(decodedToken.exp);
 

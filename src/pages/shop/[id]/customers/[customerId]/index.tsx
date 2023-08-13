@@ -106,7 +106,6 @@ const Customer: NextPage = (props: any) => {
       shopId,
     });
     if (result.success) {
-      console.log(result?.newdata[0]);
       const selCustomer = result?.newdata[0];
       setCustomerInfo({
         ...customerInfo,
@@ -123,7 +122,6 @@ const Customer: NextPage = (props: any) => {
         shipAddr: selCustomer.shipping_address,
       });
       setIsLoading(false);
-      console.log(result.newdata[0].mobile);
     } else {
       Toastify('error', 'has error, Try Again...');
     }
@@ -169,36 +167,21 @@ const Customer: NextPage = (props: any) => {
       renderCell: ({ row }: Partial<GridRowParams>) => (
         <>
           <ButtonGroup className="mb-2 m-buttons-style">
-            <Button
-              onClick={() => {
-                console.log(row);
-              }}>
+            <Button onClick={() => {}}>
               <FontAwesomeIcon icon={faPenToSquare} />
             </Button>
             {rules.hasDelete && (
-              <Button
-                onClick={() => {
-                  console.log(row);
-                }}>
+              <Button onClick={() => {}}>
                 <FontAwesomeIcon icon={faTrash} />
               </Button>
             )}
-            <Button
-              onClick={() => {
-                console.log(row);
-              }}>
+            <Button onClick={() => {}}>
               <FontAwesomeIcon icon={faEye} />
             </Button>
-            <Button
-              onClick={() => {
-                console.log(row);
-              }}>
+            <Button onClick={() => {}}>
               <FontAwesomeIcon icon={faCheck} />
             </Button>
-            <Button
-              onClick={() => {
-                console.log(row);
-              }}>
+            <Button onClick={() => {}}>
               <FontAwesomeIcon icon={faXmark} />
             </Button>
           </ButtonGroup>

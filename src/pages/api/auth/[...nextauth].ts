@@ -6,6 +6,19 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 
 type TLoginResponse = AxiosResponse<ICustomResponse<ILogin>>;
 
+async function refreshAccessToken(token: string) {
+  const { data } = await axios.post<string, TLoginResponse, any>(
+    `${process.env.API_BASE}refresh`,
+    {},
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return data.result.authorization.token;
+}
+
 export const authOptions: NextAuthOptions = {
   // Configure one or more authentication providers
   providers: [
@@ -26,32 +39,30 @@ export const authOptions: NextAuthOptions = {
           { email: string; password: string }
         >(`${process.env.API_BASE}login`, { email, password });
 
-        if (data) {
+        if (data.result) {
           const user = {
             ...data.result.user,
             token: data.result.authorization.token,
           };
-          console.log(user);
+
           return user as any;
         }
-        return null;
       },
     }),
-
-    // ...add more providers here
   ],
-  session: {
-    strategy: 'jwt',
-  },
+  session: { strategy: 'jwt', maxAge: 1 * 60 * 60 },
   callbacks: {
     async jwt({ token, user, account, profile }) {
       if (user) token.user = user as any;
 
       return token;
     },
-    async session({ session, token }) {
+    async session({ session, token, user }) {
       if (!session) return;
-      if (token.user) session.user = token.user;
+      if (token.user) {
+        session.user = token.user;
+        session.token = token.user.token;
+      }
 
       return session;
     },

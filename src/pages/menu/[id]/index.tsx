@@ -76,7 +76,6 @@ const Home: NextPage = (probs: any) => {
       }
       setInvoicDetails(invoiceDetails);
     } else {
-      console.log('errorrrr default invoice');
     }
     var _locs = JSON.parse(localStorage.getItem('userlocs') || '[]');
     if (_locs.toString().length > 10)
@@ -103,7 +102,6 @@ const Home: NextPage = (probs: any) => {
       shopId,
     });
     if (!success) {
-      console.log('has error in open Register');
       alert('error..Try Again');
       return;
     }

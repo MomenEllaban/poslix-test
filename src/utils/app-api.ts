@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { getToken, logout, refreshToken } from 'src/libs/loginlib';
+import authService from 'src/services/auth.service';
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE,
@@ -26,7 +26,7 @@ const processQueue = (error, token = null) => {
 // TO be refactored
 api.interceptors.request.use(
   async (config) => {
-    const token = await getToken();
+    const token = await authService.getToken();
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -35,7 +35,7 @@ api.interceptors.request.use(
     return config;
   },
   (error) => {
-    logout();
+    authService.logout();
     return Promise.reject(error);
   }
 );
@@ -49,7 +49,7 @@ const responseInterceptor = api.interceptors.response.use(
       if (!isRefreshing) {
         isRefreshing = true;
         try {
-          const newToken = await refreshToken();
+          const newToken = await authService.refreshToken();
           isRefreshing = false;
           api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
           processQueue(null, newToken);

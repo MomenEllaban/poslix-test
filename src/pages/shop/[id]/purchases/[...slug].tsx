@@ -228,8 +228,6 @@ const AddPurchase: NextPage = (props: any) => {
           <Button
             variant="outlined"
             onClick={() => {
-              console.log(row);
-
               setSelecetdId({ product_id: row.product_id, variation_id: row.variation_id });
               setOpenRemoveDialog(true);
             }}>
@@ -319,7 +317,6 @@ const AddPurchase: NextPage = (props: any) => {
       setSelectedTaxes(_taxes);
       // itm.currency_id
       const pidex = newdata.currencies.findIndex((ps: any) => ps.value == itm.currency_id);
-      console.log('currcny ', pidex);
 
       let crate = 0,
         cCode = '';
@@ -427,7 +424,6 @@ const AddPurchase: NextPage = (props: any) => {
     var _total = subTotal;
     if (_total <= 0) return;
     purchaseDetails.map((dp) => (_total = getPriority(dp.value, _total)));
-    console.log('subTotal_price ', subTotal);
 
     setFormObj({
       ...formObj,
@@ -471,7 +467,6 @@ const AddPurchase: NextPage = (props: any) => {
   //expenses
   useEffect(() => {
     var _sum = 0;
-    console.log(selectedExpends);
 
     selectedExpends.map((ep) => (_sum += Number(ep.enterd_value * ep.currency_rate)));
     selectedExpendsEdit.map((ep) => (_sum += Number(ep.enterd_value * ep.currency_rate)));
@@ -508,8 +503,6 @@ const AddPurchase: NextPage = (props: any) => {
   }, [formObj.currency_rate]);
 
   const calculationLineTotal = (item: IpurchaseProductItem): number => {
-    console.log('inja', item);
-
     switch (item.costType) {
       case 0:
         return item.cost;
@@ -543,7 +536,6 @@ const AddPurchase: NextPage = (props: any) => {
       else alert('Erorr , maximum 5 fileds');
     } else {
       //add taxes
-      console.log(rowType);
 
       setSelectedTaxes([
         ...selectedTaxes,
@@ -561,11 +553,9 @@ const AddPurchase: NextPage = (props: any) => {
     }
   };
   const deleteTableRows = (index: any) => {
-    console.log(index, selectedExpends);
-
     const _rows = [...selectedExpends];
     _rows.splice(index, 1);
-    console.log(_rows);
+
     setSelectedExpends(_rows);
 
     setExpenseCounter(expenseCounter - 1);
@@ -607,7 +597,6 @@ const AddPurchase: NextPage = (props: any) => {
   };
   const handlerRowTaxes = (index: any, evnt: any) => {
     const _rows: IPurchaseExpndes[] | any = [...selectedTaxes];
-    console.log(evnt);
 
     if ('label' in evnt) {
       _rows[index].currency_rate = evnt.exchange_rate;
@@ -663,7 +652,7 @@ const AddPurchase: NextPage = (props: any) => {
       return;
     }
     const found = selectProducts.some((el) => el.product_id === e.value);
-    console.log(e);
+
     if (!found) {
       setSelectProducts([
         ...selectProducts,
@@ -1287,7 +1276,6 @@ const AddPurchase: NextPage = (props: any) => {
                       paid: formObj.paymentStatus == 'partially_paid' && formObj.paid_amount < 0.5,
                       morePaid: formObj.paid_amount > formObj.total_price,
                     });
-                    console.log(errors);
 
                     if (errors.length == 0) {
                       if (isEdit) editPurchase();
@@ -1313,7 +1301,6 @@ export async function getServerSideProps(context: any) {
   var shopId = context.query.id;
   var _addOrEdit = context.query.slug[0];
   var _EditId = context.query.slug[1];
-  console.log('context.query ', _EditId, context.query);
 
   if (shopId == undefined) _isOk = false;
   if (_addOrEdit != 'add' && _addOrEdit != 'edit') _isOk = false;

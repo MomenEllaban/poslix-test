@@ -1,16 +1,21 @@
 $enable-negative-margins: true;
 
-@import "~bootstrap/scss/bootstrap";
+@import '~bootstrap/scss/bootstrap';
 
-@import "layout/avatar";
-@import "layout/footer";
-@import "layout/header";
-@import "layout/progress";
-@import "layout/sidebar";
+@import 'layout/avatar';
+@import 'layout/footer';
+@import 'layout/header';
+@import 'layout/progress';
+@import 'layout/sidebar';
 
-@import "_custom";
-@import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap");
+@import '_custom';
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
 
 body {
-	font-family: "Open Sans", sans-serif;
+  font-family: 'Open Sans', sans-serif;
+}
+
+:root,
+html {
+  font-size: 16px !important;
 }

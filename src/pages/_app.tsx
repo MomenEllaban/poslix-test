@@ -7,41 +7,37 @@ import { ToastContainer } from 'react-toastify';
 import { RecoilRoot } from 'recoil';
 import { ProductProvider, UserProvider } from 'src/components/providers';
 import { DarkModeProvider } from 'src/context/DarkModeContext';
+import Head from 'next/head';
 
 // CSS
 import '@fortawesome/fontawesome-svg-core/styles.css';
 import '@styles/_pos_custom.css';
 import '@styles/globals.scss';
 import '@styles/loyalty.css';
-import Head from 'next/head';
 import '../../public/css/products.modules.css';
 
 config.autoAddCss = false;
 
 export default function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
-
   return (
-    <>
-      <Head>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Poslix App</title>
-      </Head>
-
-      <SessionProvider session={session}>
-        <RecoilRoot>
-          <SSRProvider>
-            <DarkModeProvider>
-              <UserProvider>
-                <ProductProvider>
-                  <NextNProgress />
-                  <Component {...pageProps} />
-                  <ToastContainer />
-                </ProductProvider>
-              </UserProvider>
-            </DarkModeProvider>
-          </SSRProvider>
-        </RecoilRoot>{' '}
-      </SessionProvider>
-    </>
+    <SessionProvider session={session}>
+      <SSRProvider>
+        <UserProvider>
+          <Head>
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
+            <title>Poslix App</title>
+          </Head>
+          <RecoilRoot>
+            <ProductProvider>
+              <DarkModeProvider>
+                <NextNProgress />
+                <Component {...pageProps} />
+                <ToastContainer />
+              </DarkModeProvider>
+            </ProductProvider>
+          </RecoilRoot>
+        </UserProvider>
+      </SSRProvider>
+    </SessionProvider>
   );
 }

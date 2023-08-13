@@ -328,7 +328,6 @@ export default function StockReport(props: any) {
     setShowViewPopUp(true);
   };
   const handleSearch = (e: any) => {
-    console.log(e.target.value);
     setHandleSearchTxt(e.target.value);
   };
   return (
@@ -572,7 +571,7 @@ export async function getServerSideProps(context: any) {
 
       if (_isOk) {
         var _rules = keyValueRules(repo.data.rules || []);
-        console.log(_rules);
+
         if (
           _rules[-2] != undefined &&
           _rules[-2][0].stuff != undefined &&

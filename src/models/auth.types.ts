@@ -7,7 +7,7 @@ export interface ILogin {
 }
 
 export interface IUser {
-  id: string | number;
+  id: number;
   owner_id?: string | number;
 
   username: string;
@@ -22,6 +22,8 @@ export interface IUser {
   deleted_at: any;
   created_at: any;
   updated_at: any;
+
+  token?: string;
 }
 
 export interface IUserBusiness {

@@ -1,34 +1,10 @@
-import type { NextPage } from 'next';
-import Image from 'next/image';
-import { AdminLayout } from '@layout';
+import { faBarcode, faPenToSquare, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import Spinner from 'react-bootstrap/Spinner';
-import {
-  faTrash,
-  faPenToSquare,
-  faPlus,
-  faTag,
-  faBarcode,
-} from '@fortawesome/free-solid-svg-icons';
-import { Button, ButtonGroup, Card } from 'react-bootstrap';
-import React, {
-  useState,
-  useEffect,
-  useRef,
-  ChangeEvent,
-  MouseEventHandler,
-  useContext,
-} from 'react';
-import { apiFetchCtr, apiInsertCtr } from '../../../../libs/dbUtils';
-import { useRouter } from 'next/router';
-import AlertDialog from 'src/components/utils/AlertDialog';
+import { AdminLayout } from '@layout';
+import { ILocationSettings } from '@models/common-model';
 import { Button as MButton } from '@mui/material';
-import { ILocationSettings, IPageRules, ITokenVerfy } from '@models/common-model';
-import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/checkUtils';
-import * as cookie from 'cookie';
-import ShowPriceListModal from 'src/components/dashboard/modal/ShowPriceListModal';
-import { Toastify } from 'src/libs/allToasts';
-import { ToastContainer } from 'react-toastify';
+import TextField from '@mui/material/TextField';
+import { debounce } from '@mui/material/utils';
 import {
   DataGrid,
   GridColDef,
@@ -36,19 +12,30 @@ import {
   GridToolbarColumnsButton,
   GridToolbarContainer,
   GridToolbarExport,
-  useGridApiContext,
-  useGridApiRef,
 } from '@mui/x-data-grid';
-import { debounce } from '@mui/material/utils';
-import TextField from '@mui/material/TextField';
-import { Checkbox } from '@mui/material';
+import type { NextPage } from 'next';
+import Image from 'next/image';
+import { useRouter } from 'next/router';
+import { ChangeEvent, useContext, useEffect, useRef, useState } from 'react';
+import { Button, ButtonGroup } from 'react-bootstrap';
+import Spinner from 'react-bootstrap/Spinner';
+import { ToastContainer } from 'react-toastify';
+import ShowPriceListModal from 'src/components/dashboard/modal/ShowPriceListModal';
 import LocationModal from 'src/components/pos/modals/LocationModal';
+import AlertDialog from 'src/components/utils/AlertDialog';
+import { Toastify } from 'src/libs/allToasts';
 import * as XLSX from 'xlsx';
+import { apiFetchCtr, apiInsertCtr } from '../../../../libs/dbUtils';
 
 /*MOHAMMED MAHER */
+import { getSession } from 'next-auth/react';
+import permissionStrToObj from 'src/modules/shop/_utils/permissionStrToObj';
+import { ROUTES } from 'src/utils/app-routes';
+import { authApi } from 'src/utils/auth-api';
 import { darkModeContext } from '../../../../context/DarkModeContext';
-const Product: NextPage = (probs: any) => {
-  const { shopId, rules } = probs;
+const Product: NextPage = (props: any) => {
+  const { shopId, rules } = props;
+  console.log(props);
   const myLoader = (img: any) => img.src;
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
     value: 0,
@@ -455,3 +442,43 @@ const Product: NextPage = (probs: any) => {
   );
 };
 export default Product;
+/**
+ * @description get server side props
+ * @param {any} context
+ *
+ * get the cookies from the context
+ * check the page params
+ * check user permissions
+ *
+ */
+export async function getServerSideProps(context: any) {
+  // check if the user is logged in
+  const session = await getSession(context);
+  if (!session) return { redirect: { permanent: false, destination: ROUTES.AUTH } };
+
+  const shopId = context.query.id;
+  if (!shopId) return { redirect: { permanent: false, destination: '/page403' } };
+  try {
+    const getPermission = await (await authApi(session))
+      .get('permissions/13')
+      .then((res) => res.data);
+
+    const permissions = permissionStrToObj(getPermission.result.stuff) ?? {};
+
+    return {
+      props: {
+        permissions: permissions,
+        shopId,
+        rules: {
+          //! this should be dynamic
+          hasDelete: true,
+          hasEdit: true,
+          hasView: true,
+          hasInsert: true,
+        },
+      },
+    };
+  } catch (e) {
+    return { redirect: { permanent: false, destination: ROUTES.AUTH } };
+  }
+}
