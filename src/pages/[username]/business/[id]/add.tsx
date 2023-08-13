@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { Card } from 'react-bootstrap';
 import { ToastContainer } from 'react-toastify';
-import AddLocation from 'src/components/dashboard/AddLocation';
 import AddBusinessLocationView from 'src/modules/business/add-location/add-location-view';
 
 export default function AddBusinessLocation({ username, busniessType }: any) {

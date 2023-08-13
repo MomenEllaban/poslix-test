@@ -6,6 +6,8 @@ import { Button, Form, InputGroup } from 'react-bootstrap';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { MdVisibility, MdVisibilityOff } from 'react-icons/md';
 import loginSchema from '../login.schema';
+import { Toastify } from 'src/libs/allToasts';
+import { useRouter } from 'next/router';
 
 type Inputs = {
   email: string;
@@ -28,16 +30,26 @@ export default function LoginView() {
     reValidateMode: 'onBlur',
     defaultValues: initState,
   });
+  const router = useRouter();
 
   const [showPass, setShowPass] = useState(false);
   const [isLoading, setLoading] = useState(false);
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     setLoading(true);
-    const res = await signIn('credentials', { redirect: false, ...data }).finally(() => {
-      setLoading(false);
-      window.location.href = '/';
-    });
+    const res = await signIn('credentials', { redirect: false, ...data })
+      .then((res) => {
+        if (res.error) throw new Error(res.error);
+
+        Toastify('success', 'Login Success');
+        router.push('/');
+      })
+      .catch(() => {
+        Toastify('error', 'Login Failed');
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
   const onError = (errors: any, e: any) => console.log(errors, e);
 
