@@ -37,7 +37,7 @@ export default function BusinessRow({ business }) {
         </td>
       </tr>
       {business.locations.map((location) => (
-        <LocationRow key={location.location_id} location={location} />
+        <LocationRow key={location.location_id} location={location} locations={business.locations} businessId={business.id} />
       ))}
     </Fragment>
   );

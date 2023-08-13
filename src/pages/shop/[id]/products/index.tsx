@@ -33,9 +33,9 @@ import permissionStrToObj from 'src/modules/shop/_utils/permissionStrToObj';
 import { ROUTES } from 'src/utils/app-routes';
 import { authApi } from 'src/utils/auth-api';
 import { darkModeContext } from '../../../../context/DarkModeContext';
+import { findAllData } from 'src/services/crud.api';
 const Product: NextPage = (props: any) => {
   const { shopId, rules } = props;
-  console.log(props);
   const myLoader = (img: any) => img.src;
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
     value: 0,
@@ -62,8 +62,9 @@ const Product: NextPage = (props: any) => {
   const [selectedItems, setSelectedItems] = useState<Array<string>>([]);
   const [locationModal, setLocationModal] = useState<boolean>(false);
   const [locations, setLocations] = useState<{ value: number; label: string }[]>([]);
-  // var _locs = JSON.parse(localStorage.getItem('userlocs') || '[]');
-
+  const [currentPage, setCurrentPage] = useState(1);
+  const [lastPage, setLastPage] = useState();
+  const [totalRows, setTotalRows] = useState();
   /*MOHAMMED MAHER */
   const { darkMode } = useContext(darkModeContext);
 
@@ -161,21 +162,16 @@ const Product: NextPage = (props: any) => {
       flex: 1,
       headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
+      renderCell: ({row}) => (
+        <p>{row.name}</p>
+      )
     },
     {
-      field: 'qty',
+      field: 'stock',
       headerName: 'Qty',
       flex: 0.5,
       headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
-      renderCell: ({ row }: Partial<GridRowParams>) => (
-        <>
-          <div className={row.qty > 0 && row.type != 'package' ? 'clickable-qty' : ''}>
-            {row.type != 'package' ? Number(row.qty).toFixed(0) : '---'}
-            <span className="qty-over">[{Number(row.qty_over_sold).toFixed(0)}]</span>
-          </div>
-        </>
-      ),
     },
     {
       field: 'action',
@@ -276,21 +272,21 @@ const Product: NextPage = (props: any) => {
     );
   }
   async function initDataPage() {
-    const { success, data } = await apiFetchCtr({
-      fetch: 'products',
-      subType: 'getProducts',
-      shopId,
-    });
-    if (!success) {
-      Toastify('error', 'Somthing wrong!!, try agian');
-      return;
-    }
-    setProducts(data.products);
-    setFilteredProducts(data.products);
+    const res = await findAllData(`products/${router.query.id}?page=${currentPage}`);
+    console.log(res.data);
+    // if (!success) {
+    //   Toastify('error', 'Somthing wrong!!, try agian');
+    //   return;
+    // }
+    setProducts(res.data.result.data);
+    setCurrentPage(res.data.result.current_page)
+    setLastPage(res.data.result.last_page)
+    setTotalRows(res.data.result.total)
+    // setFilteredProducts(data.products);
     setIsLoading(false);
   }
   useEffect(() => {
-    var _locs = JSON.parse(localStorage.getItem('userlocs') || '[]');
+    const _locs = JSON.parse(localStorage.getItem('locations') || '[]');
     setLocations(_locs);
     if (_locs.toString().length > 10)
       setLocationSettings(
@@ -302,7 +298,7 @@ const Product: NextPage = (props: any) => {
       );
     else alert('errorr location settings');
     initDataPage();
-  }, [router.asPath]);
+  }, [router.asPath, currentPage]);
 
   const handleDeleteFuc = (result: boolean, msg: string, section: string) => {
     if (result) {
@@ -422,13 +418,16 @@ const Product: NextPage = (props: any) => {
                     border: 'none',
                   },
                 }}
-                rows={filteredProducts}
+                rows={products}
                 columns={columns}
-                pageSize={10}
+                // pageSize={10}
                 rowsPerPageOptions={[10]}
                 onSelectionModelChange={(ids: any) => onRowsSelectionHandler(ids)}
                 onCellClick={handleCellClick}
                 components={{ Toolbar: CustomToolbar }}
+                rowCount={totalRows}
+                onPageChange={(params) => setCurrentPage(params + 1)}
+                pagination
               />
             </div>
           </>

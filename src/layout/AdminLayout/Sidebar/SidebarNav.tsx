@@ -21,6 +21,7 @@ import { MdOutlineCrisisAlert, MdOutlineLocalGroceryStore } from 'react-icons/md
 import { TbReportSearch } from 'react-icons/tb';
 import { apiFetch } from 'src/libs/dbUtils';
 import styles from './sideBarNav.module.css';
+import { findAllData } from 'src/services/crud.api';
 
 type SidebarNavItemProps = {
   href: string;
@@ -140,49 +141,26 @@ export function SidebarNav(probs: any): any {
     hasRegister: false,
     hasQuotations: false,
   });
+  
   async function intData() {
-    let { success, newdata } = await apiFetch({ fetch: 'checkwt' });
-    if (newdata.types == undefined || newdata.types.length == 0) success = false;
-    else {
-      const item = newdata.types.find((tp: any) => tp.id == shopId);
-      if (item !== undefined) setBtype(item.type);
-      else success = false;
-    }
+    const res = await findAllData("permissions/13");
+    console.log(res.data);
+    
+    // let { success, newdata } = await apiFetch({ fetch: 'checkwt' });
+    // if (newdata.types == undefined || newdata.types.length == 0) success = false;
     if (
-      success &&
-      newdata.rules[-2] != undefined &&
-      newdata.rules[-2][0].stuff != undefined &&
-      newdata.rules[-2][0].stuff == 'owner'
+      res.data.result.name == "owner" || true
     ) {
-      setPermiss({
-        ...permiss,
-        hasProducts: true,
-        hasCats: true,
-        hasTaxes: true,
-        hasPurchases: true,
-        hasSalesList: true,
-        hasPOS: true,
-        hasDiscount: true,
-        hasExpenses: true,
-        hasTailoring: true,
-        hasOrders: true,
-        hasTransfer: true,
-        hasSupplier: true,
-        hasCustomers: true,
-        hasAppearance: true,
-        hasAppStore: true,
-        hasItemSales: true,
-        hasCategorySales: true,
-        hasCurrentStock: true,
-        hasSupplierSales: true,
-        hasQuotations: true,
-        hasRegister: true,
+      setPermiss({...permiss,
+        hasProducts: true, hasCats: true, hasTaxes: true, hasPurchases: true, hasSalesList: true, hasPOS: true,
+        hasDiscount: true, hasExpenses: true, hasTailoring: true, hasOrders: true, hasTransfer: true, hasSupplier: true,
+        hasCustomers: true, hasAppearance: true, hasAppStore: true, hasItemSales: true, hasCategorySales: true, hasCurrentStock: true,
+        hasSupplierSales: true, hasQuotations: true, hasRegister: true,
       });
       setLoading(false);
-    } else if (success && newdata.rules[shopId] != undefined) {
-      var _stuf = '';
-      newdata.rules[shopId].forEach((dd: any) => (_stuf += dd.stuff));
-
+    } else {
+      let _stuf = '';
+      // newdata.rules[shopId].forEach((dd: any) => (_stuf += dd.stuff));
       setPermiss({
         ...permiss,
         hasProducts: _stuf.includes('products/'),
@@ -197,8 +175,6 @@ export function SidebarNav(probs: any): any {
         hasOrders: _stuf.includes('orders/'),
       });
       setLoading(false);
-    } else {
-      alert('error');
     }
   }
   useEffect(() => {
