@@ -66,8 +66,8 @@ const Taxes: NextPage = (props: any) => {
           name: '',
           amount: 0,
           type: '',
-          isPrimary: false,
-          taxType: 'primary',
+          is_primary: false,
+          Etax_type: 'primary',
           isNew: 1,
         });
         newdata.push({
@@ -75,8 +75,8 @@ const Taxes: NextPage = (props: any) => {
           name: '',
           amount: 0,
           type: '',
-          isPrimary: false,
-          taxType: 'excise',
+          is_primary: false,
+          Etax_type: 'excise',
           isNew: 1,
         });
         newdata.push({
@@ -85,39 +85,39 @@ const Taxes: NextPage = (props: any) => {
           amount: 0,
           type: '',
           amountType: 'percentage',
-          isPrimary: false,
-          taxType: 'service',
+          is_primary: false,
+          Etax_type: 'service',
           isNew: 1,
         });
       }
       setTaxs(
         newdata.filter((p: ITax) => {
-          return p.taxType == 'primary';
+          return p.Etax_type == 'primary';
         })
       );
       setTaxsExcise(
         newdata.filter((p: ITax) => {
-          return p.taxType == 'excise';
+          return p.Etax_type == 'excise';
         })
       );
       setTaxsService(
         newdata.filter((p: ITax) => {
-          return p.taxType == 'service';
+          return p.Etax_type == 'service';
         })
       );
       setTaxesGroup(
         newdata.filter((p: ITax) => {
-          return p.taxType == 'group';
+          return p.Etax_type == 'group';
         })
       );
       setIsLoading(false);
     }
   }
   async function addUpdateTaxs(rows: ITax[]) {
-    if (rows[0].taxType == 'primary') {
+    if (rows[0].Etax_type == 'primary') {
       let notHas = true;
       for (var j = 0; j < rows.length - 1; j++) {
-        if (rows[j].isPrimary) notHas = false;
+        if (rows[j].is_primary) notHas = false;
       }
       if (notHas) {
         Toastify('error', 'Error, you have to set one item is primary');
@@ -136,9 +136,9 @@ const Taxes: NextPage = (props: any) => {
     }
     let jj = 0;
     const _taxs =
-      rows[0].taxType == 'primary'
+      rows[0].Etax_type == 'primary'
         ? [...taxs]
-        : rows[0].taxType == 'excise'
+        : rows[0].Etax_type == 'excise'
         ? [...taxsExcise]
         : [...taxsService];
     for (var j = 0; j < _taxs.length - 1; j++) {
@@ -149,9 +149,9 @@ const Taxes: NextPage = (props: any) => {
       }
     }
 
-    rows[0].taxType == 'primary'
+    rows[0].Etax_type == 'primary'
       ? setTaxs(_taxs)
-      : rows[0].taxType == 'excise'
+      : rows[0].Etax_type == 'excise'
       ? setTaxsExcise(_taxs)
       : setTaxsService(_taxs);
     Toastify('success', 'successfuly Done!');
@@ -163,10 +163,10 @@ const Taxes: NextPage = (props: any) => {
 
   const handlePrimarySwitchChange = (e: any, i: number) => {
     const _taxs = [...taxs];
-    var sv = _taxs[i].isPrimary;
-    for (var j = 0; j < _taxs.length; j++) _taxs[j].isPrimary = false;
+    var sv = _taxs[i].is_primary;
+    for (var j = 0; j < _taxs.length; j++) _taxs[j].is_primary = false;
 
-    _taxs[i].isPrimary = !sv;
+    _taxs[i].is_primary = !sv;
     setTaxs(_taxs);
   };
   const handleInputChange = (e: any, i: number) => {
@@ -183,11 +183,11 @@ const Taxes: NextPage = (props: any) => {
         id: 0,
         name: '',
         amount: 0,
-        amountType: '',
-        isPrimary: false,
-        taxType: 'primary',
+        Etype: '',
+        is_primary: false,
+        Etax_type: 'primary',
         isNew: 1,
-      });
+      } as any);
     setTaxs(_taxs);
   };
   const handleDelete = (i: number, type: string) => {
@@ -218,7 +218,7 @@ const Taxes: NextPage = (props: any) => {
       ? (_taxes[i].name = e.target.value)
       : e.target.name == 'tax-value'
       ? (_taxes[i].amount = e.target.value)
-      : (_taxes[i].amountType = e.target.value);
+      : (_taxes[i].Etype = e.target.value);
     var hasEmpty = false;
     for (var j = 0; j < _taxes.length; j++) if (_taxes[j].name.length == 0) hasEmpty = true;
     if (!hasEmpty)
@@ -226,11 +226,11 @@ const Taxes: NextPage = (props: any) => {
         id: 0,
         name: '',
         amount: 0,
-        amountType: 'percentage',
-        taxType: isExc ? 'excise' : 'service',
-        isPrimary: false,
+        Etype: 'percentage',
+        Etax_type: isExc ? 'excise' : 'service',
+        is_primary: false,
         isNew: 1,
-      });
+      } as any);
     isExc ? setTaxsExcise(_taxes) : setTaxsService(_taxes);
   };
   const addNewGroup = (id = 0) => {
@@ -391,7 +391,7 @@ const Taxes: NextPage = (props: any) => {
                                 id="custom-switch"
                                 disabled={!rules.hasInsert}
                                 className="custom-switch"
-                                checked={ex.isPrimary ? true : false}
+                                checked={ex.is_primary ? true : false}
                                 onChange={(e) => {
                                   handlePrimarySwitchChange(e, i);
                                 }}
@@ -530,7 +530,7 @@ const Taxes: NextPage = (props: any) => {
                               styles={selectStyle}
                               options={taxValueType}
                               value={taxValueType.filter((it: any) => {
-                                return it.value == ex.amountType;
+                                return it.value == ex.Etype;
                               })}
                               onChange={(itm) => {
                                 handleChangeExcAndService(
@@ -625,7 +625,7 @@ const Taxes: NextPage = (props: any) => {
                                 type="switch"
                                 disabled={true}
                                 className="custom-switch"
-                                checked={ex.isPrimary ? true : false}
+                                checked={ex.is_primary ? true : false}
                               />
                             </td>
                             <td>

@@ -406,18 +406,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
                     con.end();
                   } else {
                     res.setHeader('Content-Type', 'application/json');
-                    res
-                      .status(200)
-                      .json({
-                        success: true,
-                        msg: 'record is added!',
-                        newdata: {
-                          value: data.user,
-                          label: '',
-                          stuff_ids: _userStuff,
-                          locationId: locationId,
-                        },
-                      });
+                    res.status(200).json({
+                      success: true,
+                      msg: 'record is added!',
+                      newdata: {
+                        value: data.user,
+                        label: '',
+                        stuff_ids: _userStuff,
+                        locationId: locationId,
+                      },
+                    });
                     res.end();
                     con.end();
                   }
@@ -474,20 +472,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
                   redirection(400, con, res, getMessageByErrorCode(err.errno || 0));
                 } else {
                   res.setHeader('Content-Type', 'application/json');
-                  res
-                    .status(200)
-                    .json({
-                      success: true,
-                      msg: 'record is added!',
-                      userObject: {
-                        isNew: true,
-                        name: data.name,
-                        username: data.username,
-                        password: data.password,
-                        mobile: '',
-                        email: '',
-                      },
-                    });
+                  res.status(200).json({
+                    success: true,
+                    msg: 'record is added!',
+                    userObject: {
+                      isNew: true,
+                      name: data.name,
+                      username: data.username,
+                      password: data.password,
+                      mobile: '',
+                      email: '',
+                    },
+                  });
                   res.end();
                   con.end();
                   return;
@@ -538,13 +534,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
                   redirection(400, con, res, getMessageByErrorCode(err.errno || 0));
                 } else {
                   res.setHeader('Content-Type', 'application/json');
-                  res
-                    .status(200)
-                    .json({
-                      success: true,
-                      msg: 'record is added!',
-                      newdata: { id: newrole.insertId, name: data.name, stuff: _stuff },
-                    });
+                  res.status(200).json({
+                    success: true,
+                    msg: 'record is added!',
+                    newdata: { id: newrole.insertId, name: data.name, stuff: _stuff },
+                  });
                   res.end();
                   con.end();
                   return;
@@ -564,13 +558,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
                   return;
                 } else {
                   res.setHeader('Content-Type', 'application/json');
-                  res
-                    .status(200)
-                    .json({
-                      success: true,
-                      msg: 'record is edited!',
-                      newdata: { stuff: _stuff, name: data.name },
-                    });
+                  res.status(200).json({
+                    success: true,
+                    msg: 'record is edited!',
+                    newdata: { stuff: _stuff, name: data.name },
+                  });
                   res.end();
                   con.end();
                   return;
@@ -701,9 +693,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
                   itm.name,
                   Number(itm.amount),
                   repo.data.id,
-                  itm.taxType != 'service' ? 'percentage' : itm.amountType,
-                  itm.isPrimary,
-                  itm.taxType,
+                  itm.Etax_type != 'service' ? 'percentage' : itm.Etype,
+                  itm.is_primary,
+                  itm.Etax_type,
                 ]);
             });
 
@@ -725,8 +717,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
                     [
                       data[idx].name,
                       data[idx].amount,
-                      data[idx].isPrimary,
-                      data[idx].amountType,
+                      data[idx].is_primary,
+                      data[idx].Etype,
                       data[idx].id,
                     ]
                   )
