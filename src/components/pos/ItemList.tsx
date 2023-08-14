@@ -28,9 +28,9 @@ export const ItemList: any = (props: any) => {
     borderColor: "48b7b9",
   };
   useEffect(() => {
-    SetProductsItems(products.products)
+    SetProductsItems(products?.products)
     setIsLoading(false)
-  }, [products.products])
+  }, [products?.products])
 
   useEffect(() => {
     if (jobType.req == 102)

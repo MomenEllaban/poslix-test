@@ -5,3 +5,35 @@
 .rtl {
   direction: rtl;
 }
+
+.navbar__container {
+  width: 4.5rem;
+  z-index: 1002;
+  border-right: 0px solid var(--vz-vertical-menu-bg-dark);
+  bottom: 0;
+  position: fixed;
+  top: 0;
+  background: white;
+  border-radius: 0px 2rem 2rem 0px;
+  margin: 10px auto;
+
+  box-shadow: 0 2px 4px rgba(15, 34, 58, 0.12);
+  padding: 0 0 calc(4.5rem + 25px) 0;
+
+  transition: all 0.1s ease-out;
+}
+
+.sty_ar {
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  /* flex-wrap: nowrap; */
+  align-content: center;
+  font-size: 1.1rem;
+  justify-content: center;
+  align-items: center;
+}
+
+.sty_ar i {
+  font-size: 1.5rem;
+}

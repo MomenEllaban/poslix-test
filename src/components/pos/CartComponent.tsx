@@ -232,10 +232,14 @@ export const OrdersComponent = (props: any) => {
 
   // start recipt template
   const componentRef = React.useRef(null);
-  let invoiceType = JSON.parse(localStorage.getItem('invoiceType')) ?? {};
-  // useEffect(() => {
 
-  // }, [])
+  let invoiceType: { value: string } = { value: '' };
+
+  useEffect(() => {
+    invoiceType = JSON.parse(localStorage.getItem('invoiceType')) ?? {
+      value: '',
+    }; // this could be state
+  }, []);
   class ComponentToPrint extends React.PureComponent {
     render() {
       return invoiceType?.value == 'receipt' ? (

@@ -4,27 +4,20 @@ import ar from 'ar.json';
 import en from 'en.json';
 import type { NextPage } from 'next';
 import { useRouter } from 'next/router';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRecoilState } from 'recoil';
-import 'remixicon/fonts/remixicon.css';
 import withAuth from 'src/HOCs/withAuth';
 import { useUser } from 'src/context/UserContext';
 import { Toastify } from 'src/libs/allToasts';
 import { apiFetchCtr, apiInsertCtr } from 'src/libs/dbUtils';
+import PosLayout from 'src/modules/pos/_components/layout/pos.layout';
 import { OrdersComponent } from '../../../components/pos/CartComponent';
 import { ItemList } from '../../../components/pos/ItemList';
 import NavMenu from '../../../components/pos/parts/NavMenu';
 import { useProducts } from '../../../context/ProductContext';
 import { cartJobType } from '../../../recoil/atoms';
 
-function PosLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <div id="layout-wrapper">
-      <div className="vertical-overlay" />
-      <div className="main-content">{children}</div>
-    </div>
-  );
-}
+import 'remixicon/fonts/remixicon.css';
 
 const Home: NextPage = (props: any) => {
   const router = useRouter();
@@ -155,58 +148,54 @@ const Home: NextPage = (props: any) => {
   if (isOpenRegister)
     return (
       <PosLayout>
-        <div className="pos-flex">
-          <NavMenu shopId={shopId} lang={lang} setLang={setLang} />
-          <OrdersComponent shopId={shopId} lang={lang.pos} direction={lang == ar ? 'rtl' : ''} />
-          <ItemList lang={lang.pos.itemList} />
-        </div>
+        <NavMenu shopId={shopId} lang={lang} setLang={setLang} />
+        <OrdersComponent shopId={shopId} lang={lang.pos} direction={lang == ar ? 'rtl' : ''} />
+        <ItemList lang={lang.pos.itemList} />
       </PosLayout>
     );
 
   return (
     <PosLayout>
-      <div className="pos-flex">
-        <div className="open-register">
-          <img className="logo" src="/images/logo1.png" />
-          <p>You have Open Register First!</p>
+      <div className="open-register">
+        <img className="logo" src="/images/logo1.png" />
+        <p>You have Open Register First!</p>
 
-          {/* mohamed elsayed reg */}
-          <div className="col-lg-4 mb-3">
-            <label>Bussnies</label>
-            <select className="form-select" onChange={handleBussinesChange}>
-              {cusLocs?.map((el) => (
-                <option key={el.bus_id} value={el.bus_id}>
-                  {el.bus_name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="col-lg-4 mb-3">
-            <label>Location</label>
-            <select className="form-select" onChange={handelLocationChange}>
-              {locations?.map((el) => (
-                <option key={el.loc_id} value={el.loc_id}>
-                  {el.loc_name}
-                </option>
-              ))}
-            </select>
-          </div>
-          {/* ------------------ */}
-
-          <input
-            type="number"
-            name="cemail"
-            className="form-control"
-            placeholder="Cash in hand..."
-            onChange={(e) => {
-              setCashHand(+e.target?.value);
-            }}
-          />
-          <button className="btn btn-primary p-3" onClick={() => openRegister()}>
-            <FontAwesomeIcon icon={faCashRegister} /> Open Register{' '}
-          </button>
+        {/* mohamed elsayed reg */}
+        <div className="col-lg-4 mb-3">
+          <label>Bussnies</label>
+          <select className="form-select" onChange={handleBussinesChange}>
+            {cusLocs?.map((el) => (
+              <option key={el.bus_id} value={el.bus_id}>
+                {el.bus_name}
+              </option>
+            ))}
+          </select>
         </div>
+
+        <div className="col-lg-4 mb-3">
+          <label>Location</label>
+          <select className="form-select" onChange={handelLocationChange}>
+            {locations?.map((el) => (
+              <option key={el.loc_id} value={el.loc_id}>
+                {el.loc_name}
+              </option>
+            ))}
+          </select>
+        </div>
+        {/* ------------------ */}
+
+        <input
+          type="number"
+          name="cemail"
+          className="form-control"
+          placeholder="Cash in hand..."
+          onChange={(e) => {
+            setCashHand(+e.target?.value);
+          }}
+        />
+        <button className="btn btn-primary p-3" onClick={() => openRegister()}>
+          <FontAwesomeIcon icon={faCashRegister} /> Open Register{' '}
+        </button>
       </div>
     </PosLayout>
   );
