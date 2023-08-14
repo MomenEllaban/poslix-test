@@ -51,6 +51,9 @@ export default function UserProvider({ children }: { children: React.ReactNode }
   };
 
   useEffect(() => {
+    const language = window.localStorage.getItem('lang');
+    if (!language) window.localStorage.setItem('lang', 'en');
+
     getSession().then((session) => {
       if (session) {
         setUser(session.user);

@@ -10,13 +10,13 @@ const NavMenu: any = (probs: any) => {
   const customerModalHandler = (status: any) => {
     setCustomerIsModal(false);
   };
-  // const [lang, setLang] = useState(localStorage.getItem('lang'))
 
-  const defaultLang = localStorage.getItem('lang') || 'en';
   useEffect(() => {
+    const defaultLang = localStorage.getItem('lang') || 'en';
     if (defaultLang == 'en') setLang(en);
     else setLang(ar);
-  }, [defaultLang]);
+  }, []);
+
   return (
     <>
       <CloseRegister
@@ -67,4 +67,5 @@ const NavMenu: any = (probs: any) => {
     </>
   );
 };
+
 export default NavMenu;
