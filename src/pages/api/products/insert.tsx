@@ -172,63 +172,57 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
                   }
                   const sqlAddVariation = `insert into tailoring_package(location_id,parent_id,tailoring_type_id,prices_json,fabric_ids,created_by) 
                                     VALUES (?,?,?,?,?,?)`;
-                  await con
-                    .promise()
-                    .query(sqlAddVariation, [
-                      shopId,
-                      prods.insertId,
-                      fdata.isTailoring,
-                      JSON.stringify(_prices),
-                      _fabs,
-                      repo.data.id,
-                    ])
-                    .then((rows: any, fields: any) => {})
-                    .catch((err: QueryError) => {});
-                }
-                res.setHeader('Content-Type', 'application/json');
-                res.status(200).json({ success: true, msg: 'products inserted' });
-                res.end();
-                con.end();
-                return;
-              }
-            );
-          } else if (subType == 'addItemsToLocation') {
-            var con = doConnect();
-            await con
-              .promise()
-              .query(
-                `insert into products (name,subproductname,type,is_tailoring,location_id,image,tax,never_tax,sku,barcode_type, unit_id, brand_id,category_id,alert_quantity,created_by,cost_price,sell_price,is_service,is_fabric,sell_over_stock,is_selling_multi_price,is_fifo,qty_over_sold)
+                                    await con.promise().query(sqlAddVariation, [shopId, prods.insertId, fdata.isTailoring, JSON.stringify(_prices), _fabs, repo.data.id])
+                                        .then((rows: any, fields: any) => {
+                                            console.log('inserted package tailoring ', rows);
+                                        })
+                                        .catch((err: QueryError) => {
+                                            console.log("err ", err);
+                                        })
+                                }
+                                res.setHeader('Content-Type', 'application/json');
+                                res.status(200).json({ success: true, msg: 'products inserted' });
+                                res.end();
+                                con.end();
+                                return;
+
+                            });
+                    } else if (subType == 'addItemsToLocation') {
+                        var con = doConnect();
+                        for (let index = 0; index < req.body.data.items.length; index++) {
+                            const item = req.body.data.items[index];
+                            let insertId;
+                            await con.promise().query(`insert into products (name,subproductname,type,is_tailoring,location_id,image,tax,never_tax,sku,barcode_type, unit_id, brand_id,category_id,alert_quantity,created_by,cost_price,sell_price,is_service,is_fabric,sell_over_stock,is_selling_multi_price,is_fifo,qty_over_sold)
                                 select name,subproductname,type,is_tailoring,?,image,tax,never_tax,sku,barcode_type, unit_id, brand_id,category_id,0,created_by,cost_price,sell_price,is_service,is_fabric,sell_over_stock,is_selling_multi_price,is_fifo,qty_over_sold
                                 from products
-                                where id IN (?)
-                                `,
-                [req.body.data.newShopId, req.body.data.items]
-              )
-              .then()
-              .catch();
-            res.setHeader('Content-Type', 'application/json');
-            res.json({
-              success: true,
-              msg: 'done!',
-              data: {},
-            });
-            res.end();
-            // con.end()
-            return;
-          } else if (subType == 'importFromFile') {
-            var con = doConnect();
-            for (let index = 0; index < req.body.data.length; index++) {
-              const element = req.body.data[index];
-              let category_id;
-              await con
-                .promise()
-                .query(`SELECT id FROM categories WHERE name = ? `, [element.category])
-                .then((data) => (category_id = data[0][0].id))
-                .catch();
-              await con
-                .promise()
-                .query(
-                  `insert into products (name,type,location_id,sku,category_id,sell_price)
+                                where id = ?
+                                `, [req.body.data.newShopId, item])
+                                .then((data) => insertId = data[0].insertId)
+                                .catch()
+                            await con.promise().query(`insert into product_variations (location_id,parent_id,name,name2,sku,cost,price,sell_over_stock,is_selling_multi_price,is_service)
+                                select ?,?,name,name2,sku,cost,price,sell_over_stock,is_selling_multi_price,is_service
+                                from product_variations
+                                where parent_id = ? and location_id = ?
+                                `, [req.body.data.newShopId, insertId, item, req.body.shopId])   
+                        }
+                        res.setHeader('Content-Type', 'application/json');
+                        res.json({
+                            success: true, msg: 'done!',
+                            data: {
+                            }
+                        });
+                        res.end();
+                        // con.end()
+                        return; 
+                    } else if (subType == 'importFromFile') {
+                        var con = doConnect();
+                        for (let index = 0; index < req.body.data.length; index++) {
+                            const element = req.body.data[index];
+                            let category_id;
+                            await con.promise().query(`SELECT id FROM categories WHERE name = ? `, [element.category])
+                                .then((data) => category_id = data[0][0].id)
+                                .catch()
+                            await con.promise().query(`insert into products (name,type,location_id,sku,category_id,sell_price)
                                 VALUES (?,?,?,?,?,?)
                                 `,
                   [

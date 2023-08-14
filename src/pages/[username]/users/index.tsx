@@ -11,6 +11,7 @@ import * as cookie from 'cookie';
 import { verifayTokens } from 'src/pages/api/checkUtils';
 import { ToastContainer } from 'react-toastify';
 import { ROUTES } from 'src/utils/app-routes';
+import withAuth from 'src/HOCs/withAuth';
 
 const Locations = ({ username }: any) => {
   const [users, setUsers] = useState<userDashboard[]>([]);
@@ -108,30 +109,4 @@ const Locations = ({ username }: any) => {
     </>
   );
 };
-export default Locations;
-export async function getServerSideProps(context: any) {
-  if (context.query.username == undefined) {
-    return {
-      redirect: {
-        permanent: false,
-        destination: ROUTES.AUTH,
-      },
-    };
-  }
-  //check token
-  let _isOk = true;
-  const parsedCookies = cookie.parse(context.req.headers.cookie || '[]');
-  await verifayTokens(
-    { headers: { authorization: 'Bearer ' + parsedCookies.tokend } },
-    (repo: ITokenVerfy) => {
-      _isOk = repo.status;
-    }
-  );
-  if (!_isOk) return { redirect: { permanent: false, destination: ROUTES.AUTH } };
-  //end
-
-  let username = getmyUsername(context.query);
-  return {
-    props: { username },
-  };
-}
+export default withAuth(Locations);

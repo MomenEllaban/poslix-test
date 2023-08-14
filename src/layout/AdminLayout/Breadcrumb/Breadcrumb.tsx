@@ -24,13 +24,14 @@ export default function Breadcrumb(probs: any) {
   const linkPath: string[] = router.asPath.split('/');
   linkPath.shift();
   const pathArray = linkPath.map((path, i) => { return { breadcrumb: path, href: '/' + linkPath.slice(0, i + 1).join('/') }; });
+
   useEffect(() => {
     setBreadcrumbs(pathArray)
     if (linkPath.length > 2)
       setCurrentPageName(linkPath[2])
     if (linkPath.length > 3)
       setIsSlug(true)
-    var _locs = JSON.parse(localStorage.getItem('userlocs') || '[]');
+    const _locs = JSON.parse(localStorage.getItem('locations') || '[]');
     setLocations(_locs)
     setLocationIndex(_locs.findIndex((loc: any) => { return loc.value == shopId }))
   }, [router.asPath])
