@@ -34,7 +34,7 @@ export default function RegisterPage() {
   const { darkMode } = useContext(darkModeContext);
 
   const [isRegisterDone, setIsRegisterDone] = useState(false);
-  const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [showLoginDialog, setShowLoginDialog] = useState(true);
 
   const RenderForm = () => {
     if (isRegisterDone) return <RegisterBusinessView />;
@@ -47,7 +47,7 @@ export default function RegisterPage() {
       '/business'
     );
 
-    const { success, result } = data;
+    const { result } = data;
     const { locations } = result;
     localStorage.setItem(ELocalStorageKeys.USER_LOCATIONS, JSON.stringify(locations));
     if (user.user_type === 'user') {
@@ -72,9 +72,6 @@ export default function RegisterPage() {
       localStorage.setItem(ELocalStorageKeys.LEVELS, user.user_type);
 
       if (user.user_type === 'owner') getBusiness(user);
-
-      // if (newdata.user.level == 'user') router.push('/shop/' + newdata.myBusiness[0].value);
-      // else router.push('/' + newdata.user.username + '/business');
     }
   }, [session]);
 

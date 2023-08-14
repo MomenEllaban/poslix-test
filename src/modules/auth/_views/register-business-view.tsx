@@ -1,51 +1,41 @@
 import { joiResolver } from '@hookform/resolvers/joi';
-import { getSession } from 'next-auth/react';
+import { BusinessTypeData } from '@models/data';
+import { getSession, useSession } from 'next-auth/react';
 import Image from 'next/image';
+import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { Form } from 'react-bootstrap';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import registerSchema from '../register.schema';
-
 import 'react-phone-number-input/style.css';
 import FormField from 'src/components/form/FormField';
-import PasswordField from 'src/components/form/PasswordField';
-import { Toastify } from 'src/libs/allToasts';
-import api from 'src/utils/app-api';
 import SelectField from 'src/components/form/SelectField';
-import { BusinessTypeData } from '@models/data';
+import { Toastify } from 'src/libs/allToasts';
+import { createBusinessSchema } from 'src/modules/business/create-business/create-business.schema';
 import { useBusinessTypesList } from 'src/services/business.service';
+import api from 'src/utils/app-api';
 
 type Inputs = {
-  first_name: string;
-  last_name: string;
-  number: string;
+  name: string;
+  mobile: string;
   email: string;
-  password: string;
-  repeat_password: string;
-};
-
-const initState = {
-  email: '',
-  first_name: '',
-  last_name: '',
-  number: '',
-  password: '',
-  repeat_password: '',
+  business_type_id: string | number;
 };
 
 export default function RegisterBusinessView() {
+  const [busniessTypesList, setBusniessTypesList] = useState(BusinessTypeData());
+
+  const router = useRouter();
+  const { data: session } = useSession();
   const {
     register,
-    control,
     handleSubmit,
     formState: { errors },
   } = useForm<Inputs>({
     mode: 'onTouched',
-    resolver: joiResolver(registerSchema),
+    resolver: joiResolver(createBusinessSchema),
     reValidateMode: 'onBlur',
-    defaultValues: initState,
   });
-  const [busniessTypesList, setBusniessTypesList] = useState(BusinessTypeData());
+
   useBusinessTypesList({
     onSuccess(data, key, config) {
       const _businessTypesList = data.result.map((itm: any) => {
@@ -54,81 +44,40 @@ export default function RegisterBusinessView() {
       setBusniessTypesList(_businessTypesList);
     },
   });
-  const [showPass, setShowPass] = useState({
-    password: false,
-    repeat_password: false,
-  });
+
   const [isLoading, setLoading] = useState(false);
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     setLoading(true);
-    const { repeat_password, ..._data } = data;
+    const _user = window.localStorage.getItem('uncompleted_user')
+      ? JSON.parse(window.localStorage.getItem('uncompleted_user'))
+      : null;
+    if (!_user) {
+      setLoading(false);
+      Toastify('error', 'error occurred, try agian');
+      router.reload();
+    }
     api
-      .post('/register', _data)
+      .postForm('/business', data, {
+        headers: {
+          Authorization: `Bearer ${_user.token}`,
+        },
+      })
       .then((res) => {
-        Toastify('success', 'Register Success');
+        Toastify('success', 'Business created successfully');
+        window.localStorage.removeItem('uncompleted_user');
         setTimeout(() => {
-          
+          router.reload();
         }, 500);
       })
       .catch((err) => {
-        Toastify('error', err.response.data.message);
+        Toastify('error', 'error occurred, try agian');
       })
       .finally(() => {
         setLoading(false);
       });
   };
   const onError = (errors: any, e: any) => console.error(errors, e);
-
-  const _fields: any[] = [
-    {
-      label: 'First name',
-      name: 'first_name',
-      type: 'text',
-      placeholder: 'Enter First Name',
-      autoComplete: 'off',
-      required: true,
-    },
-    {
-      label: 'Last name',
-      name: 'last_name',
-      type: 'text',
-      placeholder: 'Enter Last Name',
-      autoComplete: 'off',
-    },
-    {
-      label: 'Phone Number',
-      name: 'number',
-      type: 'text',
-      placeholder: 'Enter Phone Number',
-      autoComplete: 'off',
-      required: true,
-    },
-    {
-      label: 'Email',
-      name: 'email',
-      type: 'text',
-      placeholder: 'Enter Email',
-      autoComplete: 'off',
-      required: true,
-    },
-    {
-      label: 'Password',
-      name: 'password',
-      type: 'password',
-      placeholder: 'Enter Password',
-      autoComplete: 'off',
-      required: true,
-    },
-    {
-      label: 'Confirm Password',
-      name: 'repeat_password',
-      type: 'password',
-      placeholder: 'Enter Password',
-      autoComplete: 'off',
-      required: true,
-    },
-  ];
 
   return (
     <Form noValidate onSubmit={handleSubmit(onSubmit, onError)}>
@@ -169,14 +118,7 @@ export default function RegisterBusinessView() {
           errors={errors}
           required
         />
-        {/* <SelectField
-        label="Country"
-        name="country_id"
-        options={countries} // Pass the business types options
-        register={register}
-        errors={errors}
-        required
-      /> */}
+
         <button className="btn-login mt-auto" type="submit">
           {isLoading && (
             <Image

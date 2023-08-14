@@ -38,11 +38,22 @@ export default function LoginView() {
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     setLoading(true);
     const res = await signIn('credentials', { redirect: false, ...data })
-      .then((res) => {
+      .then(async (res) => {
+
         if (res.error) throw new Error(res.error);
+        const session = await getSession();
+
+        if (session.user.user_type === 'owner' && session.user.business < 1) {
+          const _user = {
+            number: session.user.contact_number,
+            email: session.user.email,
+            first_name: session.user.first_name,
+            last_name: session.user.last_name,
+          };
+          window.localStorage.setItem('uncompleted_user', JSON.stringify(_user));
+        }
 
         Toastify('success', 'Login Success');
-        router.push('/');
       })
       .catch(() => {
         Toastify('error', 'Login Failed');
@@ -119,12 +130,12 @@ export async function getServerSideProps(context) {
   const session = await getSession({ req: context.req });
 
   if (session) {
-    if (session.user.user_type === 'owner') {
+    if (session.user.user_type === 'owner' && session.user.business > 0) {
       return {
         redirect: { destination: '/' + session.user.username + '/business', permenant: false },
         props: { session },
       };
-    } else {
+    } else if (session.user.user_type === 'user') {
       return {
         redirect: { destination: '/shop', permenant: false },
         props: { session },

@@ -61,6 +61,11 @@ export default function RegisterView({
       .post('/register', _data)
       .then((res) => {
         console.log(res);
+        const _user = {
+          ...res.data.result.user,
+          token: res.data.result.authorization.token,
+        };
+        window.localStorage.setItem('uncompleted_user', JSON.stringify(_user));
         Toastify('success', 'Register Success');
         setTimeout(() => {
           setIsRegisterDone(true);

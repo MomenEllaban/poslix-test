@@ -1,20 +1,19 @@
 import { joiResolver } from '@hookform/resolvers/joi';
 import { BusinessTypeData } from '@models/data';
+import { useSession } from 'next-auth/react';
 import Image from 'next/image';
+import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { Form } from 'react-bootstrap';
+import { default as BsImage } from 'react-bootstrap/Image';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import FormField from 'src/components/form/FormField';
 import SelectField from 'src/components/form/SelectField';
-import { useBusinessTypesList, useCurrenciesList } from 'src/services/business.service';
-import { createBusinessSchema } from './create-business.schema';
-import { default as BsImage } from 'react-bootstrap/Image';
-import styles from './create-business.module.scss';
-import { authApi } from 'src/utils/auth-api';
-import { useSession } from 'next-auth/react';
-import { toast } from 'react-toastify';
 import { Toastify } from 'src/libs/allToasts';
-import { useRouter } from 'next/router';
+import { useBusinessTypesList, useCurrenciesList } from 'src/services/business.service';
+import { authApi } from 'src/utils/auth-api';
+import styles from './create-business.module.scss';
+import { createBusinessSchema } from './create-business.schema';
 
 type Inputs = {
   name: string;
@@ -56,6 +55,7 @@ export default function CreateBusinessView() {
       setBusniessTypesList(_businessTypesList);
     },
   });
+  
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     setLoading(true);
     (await authApi(session))
