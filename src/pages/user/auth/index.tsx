@@ -11,6 +11,7 @@ import 'react-phone-input-2/lib/style.css';
 import { darkModeContext } from 'src/context/DarkModeContext';
 import { useUser } from 'src/context/UserContext';
 import LoginView from 'src/modules/auth/_views/login-view';
+import RegisterBusinessView from 'src/modules/auth/_views/register-business-view';
 import RegisterView from 'src/modules/auth/_views/register-view';
 import api from 'src/utils/app-api';
 import { ELocalStorageKeys } from 'src/utils/app-contants';
@@ -28,21 +29,18 @@ const initalInputState = {
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { user, setUser } = useUser();
   const { data: session } = useSession();
   const { darkMode } = useContext(darkModeContext);
 
-  const { user, setUser } = useUser();
+  const [isRegisterDone, setIsRegisterDone] = useState(false);
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
 
-  const [isStep1, setIsStep1] = useState(false);
-
-  const [hasError, setHasError] = useState(false);
-  const [hasErrorMsg, setHasErrorMsg] = useState('');
-  const [successMsg, setSuccessMsg] = useState(false);
-
-  const [showLoginDialog, setShowLoginDialog] = useState(true);
-
-  const RenderForm = () =>
-    showLoginDialog ? <LoginView /> : <RegisterView setIsRegisterDone={setIsStep1} />;
+  const RenderForm = () => {
+    if (isRegisterDone) return <RegisterBusinessView />;
+    if (showLoginDialog) return <LoginView />;
+    return <RegisterView setIsRegisterDone={setIsRegisterDone} />;
+  };
 
   async function getBusiness(user) {
     const { data } = await api.get<any, AxiosResponse<ICustomResponse<IUserBusiness>>, any>(
@@ -141,7 +139,7 @@ export default function RegisterPage() {
                 <div className="login-logo-box">
                   <img src="/images/logo1.png" />
                 </div>
-                {!isStep1 && (
+                {!isRegisterDone && (
                   <div className="login-register-box">
                     <h3>Welcome Back</h3>
                     <p>To Start Working, First Login Or Register</p>
@@ -159,10 +157,7 @@ export default function RegisterPage() {
                     </div>
                   </div>
                 )}
-                {hasError && <div className="login-error-msg">{hasErrorMsg}</div>}
-                {successMsg && (
-                  <div className="login-success-msg">You Successfully Registered, Login Please</div>
-                )}
+
                 <RenderForm />
               </div>
             </div>

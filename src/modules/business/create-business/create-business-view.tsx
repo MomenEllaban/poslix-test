@@ -48,7 +48,7 @@ export default function CreateBusinessView() {
     reValidateMode: 'onBlur',
   });
 
-  const { businessTypesList } = useBusinessTypesList({
+  useBusinessTypesList({
     onSuccess(data, key, config) {
       const _businessTypesList = data.result.map((itm: any) => {
         return { value: itm.id, label: itm.name };

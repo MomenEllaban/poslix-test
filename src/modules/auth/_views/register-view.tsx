@@ -2,17 +2,18 @@ import { joiResolver } from '@hookform/resolvers/joi';
 import { getSession } from 'next-auth/react';
 import Image from 'next/image';
 import { Dispatch, SetStateAction, useState } from 'react';
-import { Button, Form, InputGroup } from 'react-bootstrap';
+import { Form } from 'react-bootstrap';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { MdVisibility, MdVisibilityOff } from 'react-icons/md';
+import { handleAxiosError } from 'src/components/backend-response-handlers/axios-error-handler';
+import ErrorHandler from 'src/components/backend-response-handlers/error-handler';
+import FormField from 'src/components/form/FormField';
+import PasswordField from 'src/components/form/PasswordField';
+import { Toastify } from 'src/libs/allToasts';
+import api from 'src/utils/app-api';
+import { registerFields } from '../_fields/register-fields';
 import registerSchema from '../register.schema';
 
 import 'react-phone-number-input/style.css';
-import { Toastify } from 'src/libs/allToasts';
-import api from 'src/utils/app-api';
-import { ROUTES } from 'src/utils/app-routes';
-import FormField, { FormFieldProps } from 'src/components/form/FormField';
-import PasswordField from 'src/components/form/PasswordField';
 
 type Inputs = {
   first_name: string;
@@ -37,6 +38,8 @@ export default function RegisterView({
 }: {
   setIsRegisterDone: Dispatch<SetStateAction<boolean>>;
 }) {
+  const [error, setError] = useState<string[]>([]);
+
   const {
     register,
     control,
@@ -49,10 +52,6 @@ export default function RegisterView({
     defaultValues: initState,
   });
 
-  const [showPass, setShowPass] = useState({
-    password: false,
-    repeat_password: false,
-  });
   const [isLoading, setLoading] = useState(false);
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
@@ -61,12 +60,14 @@ export default function RegisterView({
     api
       .post('/register', _data)
       .then((res) => {
+        console.log(res);
         Toastify('success', 'Register Success');
-        // setTimeout(() => {
-        //   setIsRegisterDone(true);
-        // }, 500);
+        setTimeout(() => {
+          setIsRegisterDone(true);
+        }, 500);
       })
       .catch((err) => {
+        handleAxiosError(err, setError);
         Toastify('error', err.response.data.message);
       })
       .finally(() => {
@@ -75,60 +76,14 @@ export default function RegisterView({
   };
   const onError = (errors: any, e: any) => console.error(errors, e);
 
-  const _fields: any[] = [
-    {
-      label: 'First name',
-      name: 'first_name',
-      type: 'text',
-      placeholder: 'Enter First Name',
-      autoComplete: 'off',
-      required: true,
-    },
-    {
-      label: 'Last name',
-      name: 'last_name',
-      type: 'text',
-      placeholder: 'Enter Last Name',
-      autoComplete: 'off',
-    },
-    {
-      label: 'Phone Number',
-      name: 'number',
-      type: 'text',
-      placeholder: 'Enter Phone Number',
-      autoComplete: 'off',
-      required: true,
-    },
-    {
-      label: 'Email',
-      name: 'email',
-      type: 'text',
-      placeholder: 'Enter Email',
-      autoComplete: 'off',
-      required: true,
-    },
-    {
-      label: 'Password',
-      name: 'password',
-      type: 'password',
-      placeholder: 'Enter Password',
-      autoComplete: 'off',
-      required: true,
-    },
-    {
-      label: 'Confirm Password',
-      name: 'repeat_password',
-      type: 'password',
-      placeholder: 'Enter Password',
-      autoComplete: 'off',
-      required: true,
-    },
-  ];
-
   return (
     <Form noValidate onSubmit={handleSubmit(onSubmit, onError)}>
+      <div className="p-1 mt-3">
+        <ErrorHandler error={error} />
+      </div>
+
       <div className="p-2 my-2 d-flex gap-3 flex-column">
-        {_fields.map((field) => {
+        {registerFields.map((field) => {
           if (field.type === 'password')
             return (
               <PasswordField
