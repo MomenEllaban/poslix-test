@@ -18,8 +18,8 @@ import Link from 'next/dist/client/link';
 import { ToastContainer } from 'react-toastify';
 import { Toastify } from 'src/libs/allToasts';
 
-const Product: NextPage = (probs: any) => {
-  const { shopId, pageType, editId } = probs;
+const Product: NextPage = (props: any) => {
+  const { shopId, pageType, editId } = props;
   const [formObj, setFormObj] = useState({
     id: 0,
     name: '',

@@ -9,7 +9,7 @@ import { apiFetchCtr } from 'src/libs/dbUtils';
 import { ProductContext } from 'src/context/ProductContext';
 import { ITailoringExtra, ITailoringPackagePrice } from '@models/common-model';
 import { Toastify } from 'src/libs/allToasts';
-const TailoringModal = (probs: any) => {
+const TailoringModal = (props: any) => {
   const {
     selectedProduct,
     isOpenTailoringDialog,
@@ -17,7 +17,7 @@ const TailoringModal = (probs: any) => {
     tailoringsData,
     shopId,
     tailoringExtras,
-  } = probs;
+  } = props;
   const { products } = useContext(ProductContext);
   const [, setJobType] = useRecoilState(cartJobType);
   const [sizes, setSizes] = useState([]);

@@ -21,8 +21,8 @@ import VariationModal from 'src/components/pos/modals/VariationModal';
 import { useRecoilState } from 'recoil';
 import { cartJobType } from 'src/recoil/atoms';
 
-const Product: NextPage = (probs: any) => {
-  const { shopId, rules } = probs;
+const Product: NextPage = (props: any) => {
+  const { shopId, rules } = props;
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
     value: 0,
     label: '',

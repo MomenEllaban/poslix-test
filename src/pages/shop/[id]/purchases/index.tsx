@@ -30,8 +30,8 @@ import {
   GridToolbarExport,
 } from '@mui/x-data-grid';
 
-const Purchases: NextPage = (probs: any) => {
-  const { shopId } = probs;
+const Purchases: NextPage = (props: any) => {
+  const { shopId } = props;
   const [purchases, setPurchases] = useState<{ id: number; name: string; sku: string }[]>([]);
   const [isloading, setIsloading] = useState(true);
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({

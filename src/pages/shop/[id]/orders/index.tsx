@@ -5,8 +5,8 @@ import type { NextPage } from 'next';
 import OrdersTable from 'src/components/dashboard/OrdersTable';
 import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/checkUtils';
 
-const Orders: NextPage = (probs: any) => {
-  const { shopId, rules } = probs;
+const Orders: NextPage = (props: any) => {
+  const { shopId, rules } = props;
 
   // const myLoader = (img: any) => img.src;
   // const [locationSettings, setLocationSettings] = useState<ILocationSettings>({ value: 0, label: "", currency_decimal_places: 0, currency_code: '', currency_id: 0, currency_rate: 1, currency_symbol: '' })

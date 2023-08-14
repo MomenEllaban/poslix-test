@@ -17,8 +17,8 @@ import { debounce } from '@mui/material';
 import { ITransferItem } from '@models/common-model';
 // const [locations, setLocations] = useState<{ value: number, label: string }[]>([])
 
-const Transfermodal = (probs: any) => {
-  const { openDialog, statusDialog, userdata, showType, shopId } = probs;
+const Transfermodal = (props: any) => {
+  const { openDialog, statusDialog, userdata, showType, shopId } = props;
 
   const [products, setProducts] = useState<
     {

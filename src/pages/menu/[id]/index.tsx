@@ -25,8 +25,8 @@ import { UserContext } from 'src/context/UserContext';
 import { Toastify } from 'src/libs/allToasts';
 import { MenuOrderComponent } from 'src/components/pos/MenuCartComponent';
 
-const Home: NextPage = (probs: any) => {
-  const { shopId } = probs;
+const Home: NextPage = (props: any) => {
+  const { shopId } = props;
   const [isOpenRegister, setIsOpenRegister] = useState(false);
   const [jobType] = useRecoilState(cartJobType);
   const {

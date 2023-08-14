@@ -9,8 +9,8 @@ import { cartJobType } from '../../../recoil/atoms';
 import { IHold } from '../../../models/common-model';
 import { UserContext } from 'src/context/UserContext';
 
-const MenuCouponModal = (probs: any) => {
-  const { openDialog, isShowModal, shopId } = probs;
+const MenuCouponModal = (props: any) => {
+  const { openDialog, isShowModal, shopId } = props;
   const [couponText, setCouponText] = useState('');
   const [, setJobType] = useRecoilState(cartJobType);
   const [isLoading, setIsLoading] = useState(false);

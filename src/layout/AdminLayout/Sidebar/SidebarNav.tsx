@@ -127,8 +127,8 @@ const SidebarNavGroup = (props: SidebarNavGroupProps) => {
     </Accordion>
   );
 };
-export function SidebarNav(probs: any): any {
-  const { shopId } = probs;
+export function SidebarNav(props: any): any {
+  const { shopId } = props;
   const [loading, setLoading] = useState(true);
   const [btype, setBtype] = useState('');
 

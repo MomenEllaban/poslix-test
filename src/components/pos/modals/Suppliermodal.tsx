@@ -10,8 +10,8 @@ import SnakeAlert from '../utils/SnakeAlert';
 import mStyle from '../../../styles/Customermodal.module.css';
 import { Toastify } from 'src/libs/allToasts';
 
-const Suppliermodal = (probs: any) => {
-  const { openDialog, statusDialog, userdata, showType, shopId } = probs;
+const Suppliermodal = (props: any) => {
+  const { openDialog, statusDialog, userdata, showType, shopId } = props;
   const customerTemplate = {
     id: 0,
     firstName: '',

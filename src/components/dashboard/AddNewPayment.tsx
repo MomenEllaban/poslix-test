@@ -14,8 +14,8 @@ import { IPayment, userDashboard } from '@models/common-model';
 import { paymentTypeData } from '@models/data';
 import Select from 'react-select';
 
-const AddNewPayment = (probs: any) => {
-  const { totalLeft, shopId, purchaseId, selectedIndex, orderPayments, setOrderPayments } = probs;
+const AddNewPayment = (props: any) => {
+  const { totalLeft, shopId, purchaseId, selectedIndex, orderPayments, setOrderPayments } = props;
   const [formObj, setFormObj] = useState<IPayment>({
     id: 0,
     payment_type: '',
@@ -43,19 +43,19 @@ const AddNewPayment = (probs: any) => {
       return;
     }
 
-    probs.purchases[selectedIndex].payment_status = newdata.status;
+    props.purchases[selectedIndex].payment_status = newdata.status;
 
     var _orders = [...orderPayments];
     _orders.push(newdata.payment);
     setOrderPayments(_orders);
 
-    probs.setIsAddNew(false);
+    props.setIsAddNew(false);
   }
   var errors = [];
   useEffect(() => {
     setOrderPayments(orderPayments);
-    // console.log(probs.index);
-    // if (probs.index > -1)
+    // console.log(props.index);
+    // if (props.index > -1)
     setFormObj({ ...formObj, amount: totalLeft });
   }, []);
 

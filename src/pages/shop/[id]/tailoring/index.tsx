@@ -19,8 +19,8 @@ import { Toastify } from 'src/libs/allToasts';
 import { ToastContainer } from 'react-toastify';
 import Link from 'next/link';
 
-const Product: NextPage = (probs: any) => {
-  const { shopId, rules } = probs;
+const Product: NextPage = (props: any) => {
+  const { shopId, rules } = props;
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
     value: 0,
     label: '',

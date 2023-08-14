@@ -18,8 +18,8 @@ import { generateUniqueString } from 'src/libs/toolsUtils';
 import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/checkUtils';
 import { apiFetchCtr, apiUpdateCtr } from '../../../../libs/dbUtils';
 
-const Appearance: NextPage = (probs: any) => {
-  const { shopId } = probs;
+const Appearance: NextPage = (props: any) => {
+  const { shopId } = props;
   const router = useRouter();
   const [key, setKey] = useState('Recipt');
   const [formObj, setFormObj] = useState<IinvoiceDetails>(defaultInvoiceDetials);

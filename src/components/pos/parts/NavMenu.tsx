@@ -4,8 +4,8 @@ import Link from 'next/link';
 import Router from 'next/router';
 import { useEffect, useState } from 'react';
 import CloseRegister from '../modals/CloseRegister';
-const NavMenu: any = (probs: any) => {
-  const { shopId, lang, setLang } = probs;
+const NavMenu: any = (props: any) => {
+  const { shopId, lang, setLang } = props;
   const [customerIsModal, setCustomerIsModal] = useState<boolean>(false);
   const customerModalHandler = (status: any) => {
     setCustomerIsModal(false);

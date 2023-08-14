@@ -21,7 +21,7 @@ import { cartJobType } from '../../../recoil/atoms';
 import mStyle from '../../../styles/Customermodal.module.css';
 import SnakeAlert from '../utils/SnakeAlert';
 
-const CloseRegister = (probs: any) => {
+const CloseRegister = (props: any) => {
   const [closeRegisterInfo, setCloseRegisterInfo] = useState({ cashInHand: 0, cheque: 0 });
   const [snakeTitle, setSnakeTitle] = useState('');
 
@@ -35,7 +35,7 @@ const CloseRegister = (probs: any) => {
   const [note, setNote] = useState('');
   const [openSnakeBar, setOpenSnakeBar] = useState(false);
   const [, setJobType] = useRecoilState(cartJobType);
-  const { openDialog, statusDialog, shopId } = probs;
+  const { openDialog, statusDialog, shopId } = props;
   const { locationSettings } = useContext(UserContext);
 
   const handleClose = () => {
@@ -59,7 +59,6 @@ const CloseRegister = (probs: any) => {
       data: { cash, card, bankm, cheque, note, hand: closeRegisterInfo.cashInHand },
     });
     if (result.success) {
-
       handleClose();
       setJobType({ req: 101, val: 'closeRegister' });
     } else {

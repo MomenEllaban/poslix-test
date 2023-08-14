@@ -41,8 +41,8 @@ import storage from '../../../../../firebaseConfig';
 import NotifiModal from '../../../../components/utils/NotifiModal';
 import { apiDeleteCtr, apiFetchCtr, apiInsertCtr, apiUpdateCtr } from '../../../../libs/dbUtils';
 
-const Product: NextPage = (probs: any) => {
-  const { shopId, editId, iType } = probs;
+const Product: NextPage = (props: any) => {
+  const { shopId, editId, iType } = props;
   const [formObj, setFormObj] = useState<any>({
     id: 0,
     img: '',

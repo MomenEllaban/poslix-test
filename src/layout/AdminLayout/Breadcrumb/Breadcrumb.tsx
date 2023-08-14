@@ -8,8 +8,8 @@ import { UserContext } from 'src/context/UserContext';
 /*MOHAMMED MAHER */
 import { darkModeContext } from 'src/context/DarkModeContext';
 
-export default function Breadcrumb(probs: any) {
-  const { shopId } = probs;
+export default function Breadcrumb(props: any) {
+  const { shopId } = props;
   const router = useRouter();
   const [breadcrumbs, setBreadcrumbs] = useState<any>([]);
   const [locations, setLocations] = useState<{ value: number; label: string }[]>([]);

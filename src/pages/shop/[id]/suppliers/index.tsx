@@ -26,8 +26,8 @@ import ShowPriceListModal from 'src/components/dashboard/modal/ShowPriceListModa
 import { Toastify } from 'src/libs/allToasts';
 import { ToastContainer } from 'react-toastify';
 import Suppliermodal from '../../../../components/pos/modals/Suppliermodal';
-const Product: NextPage = (probs: any) => {
-  const { shopId, rules } = probs;
+const Product: NextPage = (props: any) => {
+  const { shopId, rules } = props;
   const myLoader = (img: any) => img.src;
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
     value: 0,

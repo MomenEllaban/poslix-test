@@ -8,8 +8,8 @@ import Spinner from 'react-bootstrap/Spinner';
 import { ToastContainer } from 'react-toastify';
 import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/checkUtils';
 
-const AppStore: NextPage = (probs: any) => {
-  const { shopId, rules } = probs;
+const AppStore: NextPage = (props: any) => {
+  const { shopId, rules } = props;
   const [isLoading, setIsLoading] = useState(false);
 
   return (

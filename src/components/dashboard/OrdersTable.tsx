@@ -20,8 +20,8 @@ import {
   GridToolbarExport,
   GridToolbarQuickFilter,
 } from '@mui/x-data-grid';
-const OrdersTable = (probs: any) => {
-  const { shopId, rules } = probs;
+const OrdersTable = (props: any) => {
+  const { shopId, rules } = props;
   const myLoader = (img: any) => img.src;
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
     value: 0,

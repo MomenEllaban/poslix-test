@@ -24,8 +24,8 @@ import VariationModal from './modals/VariationModal';
 import { MenuOrdersFooter } from './utils/MenuOrdersFooter';
 import { OrderCalcs } from './utils/OrderCalcs';
 
-export const MenuOrderComponent = (probs: any) => {
-  const { shopId } = probs;
+export const MenuOrderComponent = (props: any) => {
+  const { shopId } = props;
   const { products, customers, taxes, taxGroups, variations, packageItems } =
     useContext(ProductContext);
   const { locationSettings, tailoringSizes, invoicDetails, tailoringExtras } =

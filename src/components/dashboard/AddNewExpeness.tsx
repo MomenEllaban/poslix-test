@@ -5,8 +5,8 @@ import Select from 'react-select';
 import { Toastify } from 'src/libs/allToasts';
 import DatePicker from 'react-datepicker';
 
-const AddNewExpeness = (probs: any) => {
-  const { shopId, setExpensesList, rows, cats, setIsAddExpense, selectId } = probs;
+const AddNewExpeness = (props: any) => {
+  const { shopId, setExpensesList, rows, cats, setIsAddExpense, selectId } = props;
   const [formObj, setFormObj] = useState<IExpenseList>({
     id: 0,
     expense_id: 0,

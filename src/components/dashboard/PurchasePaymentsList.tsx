@@ -11,8 +11,8 @@ import {
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import AddNewPayment from './AddNewPayment';
 import { Toastify } from 'src/libs/allToasts';
-const PurchasePaymentsList = (probs: any) => {
-  const { shopId, purchaseId, purchases } = probs;
+const PurchasePaymentsList = (props: any) => {
+  const { shopId, purchaseId, purchases } = props;
   const [information, setInformation] = useState<any>({ totalPaid: 0, totalLeft: 0, isPaid: 0 });
   const [orderPayments, setOrderPayments] = useState<
     { id: number; payment_type: string; amount: number; created_at: string }[]
@@ -50,12 +50,12 @@ const PurchasePaymentsList = (probs: any) => {
     setInformation({
       ...information,
       totalPaid: +Number(_totalPaid).toFixed(3),
-      totalLeft: +Number(probs.purchases[selectedIndex].total_price - _totalPaid).toFixed(3),
-      isPaid: Math.floor(probs.purchases[selectedIndex].total_price - _totalPaid) == 0,
+      totalLeft: +Number(props.purchases[selectedIndex].total_price - _totalPaid).toFixed(3),
+      isPaid: Math.floor(props.purchases[selectedIndex].total_price - _totalPaid) == 0,
     });
   }, [orderPayments]);
   useEffect(() => {
-    const f_index2 = probs.purchases.findIndex((itm: any) => {
+    const f_index2 = props.purchases.findIndex((itm: any) => {
       return itm.id == purchaseId;
     });
     if (f_index2 > -1) {
@@ -65,7 +65,7 @@ const PurchasePaymentsList = (probs: any) => {
       intPageData();
     } else {
       Toastify('error', 'somthing wrong!!');
-      probs.setIsShowPayments(false);
+      props.setIsShowPayments(false);
     }
   }, []);
 
@@ -76,18 +76,18 @@ const PurchasePaymentsList = (probs: any) => {
           <div className="mb-4">
             <button
               className="btn m-btn btn-primary p-3"
-              onClick={() => probs.setIsShowPayments(false)}>
+              onClick={() => props.setIsShowPayments(false)}>
               <FontAwesomeIcon icon={faArrowAltCircleLeft} /> Back To List{' '}
             </button>
           </div>
           {/* {JSON.stringify(selectedIndex)} */}
           <h5>Purchase Payments List</h5>
           <div className="quick-suppier-info">
-            <div>ID: {probs.purchases[selectedIndex].id}</div>
-            <div>Supplier: {probs.purchases[selectedIndex].supplier}</div>
-            <div>Status: {probs.purchases[selectedIndex].status}</div>
-            <div>Payment Status: {probs.purchases[selectedIndex].payment_status}</div>
-            <div>Total Price: {probs.purchases[selectedIndex].total_price}</div>
+            <div>ID: {props.purchases[selectedIndex].id}</div>
+            <div>Supplier: {props.purchases[selectedIndex].supplier}</div>
+            <div>Status: {props.purchases[selectedIndex].status}</div>
+            <div>Payment Status: {props.purchases[selectedIndex].payment_status}</div>
+            <div>Total Price: {props.purchases[selectedIndex].total_price}</div>
             <div>
               Total Paid: {information.totalPaid}{' '}
               {information.isPaid && <FontAwesomeIcon icon={faCircleCheck} />}

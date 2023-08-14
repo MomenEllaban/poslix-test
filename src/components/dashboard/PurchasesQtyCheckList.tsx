@@ -5,8 +5,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowAltCircleLeft, faSave, faCircleCheck } from '@fortawesome/free-solid-svg-icons';
 import { DataGrid, GridColDef, GridRowParams } from '@mui/x-data-grid';
 import { Toastify } from 'src/libs/allToasts';
-const PurchasesQtyCheckList = (probs: any) => {
-  const { shopId, purchaseId } = probs;
+const PurchasesQtyCheckList = (props: any) => {
+  const { shopId, purchaseId } = props;
   const [orderLines, setOrderLines] = useState<
     {
       id: number;
@@ -46,8 +46,8 @@ const PurchasesQtyCheckList = (probs: any) => {
       return;
     }
     Toastify('success', 'successfully completed');
-    probs.purchases[selectedIndex].status = newdata;
-    probs.setIsShowQtyManager(false);
+    props.purchases[selectedIndex].status = newdata;
+    props.setIsShowQtyManager(false);
   }
   const columns: GridColDef[] = [
     { field: 'name', headerName: 'Product Name', minWidth: 250 },
@@ -93,7 +93,7 @@ const PurchasesQtyCheckList = (probs: any) => {
     }
   };
   useEffect(() => {
-    const f_index2 = probs.purchases.findIndex((itm: any) => {
+    const f_index2 = props.purchases.findIndex((itm: any) => {
       return itm.id == purchaseId;
     });
     if (f_index2 > -1) {
@@ -102,7 +102,7 @@ const PurchasesQtyCheckList = (probs: any) => {
       intPageData();
     } else {
       Toastify('error', 'somthing wrong!!');
-      probs.setIsShowPayments(false);
+      props.setIsShowPayments(false);
     }
   }, []);
 
@@ -113,16 +113,16 @@ const PurchasesQtyCheckList = (probs: any) => {
           <div className="mb-4">
             <button
               className="btn m-btn btn-primary p-3"
-              onClick={() => probs.setIsShowQtyManager(false)}>
+              onClick={() => props.setIsShowQtyManager(false)}>
               <FontAwesomeIcon icon={faArrowAltCircleLeft} /> Back To List{' '}
             </button>
           </div>
-          <h5>Purchase Quantity Manager List {probs.purchases[selectedIndex].status}</h5>
+          <h5>Purchase Quantity Manager List {props.purchases[selectedIndex].status}</h5>
           <hr />
           <div className="quick-suppier-info">
-            <div>Supplier: {probs.purchases[selectedIndex].supplier}</div>
-            <div>Status: {probs.purchases[selectedIndex].status}</div>
-            <div>Total Price: {probs.purchases[selectedIndex].total_price}</div>
+            <div>Supplier: {props.purchases[selectedIndex].supplier}</div>
+            <div>Status: {props.purchases[selectedIndex].status}</div>
+            <div>Total Price: {props.purchases[selectedIndex].total_price}</div>
           </div>
           <hr />
           <DataGrid

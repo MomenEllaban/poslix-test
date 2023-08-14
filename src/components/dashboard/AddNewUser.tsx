@@ -13,8 +13,8 @@ import { redirectToLogin } from '../../libs/loginlib';
 import { userDashboard } from '@models/common-model';
 import { Toastify } from 'src/libs/allToasts';
 import { validateEmail } from 'src/libs/toolsUtils';
-const AddNewUser = (probs: any) => {
-  const { index } = probs;
+const AddNewUser = (props: any) => {
+  const { index } = props;
   const [formObj, setFormObj] = useState<userDashboard>({
     isNew: true,
     name: '',
@@ -44,21 +44,21 @@ const AddNewUser = (probs: any) => {
       return;
     }
     Toastify('success', 'successfully done!');
-    if (formObj.isNew) probs.users.push({ ...formObj, id: data });
-    probs.setIsAddUser(false);
+    if (formObj.isNew) props.users.push({ ...formObj, id: data });
+    props.setIsAddUser(false);
   }
   var errors = [];
   useEffect(() => {
     if (index != undefined && index > 0) {
-      const _idn = probs.users.findIndex((od: any) => od.id == index);
-      if (_idn > -1) setFormObj({ ...probs.users[_idn], isNew: false });
+      const _idn = props.users.findIndex((od: any) => od.id == index);
+      if (_idn > -1) setFormObj({ ...props.users[_idn], isNew: false });
       else {
         Toastify('error', 'Somthing is Wrong!, Try Later');
-        probs.setIsAddUser(false);
+        props.setIsAddUser(false);
       }
     } else if (index != 0) {
       Toastify('error', 'Somthing is Wrong!, Try Later');
-      probs.setIsAddUser(false);
+      props.setIsAddUser(false);
     }
   }, []);
 
