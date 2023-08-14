@@ -419,8 +419,8 @@ const Home = (props: any) => {
                     <div className="m-fileds">{itm.id}</div>
                     <div className="m-fileds">{getRightTime(itm.created_at)}</div>
                     <div className="m-fileds">
-                      {Number(itm.total_price).toFixed(locationSettings.currency_decimal_places)}{' '}
-                      {locationSettings.currency_code}
+                      {Number(itm.total_price).toFixed(locationSettings?.currency_decimal_places)}{' '}
+                      {locationSettings?.currency_code}
                     </div>
                     <div className="m-fileds">{itm.created_by}</div>
                   </div>

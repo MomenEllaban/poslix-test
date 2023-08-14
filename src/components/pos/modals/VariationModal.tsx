@@ -52,7 +52,7 @@ const VariationModal = (props: any) => {
                             {vr.total_qty > 0
                               ? Number(vr.price).toFixed(3)
                               : Number(vr.variation_price).toFixed(3)}{' '}
-                            {locationSettings.currency_code}
+                            {locationSettings?.currency_code}
                           </div>
                           <div className="var-remaining-qty">
                             {Number(vr.total_qty).toFixed(0)} Remaining

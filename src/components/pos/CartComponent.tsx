@@ -1,11 +1,10 @@
 import { useRouter } from 'next/router';
-import React, { useContext, useEffect, useState } from 'react';
-import Select from 'react-select';
+import React, { useEffect, useState } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import { useRecoilState } from 'recoil';
-import { UserContext } from 'src/context/UserContext';
+import { useUser } from 'src/context/UserContext';
 import { Toastify } from 'src/libs/allToasts';
-import { ProductContext } from '../../context/ProductContext';
+import { useProducts } from '../../context/ProductContext';
 import { finalCalculation } from '../../libs/calculationTax';
 import { apiFetchCtr } from '../../libs/dbUtils';
 import {
@@ -24,13 +23,12 @@ import TailoringModal from './modals/TailoringModal';
 import VariationModal from './modals/VariationModal';
 import { OrderCalcs } from './utils/OrderCalcs';
 import { OrdersFooter } from './utils/OrdersFooter';
+import CustomerDataSelect from './_components/CustomerDataSelect';
 
-export const OrdersComponent = (props: any) => {
+export default function OrdersComponent(props: any) {
   const { shopId, lang, direction } = props;
-  const { products, customers, taxes, taxGroups, variations, packageItems } =
-    useContext(ProductContext);
-  const { locationSettings, tailoringSizes, invoicDetails, tailoringExtras } =
-    useContext(UserContext);
+  const { locationSettings, tailoringSizes, invoicDetails, tailoringExtras } = useUser();
+  const { products, customers, taxes, taxGroups, variations, packageItems } = useProducts();
 
   const [productsItems, SetProductsItems] = useState([]);
   const [quantity, setQuantity] = useState<IQuantity[]>([]);
@@ -44,10 +42,10 @@ export const OrdersComponent = (props: any) => {
   const [totalDiscount, setTotalDiscount] = useState<number>(0);
   const [tax, setTax] = useState<number>(0);
   const [subTotal, setSubTotal] = useState<number>(0);
-  const [showType, setShowType] = useState(String);
+
   const [isOpenVariationDialog, setIsOpenVariationDialog] = useState(false);
   const [isOpenTailoringDialog, setIsOpenTailoringDialog] = useState(false);
-  const [selectedId, setSelectedId] = useState<number>(-1);
+
   const [selectedProductForVariation, setSelectedProductForVariation] = useState<{
     product?: object;
     product_id: number;
@@ -184,7 +182,7 @@ export const OrdersComponent = (props: any) => {
   const perperdForPrint = () => {
     let _items: any = [],
       totalTax = 0;
-    if (quantity.length == 0 || quantity.length != orders.length) return;
+    if (quantity.length === 0 || quantity.length != orders.length) return;
 
     quantity.map((qt: any, i: number) => {
       // qt.taxAmount
@@ -242,7 +240,7 @@ export const OrdersComponent = (props: any) => {
   }, []);
   class ComponentToPrint extends React.PureComponent {
     render() {
-      return invoiceType?.value == 'receipt' ? (
+      return invoiceType?.value === 'receipt' ? (
         <div className="bill">
           <div className="brand-logo">
             <img src={invoicDetails.logo} />
@@ -495,9 +493,9 @@ export const OrdersComponent = (props: any) => {
   ): boolean {
     let isAllowed = true;
     orders.map((or, index: number) => {
-      if (or.type == 'package') {
+      if (or.type === 'package') {
         var ids = packageItems
-          .filter((pi: IPackItem) => pi.parent_id == or.product_id)
+          .filter((pi: IPackItem) => pi.parent_id === or.product_id)
           .map((tm: any) => {
             return tm.product_id;
           });
@@ -505,7 +503,7 @@ export const OrdersComponent = (props: any) => {
           ids.includes(pro.product_id)
         );
         packageProducts.map((pp) => {
-          if (!pp.is_service && !pp.sell_over_stock && pp.product_id == _product_id) {
+          if (!pp.is_service && !pp.sell_over_stock && pp.product_id === _product_id) {
             if (quantity[index].quantity + qty > _total_qty) {
               isAllowed = false;
               return;
@@ -525,8 +523,8 @@ export const OrdersComponent = (props: any) => {
       let idx: number = 0;
       idx = orders.findIndex((el: any) => {
         return (
-          (el.isEdit && el.quantity2 < 0 && el.product_id == _product_id) ||
-          (!el.isEdit && el.product_id == _product_id)
+          (el.isEdit && el.quantity2 < 0 && el.product_id === _product_id) ||
+          (!el.isEdit && el.product_id === _product_id)
         );
       });
       let qty = 1;
@@ -543,12 +541,12 @@ export const OrdersComponent = (props: any) => {
         Toastify('error', 'Out of stock!');
         return;
       }
-      if (idx == -1 || fromHold) {
+      if (idx === -1 || fromHold) {
         let itm: any = products.products_multi[index1][index2];
         ordersPush.push(itm);
         setOrders([...tmpOrders, itm]);
         let _quantity = [...quantity];
-        if (itm.qty == 0 && itm.sell_over_stock == 1) {
+        if (itm.qty === 0 && itm.sell_over_stock === 1) {
           let _itm2 = {
             freezeQuantity: 0,
             quantity: 1,
@@ -600,10 +598,10 @@ export const OrdersComponent = (props: any) => {
     var index1 = -1,
       index2 = -1;
     variations.variations_multi.map((varItm: IproductInfo[], index: number) => {
-      if (index2 == -1) {
+      if (index2 === -1) {
         index1 = index;
         index2 = varItm.findIndex((itm: any) => {
-          return itm.variation_id == _variation_id;
+          return itm.variation_id === _variation_id;
         });
       }
     });
@@ -612,20 +610,20 @@ export const OrdersComponent = (props: any) => {
       let tmpOrders: IproductInfo[] = [...orders];
       const idx = orders.findIndex((el: any) => {
         return (
-          (el.isEdit && el.quantity2 < 0 && el.variation_id == _variation_id) ||
-          (!el.isEdit && el.variation_id == _variation_id)
+          (el.isEdit && el.quantity2 < 0 && el.variation_id === _variation_id) ||
+          (!el.isEdit && el.variation_id === _variation_id)
         );
       });
-      if (idx == -1) {
+      if (idx === -1) {
         var _itm: any = variations.variations_multi[index1][index2];
-        if (product.sell_over_stock == 0 && _itm.qty == 0) {
+        if (product.sell_over_stock === 0 && _itm.qty === 0) {
           Toastify('error', 'Out OF Stock');
           return;
         }
         const _ord = {
           ..._itm,
           name:
-            product_name == null
+            product_name === null
               ? selectedProductForVariation.product_name + ' - ' + _itm.name
               : product_name + ' - ' + _itm.name,
         };
@@ -686,17 +684,17 @@ export const OrdersComponent = (props: any) => {
       index1 = -1;
       index2 = -1;
       products.products_multi.map((topPro: IproductInfo[], index: number) => {
-        if (index2 == -1) {
+        if (index2 === -1) {
           index1 = index;
           index2 = topPro.findIndex((itm: IproductInfo) => {
-            return itm.product_id == _orders[i].product_id;
+            return itm.product_id === _orders[i].product_id;
           });
         }
       });
       if (index1 != -1) {
         let _itm: any = products.products[index1];
         //when is tailoring
-        if (_itm.is_tailoring > 0 || _itm.type == 'tailoring_package') {
+        if (_itm.is_tailoring > 0 || _itm.type === 'tailoring_package') {
           ordersPush.push(products.products_multi[index1][index2]);
           quantityPush.push({
             freezeQuantity: 0,
@@ -712,7 +710,7 @@ export const OrdersComponent = (props: any) => {
         } else if (_orders[i].variation_id > 0) {
           //when variation
           addVarToCard(index1, index2, _orders[i].variation_id, _itm.name);
-        } else if (_orders[i].type == 'single' || _orders[i].type == 'package') {
+        } else if (_orders[i].type === 'single' || _orders[i].type === 'package') {
           //when is single
           addToCard(true, index1, index2);
         }
@@ -727,11 +725,11 @@ export const OrdersComponent = (props: any) => {
   }
   // end recipt
   useEffect(() => {
-    if (jobType.req == 1) {
+    if (jobType.req === 1) {
       const random = Math.random();
       setClear(random);
       displayOrders();
-    } else if (jobType.req == 2) {
+    } else if (jobType.req === 2) {
       setOrderEditDetails({
         ...orderEditDetails,
         orderId: Number(jobType.val2!),
@@ -740,26 +738,26 @@ export const OrdersComponent = (props: any) => {
       setOrderNote(jobType.val);
       setJobType({ req: 102, val: 'reload' });
       //
-    } else if (jobType.req == 3) {
+    } else if (jobType.req === 3) {
       //get Order For Edit
       setCustomer({ value: '1', label: 'walk-in customer', isNew: false });
       getOrderForEdit(jobType.val!);
-    } else if (jobType.req == 4) {
+    } else if (jobType.req === 4) {
       //For Variation Modal
       addVarToCard(0, 0, jobType.val, null);
-    } else if (jobType.req == 5) {
+    } else if (jobType.req === 5) {
       //for tailoring modal
       var index1 = -1,
         index2 = -1;
       products.products_multi.map((topPro: IproductInfo[], index: number) => {
-        if (index2 == -1) {
+        if (index2 === -1) {
           index1 = index;
           index2 = topPro.findIndex((itm: IproductInfo) => {
-            return itm.product_id == product.product_id;
+            return itm.product_id === product.product_id;
           });
         }
       });
-      if (index1 == -1) return;
+      if (index1 === -1) return;
 
       let f_length = 0;
       //get fabric pricess
@@ -769,16 +767,16 @@ export const OrdersComponent = (props: any) => {
           f_id = jobType.custom?.fabric_id;
         f_length = jobType.custom?.fabric_length!;
         products.products_multi.forEach((topPro: IproductInfo[], index: number) => {
-          if (f_index2 == -1) {
+          if (f_index2 === -1) {
             f_index1 = index;
             f_index2 = topPro.findIndex((itm: IproductInfo) => {
-              return itm.product_id == f_id;
+              return itm.product_id === f_id;
             });
           }
         });
-        if (f_index1 == -1) return;
+        if (f_index1 === -1) return;
         let _theFab: IproductInfo = products.products[f_index1];
-        if (!_theFab.sell_over_stock && (_theFab.total_qty == 0 || f_length > _theFab.total_qty)) {
+        if (!_theFab.sell_over_stock && (_theFab.total_qty === 0 || f_length > _theFab.total_qty)) {
           Toastify('error', 'The Selected Fabric Is Out Of Stock');
           return;
         }
@@ -840,7 +838,7 @@ export const OrdersComponent = (props: any) => {
         setQuantity(_quantity);
       }
       setJobType({ req: -1, val: 'reset' });
-    } else if (jobType.req == 6) {
+    } else if (jobType.req === 6) {
       setOrdersPush([]);
       setQuantityPush([]);
     }
@@ -876,13 +874,13 @@ export const OrdersComponent = (props: any) => {
       _excises = 0,
       _servies_percetage = 0,
       _servies_fixed = 0;
-    taxes.map((tx: ITax) => {
-      if (tx.taxType == 'primary' && tx.isPrimary) _primary += tx.amount;
-      else if (tx.taxType == 'primary') _none += tx.amount;
-      else if (tx.taxType == 'excise') _excises += tx.amount;
-      else if (tx.taxType == 'service' && tx.amountType == 'percentage')
+    taxes?.map((tx: ITax) => {
+      if (tx.Etax_type === 'primary' && tx.is_primary) _primary += tx.amount;
+      else if (tx.Etax_type === 'primary') _none += tx.amount;
+      else if (tx.Etax_type === 'excise') _excises += tx.amount;
+      else if (tx.Etax_type === 'service' && tx.Etype === 'percentage')
         _servies_percetage += tx.amount;
-      else if (tx.taxType == 'service' && tx.amountType == 'fixed') _servies_fixed += tx.amount;
+      else if (tx.Etax_type === 'service' && tx.Etype === 'fixed') _servies_fixed += tx.amount;
     });
     setDefTaxGroup({
       primary: _primary / 100,
@@ -896,7 +894,7 @@ export const OrdersComponent = (props: any) => {
   }, [taxes]);
   function checkPackageItemsHasStock(orderQty: number) {
     var ids = packageItems
-      .filter((pi: IPackItem) => pi.parent_id == product.product_id)
+      .filter((pi: IPackItem) => pi.parent_id === product.product_id)
       .map((itm: any) => {
         return itm.product_id;
       });
@@ -905,11 +903,11 @@ export const OrdersComponent = (props: any) => {
     );
     let hasStock = true;
     packageProducts.map((pp) => {
-      if (!pp.is_service && pp.total_qty == 0 && !pp.sell_over_stock) hasStock = false;
+      if (!pp.is_service && pp.total_qty === 0 && !pp.sell_over_stock) hasStock = false;
       else if (!pp.is_service && orderQty > pp.total_qty && !pp.sell_over_stock) hasStock = false;
       if (hasStock && !pp.is_service && !pp.sell_over_stock) {
         orders.map((or, index: number) => {
-          if (or.product_id == pp.product_id) {
+          if (or.product_id === pp.product_id) {
             var _item: any = products.products[quantity[index].productIndex];
             if (quantity[index].quantity + orderQty > _item.total_qty) hasStock = false;
           }
@@ -924,9 +922,9 @@ export const OrdersComponent = (props: any) => {
     // console.log(packagePrices);
 
     // let tmpOrders: IproductInfo[] = [...orders];
-    // const idx = orders.findIndex((el: any) => { return el.product_id == product.product_id })
+    // const idx = orders.findIndex((el: any) => { return el.product_id === product.product_id })
 
-    // if (idx == -1) {
+    // if (idx === -1) {
     //   let itm: any = products.products_multi[index1][index2];
     //   setOrders([...tmpOrders, itm]);
     //   let _quantity = [...quantity];
@@ -940,7 +938,7 @@ export const OrdersComponent = (props: any) => {
   useEffect(() => {
     if (!allowWork) return;
     if (!product.product_id) return;
-    if (product.type == 'single' && product.is_tailoring > 0) {
+    if (product.type === 'single' && product.is_tailoring > 0) {
       //only tailoring service
       setSelectedProductForVariation({
         product_id: product.product_id,
@@ -952,7 +950,7 @@ export const OrdersComponent = (props: any) => {
       });
       setIsOpenTailoringDialog(true);
       return;
-    } else if (product.type == 'variable') {
+    } else if (product.type === 'variable') {
       setSelectedProductForVariation({
         product_id: product.product_id,
         product_name: product.name,
@@ -961,11 +959,11 @@ export const OrdersComponent = (props: any) => {
       setIsOpenVariationDialog(true);
       return;
     } else if (
-      product.is_service == 0 &&
+      product.is_service === 0 &&
       product.type != 'package' &&
       product.type != 'tailoring_package' &&
-      parseFloat(product.total_qty) == 0 &&
-      product.sell_over_stock == 0
+      parseFloat(product.total_qty) === 0 &&
+      product.sell_over_stock === 0
     ) {
       Toastify('error', 'Out Of Stock');
       return;
@@ -975,15 +973,15 @@ export const OrdersComponent = (props: any) => {
     var index1 = -1,
       index2 = -1;
     products.products_multi.map((topPro: IproductInfo[], index: number) => {
-      if (index2 == -1) {
+      if (index2 === -1) {
         index1 = index;
         index2 = topPro.findIndex((itm: IproductInfo) => {
-          return itm.product_id == product.product_id;
+          return itm.product_id === product.product_id;
         });
       }
     });
-    if (product.type == 'package' && !checkPackageItemsHasStock(1)) return;
-    if (product.type == 'tailoring_package') {
+    if (product.type === 'package' && !checkPackageItemsHasStock(1)) return;
+    if (product.type === 'tailoring_package') {
       //tailoring_package
       setSelectedProductForVariation({
         product: products.products_multi[index1][index2],
@@ -1009,9 +1007,6 @@ export const OrdersComponent = (props: any) => {
     calculateTotol();
   }, [orders]);
   //choose customer
-  useEffect(() => {
-    if (customer?.isNew) setCustomerIsModal(true);
-  }, [customer]);
 
   const calculateTotol = () => {
     setProducInfo({ product_id: false });
@@ -1027,7 +1022,7 @@ export const OrdersComponent = (props: any) => {
     orders.map((pro, idx) => {
       subItemTotal = 0;
       if (pro.isEdit && quantity[idx].freezeQuantity <= 0) return null;
-      if (pro.is_fabric == 1 || pro.is_tailoring! > 0) hasTailFabs++;
+      if (pro.is_fabric === 1 || pro.is_tailoring! > 0) hasTailFabs++;
       if (pro.isEdit) {
         quantity[idx].prices.map((pr) => {
           let prodPrice = pr.price;
@@ -1063,7 +1058,7 @@ export const OrdersComponent = (props: any) => {
       _taxAmount = 0;
 
       if (!pro.isEdit) {
-        if (pro.never_tax == 0) {
+        if (pro.never_tax === 0) {
           if (pro.def_tax) _taxAmount = finalCalculation(defTaxGroup, subItemTotal);
           else if (pro.product_tax > 0)
             _taxAmount = finalCalculation(readyTaxGroup[pro.product_tax], subItemTotal);
@@ -1116,7 +1111,7 @@ export const OrdersComponent = (props: any) => {
       if (!byHand) qt += quantity[index].quantity; //+ qt
 
       if (_orders[index].isEdit) {
-        if (_quantity[index].quantity == _quantity[index].freezeQuantity) {
+        if (_quantity[index].quantity === _quantity[index].freezeQuantity) {
           Toastify('info', 'Add item(s) from Right Panel Or Barcod');
           return;
         }
@@ -1139,13 +1134,13 @@ export const OrdersComponent = (props: any) => {
       }
 
       //Check Package Items If Has Stock
-      if (_pro.type == 'package') {
+      if (_pro.type === 'package') {
         if (checkPackageItemsHasStock(qt)) {
           _quantity[index].quantity = qt;
           _quantity[index].prices[0].qty = qt;
           calculateTotol();
         } else return;
-      } else if (_orders[index].is_tailoring! > 0 || _orders[index].type == 'tailoring_package') {
+      } else if (_orders[index].is_tailoring! > 0 || _orders[index].type === 'tailoring_package') {
         //if is tailoring
         _quantity[index].quantity = qt;
         _quantity[index].prices[0].qty = qt;
@@ -1155,7 +1150,7 @@ export const OrdersComponent = (props: any) => {
         _quantity[index].quantity = qt;
         _quantity[index].prices[0].qty = qt;
         calculateTotol();
-      } else if (_orders[index].qty == 0 && _orders[index].sell_over_stock) {
+      } else if (_orders[index].qty === 0 && _orders[index].sell_over_stock) {
         //if able sell over stock
         _quantity[index].quantity = qt;
         _quantity[index].prices[0].qty = qt;
@@ -1229,7 +1224,7 @@ export const OrdersComponent = (props: any) => {
       return;
     } else {
       if (quantity[index].freezeQuantity >= quantity[index].quantity) {
-        if (quantity[index].quantity == 0) {
+        if (quantity[index].quantity === 0) {
           Toastify('warning', 'this item its Full Returned!!');
           return;
         }
@@ -1245,7 +1240,7 @@ export const OrdersComponent = (props: any) => {
         _quantity[index].quantity = _quantity[index].quantity! - 1;
         // if (orders[index].isEdit) _orders[index].quantity2 = _quantity[index].quantity - orders[index].quantity!
         var _quans = _quantity[index].prices.reverse();
-        if (_quans[0].qty == 1) {
+        if (_quans[0].qty === 1) {
           _quans.splice(0, 1);
           _quantity[index].itemIndex--;
         } else _quans[0].qty -= 1;
@@ -1270,18 +1265,18 @@ export const OrdersComponent = (props: any) => {
     setCustomerIsModal(false);
   };
   const handleEditTailoring = (idx: number) => {
-    if (quantity[idx].productIndex == -1) {
+    if (quantity[idx].productIndex === -1) {
       var index1 = -1,
         index2 = -1;
       products.products_multi.map((topPro: IproductInfo[], index: number) => {
-        if (index2 == -1) {
+        if (index2 === -1) {
           index1 = index;
           index2 = topPro.findIndex((itm: IproductInfo) => {
-            return itm.product_id == orders[idx].product_id;
+            return itm.product_id === orders[idx].product_id;
           });
         }
       });
-      if (index1 == -1) {
+      if (index1 === -1) {
         Toastify('error', 'Product not Found...');
         return;
       }
@@ -1306,7 +1301,7 @@ export const OrdersComponent = (props: any) => {
       },
       tailoring_cart_index: idx,
       product_id: orders[idx].product_id!,
-      is_service: orders[idx].is_service == true ? 1 : 0,
+      is_service: orders[idx].is_service === true ? 1 : 0,
       product_name: orders[idx].name!,
       tailoring_id: orders[idx].is_tailoring!,
       value: quantity[idx].tailoring,
@@ -1317,14 +1312,14 @@ export const OrdersComponent = (props: any) => {
     if (!isLinking) return;
     let _quantity = [...quantity];
     let _num = _quantity[index].selectionColor;
-    _num = colors[_num!] == undefined ? 1 : _num! + 1;
+    _num = colors[_num!] === undefined ? 1 : _num! + 1;
 
     _quantity[index].selectionColor = _num != 6 ? _num : 0;
     setQuantity(_quantity);
   };
   const handleQty = (evt: any, index: number) => {
     let _q = evt.target.value.length > 0 ? parseFloat(evt.target.value) : 1;
-    _q = _q == 0 ? 1 : _q;
+    _q = _q === 0 ? 1 : _q;
     quantityChange(index, 'plus', _q, true);
   };
   const handleLinkColor = () => {
@@ -1343,7 +1338,7 @@ export const OrdersComponent = (props: any) => {
         const mfil: any = products.products.filter(
           (p: any) => p.name.toLowerCase().includes(e) || p.sku.toLowerCase().includes(e)
         );
-        if (mfil.length == 1) {
+        if (mfil.length === 1) {
           SetProductsItems([]);
           setProducInfo({ product_id: false });
           clearTimeout(timeoutId);
@@ -1361,11 +1356,11 @@ export const OrdersComponent = (props: any) => {
   return (
     <div className="card" style={{ width: '40%', marginLeft: '80px', direction }}>
       {/* <button onClick={handlePrint}>Lets Print</button> */}
-      {
-        <div style={{ display: 'none' }}>
-          <ComponentToPrint ref={componentRef} />
-        </div>
-      }
+
+      <div style={{ display: 'none' }}>
+        <ComponentToPrint ref={componentRef} />
+      </div>
+
       {isOpenVariationDialog && (
         <VariationModal
           selectedProductForVariation={selectedProductForVariation}
@@ -1384,64 +1379,25 @@ export const OrdersComponent = (props: any) => {
           tailoringExtras={tailoringExtras}
         />
       )}
-      <Customermodal
+      {/* <Customermodal
         shopId={shopId}
         showType={showType}
         userdata={customer}
         customers={customers}
         statusDialog={customerIsModal}
         openDialog={customerModalHandler}
-      />
+      /> */}
       <div className="card-body">
         <div className="row mb-2">
-          <div className="d-flex">
-            <div className="flex-grow-1">
-              <Select
-                styles={selectStyle}
-                isDisabled={isOrderEdit > 0}
-                options={customers}
-                onChange={(choice: any) => {
-                  setCustomer({
-                    ...choice,
-                    isNew: choice.__isNew__ == undefined ? false : true,
-                  });
-                }}
-                placeholder="Select Customer..."
-                value={isOrderEdit > 0 ? { label: orderEditDetails.name, value: '111' } : customer}
-              />
-            </div>
-            <button
-              className="btn btn-primary ms-2 p-3"
-              style={{
-                lineHeight: 0,
-                padding: '0px 12px !important',
-                height: 38,
-              }}
-              type="button"
-              onClick={() => {
-                if (customer.value == '1') return;
-                if (customer) {
-                  setShowType('edit');
-                  setCustomerIsModal(true);
-                } else Toastify('error', 'Choose Customer First!');
-              }}>
-              <i className="ri-edit-box-line" />
-            </button>
-            <button
-              className="btn btn-primary ms-2 p-3"
-              style={{
-                lineHeight: 0,
-                padding: '0px 12px !important',
-                height: 38,
-              }}
-              type="button"
-              onClick={() => {
-                setShowType('add');
-                setCustomerIsModal(true);
-              }}>
-              <i className="ri-add-circle-line" />
-            </button>
-          </div>
+          <CustomerDataSelect
+            shopId={shopId}
+            selectStyle={selectStyle}
+            isOrderEdit={isOrderEdit}
+            setCustomer={setCustomer}
+            orderEditDetails={orderEditDetails}
+            customer={customer}
+          />
+
           <div className="mt-2 p-2">
             <div className="search-with-icon search-pos">
               <i className="ri-search-line" />
@@ -1527,14 +1483,14 @@ export const OrdersComponent = (props: any) => {
                   <td colSpan={5}>{lang.cartComponent.add}</td>
                 </tr>
               ) : null}
-              {orders.length == quantity.length &&
+              {orders.length === quantity.length &&
                 orders.map((order, i) => {
                   return (
                     <tr
                       key={i}
                       style={{
                         background: order.isEdit
-                          ? quantity[i].quantity == 0
+                          ? quantity[i].quantity === 0
                             ? '#ebbfbf'
                             : '#bbe7e7'
                           : '',
@@ -1557,7 +1513,7 @@ export const OrdersComponent = (props: any) => {
                       <td className="text-start" style={{ cursor: 'pointer' }}>
                         <span className="fw-medium cart-product-name">
                           {' '}
-                          {order.def_tax == false ? (
+                          {order.def_tax === false ? (
                             <i className="ri-flag-fill text-danger"></i>
                           ) : (
                             ''
@@ -1567,7 +1523,7 @@ export const OrdersComponent = (props: any) => {
                       </td>
                       <td>
                         <div className="input-step">
-                          {(order.is_tailoring! > 0 || order.type == 'tailoring_package') && (
+                          {(order.is_tailoring! > 0 || order.type === 'tailoring_package') && (
                             <div
                               className="btn-tailoring-edit minus mr-2"
                               onClick={() => handleEditTailoring(i)}>
@@ -1671,4 +1627,4 @@ export const OrdersComponent = (props: any) => {
       {/* end card body */}
     </div>
   );
-};
+}

@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState, useEffect } from 'react';
 import {
   DataGrid,
   GridColDef,
@@ -7,46 +7,41 @@ import {
   GridToolbarExport,
   GridToolbarColumnsButton,
   GridToolbarQuickFilter,
-} from "@mui/x-data-grid";
-import { AdminLayout } from "@layout";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+} from '@mui/x-data-grid';
+import { AdminLayout } from '@layout';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faTrash,
   faPenToSquare,
   faPlus,
   faEye,
   faDollarSign,
-} from "@fortawesome/free-solid-svg-icons";
-import { Button, ButtonGroup } from "react-bootstrap";
-import { useRouter } from "next/router";
-import AlertDialog from "src/components/utils/AlertDialog";
-import { apiFetch, apiFetchCtr } from "src/libs/dbUtils";
-import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-} from "@mui/material";
-import { ILocationSettings, IpaymentRow } from "@models/common-model";
-import { UserContext } from "src/context/UserContext";
-import { useReactToPrint } from "react-to-print";
-import { Toastify } from "src/libs/allToasts";
-import { ToastContainer } from "react-toastify";
-import { convertDateStringToDateAndTime } from "../../models/data";
-import SalesPaymentModal from "../pos/modals/SalesPaymentModal";
-import { cartJobType } from "src/recoil/atoms";
-import { useRecoilState } from "recoil";
- 
+} from '@fortawesome/free-solid-svg-icons';
+import { Button, ButtonGroup } from 'react-bootstrap';
+import { useRouter } from 'next/router';
+import AlertDialog from 'src/components/utils/AlertDialog';
+import { apiFetch, apiFetchCtr } from 'src/libs/dbUtils';
+import { Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { ILocationSettings, IpaymentRow } from '@models/common-model';
+import { UserContext } from 'src/context/UserContext';
+import { useReactToPrint } from 'react-to-print';
+import { Toastify } from 'src/libs/allToasts';
+import { ToastContainer } from 'react-toastify';
+import { convertDateStringToDateAndTime } from '../../models/data';
+import SalesPaymentModal from '../pos/modals/SalesPaymentModal';
+import { cartJobType } from 'src/recoil/atoms';
+import { useRecoilState } from 'recoil';
+
 export default function SalesListTable(props: any) {
   const { shopId, rules } = props;
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
     value: 0,
-    label: "",
+    label: '',
     currency_decimal_places: 0,
-    currency_code: "",
+    currency_code: '',
     currency_id: 0,
     currency_rate: 1,
-    currency_symbol: "",
+    currency_symbol: '',
   });
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const handleClose = () => {
@@ -62,40 +57,36 @@ export default function SalesListTable(props: any) {
   const [edit, setEdit] = useState(false);
   const [isLoadItems, setIsLoadItems] = useState(false);
   const [showViewPopUp, setShowViewPopUp] = useState(false);
-  const [handleSearchTxt, setHandleSearchTxt] = useState("");
+  const [handleSearchTxt, setHandleSearchTxt] = useState('');
   const { setInvoicDetails, invoicDetails } = useContext(UserContext);
   const [paymentModalShow, setPaymentModalShow] = useState<boolean>(false);
   const [paymentModalData, setPaymentModalData] = useState({});
 
   //table columns
   const columns: GridColDef[] = [
-    { field: "id", headerName: "#", minWidth: 50 },
-    { field: "customer_name", headerName: "Customer Name", flex: 1 },
-    { field: "mobile", headerName: "Mobile", flex: 1, disableColumnMenu: true },
-    { field: "sale_date", headerName: "Sale Date", flex: 1 },
+    { field: 'id', headerName: '#', minWidth: 50 },
+    { field: 'customer_name', headerName: 'Customer Name', flex: 1 },
+    { field: 'mobile', headerName: 'Mobile', flex: 1, disableColumnMenu: true },
+    { field: 'sale_date', headerName: 'Sale Date', flex: 1 },
     // { field: "total_price", headerName: "Final Total ", flex: 1 },
     {
-      field: "total_price",
-      headerName: "Final Total ",
+      field: 'total_price',
+      headerName: 'Final Total ',
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) => (
-        <>
-          {Number(+row.total_price).toFixed(
-            locationSettings.currency_decimal_places
-          )}
-        </>
+        <>{Number(+row.total_price).toFixed(locationSettings?.currency_decimal_places)}</>
       ),
     },
-    { field: "amount", headerName: "Amount paid", flex: 1 },
+    { field: 'amount', headerName: 'Amount paid', flex: 1 },
     {
       flex: 1,
-      field: "TotalDue",
-      headerName: "Total Due ",
+      field: 'TotalDue',
+      headerName: 'Total Due ',
       renderCell: ({ row }: Partial<GridRowParams>) => (
         <>
           {Number(+row.total_price - +row.amount) > 0
             ? Number(+row.total_price - +row.amount).toFixed(
-                locationSettings.currency_decimal_places
+                locationSettings?.currency_decimal_places
               )
             : 0}
         </>
@@ -103,8 +94,8 @@ export default function SalesListTable(props: any) {
     },
     {
       flex: 1,
-      field: "status",
-      headerName: "Status",
+      field: 'status',
+      headerName: 'Status',
       renderCell: ({ row }: Partial<GridRowParams>) => {
         if (Number(+row.total_price - +row.amount) === 0) {
           return (
@@ -112,9 +103,7 @@ export default function SalesListTable(props: any) {
               <div className="sty_Paid">Paid</div>
             </>
           );
-        } else if (
-          Number(+row.total_price - +row.amount) === Number(row.total_price)
-        ) {
+        } else if (Number(+row.total_price - +row.amount) === Number(row.total_price)) {
           return (
             <>
               <div className="sty_n_Paid">Not Paid</div>
@@ -131,8 +120,8 @@ export default function SalesListTable(props: any) {
     },
     {
       flex: 1,
-      field: "action",
-      headerName: "Action ",
+      field: 'action',
+      headerName: 'Action ',
       filterable: false,
       sortable: false,
       disableExport: true,
@@ -147,9 +136,8 @@ export default function SalesListTable(props: any) {
                   req: 3,
                   val: row.id,
                 });
-                router.push('/pos/' + shopId)
-              }}
-            >
+                router.push('/pos/' + shopId);
+              }}>
               <FontAwesomeIcon icon={faPenToSquare} />
             </Button>
             {rules.hasDelete && (
@@ -157,23 +145,21 @@ export default function SalesListTable(props: any) {
                 onClick={() => {
                   setSelectId(row.id);
                   setShow(true);
-                }}
-              >
+                }}>
                 <FontAwesomeIcon icon={faTrash} />
               </Button>
             )}
             <Button
               onClick={() => {
                 onRowsSelectionHandler(row);
-              }}
-            >
+              }}>
               <FontAwesomeIcon icon={faEye} />
             </Button>
             <Button
               className={`${
                 Number(+row.total_price - +row.amount) > 0
-                  ? "opacity-100 pe-auto"
-                  : "opacity-50 pe-none"
+                  ? 'opacity-100 pe-auto'
+                  : 'opacity-50 pe-none'
               }`}
               onClick={() => {
                 if (Number(+row.total_price - +row.amount) > 0) {
@@ -183,13 +169,12 @@ export default function SalesListTable(props: any) {
                     totalDue:
                       Number(+row.total_price - +row.amount) > 0
                         ? Number(+row.total_price - +row.amount).toFixed(
-                            locationSettings.currency_decimal_places
+                            locationSettings?.currency_decimal_places
                           )
                         : 0,
                   });
                 }
-              }}
-            >
+              }}>
               <FontAwesomeIcon icon={faDollarSign} />
             </Button>
           </ButtonGroup>
@@ -216,22 +201,20 @@ export default function SalesListTable(props: any) {
           <div className="bill-details">
             <div className="flex justify-between">
               <div>
-                {invoicDetails.txtCustomer}{" "}
+                {invoicDetails.txtCustomer}{' '}
                 {invoicDetails.isMultiLang && invoicDetails.txtCustomer2}
               </div>
               <div>{selectRow.customer_name}</div>
             </div>
             <div className="flex justify-between">
               <div>
-                {invoicDetails.orderNo}{" "}
-                {invoicDetails.isMultiLang && invoicDetails.orderNo2}
+                {invoicDetails.orderNo} {invoicDetails.isMultiLang && invoicDetails.orderNo2}
               </div>
               <div>{selectRow.id}</div>
             </div>
             <div className="flex justify-between">
               <div>
-                {invoicDetails.txtDate}{" "}
-                {invoicDetails.isMultiLang && invoicDetails.txtDate2}
+                {invoicDetails.txtDate} {invoicDetails.isMultiLang && invoicDetails.txtDate2}
               </div>
               <div>{new Date().toISOString().slice(0, 10)}</div>
             </div>
@@ -270,23 +253,19 @@ export default function SalesListTable(props: any) {
               <tr className="net-amount">
                 <td></td>
                 <td>
-                  {invoicDetails.txtTax}{" "}
-                  {invoicDetails.isMultiLang && invoicDetails.txtTax2}
+                  {invoicDetails.txtTax} {invoicDetails.isMultiLang && invoicDetails.txtTax2}
                 </td>
                 <td></td>
-                {/* <td>{(selectRow.total_price).toFixed(locationSettings.currency_decimal_places)}</td> */}
+                {/* <td>{(selectRow.total_price).toFixed(locationSettings?.currency_decimal_places)}</td> */}
               </tr>
               <tr className="net-amount">
                 <td></td>
                 <td className="txt-bold">
-                  {invoicDetails.txtTotal}{" "}
-                  {invoicDetails.isMultiLang && invoicDetails.txtTotal2}
+                  {invoicDetails.txtTotal} {invoicDetails.isMultiLang && invoicDetails.txtTotal2}
                 </td>
                 <td></td>
                 <td className="txt-bold">
-                  {Number(selectRow.total_price).toFixed(
-                    locationSettings.currency_decimal_places
-                  )}
+                  {Number(selectRow.total_price).toFixed(locationSettings?.currency_decimal_places)}
                 </td>
               </tr>
             </thead>
@@ -371,7 +350,7 @@ export default function SalesListTable(props: any) {
               <tr>
                 <th>Description</th>
                 <th>
-                  {" "}
+                  {' '}
                   {invoicDetails.txtQty}
                   <br />
                   {invoicDetails.isMultiLang && invoicDetails.txtQty2}
@@ -380,7 +359,7 @@ export default function SalesListTable(props: any) {
                 {/* <th> {invoicDetails.txtItem}<br />{invoicDetails.isMultiLang && invoicDetails.txtItem2}</th> */}
                 <th>Tax</th>
                 <th>
-                  {" "}
+                  {' '}
                   {invoicDetails.txtAmount}
                   <br />
                   {invoicDetails.isMultiLang && invoicDetails.txtAmount2}
@@ -410,13 +389,10 @@ export default function SalesListTable(props: any) {
               </tr>
               <tr>
                 <td colSpan={4} className="txt_bold_invoice">
-                  {invoicDetails.txtTotal}{" "}
-                  {invoicDetails.isMultiLang && invoicDetails.txtTotal2}
+                  {invoicDetails.txtTotal} {invoicDetails.isMultiLang && invoicDetails.txtTotal2}
                 </td>
                 <td className="txt_bold_invoice">
-                  {Number(selectRow.total_price).toFixed(
-                    locationSettings.currency_decimal_places
-                  )}
+                  {Number(selectRow.total_price).toFixed(locationSettings?.currency_decimal_places)}
                 </td>
               </tr>
             </tbody>
@@ -451,13 +427,13 @@ export default function SalesListTable(props: any) {
                 <td></td>
                 <td>{invoicDetails.txtTax} {invoicDetails.isMultiLang && invoicDetails.txtTax2}</td>
                 <td></td>
-                <td>{(selectRow.total_price).toFixed(locationSettings.currency_decimal_places)}</td>
+                <td>{(selectRow.total_price).toFixed(locationSettings?.currency_decimal_places)}</td>
               </tr>
               <tr className="net-amount">
                 <td></td>
                 <td className='txt-bold'>{invoicDetails.txtTotal} {invoicDetails.isMultiLang && invoicDetails.txtTotal2}</td>
                 <td></td>
-                <td className='txt-bold'>{Number(selectRow.total_price).toFixed(locationSettings.currency_decimal_places)}</td>
+                <td className='txt-bold'>{Number(selectRow.total_price).toFixed(locationSettings?.currency_decimal_places)}</td>
               </tr>
             </thead>
           </table> */}
@@ -490,22 +466,20 @@ export default function SalesListTable(props: any) {
           <div className="bill-details">
             <div className="flex justify-between">
               <div>
-                {invoicDetails.txtCustomer}{" "}
+                {invoicDetails.txtCustomer}{' '}
                 {invoicDetails.isMultiLang && invoicDetails.txtCustomer2}
               </div>
               <div>{selectRow.customer_name}</div>
             </div>
             <div className="flex justify-between">
               <div>
-                {invoicDetails.orderNo}{" "}
-                {invoicDetails.isMultiLang && invoicDetails.orderNo2}
+                {invoicDetails.orderNo} {invoicDetails.isMultiLang && invoicDetails.orderNo2}
               </div>
               <div>{selectRow.id}</div>
             </div>
             <div className="flex justify-between">
               <div>
-                {invoicDetails.txtDate}{" "}
-                {invoicDetails.isMultiLang && invoicDetails.txtDate2}
+                {invoicDetails.txtDate} {invoicDetails.isMultiLang && invoicDetails.txtDate2}
               </div>
               <div>{new Date().toISOString().slice(0, 10)}</div>
             </div>
@@ -544,48 +518,41 @@ export default function SalesListTable(props: any) {
               <tr className="net-amount">
                 <td></td>
                 <td>
-                  {invoicDetails.txtTax}{" "}
-                  {invoicDetails.isMultiLang && invoicDetails.txtTax2}
+                  {invoicDetails.txtTax} {invoicDetails.isMultiLang && invoicDetails.txtTax2}
                 </td>
                 <td></td>
-                {/* <td>{(selectRow.total_price).toFixed(locationSettings.currency_decimal_places)}</td> */}
+                {/* <td>{(selectRow.total_price).toFixed(locationSettings?.currency_decimal_places)}</td> */}
               </tr>
               <tr className="net-amount">
                 <td></td>
                 <td className="txt-bold">
-                  {invoicDetails.txtTotal}{" "}
-                  {invoicDetails.isMultiLang && invoicDetails.txtTotal2}
+                  {invoicDetails.txtTotal} {invoicDetails.isMultiLang && invoicDetails.txtTotal2}
                 </td>
                 <td></td>
                 <td className="txt-bold">
-                  {Number(selectRow.total_price).toFixed(
-                    locationSettings.currency_decimal_places
-                  )}
-                </td>
-              </tr>
-              <tr className="net-amount">
-                <td></td>
-                <td className="txt-bold">
-                  {invoicDetails.txtAmount}{" "}
-                  {invoicDetails.isMultiLang && invoicDetails.txtAmount2}
-                </td>
-                <td></td>
-                <td className="txt-bold">
-                  {Number(selectRow.amount).toFixed(
-                    locationSettings.currency_decimal_places
-                  )}
+                  {Number(selectRow.total_price).toFixed(locationSettings?.currency_decimal_places)}
                 </td>
               </tr>
               <tr className="net-amount">
                 <td></td>
                 <td className="txt-bold">
-                  {invoicDetails.txtTotalDue}{" "}
+                  {invoicDetails.txtAmount} {invoicDetails.isMultiLang && invoicDetails.txtAmount2}
+                </td>
+                <td></td>
+                <td className="txt-bold">
+                  {Number(selectRow.amount).toFixed(locationSettings?.currency_decimal_places)}
+                </td>
+              </tr>
+              <tr className="net-amount">
+                <td></td>
+                <td className="txt-bold">
+                  {invoicDetails.txtTotalDue}{' '}
                   {invoicDetails.isMultiLang && invoicDetails.txtTotalDue2}
                 </td>
                 <td></td>
                 <td className="txt-bold">
                   {Number(selectRow.total_price - selectRow.amount).toFixed(
-                    locationSettings.currency_decimal_places
+                    locationSettings?.currency_decimal_places
                   )}
                 </td>
               </tr>
@@ -604,7 +571,7 @@ export default function SalesListTable(props: any) {
   async function viewTransaction() {
     setShowViewPopUp(true);
     var result = await apiFetch({
-      fetch: "getSellLinesByTransactionId",
+      fetch: 'getSellLinesByTransactionId',
       data: { id: selectId },
     });
     const { success, newdata } = result;
@@ -615,8 +582,8 @@ export default function SalesListTable(props: any) {
   // init sales data
   async function initDataPage() {
     const { success, newdata } = await apiFetchCtr({
-      fetch: "transactions",
-      subType: "getSales",
+      fetch: 'transactions',
+      subType: 'getSales',
       shopId,
     });
     if (success) {
@@ -629,8 +596,8 @@ export default function SalesListTable(props: any) {
   async function getItems(id: number) {
     setIsLoadItems(true);
     const { success, newdata } = await apiFetchCtr({
-      fetch: "transactions",
-      subType: "getSaleItems",
+      fetch: 'transactions',
+      subType: 'getSaleItems',
       shopId,
       id,
     });
@@ -641,7 +608,7 @@ export default function SalesListTable(props: any) {
   }
 
   useEffect(() => {
-    var _locs = JSON.parse(localStorage.getItem("userlocs") || "[]");
+    var _locs = JSON.parse(localStorage.getItem('userlocs') || '[]');
     if (_locs.toString().length > 10)
       setLocationSettings(
         _locs[
@@ -650,7 +617,7 @@ export default function SalesListTable(props: any) {
           })
         ]
       );
-    else alert("errorr location settings");
+    else alert('errorr location settings');
     initDataPage();
   }, [router.asPath]);
 
@@ -663,7 +630,7 @@ export default function SalesListTable(props: any) {
         setsales(_data);
       }
     }
-    if (msg.length > 0) Toastify(result ? "success" : "error", msg);
+    if (msg.length > 0) Toastify(result ? 'success' : 'error', msg);
     setShow(false);
   };
 
@@ -672,7 +639,7 @@ export default function SalesListTable(props: any) {
     const _data = [...sales];
     const idx = _data.findIndex((itm: any) => itm.id == userData.id);
     if (idx != -1) {
-      if (_row.amount.toString() !== "NaN") {
+      if (_row.amount.toString() !== 'NaN') {
         _data[idx].amount =
           _data[idx].amount === null
             ? `${_row.amount}.000`
@@ -681,9 +648,7 @@ export default function SalesListTable(props: any) {
         _data[idx].amount =
           _data[idx].amount === null
             ? userData.totalDue
-            : `${
-                parseFloat(_data[idx].amount) + parseFloat(userData.totalDue)
-              }.000`;
+            : `${parseFloat(_data[idx].amount) + parseFloat(userData.totalDue)}.000`;
       }
       setsales(_data);
       setSelectRow(_data[idx]);
@@ -733,22 +698,21 @@ export default function SalesListTable(props: any) {
         id={selectId}
         type="transactions"
         subType="deleteSale"
-        products={sales}
-      >
+        products={sales}>
         Are you Sure You Want Delete This Item ?
       </AlertDialog>
       {
-        <div style={{ display: "none" }}>
+        <div style={{ display: 'none' }}>
           <ComponentToPrint ref={componentRef} />
         </div>
       }
       {
-        <div style={{ display: "none" }}>
+        <div style={{ display: 'none' }}>
           <ComponentToPrint2 ref={componentRef2} />
         </div>
       }
       {
-        <div style={{ display: "none" }}>
+        <div style={{ display: 'none' }}>
           <ComponentToPrint3 ref={componentRef3} />
         </div>
       }
@@ -757,11 +721,11 @@ export default function SalesListTable(props: any) {
         <DataGrid
           className="datagrid-style"
           sx={{
-            ".MuiDataGrid-columnSeparator": {
-              display: "none",
+            '.MuiDataGrid-columnSeparator': {
+              display: 'none',
             },
-            "&.MuiDataGrid-root": {
-              border: "none",
+            '&.MuiDataGrid-root': {
+              border: 'none',
             },
           }}
           rows={sales}
@@ -775,22 +739,14 @@ export default function SalesListTable(props: any) {
         />
       </div>
       {/* FOR VIEW ELEMENT */}
-      <Dialog
-        open={showViewPopUp}
-        fullWidth={true}
-        className="poslix-modal"
-        onClose={handleClose}
-      >
+      <Dialog open={showViewPopUp} fullWidth={true} className="poslix-modal" onClose={handleClose}>
         <DialogTitle className="poslix-modal text-primary">
-          {edit ? "Edit Sale" : "Sale Details"}
+          {edit ? 'Edit Sale' : 'Sale Details'}
         </DialogTitle>
         <DialogContent className="poslix-modal-content">
           <div className="poslix-modal">
             <div className="top-section-details">
-              <img
-                src={invoicDetails.logo}
-                style={{ width: "80px", marginBottom: "10px" }}
-              />
+              <img src={invoicDetails.logo} style={{ width: '80px', marginBottom: '10px' }} />
               <div className="item-sections">
                 <div className="top-detials-invoice">
                   <div className="top-detials-item">
@@ -803,24 +759,16 @@ export default function SalesListTable(props: any) {
                       <input
                         type="text"
                         className="form-control"
-                        value={convertDateStringToDateAndTime(
-                          selectRow.created_at
-                        )}
+                        value={convertDateStringToDateAndTime(selectRow.created_at)}
                       />
                     ) : (
-                      <p>
-                        {convertDateStringToDateAndTime(selectRow.created_at)}
-                      </p>
+                      <p>{convertDateStringToDateAndTime(selectRow.created_at)}</p>
                     )}
                   </div>
                   <div className="top-detials-item pe-2">
                     <p>Added By :</p>
                     {edit ? (
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={selectRow.added_by}
-                      />
+                      <input type="text" className="form-control" value={selectRow.added_by} />
                     ) : (
                       <p>{selectRow.added_by}</p>
                     )}
@@ -834,13 +782,13 @@ export default function SalesListTable(props: any) {
                         type="text"
                         className="form-control"
                         value={Number(selectRow.total_price).toFixed(
-                          locationSettings.currency_decimal_places
+                          locationSettings?.currency_decimal_places
                         )}
                       />
                     ) : (
                       <p>
                         {Number(selectRow.total_price).toFixed(
-                          locationSettings.currency_decimal_places
+                          locationSettings?.currency_decimal_places
                         )}
                       </p>
                     )}
@@ -848,26 +796,15 @@ export default function SalesListTable(props: any) {
                   <div className="top-detials-item">
                     <p>Customer Name :</p>
                     {edit ? (
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={selectRow.customer_name}
-                      />
+                      <input type="text" className="form-control" value={selectRow.customer_name} />
                     ) : (
                       <p>{selectRow.customer_name}</p>
                     )}
                   </div>
-                  <div
-                    className="top-detials-item"
-                    style={{ fontSize: "13px" }}
-                  >
+                  <div className="top-detials-item" style={{ fontSize: '13px' }}>
                     <p>Order Note</p>
                     {edit ? (
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={selectRow.notes}
-                      />
+                      <input type="text" className="form-control" value={selectRow.notes} />
                     ) : (
                       <p>{selectRow.notes}</p>
                     )}
@@ -880,15 +817,13 @@ export default function SalesListTable(props: any) {
                     className="mr-right"
                     onClick={() => {
                       handlePrint();
-                    }}
-                  >
+                    }}>
                     Print Recipt
                   </Button>
                   <Button
                     onClick={() => {
                       handlePrint2();
-                    }}
-                  >
+                    }}>
                     Print Invoice
                   </Button>
                 </div>
@@ -919,9 +854,7 @@ export default function SalesListTable(props: any) {
                           )}
                         </div>
                         <div>
-                          {Number(line.price).toFixed(
-                            locationSettings.currency_decimal_places
-                          )}
+                          {Number(line.price).toFixed(locationSettings?.currency_decimal_places)}
                         </div>
                         {edit && (
                           <div>
@@ -931,10 +864,7 @@ export default function SalesListTable(props: any) {
                       </div>
                     );
                   })}
-                  <div
-                    className="header-titles under_items"
-                    style={{ marginTop: "20px" }}
-                  >
+                  <div className="header-titles under_items" style={{ marginTop: '20px' }}>
                     <div></div>
                     <div>Total</div>
                     <div>
@@ -943,7 +873,7 @@ export default function SalesListTable(props: any) {
                           type="text"
                           className="form-control"
                           value={Number(selectRow.total_price).toFixed(
-                            locationSettings.currency_decimal_places
+                            locationSettings?.currency_decimal_places
                           )}
                         />
                       ) : (
@@ -966,8 +896,7 @@ export default function SalesListTable(props: any) {
               onClick={() => {
                 setShowViewPopUp(false);
                 setEdit(false);
-              }}
-            >
+              }}>
               Save
             </Button>
           )}
@@ -975,8 +904,7 @@ export default function SalesListTable(props: any) {
             onClick={() => {
               setEdit(false);
               setShowViewPopUp(false);
-            }}
-          >
+            }}>
             Cancel
           </Button>
         </DialogActions>

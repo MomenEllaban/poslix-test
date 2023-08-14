@@ -70,7 +70,7 @@ const Purchases: NextPage = (props: any) => {
       headerName: 'Total Price',
       flex: 1,
       renderCell: (params) =>
-        Number(params.value).toFixed(locationSettings.currency_decimal_places),
+        Number(params.value).toFixed(locationSettings?.currency_decimal_places),
     },
     {
       field: 'action',

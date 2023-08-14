@@ -1,5 +1,6 @@
 import { createContext, useContext } from 'react';
 import { IreadyGroupTax } from '../models/common-model';
+import { ITax } from '@models/pos.types';
 export const ProductContext = createContext({
   products: { products: [], products_multi: [] },
   setProducts: (products: any) => {},
@@ -9,8 +10,8 @@ export const ProductContext = createContext({
   setBrands: (cats: any) => {},
   customers: [],
   setCustomers: (customers: any) => {},
-  taxes: [],
-  setTaxes: (taxes: any) => {},
+  taxes: [] as ITax[],
+  setTaxes: (taxes: ITax) => {},
   taxGroups: [],
   setTaxGroups: (taxGroups: IreadyGroupTax) => {},
   variations: { variations: [], variations_multi: [] },

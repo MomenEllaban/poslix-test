@@ -84,7 +84,7 @@ const PaymentModal = (props: any) => {
 
     let _mustPay = +Math.abs(
       __WithDiscountFeature__total + details.totalAmount - details.subTotal
-    ).toFixed(locationSettings.currency_decimal_places);
+    ).toFixed(locationSettings?.currency_decimal_places);
 
     setMustPay(_mustPay);
     // mohamed elsayed
@@ -140,7 +140,7 @@ const PaymentModal = (props: any) => {
     let _sum = 0;
     localStorage.setItem('payment', JSON.stringify(_rows));
     _rows.map((_i: IpaymentRow) => (_sum += Number(_i.amount!)));
-    setTotalPaid(+Number(_sum).toFixed(locationSettings.currency_decimal_places));
+    setTotalPaid(+Number(_sum).toFixed(locationSettings?.currency_decimal_places));
   }
   const style = { minWidth: '500px' };
 
@@ -155,7 +155,7 @@ const PaymentModal = (props: any) => {
       if (name === 'amount') {
         let diff = Number(
           (_rows[index]['total'] - (Number(value) + toBeAdded)).toFixed(
-            locationSettings.currency_decimal_places
+            locationSettings?.currency_decimal_places
           )
         );
 
@@ -222,15 +222,15 @@ const PaymentModal = (props: any) => {
         +Number(
           totalPaid -
             +(__WithDiscountFeature__total + (details.totalAmount - details.subTotal)).toFixed(
-              locationSettings.currency_decimal_places
+              locationSettings?.currency_decimal_places
             )
-        ).toFixed(locationSettings.currency_decimal_places)
+        ).toFixed(locationSettings?.currency_decimal_places)
       );
     } else {
       // setCanPay( isCash ?
-      //   totalPaid.toFixed(locationSettings.currency_decimal_places) >=
+      //   totalPaid.toFixed(locationSettings?.currency_decimal_places) >=
       //     _WithDiscountFeature_total.toFixed(
-      //       locationSettings.currency_decimal_places
+      //       locationSettings?.currency_decimal_places
       //     ) : true
       // );
 
@@ -243,9 +243,9 @@ const PaymentModal = (props: any) => {
         +Number(
           totalPaid -
             +(__WithDiscountFeature__total + (details.totalAmount - details.subTotal)).toFixed(
-              locationSettings.currency_decimal_places
+              locationSettings?.currency_decimal_places
             )
-        ).toFixed(locationSettings.currency_decimal_places)
+        ).toFixed(locationSettings?.currency_decimal_places)
       );
     }
     const _rows: any = [...paymentRows];
@@ -360,7 +360,7 @@ const PaymentModal = (props: any) => {
           __WithDiscountFeature__total +
           Number(
             (details.totalAmount - details.subTotal).toFixed(
-              locationSettings.currency_decimal_places
+              locationSettings?.currency_decimal_places
             )
           );
       else
@@ -465,14 +465,16 @@ const PaymentModal = (props: any) => {
               <div className="view_payment_item">
                 <span>Total payable</span>
                 <span>
-                  {locationSettings.currency_code + ' ' + paymentRows[paymentRows.length - 1].total}
+                  {locationSettings?.currency_code +
+                    ' ' +
+                    paymentRows[paymentRows.length - 1].total}
                 </span>
               </div>
               <div className="view_payment_item">
                 <span>Total paying</span>
                 <span>
                   {' '}
-                  {locationSettings.currency_code +
+                  {locationSettings?.currency_code +
                     ' ' +
                     (
                       totalPaying || paymentRows[paymentRows.length - 1].amount + toBeAdded
@@ -483,7 +485,7 @@ const PaymentModal = (props: any) => {
                 <span>Change Return</span>
                 <span>
                   {' '}
-                  {locationSettings.currency_code +
+                  {locationSettings?.currency_code +
                     ' ' +
                     paymentRows[paymentRows.length - 1].return}
                 </span>
@@ -491,7 +493,7 @@ const PaymentModal = (props: any) => {
               <div className="view_payment_item">
                 <span>Balance</span>
                 <span>
-                  {locationSettings.currency_code +
+                  {locationSettings?.currency_code +
                     ' ' +
                     paymentRows[paymentRows.length - 1].totalDue}
                 </span>

@@ -1,5 +1,6 @@
 import { faCashRegister } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { ICustomer, ITax } from '@models/pos.types';
 import ar from 'ar.json';
 import en from 'en.json';
 import type { NextPage } from 'next';
@@ -11,7 +12,14 @@ import { useUser } from 'src/context/UserContext';
 import { Toastify } from 'src/libs/allToasts';
 import { apiFetchCtr, apiInsertCtr } from 'src/libs/dbUtils';
 import PosLayout from 'src/modules/pos/_components/layout/pos.layout';
-import { OrdersComponent } from '../../../components/pos/CartComponent';
+import {
+  useBrandsList,
+  useCategoriesList,
+  useCustomersList,
+  useProductsList,
+  useTaxesList,
+} from 'src/services/pos.service';
+import OrdersComponent from '../../../components/pos/CartComponent';
 import { ItemList } from '../../../components/pos/ItemList';
 import NavMenu from '../../../components/pos/parts/NavMenu';
 import { useProducts } from '../../../context/ProductContext';
@@ -47,6 +55,48 @@ const Home: NextPage = (props: any) => {
   const [cusLocs, setCusLocs] = useState([]);
   const [locations, setLocations] = useState([]);
 
+  useCustomersList(shopId, {
+    onSuccess(data, key, config) {
+      console.log(data, 'in index');
+      const _customers = data?.result?.map((el: ICustomer) => {
+        return {
+          ...el,
+          value: el.id,
+          label: `${el.first_name} ${el.last_name} | ${el.mobile}`,
+          isNew: false,
+        };
+      });
+      setCustomers(_customers);
+    },
+  });
+  useProductsList(shopId, {
+    onSuccess(data, key, config) {
+      const _products = data?.result?.data;
+      setProducts(_products);
+    },
+  });
+
+  useCategoriesList(shopId, {
+    onSuccess(data, key, config) {
+      const _cats = data?.result;
+      setCats(_cats);
+    },
+  });
+  useTaxesList(shopId, {
+    onSuccess(data, key, config) {
+      const _taxes = data?.result?.taxes as ITax;
+      setTaxes(_taxes);
+      setTaxGroups(data?.result?.tax_group);
+    },
+  });
+  useBrandsList(shopId, {
+    onSuccess(data, key, config) {
+      const _brands = data?.result;
+      setBrands(_brands);
+    },
+  });
+
+  /*************************************************************/
   useEffect(() => {
     var locs = JSON.parse(localStorage.getItem('cusLocs') ?? '[]');
     // console.log(locs);
@@ -67,15 +117,11 @@ const Home: NextPage = (props: any) => {
       Toastify('error', 'error..Try Again');
       return;
     }
-    setCats(data.cats);
-    setTaxes(data.taxes);
-    setBrands(data.brands);
-    setTaxGroups(data.tax_group);
-    setProducts(data.stockedProducts);
+
     setVariations(data.variations);
     setPackageItems(data.packageItems);
     setTailoringExtras(data.tailoring_extras);
-    setCustomers([{ value: '1', label: 'walk-in customer', isNew: false }, ...data.customers]);
+
     setTailoringSizes(data.AllSizes);
     if (data.invoiceDetails != null && data.invoiceDetails.length > 10)
       setInvoicDetails(JSON.parse(data.invoiceDetails));
@@ -111,13 +157,10 @@ const Home: NextPage = (props: any) => {
     }
     localStorage.setItem('hand_in_cash', cashHand.toString());
     router.replace(`/pos/${shopId}`);
-    initData();
+    // initData();
     setIsOpenRegister(true);
     setIsLoading(false);
   }
-  useEffect(() => {
-    // initData();
-  }, []);
 
   const handleBussinesChange = (e: any) => {
     let idx = cusLocs.findIndex((el) => el.bus_id == e.target?.value);

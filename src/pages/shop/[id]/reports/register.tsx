@@ -7,7 +7,7 @@ import {
   GridToolbarColumnsButton,
   GridToolbarContainer,
   GridToolbarExport,
-  GridToolbarQuickFilter
+  GridToolbarQuickFilter,
 } from '@mui/x-data-grid';
 import * as cookie from 'cookie';
 import { useRouter } from 'next/router';
@@ -60,35 +60,35 @@ export default function SalesReport(props: any) {
       headerName: 'hand cash',
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) =>
-        Number(row.closing_amount).toFixed(locationSettings.currency_decimal_places),
+        Number(row.closing_amount).toFixed(locationSettings?.currency_decimal_places),
     },
     {
       field: 'total_card_slips',
       headerName: 'Card',
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) =>
-        Number(row.total_card_slips).toFixed(locationSettings.currency_decimal_places),
+        Number(row.total_card_slips).toFixed(locationSettings?.currency_decimal_places),
     },
     {
       field: 'total_cash',
       headerName: 'Cash',
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) =>
-        Number(row.total_cash).toFixed(locationSettings.currency_decimal_places),
+        Number(row.total_cash).toFixed(locationSettings?.currency_decimal_places),
     },
     {
       field: 'total_cheques',
       headerName: 'Cheques',
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) =>
-        Number(row.total_cheques).toFixed(locationSettings.currency_decimal_places),
+        Number(row.total_cheques).toFixed(locationSettings?.currency_decimal_places),
     },
     {
       field: 'total_bank',
       headerName: 'Bank',
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) =>
-        Number(row.total_bank).toFixed(locationSettings.currency_decimal_places),
+        Number(row.total_bank).toFixed(locationSettings?.currency_decimal_places),
     },
     {
       field: 'created_at',
@@ -170,7 +170,7 @@ export default function SalesReport(props: any) {
                   {invoicDetails.txtTax} {invoicDetails.isMultiLang && invoicDetails.txtTax2}
                 </td>
                 <td></td>
-                {/* <td>{(selectRow.total_price).toFixed(locationSettings.currency_decimal_places)}</td> */}
+                {/* <td>{(selectRow.total_price).toFixed(locationSettings?.currency_decimal_places)}</td> */}
               </tr>
               <tr className="net-amount">
                 <td></td>
@@ -179,7 +179,7 @@ export default function SalesReport(props: any) {
                 </td>
                 <td></td>
                 <td className="txt-bold">
-                  {Number(selectRow.total_price).toFixed(locationSettings.currency_decimal_places)}
+                  {Number(selectRow.total_price).toFixed(locationSettings?.currency_decimal_places)}
                 </td>
               </tr>
             </thead>
@@ -268,16 +268,16 @@ export default function SalesReport(props: any) {
         <div className="deatils_box">
           <div>
             <span>SubTotal: </span>
-            {Number(details.subTotal).toFixed(3)} {locationSettings.currency_code}
+            {Number(details.subTotal).toFixed(3)} {locationSettings?.currency_code}
           </div>
           <div>
             <span>Tax: </span>
-            {Number(details.tax).toFixed(3)} {locationSettings.currency_code}
+            {Number(details.tax).toFixed(3)} {locationSettings?.currency_code}
           </div>
           <div>
             <span>Total: </span>
             {Number(Number(details.subTotal) + Number(details.tax)).toFixed(3)}{' '}
-            {locationSettings.currency_code}
+            {locationSettings?.currency_code}
           </div>
         </div>
         <DataGrid

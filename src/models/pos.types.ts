@@ -9,18 +9,18 @@ export interface ICategory {
   id: number;
   name: string;
   location_id: number;
-  short_code: any;
+  short_code?: any;
   parent_id: number;
   created_by: number;
-  woocommerce_cat_id: any;
-  category_type: any;
+  woocommerce_cat_id?: any;
+  category_type?: any;
   description: string;
-  slug: any;
-  tax_id: any;
+  slug?: any;
+  tax_id?: any;
   never_tax: number;
-  deleted_at: any;
-  created_at: any;
-  updated_at: any;
+  deleted_at?: any;
+  created_at?: any;
+  updated_at?: any;
   show_in_list: string;
   products_count: number;
   products: IProduct[];
@@ -39,27 +39,27 @@ export interface IProduct {
   unit_id: number;
   brand_id: number;
   category_id: number;
-  sub_category_id: any;
-  tax: any;
+  sub_category_id?: any;
+  tax?: any;
   never_tax: 1 | 0 | boolean;
   alert_quantity: string;
   sku: string;
   Ebarcode_type: string;
   image: string;
-  product_description: any;
+  product_description?: any;
   created_by: number;
   is_disabled: number;
   sell_price: string | number;
   cost_price: string | number;
   sell_over_stock: string;
   qty_over_sold: string;
-  created_at: any;
-  updated_at: any;
+  created_at?: any;
+  updated_at?: any;
   is_selling_multi_price: number;
   is_fifo: number;
   status: string;
   stock: number;
-  variations: any[];
+  variations?: any[];
   packages: IPackage[];
   stocks: IStock[];
   category: ICategory;
@@ -72,9 +72,9 @@ export interface IPackage {
   tailoring_type_id: number;
   prices_json: IPricesJson[];
   fabric_ids: string;
-  product_ids: any;
+  product_ids?: any;
   created_by: number;
-  created_at: any;
+  created_at?: any;
 }
 
 export interface ICustomer {
@@ -83,9 +83,9 @@ export interface ICustomer {
   type: string;
   first_name: string;
   last_name: string;
-  name: any;
-  email: any;
-  contact_id: any;
+  name?: string;
+  email?: string;
+  contact_id?: string | number;
   contact_status: string;
   city?: string;
   state?: string;
@@ -96,7 +96,7 @@ export interface ICustomer {
   mobile: string | number;
   created_by: number;
   shipping_address?: string;
-  deleted_at: any;
+  deleted_at?: string;
   created_at: string;
   updated_at?: string;
 }
@@ -116,7 +116,7 @@ export interface IUnit {
   type: string;
   name: string;
   unit: string;
-  created_at: any;
+  created_at?: any;
 }
 
 export interface IUnits {
@@ -129,12 +129,12 @@ export interface IBrand {
   name: string;
   description: string;
   created_by: number;
-  tax_id: any;
+  tax_id?: any;
   never_tax: number;
-  deleted_at: any;
-  created_at: any;
-  updated_at: any;
-  use_for_repair: any;
+  deleted_at?: any;
+  created_at?: any;
+  updated_at?: any;
+  use_for_repair?: any;
   products_count: number;
   products: IProduct[];
 }
@@ -147,10 +147,10 @@ export interface ITax {
   is_tax_group: number;
   for_tax_group: number;
   created_by: number;
-  woocommerce_tax_rate_id: any;
-  deleted_at: any;
-  created_at: any;
-  updated_at: any;
+  woocommerce_tax_rate_id?: any;
+  deleted_at?: any;
+  created_at?: any;
+  updated_at?: any;
   for_tax_inclusive: number;
   for_tax_exclusive: number;
   is_inc_or_exc: string;
@@ -168,10 +168,10 @@ export interface ITaxGroup {
   is_tax_group: number;
   for_tax_group: number;
   created_by: number;
-  woocommerce_tax_rate_id: any;
-  deleted_at: any;
-  created_at: any;
-  updated_at: any;
+  woocommerce_tax_rate_id?: any;
+  deleted_at?: any;
+  created_at?: any;
+  updated_at?: any;
   for_tax_inclusive: number;
   for_tax_exclusive: number;
   is_inc_or_exc: string;
@@ -199,32 +199,32 @@ export interface ICurrency {
   thousand_separator: string;
   decimal_separator: string;
   exchange_rate: string;
-  created_at: any;
-  updated_at: any;
+  created_at?: any;
+  updated_at?: any;
 }
 
 export interface IPurchase {
   id: number;
   location_id: number;
   type: string;
-  sub_type: any;
+  sub_type?: any;
   status: string;
-  sub_status: any;
+  sub_status?: any;
   is_quotation: number;
   payment_status: string;
   contact_id: number;
   invoice_no: string;
-  ref_no: any;
+  ref_no?: any;
   tax_amount: string;
   discount_type: string;
   discount_amount: string;
-  notes: any;
+  notes?: any;
   total_price: string;
-  document: any;
+  document?: any;
   exchange_rate: string;
   created_by: number;
   created_at: string;
-  updated_at: any;
+  updated_at?: any;
   total_taxes: string;
   taxes: string;
   currency_id: number;
@@ -240,7 +240,7 @@ export interface IPayment {
   amount: string;
   created_by: number;
   created_at: string;
-  notes: any;
+  notes?: any;
 }
 
 export interface IStock {
@@ -254,14 +254,14 @@ export interface IStock {
   sold_at: string;
   created_by: number;
   created_at: string;
-  updated_at: any;
+  updated_at?: any;
 }
 
 export interface IExpenseCategory {
   id: number;
   name: string;
   location_id: number;
-  active: any;
+  active?: any;
 }
 
 export interface IExpense {

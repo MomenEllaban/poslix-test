@@ -71,14 +71,14 @@ export default function SalesReport(props: any) {
       flex: 1,
       disableColumnMenu: true,
       renderCell: ({ row }: Partial<GridRowParams>) =>
-        Number(row.tax_amount).toFixed(locationSettings.currency_decimal_places),
+        Number(row.tax_amount).toFixed(locationSettings?.currency_decimal_places),
     },
     {
       field: 'total_price',
       headerName: 'Total',
       maxWidth: 72,
       renderCell: ({ row }: Partial<GridRowParams>) =>
-        Number(row.total_price).toFixed(locationSettings.currency_decimal_places),
+        Number(row.total_price).toFixed(locationSettings?.currency_decimal_places),
     },
     { field: 'notes', headerName: 'Note', flex: 1, disableColumnMenu: true },
   ];
@@ -154,7 +154,7 @@ export default function SalesReport(props: any) {
                   {invoicDetails.txtTax} {invoicDetails.isMultiLang && invoicDetails.txtTax2}
                 </td>
                 <td></td>
-                {/* <td>{(selectRow.total_price).toFixed(locationSettings.currency_decimal_places)}</td> */}
+                {/* <td>{(selectRow.total_price).toFixed(locationSettings?.currency_decimal_places)}</td> */}
               </tr>
               <tr className="net-amount">
                 <td></td>
@@ -163,7 +163,7 @@ export default function SalesReport(props: any) {
                 </td>
                 <td></td>
                 <td className="txt-bold">
-                  {Number(selectRow.total_price).toFixed(locationSettings.currency_decimal_places)}
+                  {Number(selectRow.total_price).toFixed(locationSettings?.currency_decimal_places)}
                 </td>
               </tr>
             </thead>
@@ -406,16 +406,16 @@ export default function SalesReport(props: any) {
         <div className="deatils_box">
           <div>
             <span>SubTotal: </span>
-            {Number(details.subTotal).toFixed(3)} {locationSettings.currency_code}
+            {Number(details.subTotal).toFixed(3)} {locationSettings?.currency_code}
           </div>
           <div>
             <span>Tax: </span>
-            {Number(details.tax).toFixed(3)} {locationSettings.currency_code}
+            {Number(details.tax).toFixed(3)} {locationSettings?.currency_code}
           </div>
           <div>
             <span>Total: </span>
             {Number(Number(details.subTotal) + Number(details.tax)).toFixed(3)}{' '}
-            {locationSettings.currency_code}
+            {locationSettings?.currency_code}
           </div>
         </div>
 
@@ -452,7 +452,7 @@ export default function SalesReport(props: any) {
                   }}>
                   <p style={{ margin: 0 }}>
                     <span style={{ fontWeight: 'bold' }}>Page Total: </span>
-                    {total.toFixed(3)} {locationSettings.currency_code}
+                    {total.toFixed(3)} {locationSettings?.currency_code}
                   </p>
                   <div
                     style={{

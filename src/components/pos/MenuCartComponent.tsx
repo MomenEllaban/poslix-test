@@ -191,7 +191,7 @@ export const MenuOrderComponent = (props: any) => {
             <td>{rs.qty}</td>
             <td>{_it.name}</td>
             <th></th>
-            <td>{Number(rs.price).toFixed(locationSettings.currency_decimal_places)}</td>
+            <td>{Number(rs.price).toFixed(locationSettings?.currency_decimal_places)}</td>
           </tr>
         );
       });
@@ -268,7 +268,7 @@ export const MenuOrderComponent = (props: any) => {
                 </td>
                 <td></td>
                 <td>
-                  {(totalAmount - subTotal).toFixed(locationSettings.currency_decimal_places)}
+                  {(totalAmount - subTotal).toFixed(locationSettings?.currency_decimal_places)}
                 </td>
               </tr>
               <tr className="net-amount">
@@ -278,7 +278,7 @@ export const MenuOrderComponent = (props: any) => {
                 </td>
                 <td></td>
                 <td className="txt-bold">
-                  {Number(totalAmount).toFixed(locationSettings.currency_decimal_places)}
+                  {Number(totalAmount).toFixed(locationSettings?.currency_decimal_places)}
                 </td>
               </tr>
             </thead>
@@ -1307,7 +1307,7 @@ export const MenuOrderComponent = (props: any) => {
                       <td className="text-end">
                         <span>
                           {Number(quantity[i].lineTotalPrice).toFixed(
-                            locationSettings.currency_decimal_places
+                            locationSettings?.currency_decimal_places
                           )}
                         </span>
                       </td>

@@ -56,7 +56,7 @@ const Product: NextPage = (props: any) => {
       headerName: 'amount',
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) =>
-        Number(row.amount).toFixed(locationSettings.currency_decimal_places),
+        Number(row.amount).toFixed(locationSettings?.currency_decimal_places),
     },
     {
       field: 'date',

@@ -1,3 +1,5 @@
+import { ITaxGroup } from './pos.types';
+
 export class CommonModels {}
 
 export interface IproductInfo {
@@ -78,15 +80,23 @@ export type IpurchaseProductItem = {
 //isCost 0 => cost 1 => withExpends  2=> withTax 3=>sumAll
 export interface ITax {
   id: number;
+  location_id: number;
   name: string;
   amount: number;
-  amountType: string;
-  taxType: string;
-  isPrimary: boolean;
-  parentId?: number;
-  isNew?: number;
-  isChoosed?: boolean;
-  isSplit?: boolean;
+  is_tax_group: number;
+  for_tax_group: number;
+  created_by: number;
+  woocommerce_tax_rate_id?: any;
+  deleted_at?: any;
+  created_at?: any;
+  updated_at?: any;
+  for_tax_inclusive: number;
+  for_tax_exclusive: number;
+  is_inc_or_exc: string;
+  Etype: 'percentage' | 'fixed';
+  is_primary: boolean | 0 | 1;
+  Etax_type: string;
+  tax_group: ITaxGroup[];
 }
 export interface IreadyGroupTax {
   primary: number;
@@ -131,7 +141,7 @@ export interface IOrderMiniDetails {
   notes?: string;
 }
 
-export type DiscountType = "fixed" | "percent";
+export type DiscountType = 'fixed' | 'percent';
 export type Discount = {
   type: DiscountType;
   amount: number;
@@ -149,7 +159,7 @@ export interface IOrdersCalcs {
   totalDiscount?: number;
   setDiscount?: (discount: Discount) => void;
   __WithDiscountFeature__total?: number;
-  lang?: any
+  lang?: any;
 }
 
 export interface IVariation {
@@ -359,23 +369,20 @@ export interface IHoldItems {
   tailoringCutsom?: ITailoringCustom;
 }
 
-
-export interface ITransferItem{
-  id: number,
-  date: string,
-  refNo: number,
-  status: string,
-  loctionFrom: number,
-  loctionTo: number,
+export interface ITransferItem {
+  id: number;
+  date: string;
+  refNo: number;
+  status: string;
+  loctionFrom: number;
+  loctionTo: number;
   product: {
-    id: number,
-    name: string,
-    qty: number,
-    sell: number,
-    totalPrice: number
-  },
-  charges: number,
-  notes: string
+    id: number;
+    name: string;
+    qty: number;
+    sell: number;
+    totalPrice: number;
+  };
+  charges: number;
+  notes: string;
 }
-
-

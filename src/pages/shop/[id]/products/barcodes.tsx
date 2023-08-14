@@ -247,8 +247,8 @@ const Product: NextPage = (props: any) => {
                 )}
                 {options.price && (
                   <h6 style={{ textAlign: 'center', fontSize: '20px' }}>
-                    {Number(sp.price).toFixed(locationSettings.currency_decimal_places)}{' '}
-                    {locationSettings.currency_code}
+                    {Number(sp.price).toFixed(locationSettings?.currency_decimal_places)}{' '}
+                    {locationSettings?.currency_code}
                   </h6>
                 )}
                 {options.category && (

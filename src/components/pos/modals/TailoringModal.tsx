@@ -400,7 +400,7 @@ const TailoringModal = (props: any) => {
                     <span className="text-primary">
                       {lineTotal < 0
                         ? 'select first'
-                        : lineTotal + ' {locationSettings.currency_code}'}{' '}
+                        : lineTotal + ' {locationSettings?.currency_code}'}{' '}
                     </span>
                   </h5>
                 )}

@@ -68,7 +68,7 @@ const SalesPaymentModal = (props: any) => {
     setHasError({ st: false, msg: '' });
     let _mustPay = +Math.abs(
       __WithDiscountFeature__total + details?.totalAmount - details?.subTotal
-    ).toFixed(locationSettings.currency_decimal_places);
+    ).toFixed(locationSettings?.currency_decimal_places);
     setMustPay(_mustPay);
     setPaymentRows([{ amount: _mustPay, method: 'cash', notes: '' }]);
 
@@ -113,7 +113,7 @@ const SalesPaymentModal = (props: any) => {
     let _sum = 0;
     localStorage.setItem('payment', JSON.stringify(_rows));
     _rows.map((_i: IpaymentRow) => (_sum += Number(_i.amount!)));
-    setTotalPaid(+Number(_sum).toFixed(locationSettings.currency_decimal_places));
+    setTotalPaid(+Number(_sum).toFixed(locationSettings?.currency_decimal_places));
   }
   const style = { minWidth: '500px' };
   const paymentRowChange = (index: any, evnt: any): void => {

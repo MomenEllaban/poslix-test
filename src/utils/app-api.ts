@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getSession } from 'next-auth/react';
 import authService from 'src/services/auth.service';
 
 const api = axios.create({
@@ -26,10 +27,10 @@ const processQueue = (error, token = null) => {
 // TO be refactored
 api.interceptors.request.use(
   async (config) => {
-    const token = await authService.getToken();
-
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    const session = await getSession();
+    const _token = session?.user?.token;
+    if (_token) {
+      config.headers.Authorization = `Bearer ${_token}`;
     }
 
     return config;

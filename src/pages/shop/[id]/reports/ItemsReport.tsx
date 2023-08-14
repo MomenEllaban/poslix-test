@@ -218,7 +218,7 @@ export default function ItemsReport(props: any) {
                   {invoicDetails.txtTax} {invoicDetails.isMultiLang && invoicDetails.txtTax2}
                 </td>
                 <td></td>
-                {/* <td>{(selectRow.total_price).toFixed(locationSettings.currency_decimal_places)}</td> */}
+                {/* <td>{(selectRow.total_price).toFixed(locationSettings?.currency_decimal_places)}</td> */}
               </tr>
               <tr className="net-amount">
                 <td></td>
@@ -227,7 +227,7 @@ export default function ItemsReport(props: any) {
                 </td>
                 <td></td>
                 <td className="txt-bold">
-                  {Number(selectRow.total_price).toFixed(locationSettings.currency_decimal_places)}
+                  {Number(selectRow.total_price).toFixed(locationSettings?.currency_decimal_places)}
                 </td>
               </tr>
             </thead>
@@ -447,22 +447,22 @@ export default function ItemsReport(props: any) {
           <div>
             <span>SubTotal: </span>
             {Number(details.subTotal).toFixed(3)}{" "}
-            {locationSettings.currency_code}
+            {locationSettings?.currency_code}
           </div>
           <div>
             <span>Tax: </span>
-            {Number(details.tax).toFixed(3)} {locationSettings.currency_code}
+            {Number(details.tax).toFixed(3)} {locationSettings?.currency_code}
           </div>
           <div>
             <span>Total: </span>
             {Number(Number(details.subTotal) + Number(details.tax)).toFixed(
               3
             )}{" "}
-            {locationSettings.currency_code}
+            {locationSettings?.currency_code}
           </div>
           <div>
             <span>Cost: </span>
-            {Number(details.cost).toFixed(3)} {locationSettings.currency_code}
+            {Number(details.cost).toFixed(3)} {locationSettings?.currency_code}
           </div>
         </div> */}
         <DataGrid

@@ -99,27 +99,29 @@ interface ICreateExpensePayload extends Partial<IExpense> {
 interface IUpdateExpensePayload extends Partial<IExpense> {}
 
 const posSetvice = {
-  getCategories: async (locId: string) =>
+  getCategories: async (location_id: string) =>
     api
-      .get<any, TServiceResponse<ICategory[]>, any>(`/categories/${locId}`)
+      .get<any, TServiceResponse<ICategory[]>, any>(`/categories/${location_id}`)
       .then((data) => data.data),
   getCategory: async (id: string) =>
     api
       .get<any, TServiceResponse<ICategory>, any>(`/categories/${id}/show`)
       .then((data) => data.data),
-  createCategory: async (locId: string, payload: ICreateCategoryPayload) =>
-    api.post(`/categories/${locId}`, payload).then((data) => data.data),
+  createCategory: async (location_id: string, payload: ICreateCategoryPayload) =>
+    api.post(`/categories/${location_id}`, payload).then((data) => data.data),
   updateCategory: async (id: string, payload: IUpdateCategoryPayload) =>
     api.put(`/categories/${id}`, payload).then((data) => data.data),
   deleteCategory: async (id: string) => api.delete(`/categories/${id}`).then((data) => data.data),
 
-  getProducts: async (locId: string) =>
-    api.get<any, TServiceResponse<IProduct[]>, any>(`/products/${locId}`).then((data) => data.data),
+  getProducts: async (location_id: string) =>
+    api
+      .get<any, TServiceResponse<IProduct[]>, any>(`/products/${location_id}`)
+      .then((data) => data.data),
   getProduct: async (id: string) =>
     api.get<any, TServiceResponse<IProduct>, any>(`/products/${id}/show`).then((data) => data.data),
-  getPackageTypes: async (locId: string) =>
+  getPackageTypes: async (location_id: string) =>
     api
-      .get<any, TServiceResponse<IGetPackageType>, any>(`/package-type/${locId}`)
+      .get<any, TServiceResponse<IGetPackageType>, any>(`/package-type/${location_id}`)
       .then((data) => data.data),
   createProduct: async (payload: ICreateProductPayload) =>
     api.post('/products', payload).then((data) => data.data),
@@ -132,22 +134,23 @@ const posSetvice = {
     api
       .get<any, TServiceResponse<IProduct>, any>(`/products/${id}/transfer`)
       .then((data) => data.data),
-  import: async (locId: string) => api.post(`/products/${locId}/import`).then((data) => data.data),
-  // search: async (locId: string, payload: ISearch) =>
+  import: async (location_id: string) =>
+    api.post(`/products/${location_id}/import`).then((data) => data.data),
+  // search: async (location_id: string, payload: ISearch) =>
   //   api
-  //     .get<any, TServiceResponse<IProduct>, any>(`/products/search/${locId}`, payload)
+  //     .get<any, TServiceResponse<IProduct>, any>(`/products/search/${location_id}`, payload)
   //     .then((data) => data.data),
 
-  getCustomers: async (locId: string) =>
+  getCustomers: async (location_id: string) =>
     api
-      .get<any, TServiceResponse<ICustomer[]>, any>(`/customers/${locId}`)
+      .get<any, TServiceResponse<ICustomer[]>, any>(`/customers/${location_id}`)
       .then((data) => data.data),
   getCustomer: async (id: string) =>
     api
       .get<any, TServiceResponse<ICustomer>, any>(`/customers/${id}/show`)
       .then((data) => data.data),
-  createCustomer: async (locId: string, payload: ICreateCustomerPayload) =>
-    api.post(`/customers/${locId}`, payload).then((data) => data.data),
+  createCustomer: async (location_id: string, payload: ICreateCustomerPayload) =>
+    api.post(`/customers/${location_id}`, payload).then((data) => data.data),
   updateCustomer: async (id: string, payload: IUpdateCustomerPayload) =>
     api.put(`/customers/${id}`, payload).then((data) => data.data),
   deleteCustomer: async (id: string) => api.delete(`/customers/${id}`).then((data) => data.data),
@@ -155,24 +158,27 @@ const posSetvice = {
   getUnits: async () =>
     api.get<any, TServiceResponse<IUnits>, any>(`/units`).then((data) => data.data),
 
-  getBrands: async (locId: string) =>
-    api.get<any, TServiceResponse<IBrand[]>, any>(`/brands/${locId}`).then((data) => data.data),
+  getBrands: async (location_id: string) =>
+    api
+      .get<any, TServiceResponse<IBrand[]>, any>(`/brands/${location_id}`)
+      .then((data) => data.data),
   getBrand: async (id: string) =>
     api.get<any, TServiceResponse<IBrand>, any>(`/brands/${id}/show`).then((data) => data.data),
-  createBrand: async (locId: string, payload: ICreateBrandPayload) =>
-    api.post(`/brands/${locId}`, payload).then((data) => data.data),
+  createBrand: async (location_id: string, payload: ICreateBrandPayload) =>
+    api.post(`/brands/${location_id}`, payload).then((data) => data.data),
   updateBrand: async (id: string, payload: IUpdateBrandPayload) =>
     api.put(`/brands/${id}`, payload).then((data) => data.data),
   deleteBrand: async (id: string) => api.delete(`/brands/${id}`).then((data) => data.data),
 
-  getTaxes: async (locId: string) =>
-    api.get<any, TServiceResponse<ITaxes>, any>(`/taxes/${locId}`).then((data) => data.data),
+  /*******************/
+  getTaxes: async (location_id: string) =>
+    api.get<any, TServiceResponse<ITaxes>, any>(`/taxes/${location_id}`).then((data) => data.data),
   getTax: async (id: string) =>
     api
       .get<any, TServiceResponse<{ tax: ITax }>, any>(`/taxes/${id}/show`)
       .then((data) => data.data),
-  createTax: async (locId: string, payload: ICreateTaxPayload) =>
-    api.post(`/taxes/${locId}`, payload).then((data) => data.data),
+  createTax: async (location_id: string, payload: ICreateTaxPayload) =>
+    api.post(`/taxes/${location_id}`, payload).then((data) => data.data),
   updateTax: async (id: string, payload: IUpdateTaxPayload) =>
     api.put(`/taxes/${id}`, payload).then((data) => data.data),
   deleteTax: async (id: string) => api.delete(`/taxes/${id}`).then((data) => data.data),
@@ -180,72 +186,74 @@ const posSetvice = {
   getCurrencies: async () =>
     api.get<any, TServiceResponse<ICurrency[]>, any>(`/currencies`).then((data) => data.data),
 
-  getPurchases: async (locId: string) =>
+  getPurchases: async (location_id: string) =>
     api
-      .get<any, TServiceResponse<IPurchase[]>, any>(`/purchase/${locId}`)
+      .get<any, TServiceResponse<IPurchase[]>, any>(`/purchase/${location_id}`)
       .then((data) => data.data),
   getPurchase: async (id: string) =>
     api
       .get<any, TServiceResponse<IPurchase>, any>(`/purchase/${id}/show`)
       .then((data) => data.data),
-  createPurchase: async (locId: string, payload: ICreatePurchasePayload) =>
-    api.post(`/purchase/${locId}`, payload).then((data) => data.data),
+  createPurchase: async (location_id: string, payload: ICreatePurchasePayload) =>
+    api.post(`/purchase/${location_id}`, payload).then((data) => data.data),
   updatePurchase: async (id: string, payload: IUpdatePurchasePayload) =>
     api.put(`/purchase/${id}`, payload).then((data) => data.data),
   deletePurchase: async (id: string) => api.delete(`/purchase/${id}`).then((data) => data.data),
   updatePayment: async (id: string, payload: IUpdatePaymentPayload) =>
     api.put(`/purchase/${id}/payment`, payload).then((data) => data.data),
 
-  closeRegisteration: async (locId: string, payload: { hand_cash?: number; note: string }) =>
-    api.post(`/registeration/${locId}/close`).then((data) => data.data),
+  closeRegisteration: async (location_id: string, payload: { hand_cash?: number; note: string }) =>
+    api.post(`/registeration/${location_id}/close`).then((data) => data.data),
   openRegisteration: async (
-    locId: string,
+    location_id: string,
     payload?: {
       hand_cash?: number;
     }
-  ) => api.post(`/registeration/${locId}/open`).then((data) => data.data),
-  getCloseRegisteration: async (locId: string) =>
+  ) => api.post(`/registeration/${location_id}/open`).then((data) => data.data),
+  getCloseRegisteration: async (location_id: string) =>
     api
-      .get<any, TServiceResponse<IGetCloseRegisteration>, any>(`/registeration/${locId}/close`)
+      .get<any, TServiceResponse<IGetCloseRegisteration>, any>(
+        `/registeration/${location_id}/close`
+      )
       .then((data) => data.data),
 
-  getExpenseCategories: async (locId: string) =>
+  getExpenseCategories: async (location_id: string) =>
     api
-      .get<any, TServiceResponse<IExpenseCategory[]>, any>(`/expenses-categories/${locId}`)
+      .get<any, TServiceResponse<IExpenseCategory[]>, any>(`/expenses-categories/${location_id}`)
       .then((data) => data.data),
   getExpenseCategory: async (id: string) =>
     api
       .get<any, TServiceResponse<IExpenseCategory>, any>(`/expenses-categories/${id}/show`)
       .then((data) => data.data),
-  createExpenseCategory: async (locId: string, payload: { name: string }) =>
-    api.post(`/expenses-categories/${locId}`, payload).then((data) => data.data),
+  createExpenseCategory: async (location_id: string, payload: { name: string }) =>
+    api.post(`/expenses-categories/${location_id}`, payload).then((data) => data.data),
   updateExpenseCategory: async (id: string, payload: { name: string }) =>
     api.put(`/expenses-categories/${id}`, payload).then((data) => data.data),
   deleteExpenseCategory: async (id: string) =>
     api.delete(`/expenses-categories/${id}`).then((data) => data.data),
 
-  getExpenses: async (locId: string) =>
-    api.get<any, TServiceResponse<IExpense[]>, any>(`/expenses/${locId}`).then((data) => data.data),
+  getExpenses: async (location_id: string) =>
+    api
+      .get<any, TServiceResponse<IExpense[]>, any>(`/expenses/${location_id}`)
+      .then((data) => data.data),
   getExpense: async (id: string) =>
     api.get<any, TServiceResponse<IExpense>, any>(`/expenses/${id}/show`).then((data) => data.data),
-  createExpense: async (locId: string, payload: ICreateExpensePayload) =>
-    api.post(`/expenses/${locId}`, payload).then((data) => data.data),
+  createExpense: async (location_id: string, payload: ICreateExpensePayload) =>
+    api.post(`/expenses/${location_id}`, payload).then((data) => data.data),
   updateExpense: async (id: string, payload: IUpdateExpensePayload) =>
     api.put(`/expenses/${id}`, payload).then((data) => data.data),
   deleteExpense: async (id: string) => api.delete(`/expenses/${id}`).then((data) => data.data),
 };
 
-export const useCategories = (locId: string, config?: SWRConfiguration) => {
+export const useCategoriesList = (location_id: string, config?: SWRConfiguration) => {
   const { data, error, isLoading, mutate } = useSWR(
-    config?.suspense ? null : `/categories/${locId}`,
-    posSetvice.getCategories,
-    {
-      ...config,
-    }
+    config?.suspense ? null : `/categories/${location_id}`,
+    () => posSetvice.getCategories(location_id),
+    { ...config }
   );
 
   return {
-    categories: data?.result ?? [],
+    categoriesList: data?.result ?? [],
     isLoading,
     error,
     refetch: mutate,
@@ -260,7 +268,6 @@ export const useGetCategory = (id: string, config?: SWRConfiguration) => {
       ...config,
     }
   );
-
   return {
     category: data?.result ?? [],
     isLoading,
@@ -269,13 +276,11 @@ export const useGetCategory = (id: string, config?: SWRConfiguration) => {
   };
 };
 
-export const useProducts = (locId: string, config?: SWRConfiguration) => {
+export const useProductsList = (location_id: string, config?: SWRConfiguration) => {
   const { data, error, isLoading, mutate } = useSWR(
-    config?.suspense ? null : `/products/${locId}`,
-    posSetvice.getProducts,
-    {
-      ...config,
-    }
+    config?.suspense ? null : `/products/${location_id}`,
+    () => posSetvice.getProducts(location_id),
+    { ...config }
   );
   return {
     products: data?.result ?? [],
@@ -301,9 +306,9 @@ export const useGetProduct = (id: string, config?: SWRConfiguration) => {
   };
 };
 
-export const usePackageTypes = (locId: string, config?: SWRConfiguration) => {
+export const usePackageTypes = (location_id: string, config?: SWRConfiguration) => {
   const { data, error, isLoading, mutate } = useSWR(
-    config?.suspense ? null : `/package-type/${locId}`,
+    config?.suspense ? null : `/package-type/${location_id}`,
     posSetvice.getPackageTypes,
     {
       ...config,
@@ -333,10 +338,10 @@ export const useTransfer = (id: string, config?: SWRConfiguration) => {
   };
 };
 
-// export const useSearch = (locId: string, config?: SWRConfiguration) => {
+// export const useSearch = (location_id: string, config?: SWRConfiguration) => {
 //   const { data, error, isLoading, mutate } = useSWR(
-//     config?.suspense ? null : `/products/search/${locId}`,
-//     () => posSetvice.search(locId),
+//     config?.suspense ? null : `/products/search/${location_id}`,
+//     () => posSetvice.search(location_id),
 //     {
 //       ...config,
 //     }
@@ -349,16 +354,14 @@ export const useTransfer = (id: string, config?: SWRConfiguration) => {
 //   };
 // };
 
-export const useCustomers = (locId: string, config?: SWRConfiguration) => {
+export const useCustomersList = (location_id: string, config?: SWRConfiguration) => {
   const { data, error, isLoading, mutate } = useSWR(
-    config?.suspense ? null : `/customers/${locId}`,
-    posSetvice.getCustomers,
-    {
-      ...config,
-    }
+    config?.suspense ? null : `/customers/${location_id}`,
+    () => posSetvice.getCustomers(location_id),
+    { ...config }
   );
   return {
-    customers: data?.result ?? [],
+    customersList: data?.result ?? [],
     isLoading,
     error,
     refetch: mutate,
@@ -397,16 +400,14 @@ export const useUnits = (config?: SWRConfiguration) => {
   };
 };
 
-export const useBrands = (locId: string, config?: SWRConfiguration) => {
+export const useBrandsList = (location_id: string, config?: SWRConfiguration) => {
   const { data, error, isLoading, mutate } = useSWR(
-    config?.suspense ? null : `/brands/${locId}`,
-    () => posSetvice.getBrands(locId),
-    {
-      ...config,
-    }
+    config?.suspense ? null : `/brands/${location_id}`,
+    () => posSetvice.getBrands(location_id),
+    { ...config }
   );
   return {
-    brands: data?.result ?? [],
+    brandsList: data?.result ?? [],
     isLoading,
     error,
     refetch: mutate,
@@ -429,16 +430,15 @@ export const useGetBrand = (id: string, config?: SWRConfiguration) => {
   };
 };
 
-export const useTaxes = (locId: string, config?: SWRConfiguration) => {
+export const useTaxesList = (location_id: string, config?: SWRConfiguration) => {
   const { data, error, isLoading, mutate } = useSWR(
-    config?.suspense ? null : `/taxes/${locId}`,
-    () => posSetvice.getTaxes(locId),
-    {
-      ...config,
-    }
+    config?.suspense ? null : `/taxes/${location_id}`,
+    () => posSetvice.getTaxes(location_id),
+    { ...config }
   );
+
   return {
-    taxes: data?.result ?? [],
+    taxesList: data?.result ?? [],
     isLoading,
     error,
     refetch: mutate,
@@ -477,10 +477,10 @@ export const useCurrencies = (config?: SWRConfiguration) => {
   };
 };
 
-export const usePurchases = (locId: string, config?: SWRConfiguration) => {
+export const usePurchases = (location_id: string, config?: SWRConfiguration) => {
   const { data, error, isLoading, mutate } = useSWR(
-    config?.suspense ? null : `/purchase/${locId}`,
-    () => posSetvice.getPurchases(locId),
+    config?.suspense ? null : `/purchase/${location_id}`,
+    () => posSetvice.getPurchases(location_id),
     {
       ...config,
     }
@@ -509,10 +509,10 @@ export const useGetPurchase = (id: string, config?: SWRConfiguration) => {
   };
 };
 
-export const useGetCloseRegisteration = (locId: string, config?: SWRConfiguration) => {
+export const useGetCloseRegisteration = (location_id: string, config?: SWRConfiguration) => {
   const { data, error, isLoading, mutate } = useSWR(
-    config?.suspense ? null : `/registeration/${locId}/close`,
-    () => posSetvice.getCloseRegisteration(locId),
+    config?.suspense ? null : `/registeration/${location_id}/close`,
+    () => posSetvice.getCloseRegisteration(location_id),
     {
       ...config,
     }
@@ -525,10 +525,10 @@ export const useGetCloseRegisteration = (locId: string, config?: SWRConfiguratio
   };
 };
 
-export const useExpenseCategories = (locId: string, config?: SWRConfiguration) => {
+export const useExpenseCategories = (location_id: string, config?: SWRConfiguration) => {
   const { data, error, isLoading, mutate } = useSWR(
-    `/expenses-categories/${locId}`,
-    () => posSetvice.getExpenseCategories(locId),
+    `/expenses-categories/${location_id}`,
+    () => posSetvice.getExpenseCategories(location_id),
     {
       ...config,
     }
@@ -557,10 +557,10 @@ export const useGetExpenseCategory = (id: string, config?: SWRConfiguration) => 
   };
 };
 
-export const useExpenses = (locId: string, config?: SWRConfiguration) => {
+export const useExpenses = (location_id: string, config?: SWRConfiguration) => {
   const { data, error, isLoading, mutate } = useSWR(
-    `/expenses/${locId}`,
-    () => posSetvice.getExpenses(locId),
+    `/expenses/${location_id}`,
+    () => posSetvice.getExpenses(location_id),
     {
       ...config,
     }

@@ -5,7 +5,6 @@ import Router from 'next/router';
 import { useEffect, useState } from 'react';
 import CloseRegister from '../modals/CloseRegister';
 import styles from './NavMenu.module.css';
-import classNames from 'classnames';
 
 const NavMenu: any = (props: any) => {
   const { shopId, lang, setLang } = props;

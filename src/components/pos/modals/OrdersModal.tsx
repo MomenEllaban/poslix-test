@@ -229,10 +229,10 @@ const OrdersModal = (props: any) => {
                                       <td>({ord.mobile})</td>
                                       <td>
                                         {Number(ord.total_price).toFixed(
-                                          locationSettings.currency_decimal_places
+                                          locationSettings?.currency_decimal_places
                                         )}{' '}
                                         <span style={{ fontSize: '10px' }}>
-                                          {locationSettings.currency_code}
+                                          {locationSettings?.currency_code}
                                         </span>
                                       </td>
                                       <td>
@@ -284,7 +284,7 @@ const OrdersModal = (props: any) => {
                                       <td>
                                         $
                                         {Number(ord.price).toFixed(
-                                          locationSettings.currency_decimal_places
+                                          locationSettings?.currency_decimal_places
                                         )}
                                       </td>
                                       <td>{Number(ord.qty).toFixed(0)}</td>
