@@ -1,25 +1,9 @@
-import type { NextPage } from 'next';
-import Select from 'react-select';
-import { useRouter } from 'next/router';
-import Spinner from 'react-bootstrap/Spinner';
-import { AdminLayout } from '@layout';
+import { faInfoCircle, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import NotifiModal from '../../../../components/utils/NotifiModal';
-import { ButtonGroup, Card } from 'react-bootstrap';
-import React, { useContext, useState, useEffect, useRef } from 'react';
-import { apiDeleteCtr, apiFetchCtr, apiInsertCtr, apiUpdateCtr } from '../../../../libs/dbUtils';
-import storage from '../../../../../firebaseConfig';
-import { ref, deleteObject, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import * as cookie from 'cookie';
-import {
-  getRealWord,
-  hasPermissions,
-  keyValueRules,
-  verifayTokens,
-} from 'src/pages/api/checkUtils';
+import { AdminLayout } from '@layout';
 import { ITokenVerfy } from '@models/common-model';
-import Link from 'next/link';
-import Switch from '@mui/material/Switch';
+import { productTypeData } from '@models/data';
+import DeleteIcon from '@mui/icons-material/Delete';
 import {
   Button,
   Dialog,
@@ -27,19 +11,35 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  styled,
   Typography,
+  styled,
 } from '@mui/material';
+import Switch from '@mui/material/Switch';
 import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
-import { faInfoCircle, faTrash } from '@fortawesome/free-solid-svg-icons';
-import Table from 'react-bootstrap/Table';
 import { DataGrid, GridColDef, GridRenderCellParams, GridRowParams } from '@mui/x-data-grid';
+import * as cookie from 'cookie';
+import { deleteObject, getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
+import type { NextPage } from 'next';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+import React, { useContext, useEffect, useRef, useState } from 'react';
+import { ButtonGroup, Card } from 'react-bootstrap';
+import Spinner from 'react-bootstrap/Spinner';
+import Table from 'react-bootstrap/Table';
+import Select from 'react-select';
 import { ToastContainer } from 'react-toastify';
-import { Toastify } from 'src/libs/allToasts';
-import DeleteIcon from '@mui/icons-material/Delete';
 import { UserContext } from 'src/context/UserContext';
+import { Toastify } from 'src/libs/allToasts';
 import { generateUniqueString, handleNumberKeyPress } from 'src/libs/toolsUtils';
-import { productTypeData } from '@models/data';
+import {
+  getRealWord,
+  hasPermissions,
+  keyValueRules,
+  verifayTokens,
+} from 'src/pages/api/checkUtils';
+import storage from '../../../../../firebaseConfig';
+import NotifiModal from '../../../../components/utils/NotifiModal';
+import { apiDeleteCtr, apiFetchCtr, apiInsertCtr, apiUpdateCtr } from '../../../../libs/dbUtils';
 
 const Product: NextPage = (probs: any) => {
   const { shopId, editId, iType } = probs;
@@ -290,7 +290,6 @@ const Product: NextPage = (probs: any) => {
 
   async function handleUpload() {
     if (prevUrlRef.current.length < 2) {
-      console.log('select first');
     } else {
       const storageRef = ref(storage, `/files/images/${generateUniqueString(12)}${shopId}`);
       const uploadTask = uploadBytesResumable(storageRef, img);
@@ -370,8 +369,6 @@ const Product: NextPage = (probs: any) => {
 
   const imageChange = (e: any) => {
     if (e.target.files && e.target.files.length > 0) {
-      console.log('inja image', e.target.files);
-
       setImg(e.target.files[0]);
       setPreviewUrl(URL.createObjectURL(e.target.files[0]));
     } else console.log('na image', e.target.files);
@@ -524,7 +521,6 @@ const Product: NextPage = (probs: any) => {
           setFormObj({ ...formObj, img: '' });
         })
         .catch((error: any) => {
-          console.log(error);
           setFormObj({ ...formObj, img: '' });
         });
     }

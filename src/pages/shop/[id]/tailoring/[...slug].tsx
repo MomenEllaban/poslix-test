@@ -91,7 +91,6 @@ const AddTailoring: NextPage = (props: any) => {
       id,
     });
     if (success) {
-      console.log('dd ', data);
       setExtras(data.extras);
       if (id != '0') {
         setIsEdit(true);
@@ -110,11 +109,6 @@ const AddTailoring: NextPage = (props: any) => {
           ],
         });
         const extraIds = ',' + data.tailoring[0].extras;
-        console.log('extraIds', extraIds);
-        console.log(
-          'd',
-          data.extras.filter((ex: any) => extraIds.includes(ex.value + ','))
-        );
 
         setSelectedExtras(data.extras.filter((ex: any) => extraIds.includes(ex.value + ',')));
       }
@@ -217,199 +211,199 @@ const AddTailoring: NextPage = (props: any) => {
   var errors = [];
 
   return (
-    <>
-      <AdminLayout shopId={shopId}>
-        <ToastContainer />
-        <AlertDialog
-          alertShow={show}
-          alertFun={handleDelete}
-          shopId={shopId}
-          id={selectId}
-          subType="deleteSizeItem"
-          type="tailoring"
-          products={formObj.sizes}>
-          Are you Sure You Want Delete This Item ?
-        </AlertDialog>
-        <div className="row">
-          <div className="mb-3">
-            <Link className="btn btn-primary p-3" href={'/shop/' + shopId + '/tailoring'}>
-              Back To List
-            </Link>
-          </div>
+    <AdminLayout shopId={shopId}>
+      <ToastContainer />
+      <AlertDialog
+        alertShow={show}
+        alertFun={handleDelete}
+        shopId={shopId}
+        id={selectId}
+        subType="deleteSizeItem"
+        type="tailoring"
+        products={formObj.sizes}>
+        Are you Sure You Want Delete This Item ?
+      </AlertDialog>
+      <div className="row">
+        <div className="mb-3">
+          <Link className="btn btn-primary p-3" href={'/shop/' + shopId + '/tailoring'}>
+            Back To List
+          </Link>
         </div>
-        <div className="row">
-          <div className="col-md-12">
-            <Card>
-              <Card.Header className="p-3 bg-white">
-                <h5>Add New Tailoring Type</h5>
-              </Card.Header>
-              <Card.Body className="form-style">
-                <div className="form-group2">
-                  <label>
-                    Type Name: <span className="text-danger">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Type Name"
-                    value={formObj.name}
-                    onChange={(e) => {
-                      setFormObj({ ...formObj, name: e.target.value });
-                    }}
-                  />
-                  {errorForm.name && <p className="p-1 h6 text-danger ">Enter Name</p>}
-                </div>
-                <div className="form-group2">
-                  <label>
-                    multiple: <span className="text-danger">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    placeholder="multiple"
-                    value={formObj.multiple}
-                    onChange={(e) => {
-                      setFormObj({ ...formObj, multiple: +e.target.value });
-                    }}
-                  />
-                  {errorForm.multiple && <p className="p-1 h6 text-danger ">Enter multiple</p>}
-                </div>
-              </Card.Body>
-            </Card>
-            {formObj.name.length > 0 && (
-              <Card className="mt-3" style={{ borderRadius: '10px' }}>
-                <Card.Header className="p-3 bg-white">
-                  <h5>Add Sizes For {formObj.name}</h5>
-                </Card.Header>
-                <Card.Body className="table-responsive text-nowrap">
-                  {errorForm.primary && (
-                    <p className="p-1 h6 text-danger ">One Item Must Be Primary</p>
-                  )}
-                  {!isLoading ? (
-                    <Table className="table table-hover" responsive>
-                      <thead className="thead-dark">
-                        <tr>
-                          <th style={{ width: '6%' }}>#</th>
-                          <th>Name</th>
-                          <th>Multiple</th>
-                          <th>Action</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {formObj.sizes.map((ex: any, i: number) => {
-                          return (
-                            <tr key={i}>
-                              <th scope="row">{i + 1}</th>
-                              <td>
-                                <input
-                                  type="text"
-                                  disabled={!rules.hasInsert}
-                                  name="tax-name"
-                                  className="form-control p-2"
-                                  placeholder="Enter New Tax Name"
-                                  value={ex.name}
-                                  onChange={(e) => {
-                                    handleInputChange(e, i);
-                                  }}
-                                />
-                              </td>
-                              <td>
-                                <Form.Check
-                                  type="switch"
-                                  id="custom-switch"
-                                  disabled={!rules.hasInsert}
-                                  className="custom-switch"
-                                  checked={ex.isPrimary}
-                                  onChange={(e) => {
-                                    handlePrimarySwitchChange(e, i);
-                                  }}
-                                />
-                              </td>
-                              <td>
-                                <ButtonGroup className="mb-2 m-buttons-style">
-                                  {rules.hasDelete && (
-                                    <Button
-                                      onClick={() => {
-                                        handleDeleteMan(i);
-                                      }}>
-                                      <FontAwesomeIcon icon={faTrash} />
-                                    </Button>
-                                  )}
-                                </ButtonGroup>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                      {errorForm.sizes && <p className="p-1 h6 text-danger ">Add size(s) first</p>}
-                    </Table>
-                  ) : (
-                    <div className="d-flex justify-content-around">
-                      <Spinner animation="grow" />
-                    </div>
-                  )}
-                </Card.Body>
-              </Card>
-            )}
-            <Card className="mt-3" style={{ borderRadius: '10px' }}>
-              <Card.Header className="p-3 bg-white">
-                <h5>Extra Items</h5>
-              </Card.Header>
-              <Card.Body>
-                <Select
-                  styles={colourStyles}
-                  isMulti={true}
-                  options={extras}
-                  value={selectedExtras}
-                  onChange={(itm: any) => {
-                    setSelectedExtras(itm);
+      </div>
+      <div className="row">
+        <div className="col-md-12">
+          <Card>
+            <Card.Header className="p-3 bg-white">
+              <h5>Add New Tailoring Type</h5>
+            </Card.Header>
+            <Card.Body className="form-style">
+              <div className="form-group2">
+                <label>
+                  Type Name: <span className="text-danger">*</span>
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Type Name"
+                  value={formObj.name}
+                  onChange={(e) => {
+                    setFormObj({ ...formObj, name: e.target.value });
                   }}
                 />
+                {errorForm.name && <p className="p-1 h6 text-danger ">Enter Name</p>}
+              </div>
+              <div className="form-group2">
+                <label>
+                  multiple: <span className="text-danger">*</span>
+                </label>
+                <input
+                  type="number"
+                  className="form-control"
+                  placeholder="multiple"
+                  value={formObj.multiple}
+                  onChange={(e) => {
+                    setFormObj({ ...formObj, multiple: +e.target.value });
+                  }}
+                />
+                {errorForm.multiple && <p className="p-1 h6 text-danger ">Enter multiple</p>}
+              </div>
+            </Card.Body>
+          </Card>
+          {formObj.name.length > 0 && (
+            <Card className="mt-3" style={{ borderRadius: '10px' }}>
+              <Card.Header className="p-3 bg-white">
+                <h5>Add Sizes For {formObj.name}</h5>
+              </Card.Header>
+              <Card.Body className="table-responsive text-nowrap">
+                {errorForm.primary && (
+                  <p className="p-1 h6 text-danger ">One Item Must Be Primary</p>
+                )}
+                {!isLoading ? (
+                  <Table className="table table-hover" responsive>
+                    <thead className="thead-dark">
+                      <tr>
+                        <th style={{ width: '6%' }}>#</th>
+                        <th>Name</th>
+                        <th>Multiple</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {formObj.sizes.map((ex: any, i: number) => {
+                        return (
+                          <tr key={i}>
+                            <th scope="row">{i + 1}</th>
+                            <td>
+                              <input
+                                type="text"
+                                disabled={!rules.hasInsert}
+                                name="tax-name"
+                                className="form-control p-2"
+                                placeholder="Enter New Tax Name"
+                                value={ex.name}
+                                onChange={(e) => {
+                                  handleInputChange(e, i);
+                                }}
+                              />
+                            </td>
+                            <td>
+                              <Form.Check
+                                type="switch"
+                                id="custom-switch"
+                                disabled={!rules.hasInsert}
+                                className="custom-switch"
+                                checked={ex.isPrimary}
+                                onChange={(e) => {
+                                  handlePrimarySwitchChange(e, i);
+                                }}
+                              />
+                            </td>
+                            <td>
+                              <ButtonGroup className="mb-2 m-buttons-style">
+                                {rules.hasDelete && (
+                                  <Button
+                                    onClick={() => {
+                                      handleDeleteMan(i);
+                                    }}>
+                                    <FontAwesomeIcon icon={faTrash} />
+                                  </Button>
+                                )}
+                              </ButtonGroup>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                    {errorForm.sizes && <p className="p-1 h6 text-danger ">Add size(s) first</p>}
+                  </Table>
+                ) : (
+                  <div className="d-flex justify-content-around">
+                    <Spinner animation="grow" />
+                  </div>
+                )}
               </Card.Body>
             </Card>
-            {rules.hasInsert && (
-              <div className="m-3">
-                <button
-                  className="btn m-btn btn-primary p-3"
-                  onClick={() => {
-                    errors = [];
-                    if (formObj.name.length == 0) errors.push('error');
-                    if (formObj.multiple.length == 0) errors.push('error');
-                    if (
+          )}
+          <Card className="mt-3" style={{ borderRadius: '10px' }}>
+            <Card.Header className="p-3 bg-white">
+              <h5>Extra Items</h5>
+            </Card.Header>
+            <Card.Body>
+              <Select
+                styles={colourStyles}
+                isMulti={true}
+                options={extras}
+                value={selectedExtras}
+                onChange={(itm: any) => {
+                  setSelectedExtras(itm);
+                }}
+              />
+            </Card.Body>
+          </Card>
+          {rules.hasInsert && (
+            <div className="m-3">
+              <button
+                className="btn m-btn btn-primary p-3"
+                onClick={() => {
+                  errors = [];
+                  if (formObj.name.length == 0) errors.push('error');
+                  if (formObj.multiple.length == 0) errors.push('error');
+                  if (
+                    formObj.sizes.length == 0 ||
+                    formObj.sizes[0].name.toString().trim().length == 0
+                  )
+                    errors.push('error');
+                  let _has = true;
+                  formObj.sizes.map((d: any) => {
+                    if (d.isPrimary) _has = false;
+                  });
+                  if (_has) errors.push('error');
+                  setErrorForm({
+                    ...errorForm,
+                    name: formObj.name.length == 0,
+                    sizes:
                       formObj.sizes.length == 0 ||
-                      formObj.sizes[0].name.toString().trim().length == 0
-                    )
-                      errors.push('error');
-                    let _has = true;
-                    formObj.sizes.map((d: any) => {
-                      if (d.isPrimary) _has = false;
-                    });
-                    if (_has) errors.push('error');
-                    setErrorForm({
-                      ...errorForm,
-                      name: formObj.name.length == 0,
-                      sizes:
-                        formObj.sizes.length == 0 ||
-                        formObj.sizes[0].name.toString().trim().length == 0,
-                      multiple: formObj.multiple.length == 0,
-                      primary: _has,
-                    });
-                    if (errors.length == 0) {
-                      if (isEdit) UpdateTailoring();
-                      else addTailoring();
-                    } else Toastify('error', 'Enter Requires Field');
-                  }}>
-                  <FontAwesomeIcon icon={faFloppyDisk} /> save
-                </button>
-              </div>
-            )}
-          </div>
+                      formObj.sizes[0].name.toString().trim().length == 0,
+                    multiple: formObj.multiple.length == 0,
+                    primary: _has,
+                  });
+                  if (errors.length == 0) {
+                    if (isEdit) UpdateTailoring();
+                    else addTailoring();
+                  } else Toastify('error', 'Enter Requires Field');
+                }}>
+                <FontAwesomeIcon icon={faFloppyDisk} /> save
+              </button>
+            </div>
+          )}
         </div>
-      </AdminLayout>
-    </>
+      </div>
+    </AdminLayout>
   );
 };
+
 export default AddTailoring;
+
 export async function getServerSideProps(context: any) {
   const parsedCookies = cookie.parse(context.req.headers.cookie || '[]');
   var _isOk = true,

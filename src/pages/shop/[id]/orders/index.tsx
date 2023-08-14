@@ -1,42 +1,10 @@
-import type { NextPage } from 'next';
-import Image from 'next/image';
-import Table from 'react-bootstrap/Table';
-import { Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import { AdminLayout } from '@layout';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import Spinner from 'react-bootstrap/Spinner';
-import {
-  faTrash,
-  faPenToSquare,
-  faPlus,
-  faTag,
-  faArrowRight,
-  faArrowDown,
-  faPencil,
-  faArrowLeft,
-  faEye,
-} from '@fortawesome/free-solid-svg-icons';
-import { Button, ButtonGroup, Card } from 'react-bootstrap';
-import React, { useState, useEffect } from 'react';
-import { apiFetchCtr, apiUpdateCtr } from '../../../../libs/dbUtils';
-import { useRouter } from 'next/router';
-import AlertDialog from 'src/components/utils/AlertDialog';
-import { ILocationSettings, IPageRules, ITokenVerfy } from '@models/common-model';
-import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/checkUtils';
+import { ITokenVerfy } from '@models/common-model';
 import * as cookie from 'cookie';
-import ShowPriceListModal from 'src/components/dashboard/modal/ShowPriceListModal';
-import { Toastify } from 'src/libs/allToasts';
-import { ToastContainer } from 'react-toastify';
-import {
-  DataGrid,
-  GridColDef,
-  GridRowParams,
-  GridToolbarColumnsButton,
-  GridToolbarContainer,
-  GridToolbarExport,
-  GridToolbarQuickFilter,
-} from '@mui/x-data-grid';
+import type { NextPage } from 'next';
 import OrdersTable from 'src/components/dashboard/OrdersTable';
+import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/checkUtils';
+
 const Orders: NextPage = (probs: any) => {
   const { shopId, rules } = probs;
 
@@ -260,7 +228,6 @@ export async function getServerSideProps(context: any) {
 
       if (_isOk) {
         var _rules = keyValueRules(repo.data.rules || []);
-        console.log(_rules);
         if (
           _rules[-2] != undefined &&
           _rules[-2][0].stuff != undefined &&

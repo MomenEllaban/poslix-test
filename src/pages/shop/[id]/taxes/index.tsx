@@ -538,7 +538,6 @@ const Taxes: NextPage = (props: any) => {
                                   i,
                                   false
                                 );
-                                console.log(itm, i);
                               }}
                             />
                             <td>

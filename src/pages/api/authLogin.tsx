@@ -12,7 +12,6 @@ type Data = {
 let con: Connection;
 
 function returnWrong(status: number, con: any, res: NextApiResponse<Data>, msg = 'somthing Wrong') {
-  console.log('Somthing wrong ....');
   res.setHeader('Content-Type', 'application/json');
   res.status(status).json({ success: false, msg });
   res.end();
@@ -58,7 +57,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       _user = _userStuffs[0];
       const isOwner = _user.user_type == 'owner';
       const _finalRules: any = [];
-
       // get locations
       await con
         .promise()
@@ -122,8 +120,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         _finalRules.push({ id: -2, stuff: 'owner' });
       }
 
-      console.log('_types ', _types);
-
       _token = generateAccessToken({
         id: _user.id,
         level: _user.user_type,
@@ -141,7 +137,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         token: _token,
         myBusiness: isOwner ? _myBusiness : _UserBusiness,
       };
-      console.log(_UserBusiness);
+
       // send headers
       // console.log('final ', _finalRules, ' user ', _resObj);
       res.setHeader('Content-Type', 'application/json');

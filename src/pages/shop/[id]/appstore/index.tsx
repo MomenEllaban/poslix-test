@@ -1,13 +1,13 @@
-import type { NextPage } from 'next';
 import { AdminLayout } from '@layout';
-import Spinner from 'react-bootstrap/Spinner';
-import { Button, ButtonGroup, Card, Container, Row, Col } from 'react-bootstrap';
-import React, { useState, useEffect } from 'react';
-import { ILocationSettings, IPageRules, ITokenVerfy } from '@models/common-model';
-import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/checkUtils';
+import { ITokenVerfy } from '@models/common-model';
 import * as cookie from 'cookie';
-import { Toastify } from 'src/libs/allToasts';
+import type { NextPage } from 'next';
+import { useState } from 'react';
+import { Button, Col, Container, Row } from 'react-bootstrap';
+import Spinner from 'react-bootstrap/Spinner';
 import { ToastContainer } from 'react-toastify';
+import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/checkUtils';
+
 const AppStore: NextPage = (probs: any) => {
   const { shopId, rules } = probs;
   const [isLoading, setIsLoading] = useState(false);
@@ -143,7 +143,6 @@ export async function getServerSideProps(context: any) {
       }
     }
   );
-  console.log('_isOk22    ', _isOk);
   if (!_isOk) return { redirect: { permanent: false, destination: '/user/auth' } };
   if (!_rule) return { redirect: { permanent: false, destination: '/page403' } };
   return {

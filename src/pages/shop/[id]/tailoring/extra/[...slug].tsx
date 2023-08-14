@@ -49,7 +49,6 @@ const ExtraManage: NextPage = (props: any) => {
       id,
     });
     if (success) {
-      console.log('data ', data);
       if (data.length > 0 && data[0].id != undefined) {
         setFormObj({
           ...formObj,
@@ -319,7 +318,7 @@ export async function getServerSideProps(context: any) {
   const parsedCookies = cookie.parse(context.req.headers.cookie || '[]');
   var _isOk = true,
     _rule = true;
-  console.log('ss ', context.query);
+
   var shopId = context.query.id;
   if (shopId == undefined) return { redirect: { permanent: false, destination: '/page403' } };
 

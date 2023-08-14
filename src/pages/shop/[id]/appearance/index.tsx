@@ -1,25 +1,22 @@
-import type { NextPage } from 'next';
-import { AdminLayout } from '@layout';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCancel } from '@fortawesome/free-solid-svg-icons';
-import { Form, Card } from 'react-bootstrap';
-import { Container, Row, Col, Tab, Tabs } from 'react-bootstrap';
-import Spinner from 'react-bootstrap/Spinner';
-import Select, { StylesConfig } from 'react-select';
-import React, { useState, useEffect } from 'react';
-import { apiFetchCtr, apiUpdateCtr } from '../../../../libs/dbUtils';
-import { useRouter } from 'next/router';
-import AlertDialog from 'src/components/utils/AlertDialog';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { AdminLayout } from '@layout';
 import { ITokenVerfy, IinvoiceDetails } from '@models/common-model';
-import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/checkUtils';
-import * as cookie from 'cookie';
-import ShowPriceListModal from 'src/components/dashboard/modal/ShowPriceListModal';
-import { Toastify } from 'src/libs/allToasts';
-import { ToastContainer } from 'react-toastify';
 import { defaultInvoiceDetials } from '@models/data';
+import * as cookie from 'cookie';
+import { deleteObject, getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
 import storage from 'firebaseConfig';
-import { ref, deleteObject, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import type { NextPage } from 'next';
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
+import { Card, Form, Tab, Tabs } from 'react-bootstrap';
+import Spinner from 'react-bootstrap/Spinner';
+import Select from 'react-select';
+import { ToastContainer } from 'react-toastify';
+import { Toastify } from 'src/libs/allToasts';
 import { generateUniqueString } from 'src/libs/toolsUtils';
+import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/checkUtils';
+import { apiFetchCtr, apiUpdateCtr } from '../../../../libs/dbUtils';
 
 const Appearance: NextPage = (probs: any) => {
   const { shopId } = probs;
@@ -105,7 +102,6 @@ const Appearance: NextPage = (probs: any) => {
   };
   async function handleUpload() {
     if (previewUrl.length < 2) {
-      console.log('select first');
       Toastify('error', 'Error ,Please Select Logo First');
     } else {
       const storageRef = ref(storage, `/files/logo/${generateUniqueString(12)}${shopId}`);
@@ -114,16 +110,14 @@ const Appearance: NextPage = (probs: any) => {
         'state_changed',
         (snapshot: any) => {
           const percent = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-          console.log(percent);
+
           // setPercent(percent);
         },
         (err) => {
-          console.log(err);
           Toastify('error', 'error occurred while uploading the logo...');
         },
         async () => {
           await getDownloadURL(uploadTask.snapshot.ref).then((url) => {
-            console.log(url);
             setFormObj({ ...formObj, logo: url });
             editInvice(url);
           });
@@ -384,7 +378,6 @@ const Appearance: NextPage = (probs: any) => {
                                       className="custom-switch"
                                       checked={formObj.isMultiLang}
                                       onChange={(e) => {
-                                        console.log(e);
                                         setFormObj({
                                           ...formObj,
                                           isMultiLang: !formObj.isMultiLang,
@@ -908,7 +901,6 @@ const Appearance: NextPage = (probs: any) => {
                                       className="custom-switch"
                                       checked={formObj.isMultiLang}
                                       onChange={(e) => {
-                                        console.log(e);
                                         setFormObj({
                                           ...formObj,
                                           isMultiLang: !formObj.isMultiLang,
@@ -1256,7 +1248,7 @@ export async function getServerSideProps(context: any) {
 
       if (_isOk) {
         var _rules = keyValueRules(repo.data.rules || []);
-        console.log(_rules);
+
         if (
           _rules[-2] != undefined &&
           _rules[-2][0].stuff != undefined &&
@@ -1279,7 +1271,6 @@ export async function getServerSideProps(context: any) {
       }
     }
   );
-  console.log('_isOk22    ', _isOk);
   if (!_isOk) return { redirect: { permanent: false, destination: '/user/auth' } };
   if (!_rule) return { redirect: { permanent: false, destination: '/page403' } };
   return {

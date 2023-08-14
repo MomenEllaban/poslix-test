@@ -30,7 +30,6 @@ const Category = ({ shopId, rules }: any) => {
       subType: 'getCatsAndBrands',
       shopId,
     });
-    console.log(newdata);
 
     if (success) {
       setCats(newdata.cates);
@@ -63,7 +62,6 @@ const Category = ({ shopId, rules }: any) => {
               <button
                 className="btn btn-primary p-3"
                 onClick={() => {
-                  console.log(key);
                   localStorage.setItem('key', key);
                   if (key === 'Categories')
                     router.push({

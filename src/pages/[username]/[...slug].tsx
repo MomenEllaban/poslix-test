@@ -1,12 +1,9 @@
-import type { NextPage } from 'next';
-import Image from 'next/image';
 import { OwnerAdminLayout } from '@layout';
+import type { NextPage } from 'next';
 import { useRouter } from 'next/router';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import BusinessList from 'src/components/dashboard/BusinessList';
 import Locations from 'src/components/dashboard/Locations';
-import { isLogin } from '../../libs/loginlib';
-import { ROUTES } from 'src/utils/app-routes';
 
 const Home: NextPage = () => {
   const router = useRouter();
@@ -14,8 +11,6 @@ const Home: NextPage = () => {
   const [pageType, setPageType] = useState('/');
 
   useEffect(() => {
-    if (!isLogin()) router.push(ROUTES.AUTH);
-
     if (slug != undefined) {
       //if (slug.length < 2)
       ///router.push('/erro404')
@@ -25,13 +20,11 @@ const Home: NextPage = () => {
   }, [slug]);
 
   return (
-    <>
-      <OwnerAdminLayout>
-        {pageType}
-        {pageType == 'business_list' && <BusinessList />}
-        {pageType == 'users' && <Locations />}
-      </OwnerAdminLayout>
-    </>
+    <OwnerAdminLayout>
+      {pageType}
+      {pageType == 'business_list' && <BusinessList />}
+      {pageType == 'users' && <Locations />}
+    </OwnerAdminLayout>
   );
 };
 export default Home;

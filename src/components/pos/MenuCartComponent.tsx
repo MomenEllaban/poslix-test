@@ -1,31 +1,28 @@
-import React, { useEffect, useState, useContext } from 'react';
+import { useRouter } from 'next/router';
+import React, { useContext, useEffect, useState } from 'react';
+import { useReactToPrint } from 'react-to-print';
 import { useRecoilState } from 'recoil';
+import { UserContext } from 'src/context/UserContext';
+import { Toastify } from 'src/libs/allToasts';
+import { ProductContext } from '../../context/ProductContext';
+import { finalCalculation } from '../../libs/calculationTax';
+import { apiFetchCtr } from '../../libs/dbUtils';
 import {
-  Icustom,
   IHoldItems,
   IOrderMiniDetails,
   IPackItem,
-  IproductInfo,
   IQuantity,
-  IreadyGroupTax,
   ITax,
+  Icustom,
+  IproductInfo,
+  IreadyGroupTax,
 } from '../../models/common-model';
-import { productDetails, clearOrders } from '../../recoil/atoms';
-import { OrderCalcs } from './utils/OrderCalcs';
-import { OrdersFooter } from './utils/OrdersFooter';
-import Select from 'react-select';
-import { ProductContext } from '../../context/ProductContext';
+import { cartJobType, clearOrders, productDetails } from '../../recoil/atoms';
 import Customermodal from './modals/Customermodal';
-import { cartJobType } from '../../recoil/atoms';
-import { apiFetchCtr } from '../../libs/dbUtils';
-import { finalCalculation } from '../../libs/calculationTax';
-import { useReactToPrint } from 'react-to-print';
-import VariationModal from './modals/VariationModal';
-import { Toastify } from 'src/libs/allToasts';
-import { UserContext } from 'src/context/UserContext';
 import TailoringModal from './modals/TailoringModal';
-import { useRouter } from 'next/router';
+import VariationModal from './modals/VariationModal';
 import { MenuOrdersFooter } from './utils/MenuOrdersFooter';
+import { OrderCalcs } from './utils/OrderCalcs';
 
 export const MenuOrderComponent = (probs: any) => {
   const { shopId } = probs;
@@ -108,7 +105,6 @@ export const MenuOrderComponent = (probs: any) => {
   async function getOrderForEdit(barCodeId: number | string) {
     var hasTailFabs = 0;
     var result = await apiFetchCtr({ fetch: 'pos', subType: 'getLastOrders', barCodeId, shopId });
-    console.log('get order #', barCodeId, ' resultt ', result);
     if (result.success) {
       ClearOrders();
       const _orders: IproductInfo[] = [];
@@ -319,9 +315,7 @@ export const MenuOrderComponent = (probs: any) => {
         );
         packageProducts.map((pp) => {
           if (!pp.is_service && !pp.sell_over_stock && pp.product_id == _product_id) {
-            console.log(quantity[index].quantity, ' add ', qty, ' total ', _total_qty);
             if (quantity[index].quantity + qty > _total_qty) {
-              console.log('no no 403!!!');
               isAllowed = false;
               return;
             }
@@ -351,7 +345,6 @@ export const MenuOrderComponent = (probs: any) => {
           ClearOrders();
           return;
         }
-        console.log(idx, quantity[idx]);
         qty += quantity[idx].quantity;
       }
       //check selected product in packages only for quantity check
@@ -361,12 +354,10 @@ export const MenuOrderComponent = (probs: any) => {
       }
       if (idx == -1 || fromHold) {
         let itm: any = products.products_multi[index1][index2];
-        console.log(itm);
 
         ordersPush.push(itm);
         setOrders([...tmpOrders, itm]);
         let _quantity = [...quantity];
-        console.log('_quantity', _quantity);
 
         if (itm.qty == 0 && itm.sell_over_stock == 1) {
           let _itm2 = {
@@ -413,7 +404,6 @@ export const MenuOrderComponent = (probs: any) => {
         });
       }
     });
-    console.log('found ', index1, index2);
     if (index1 != -1 && index2 != -1) {
       //search into Orders and add to card
       let tmpOrders: IproductInfo[] = [...orders];
@@ -425,7 +415,7 @@ export const MenuOrderComponent = (probs: any) => {
       });
       if (idx == -1) {
         var _itm: any = variations.variations_multi[index1][index2];
-        console.log(_itm, product);
+
         if (product.sell_over_stock == 0 && _itm.qty == 0) {
           Toastify('error', 'Out OF Stock');
           return;
@@ -508,12 +498,12 @@ export const MenuOrderComponent = (probs: any) => {
         } else if (_orders[i].variation_id > 0) {
           //when variation
           addVarToCard(index1, index2, _orders[i].variation_id, _itm.name);
-          console.log('is varrrrr', _orders[i].variation_id);
         } else if (_orders[i].type == 'single' || _orders[i].type == 'package') {
           //when is single
           addToCard(true, index1, index2);
         }
-      } else console.log('not found');
+      } else {
+      }
     }
     setQuantity([...quantityPush]);
     setOrders([...ordersPush]);
@@ -529,8 +519,6 @@ export const MenuOrderComponent = (probs: any) => {
       setClear(random);
       displayOrders();
     } else if (jobType.req == 2) {
-      console.log('jobType 2 ', jobType);
-
       setOrderEditDetails({ ...orderEditDetails, orderId: Number(jobType.val2!) });
       setOrderId(Number(jobType.val2));
       setOrderNote(jobType.val);
@@ -564,7 +552,6 @@ export const MenuOrderComponent = (probs: any) => {
           f_index2 = -1,
           f_id = jobType.custom?.fabric_id;
         f_length = jobType.custom?.fabric_length!;
-        console.log('f_id ', f_id);
         products.products_multi.forEach((topPro: IproductInfo[], index: number) => {
           if (f_index2 == -1) {
             f_index1 = index;
@@ -613,7 +600,7 @@ export const MenuOrderComponent = (probs: any) => {
         let _tailoringName = _data[_data.length - 1].value;
         let tmpOrders: IproductInfo[] = [...orders];
         let _price = jobType.custom!.isPackage! ? jobType.custom!.price! : product.price;
-        console.log(jobType.custom);
+
         setOrders([...tmpOrders, { ...product, name: product.name, price: _price }]);
         _quantity.push({
           freezeQuantity: 0,
@@ -669,8 +656,6 @@ export const MenuOrderComponent = (probs: any) => {
     setQuantity([]);
   }, []);
   useEffect(() => {
-    console.log('tailoringExtras ', tailoringExtras);
-
     let _none = 0,
       _primary = 0,
       _excises = 0,

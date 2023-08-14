@@ -1,22 +1,42 @@
-import { useRouter } from 'next/router';
-import { useEffect } from 'react';
-import { useUser } from 'src/context/UserContext';
-import { ELocalStorageKeys } from 'src/utils/app-contants';
+import { getSession } from 'next-auth/react';
 import { ROUTES } from 'src/utils/app-routes';
 
 export default function Home() {
-  const router = useRouter();
-  const { user } = useUser();
+  return (
+    <div>
+      <style jsx>{`
+        div {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          margin-top: 40vh;
+        }
+      `}</style>
+      Loading...
+    </div>
+  );
+}
 
-  useEffect(() => {
-    const _business = localStorage.getItem(ELocalStorageKeys.USER_LOCATIONS) as any;
-    const _username = localStorage.getItem(ELocalStorageKeys.USER_NAME) as any;
-    const _level = localStorage.getItem(ELocalStorageKeys.LEVELS) as any;
+// # this is the new redirect method
+export async function getServerSideProps(context) {
+  const session = await getSession({ req: context.req });
 
-    if (!user) router.push(ROUTES.AUTH);
-    else if (_level === 'user') router.push('/shop/' + _business[0].value);
-    else router.push('/' + _username + '/business');
-  }, [user]);
+  if (session) {
+    if (session.user.user_type === 'owner') {
+      return {
+        redirect: { destination: '/' + session.user.username + '/business', permenant: false },
+        props: { session },
+      };
+    } else {
+      return {
+        redirect: { destination: '/shop', permenant: false },
+        props: { session },
+      };
+    }
+  }
 
-  return <></>;
+  return {
+    redirect: { destination: ROUTES.AUTH, permenant: false },
+    props: { session },
+  };
 }

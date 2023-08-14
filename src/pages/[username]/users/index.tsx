@@ -1,15 +1,13 @@
+import { faArrowAltCircleLeft, faEdit, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { OwnerAdminLayout } from '@layout';
+import { userDashboard } from '@models/common-model';
 import { useEffect, useState } from 'react';
 import { Button, ButtonGroup, Card, Spinner, Table } from 'react-bootstrap';
-import { apiFetchCtr } from 'src/libs/dbUtils';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faPlus, faEdit, faArrowAltCircleLeft } from '@fortawesome/free-solid-svg-icons';
-import { getmyUsername } from '../../../libs/loginlib';
-import { OwnerAdminLayout } from '@layout';
-import AddNewUser from 'src/components/dashboard/AddNewUser';
-import { ITokenVerfy, userDashboard } from '@models/common-model';
-import * as cookie from 'cookie';
-import { verifayTokens } from 'src/pages/api/checkUtils';
 import { ToastContainer } from 'react-toastify';
+import withAuth from 'src/HOCs/withAuth';
+import AddNewUser from 'src/components/dashboard/AddNewUser';
+import { apiFetchCtr } from 'src/libs/dbUtils';
 
 const Locations = ({ username }: any) => {
   const [users, setUsers] = useState<userDashboard[]>([]);
@@ -107,30 +105,5 @@ const Locations = ({ username }: any) => {
     </>
   );
 };
-export default Locations;
-export async function getServerSideProps(context: any) {
-  if (context.query.username == undefined) {
-    return {
-      redirect: {
-        permanent: false,
-        destination: '/user/auth',
-      },
-    };
-  }
-  //check token
-  let _isOk = true;
-  const parsedCookies = cookie.parse(context.req.headers.cookie || '[]');
-  await verifayTokens(
-    { headers: { authorization: 'Bearer ' + parsedCookies.tokend } },
-    (repo: ITokenVerfy) => {
-      _isOk = repo.status;
-    }
-  );
-  if (!_isOk) return { redirect: { permanent: false, destination: '/user/auth' } };
-  //end
 
-  let username = getmyUsername(context.query);
-  return {
-    props: { username },
-  };
-}
+export default withAuth(Locations);

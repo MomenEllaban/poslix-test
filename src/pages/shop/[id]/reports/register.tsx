@@ -1,28 +1,21 @@
-import React, { useContext, useState, useEffect } from 'react';
+import { AdminLayout } from '@layout';
+import { ILocationSettings, ITokenVerfy } from '@models/common-model';
 import {
   DataGrid,
   GridColDef,
   GridRowParams,
+  GridToolbarColumnsButton,
   GridToolbarContainer,
   GridToolbarExport,
-  GridToolbarColumnsButton,
-  GridToolbar,
-  GridToolbarFilterButton,
-  GridToolbarQuickFilter,
+  GridToolbarQuickFilter
 } from '@mui/x-data-grid';
-import { AdminLayout } from '@layout';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faPenToSquare, faPlus, faEye } from '@fortawesome/free-solid-svg-icons';
-import { Button, ButtonGroup } from 'react-bootstrap';
-import { useRouter } from 'next/router';
-import AlertDialog from 'src/components/utils/AlertDialog';
-import { apiFetch, apiFetchCtr } from 'src/libs/dbUtils';
-import { Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
-import { ILocationSettings, ITokenVerfy } from '@models/common-model';
 import * as cookie from 'cookie';
-import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/checkUtils';
+import { useRouter } from 'next/router';
+import React, { useContext, useEffect, useState } from 'react';
+import AlertDialog from 'src/components/utils/AlertDialog';
 import { UserContext } from 'src/context/UserContext';
-import { useReactToPrint } from 'react-to-print';
+import { apiFetchCtr } from 'src/libs/dbUtils';
+import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/checkUtils';
 
 export default function SalesReport(props: any) {
   const { shopId, rules } = props;
@@ -324,7 +317,7 @@ export async function getServerSideProps(context: any) {
 
       if (_isOk) {
         var _rules = keyValueRules(repo.data.rules || []);
-        console.log(_rules);
+
         if (
           _rules[-2] != undefined &&
           _rules[-2][0].stuff != undefined &&

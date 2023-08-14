@@ -116,8 +116,6 @@ const Product: NextPage = (props: any) => {
       subType: 'getCateAndList',
       shopId,
     });
-    console.log(success);
-    console.log('result ', newdata);
     if (success) {
       rules.hasInsert && newdata.cate.push({ id: 0, name: '', isNew: true });
       setCate(newdata.cate);
@@ -166,9 +164,7 @@ const Product: NextPage = (props: any) => {
       </GridToolbarContainer>
     );
   }
-  const onRowsSelectionHandler = (ids: any) => {
-    console.log('ids', ids);
-  };
+  const onRowsSelectionHandler = (ids: any) => {};
   const handlebtnAdd = () => {
     setSelectId(0);
     setIsAddExpense(!isAddExpense);
@@ -180,7 +176,6 @@ const Product: NextPage = (props: any) => {
     if (result) {
       const _data = [...expensesList];
       const idx = _data.findIndex((itm: any) => itm.id == selectId);
-      console.log(idx, selectId);
       if (idx != -1) {
         _data.splice(idx, 1);
         setExpensesList(_data);

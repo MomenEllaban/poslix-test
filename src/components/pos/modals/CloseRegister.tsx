@@ -59,7 +59,7 @@ const CloseRegister = (probs: any) => {
       data: { cash, card, bankm, cheque, note, hand: closeRegisterInfo.cashInHand },
     });
     if (result.success) {
-      console.log(result.newdata);
+
       handleClose();
       setJobType({ req: 101, val: 'closeRegister' });
     } else {

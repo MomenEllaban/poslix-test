@@ -20,6 +20,7 @@ import { useReactToPrint } from 'react-to-print';
 import VariationModal from 'src/components/pos/modals/VariationModal';
 import { useRecoilState } from 'recoil';
 import { cartJobType } from 'src/recoil/atoms';
+
 const Product: NextPage = (probs: any) => {
   const { shopId, rules } = probs;
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
@@ -159,7 +160,6 @@ const Product: NextPage = (probs: any) => {
     if (result) {
       const _data = [...products];
       const idx = _data.findIndex((itm: any) => itm.id == selectId);
-      console.log(idx, selectId);
       if (idx != -1) {
         _data.splice(idx, 1);
         setProducts(_data);
@@ -205,9 +205,8 @@ const Product: NextPage = (probs: any) => {
   };
   useEffect(() => {
     if (jobType.req == 4) {
-      console.log(jobType);
       // when Select Variation From PopUp
-      console.log(allVariations);
+
       allVariations.map((varItm: any, index: number) => {
         if (varItm.variation_id == jobType.val) {
           const found = selectedProducts.some((el) => el.variation_id == varItm.variation_id);
@@ -424,7 +423,7 @@ export async function getServerSideProps(context: any) {
 
       if (_isOk) {
         var _rules = keyValueRules(repo.data.rules || []);
-        console.log(_rules);
+
         if (
           _rules[-2] != undefined &&
           _rules[-2][0].stuff != undefined &&
@@ -442,7 +441,7 @@ export async function getServerSideProps(context: any) {
       }
     }
   );
-  console.log('_isOk22    ', _isOk);
+
   if (!_isOk) return { redirect: { permanent: false, destination: '/user/auth' } };
   if (!_rule) return { redirect: { permanent: false, destination: '/page403' } };
   return {

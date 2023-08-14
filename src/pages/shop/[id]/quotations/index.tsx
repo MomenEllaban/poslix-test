@@ -61,8 +61,6 @@ export default function SalesList(props: any) {
   const { setInvoicDetails, invoicDetails } = useContext(UserContext);
   const [accept, setAccept] = useState(false);
 
-  console.log(locationSettings.currency_decimal_places);
-
   //table columns
   const columns: GridColDef[] = [
     { field: 'id', headerName: '#', minWidth: 50 },
@@ -104,51 +102,21 @@ export default function SalesList(props: any) {
       renderCell: ({ row }: Partial<GridRowParams>) => (
         <>
           <ButtonGroup className="mb-2 m-buttons-style">
-            <Button
-              onClick={() => {
-                console.log(row);
-                setSelectRow(row);
-                setShowViewPopUp(true);
-                setEdit(true);
-              }}>
+            <Button onClick={() => {}}>
               <FontAwesomeIcon icon={faPenToSquare} />
             </Button>
             {rules.hasDelete && (
-              <Button
-                onClick={() => {
-                  console.log(row);
-                  setSelectId(row.id);
-                  setShow(true);
-                  // setsales((prev) => prev.filter((r) => r.id !== row.id));
-                }}>
+              <Button onClick={() => {}}>
                 <FontAwesomeIcon icon={faTrash} />
               </Button>
             )}
-            <Button
-              onClick={async () => {
-                console.log(row);
-                onRowsSelectionHandler(row);
-              }}>
+            <Button onClick={() => {}}>
               <FontAwesomeIcon icon={faEye} />
             </Button>
-            <Button
-              onClick={() => {
-                console.log(row);
-                setsales((prev) =>
-                  prev.map((item) => (item.id === row.id ? { ...item, amount: 0 } : item))
-                );
-              }}>
+            <Button onClick={() => {}}>
               <FontAwesomeIcon icon={faCheck} />
             </Button>
-            <Button
-              onClick={() => {
-                console.log(row);
-                setsales((prev) =>
-                  prev.map((item) =>
-                    item.id === row.id ? { ...item, total_price: item.amount } : item
-                  )
-                );
-              }}>
+            <Button onClick={() => {}}>
               <FontAwesomeIcon icon={faXmark} />
             </Button>
           </ButtonGroup>
@@ -156,7 +124,6 @@ export default function SalesList(props: any) {
       ),
     },
   ];
-  // console.log(sales);
 
   const componentRef = React.useRef(null);
   class ComponentToPrint extends React.PureComponent {
@@ -481,7 +448,7 @@ export default function SalesList(props: any) {
       const _data = [...sales];
       console.log(selectId);
       const idx = _data.findIndex((itm: any) => itm.id == selectId);
-      console.log(idx, selectId);
+
       if (idx != -1) {
         _data.splice(idx, 1);
         setsales(_data);
@@ -513,7 +480,6 @@ export default function SalesList(props: any) {
     setShowViewPopUp(true);
   };
   const handleSearch = (e: any) => {
-    console.log(e.target.value);
     setHandleSearchTxt(e.target.value);
   };
   return (
@@ -741,7 +707,7 @@ export async function getServerSideProps(context: any) {
 
       if (_isOk) {
         var _rules = keyValueRules(repo.data.rules || []);
-        console.log(_rules);
+
         if (
           _rules[-2] != undefined &&
           _rules[-2][0].stuff != undefined &&

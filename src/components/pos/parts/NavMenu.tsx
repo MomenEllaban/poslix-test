@@ -1,25 +1,10 @@
-import { useEffect, useState } from 'react';
-import CloseRegister from '../modals/CloseRegister';
+import ar from 'ar.json';
+import en from 'en.json';
 import Link from 'next/link';
 import Router from 'next/router';
-import en from 'en.json';
-import ar from 'ar.json';
-import { ROUTES } from 'src/utils/app-routes';
-import styles from './NavMenu.module.css';
-import classNames from 'classnames';
-
+import { useEffect, useState } from 'react';
+import CloseRegister from '../modals/CloseRegister';
 const NavMenu: any = (probs: any) => {
-  const [isFullScreen, setIsFullScreen] = useState(false);
-
-  const toggleFullScreen = () => {
-    if (!isFullScreen) {
-      document.documentElement.requestFullscreen();
-    } else {
-      document.exitFullscreen();
-    }
-    setIsFullScreen(!isFullScreen);
-  };
-
   const { shopId, lang, setLang } = probs;
   const [customerIsModal, setCustomerIsModal] = useState<boolean>(false);
   const customerModalHandler = (status: any) => {
@@ -47,33 +32,19 @@ const NavMenu: any = (probs: any) => {
         <div id="scrollbar">
           {/* Back To List</Link> */}
           <div
-            className="nav-link menu-link sty_ar text-center text fs-6"
+            className="nav-link menu-link sty_ar"
             style={{ cursor: 'pointer' }}
             onClick={() => {
               if (lang == en) {
                 localStorage.setItem('lang', 'ar');
                 setLang(ar);
-                document.querySelector('html').classList.add(styles.rtl);
               } else {
                 localStorage.setItem('lang', 'en');
                 setLang(en);
-                document.querySelector('html').classList.remove(styles.rtl);
               }
             }}>
-            <i className="ri-global-fill"></i>{' '}
-            <span className={classNames('d-block', styles.customFontSize)}>
-              {lang == ar ? 'EN' : 'العربية'}
-            </span>
+            <i className="ri-global-fill"></i> <span>{lang == ar ? 'EN' : 'العربية'}</span>{' '}
           </div>
-
-          <Link className="nav-link menu-link" href="#">
-            <i
-              className={`fas ${isFullScreen ? 'fa-compress' : 'fa-expand'}`}
-              onClick={toggleFullScreen}></i>
-            <span data-key="t-dashboards">
-              {!isFullScreen ? lang.pos.navmenu.fullscreen : lang.pos.navmenu.minimize}
-            </span>
-          </Link>
           <Link className="nav-link menu-link" href={'/shop/' + shopId + '/products'}>
             <i className="ri-dashboard-2-line"></i>{' '}
             <span data-key="t-dashboards">{lang.pos.navmenu.dashboard}</span>{' '}
@@ -87,7 +58,7 @@ const NavMenu: any = (probs: any) => {
             <i className="ri-refresh-line"></i>{' '}
             <span data-key="t-dashboards">{lang.pos.navmenu.refresh}</span>{' '}
           </Link>
-          <Link className="nav-link menu-link" href={ROUTES.AUTH}>
+          <Link className="nav-link menu-link" href={'/user/login'}>
             <i className="ri-logout-circle-line"></i>{' '}
             <span data-key="t-dashboards">{lang.pos.navmenu.logout}</span>{' '}
           </Link>

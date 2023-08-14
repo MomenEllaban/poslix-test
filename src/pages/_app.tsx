@@ -1,5 +1,7 @@
 import { config } from '@fortawesome/fontawesome-svg-core';
+import { SessionProvider } from 'next-auth/react';
 import type { AppProps } from 'next/app';
+import Head from 'next/head';
 import NextNProgress from 'nextjs-progressbar';
 import { SSRProvider } from 'react-bootstrap';
 import { ToastContainer } from 'react-toastify';
@@ -12,32 +14,30 @@ import '@fortawesome/fontawesome-svg-core/styles.css';
 import '@styles/_pos_custom.css';
 import '@styles/globals.scss';
 import '@styles/loyalty.css';
-import Head from 'next/head';
 import '../../public/css/products.modules.css';
 
 config.autoAddCss = false;
 
-export default function MyApp({ Component, pageProps }: AppProps) {
+export default function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   return (
-    <>
-      <Head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Poslix App</title>
-      </Head>
-
-      <RecoilRoot>
-        <SSRProvider>
-          <DarkModeProvider>
-            <UserProvider>
-              <ProductProvider>
+    <SessionProvider session={session}>
+      <SSRProvider>
+        <UserProvider>
+          <Head>
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
+            <title>Poslix App</title>
+          </Head>
+          <RecoilRoot>
+            <ProductProvider>
+              <DarkModeProvider>
                 <NextNProgress />
                 <Component {...pageProps} />
                 <ToastContainer />
-              </ProductProvider>
-            </UserProvider>
-          </DarkModeProvider>
-        </SSRProvider>
-      </RecoilRoot>
-    </>
+              </DarkModeProvider>
+            </ProductProvider>
+          </RecoilRoot>
+        </UserProvider>
+      </SSRProvider>
+    </SessionProvider>
   );
 }

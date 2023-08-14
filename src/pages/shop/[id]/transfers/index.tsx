@@ -95,7 +95,7 @@ const Product: NextPage = (probs: any) => {
     if (result) {
       const _data = [...products];
       const idx = _data.findIndex((itm: any) => itm.id == selectId);
-      console.log(idx, selectId);
+
       if (idx != -1) {
         _data.splice(idx, 1);
         setProducts(_data);
@@ -259,7 +259,7 @@ export async function getServerSideProps(context: any) {
 
       if (_isOk) {
         var _rules = keyValueRules(repo.data.rules || []);
-        console.log(_rules);
+
         if (
           _rules[-2] != undefined &&
           _rules[-2][0].stuff != undefined &&
@@ -282,7 +282,6 @@ export async function getServerSideProps(context: any) {
       }
     }
   );
-  console.log('_isOk22    ', _isOk);
   if (!_isOk) return { redirect: { permanent: false, destination: '/user/auth' } };
   if (!_rule) return { redirect: { permanent: false, destination: '/page403' } };
   return {

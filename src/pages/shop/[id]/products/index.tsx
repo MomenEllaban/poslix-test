@@ -1,34 +1,12 @@
-import type { NextPage } from 'next';
-import Image from 'next/image';
-import { AdminLayout } from '@layout';
+import { faBarcode, faPenToSquare, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import Spinner from 'react-bootstrap/Spinner';
-import {
-  faTrash,
-  faPenToSquare,
-  faPlus,
-  faTag,
-  faBarcode,
-} from '@fortawesome/free-solid-svg-icons';
-import { Button, ButtonGroup, Card } from 'react-bootstrap';
-import React, {
-  useState,
-  useEffect,
-  useRef,
-  ChangeEvent,
-  MouseEventHandler,
-  useContext,
-} from 'react';
-import { apiFetchCtr, apiInsertCtr } from '../../../../libs/dbUtils';
-import { useRouter } from 'next/router';
-import AlertDialog from 'src/components/utils/AlertDialog';
+import { AdminLayout } from '@layout';
+import { ILocationSettings } from '@models/common-model';
 import { Button as MButton } from '@mui/material';
-import { ILocationSettings, IPageRules, ITokenVerfy } from '@models/common-model';
-import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/checkUtils';
-import * as cookie from 'cookie';
-import ShowPriceListModal from 'src/components/dashboard/modal/ShowPriceListModal';
-import { Toastify } from 'src/libs/allToasts';
-import { ToastContainer } from 'react-toastify';
+import TextField from '@mui/material/TextField';
+import { useTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { debounce } from '@mui/material/utils';
 import {
   DataGrid,
   GridColDef,
@@ -36,29 +14,30 @@ import {
   GridToolbarColumnsButton,
   GridToolbarContainer,
   GridToolbarExport,
-  useGridApiContext,
-  useGridApiRef,
 } from '@mui/x-data-grid';
-import InputAdornment from '@mui/material/InputAdornment';
-import IconButton from '@mui/material/IconButton';
-import SearchIcon from '@mui/icons-material/Search';
-import Box from '@mui/material/Box';
-
-import { debounce } from '@mui/material/utils';
-import TextField from '@mui/material/TextField';
-import { Checkbox } from '@mui/material';
-import useMediaQuery from '@mui/material/useMediaQuery';
-import { useTheme } from '@mui/material/styles';
+import type { NextPage } from 'next';
+import { getSession } from 'next-auth/react';
+import Image from 'next/image';
+import { useRouter } from 'next/router';
+import { ChangeEvent, useContext, useEffect, useRef, useState } from 'react';
+import { Button, ButtonGroup } from 'react-bootstrap';
+import Spinner from 'react-bootstrap/Spinner';
+import { ToastContainer } from 'react-toastify';
+import ShowPriceListModal from 'src/components/dashboard/modal/ShowPriceListModal';
 import LocationModal from 'src/components/pos/modals/LocationModal';
+import AlertDialog from 'src/components/utils/AlertDialog';
+import { Toastify } from 'src/libs/allToasts';
+import permissionStrToObj from 'src/modules/shop/_utils/permissionStrToObj';
+import { findAllData } from 'src/services/crud.api';
+import { ROUTES } from 'src/utils/app-routes';
+import { authApi } from 'src/utils/auth-api';
 import * as XLSX from 'xlsx';
-import classNames from 'classnames';
-import styles from './table.module.css';
-import { Grid, Container } from '@mui/material';
-/*MOHAMMED MAHER */
 import { darkModeContext } from '../../../../context/DarkModeContext';
-import { Margin } from '@mui/icons-material';
-const Product: NextPage = (probs: any) => {
-  const { shopId, rules } = probs;
+import { apiInsertCtr } from '../../../../libs/dbUtils';
+import styles from './table.module.css';
+
+const Product: NextPage = (props: any) => {
+  const { shopId, rules } = props;
   const myLoader = (img: any) => img.src;
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
     value: 0,
@@ -85,8 +64,9 @@ const Product: NextPage = (probs: any) => {
   const [selectedItems, setSelectedItems] = useState<Array<string>>([]);
   const [locationModal, setLocationModal] = useState<boolean>(false);
   const [locations, setLocations] = useState<{ value: number; label: string }[]>([]);
-  // var _locs = JSON.parse(localStorage.getItem('userlocs') || '[]');
-
+  const [currentPage, setCurrentPage] = useState(1);
+  const [lastPage, setLastPage] = useState();
+  const [totalRows, setTotalRows] = useState();
   /*MOHAMMED MAHER */
   const { darkMode } = useContext(darkModeContext);
 
@@ -107,21 +87,14 @@ const Product: NextPage = (probs: any) => {
       field: 'id',
       headerName: '#',
       minWidth: 50,
-      headerClassName: `${
-        darkMode ? 'dark-mode-body' : classNames('light-mode-body', styles.rowHeadStyling)
-      }`,
-      cellClassName: `${
-        darkMode ? 'dark-mode-body' : classNames('light-mode-body', styles.idCell)
-      }`,
-      valueGetter: (params) => `#${params.value}`,
+      headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
+      cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
     },
     {
       field: 'image',
       headerName: 'Image',
-      flex: 0.5,
-      headerClassName: `${
-        darkMode ? 'dark-mode-body' : classNames('light-mode-body', styles.rowHeadStyling)
-      }`,
+      flex: 1,
+      headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       renderCell: ({ row }: Partial<GridRowParams>) => (
         <Image
@@ -130,10 +103,6 @@ const Product: NextPage = (probs: any) => {
           width={50}
           height={50}
           src={row.image && row.image.length > 0 ? row.image : '/images/pos/placeholder.png'}
-          style={{
-            // borderRadius: '50%',
-            marginBottom: '30px',
-          }}
         />
       ),
     },
@@ -141,36 +110,28 @@ const Product: NextPage = (probs: any) => {
       field: 'type',
       headerName: 'Type',
       flex: 0.5,
-      headerClassName: `${
-        darkMode ? 'dark-mode-body' : classNames('light-mode-body', styles.rowHeadStyling)
-      }`,
+      headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
     },
     {
       field: 'sku',
       headerName: 'sku ',
       flex: 0.5,
-      headerClassName: `${
-        darkMode ? 'dark-mode-body' : classNames('light-mode-body', styles.rowHeadStyling)
-      }`,
+      headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
     },
     {
       field: 'name',
       headerName: 'name ',
       flex: 1,
-      headerClassName: `${
-        darkMode ? 'dark-mode-body' : classNames('light-mode-body', styles.rowHeadStyling)
-      }`,
+      headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
     },
     {
       field: 'sell_price',
       headerName: 'Sell (Min - Max)',
       flex: 1,
-      headerClassName: `${
-        darkMode ? 'dark-mode-body' : classNames('light-mode-body', styles.rowHeadStyling)
-      }`,
+      headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       renderCell: ({ row }: Partial<GridRowParams>) => {
         if (row.type == 'single')
@@ -203,36 +164,23 @@ const Product: NextPage = (probs: any) => {
       field: 'category',
       headerName: 'Category',
       flex: 1,
-      headerClassName: `${
-        darkMode ? 'dark-mode-body' : classNames('light-mode-body', styles.rowHeadStyling)
-      }`,
+      headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
+      renderCell: ({ row }) => <p>{row.name}</p>,
     },
     {
-      field: 'qty',
+      field: 'stock',
       headerName: 'Qty',
       flex: 0.5,
-      headerClassName: `${
-        darkMode ? 'dark-mode-body' : classNames('light-mode-body', styles.rowHeadStyling)
-      }`,
+      headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
-      renderCell: ({ row }: Partial<GridRowParams>) => (
-        <>
-          <div className={row.qty > 0 && row.type != 'package' ? 'clickable-qty' : ''}>
-            {row.type != 'package' ? Number(row.qty).toFixed(0) : '---'}
-            <span className="qty-over">[{Number(row.qty_over_sold).toFixed(0)}]</span>
-          </div>
-        </>
-      ),
     },
     {
       field: 'action',
       headerName: 'Action ',
       sortable: false,
       disableExport: true,
-      headerClassName: `${
-        darkMode ? 'dark-mode-body' : classNames('light-mode-body', styles.rowHeadStyling)
-      }`,
+      headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) => (
@@ -315,71 +263,21 @@ const Product: NextPage = (probs: any) => {
     };
     return (
       <GridToolbarContainer className="d-flex align-items-center">
-        <div
-          className={styles.btnHover1}
-          style={{
-            background: '#05afa6',
-            padding: '4px',
-            display: 'flex',
-            alignItems: 'center',
-            borderRadius: '12px',
-            marginRight: '0.5rem',
-          }}>
-          <GridToolbarExport />
-        </div>
+        <GridToolbarExport />
         {/* mohamed elsayed */}
-        <MButton
-          className={styles.btnHover2}
-          onClick={importFileClickHandler}
-          style={{
-            borderRadius: '12px',
-            color: 'white',
-            backgroundColor: '#1976D2',
-            marginRight: '0.5rem',
-            padding: '8px',
-          }}>
-          Import
-        </MButton>
+        <MButton onClick={importFileClickHandler}>Import</MButton>
         <input style={{ display: 'none' }} ref={fileRef} type="file" onChange={importFileHandler} />
+        {/* /////////// */}
+        <GridToolbarColumnsButton />
         <div
-          style={divStyle}
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}>
-          <GridToolbarColumnsButton />
-        </div>
-        <div
-          style={{
-            color: 'white',
-            cursor: 'pointer',
-            padding: '10px',
-            display: 'flex',
-            alignItems: 'center',
-            borderRadius: '12px',
-            marginRight: '0.5rem',
-            background: 'green',
-          }}
-          className={classNames(
-            `${locations?.length > 1 && selectedItems.length > 0 ? 'pe-auto' : 'pe-none'}`,
-            styles.btnHover3
-          )}
+          style={{ color: '#1976d2', cursor: 'pointer' }}
+          className={`${locations?.length > 1 && selectedItems.length > 0 ? 'pe-auto' : 'pe-none'}`}
           onClick={() => setLocationModal(true)}>
           SEND
         </div>
         <div
-          style={{
-            color: 'white',
-            cursor: 'pointer',
-            padding: '10px',
-            display: 'flex',
-            alignItems: 'center',
-            borderRadius: '12px',
-            marginRight: '0.5rem',
-            background: 'red',
-          }}
-          className={classNames(
-            `${locations?.length > 1 && selectedItems.length > 0 ? 'pe-auto' : 'pe-none'}`,
-            styles.btnHover4
-          )}
+          style={{ color: '#1976d2', cursor: 'pointer', marginLeft: '0.5rem' }}
+          className={`${locations?.length > 1 && selectedItems.length > 0 ? 'pe-auto' : 'pe-none'}`}
           onClick={() => setShowDeleteAll(true)}>
           DELETE
         </div>
@@ -387,21 +285,21 @@ const Product: NextPage = (probs: any) => {
     );
   }
   async function initDataPage() {
-    const { success, data } = await apiFetchCtr({
-      fetch: 'products',
-      subType: 'getProducts',
-      shopId,
-    });
-    if (!success) {
-      Toastify('error', 'Somthing wrong!!, try agian');
-      return;
-    }
-    setProducts(data.products);
-    setFilteredProducts(data.products);
+    const res = await findAllData(`products/${router.query.id}?page=${currentPage}`);
+    console.log(res.data);
+    // if (!success) {
+    //   Toastify('error', 'Somthing wrong!!, try agian');
+    //   return;
+    // }
+    setProducts(res.data.result.data);
+    setCurrentPage(res.data.result.current_page);
+    setLastPage(res.data.result.last_page);
+    setTotalRows(res.data.result.total);
+    // setFilteredProducts(data.products);
     setIsLoading(false);
   }
   useEffect(() => {
-    var _locs = JSON.parse(localStorage.getItem('userlocs') || '[]');
+    const _locs = JSON.parse(localStorage.getItem('locations') || '[]');
     setLocations(_locs);
     if (_locs.toString().length > 10)
       setLocationSettings(
@@ -413,7 +311,7 @@ const Product: NextPage = (probs: any) => {
       );
     else alert('errorr location settings');
     initDataPage();
-  }, [router.asPath]);
+  }, [router.asPath, currentPage]);
 
   const handleDeleteFuc = (result: boolean, msg: string, section: string) => {
     if (result) {
@@ -517,23 +415,7 @@ const Product: NextPage = (probs: any) => {
               onClick={() => router.push('/shop/' + shopId + '/products/add')}>
               <FontAwesomeIcon icon={faPlus} /> Add New Product{' '}
             </button>
-            <TextField
-              id="input-with-icon-textfield"
-              label="Search name/sku"
-              variant="standard"
-              onChange={handleSearch}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon />
-                  </InputAdornment>
-                ),
-              }}
-              sx={{
-                // width: isSmallScreen ? '80%' : isMediumScreen ? '20%' : '40%',
-                marginRight: isSmallScreen ? '10%' : isMediumScreen ? '20%' : '40%',
-              }}
-            />
+            <TextField label="search name/sku" variant="filled" onChange={handleSearch} />
           </div>
         )}
 
@@ -553,14 +435,16 @@ const Product: NextPage = (probs: any) => {
                     border: 'none',
                   },
                 }}
-                rows={filteredProducts}
-                getRowClassName={getRowClassName}
+                rows={products}
                 columns={columns}
-                pageSize={10}
+                // pageSize={10}
                 rowsPerPageOptions={[10]}
                 onSelectionModelChange={(ids: any) => onRowsSelectionHandler(ids)}
                 onCellClick={handleCellClick}
                 components={{ Toolbar: CustomToolbar }}
+                rowCount={totalRows}
+                onPageChange={(params) => setCurrentPage(params + 1)}
+                pagination
               />
             </div>
           </>
@@ -574,49 +458,43 @@ const Product: NextPage = (probs: any) => {
   );
 };
 export default Product;
+/**
+ * @description get server side props
+ * @param {any} context
+ *
+ * get the cookies from the context
+ * check the page params
+ * check user permissions
+ *
+ */
 export async function getServerSideProps(context: any) {
-  const parsedCookies = cookie.parse(context.req.headers.cookie || '[]');
-  var _isOk = true,
-    _rule = true;
-  //check page params
-  var shopId = context.query.id;
-  if (shopId == undefined) return { redirect: { permanent: false, destination: '/page403' } };
+  // check if the user is logged in
+  const session = await getSession(context);
+  if (!session) return { redirect: { permanent: false, destination: ROUTES.AUTH } };
 
-  //check user permissions
-  var _userRules = {};
-  await verifayTokens(
-    { headers: { authorization: 'Bearer ' + parsedCookies.tokend } },
-    (repo: ITokenVerfy) => {
-      _isOk = repo.status;
+  const shopId = context.query.id;
+  if (!shopId) return { redirect: { permanent: false, destination: '/page403' } };
+  try {
+    const getPermission = await (await authApi(session))
+      .get('permissions/13')
+      .then((res) => res.data);
 
-      if (_isOk) {
-        var _rules = keyValueRules(repo.data.rules || []);
-        if (
-          _rules[-2] != undefined &&
-          _rules[-2][0].stuff != undefined &&
-          _rules[-2][0].stuff == 'owner'
-        ) {
-          _rule = true;
-          _userRules = {
-            hasDelete: true,
-            hasEdit: true,
-            hasView: true,
-            hasInsert: true,
-          };
-        } else if (_rules[shopId] != undefined) {
-          var _stuf = '';
-          _rules[shopId].forEach((dd: any) => (_stuf += dd.stuff));
-          const { userRules, hasPermission } = hasPermissions(_stuf, 'products');
-          _rule = hasPermission;
-          _userRules = userRules;
-        } else _rule = false;
-      }
-    }
-  );
-  if (!_isOk) return { redirect: { permanent: false, destination: '/user/auth' } };
-  if (!_rule) return { redirect: { permanent: false, destination: '/page403' } };
-  return {
-    props: { shopId: context.query.id, rules: _userRules },
-  };
-  //status ok
+    const permissions = permissionStrToObj(getPermission.result.stuff) ?? {};
+
+    return {
+      props: {
+        permissions: permissions,
+        shopId,
+        rules: {
+          //! this should be dynamic
+          hasDelete: true,
+          hasEdit: true,
+          hasView: true,
+          hasInsert: true,
+        },
+      },
+    };
+  } catch (e) {
+    return { redirect: { permanent: false, destination: ROUTES.AUTH } };
+  }
 }

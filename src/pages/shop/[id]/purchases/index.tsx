@@ -84,7 +84,6 @@ const Purchases: NextPage = (probs: any) => {
             <Button
               disabled={row.status == 'draft'}
               onClick={() => {
-                console.log('row ', row);
                 setPurchaseId(row.id);
                 setIsShowQtyManager(!isShowQtyManager);
               }}>

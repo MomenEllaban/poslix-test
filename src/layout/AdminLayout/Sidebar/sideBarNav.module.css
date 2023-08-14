@@ -13,3 +13,11 @@ button.hoverColor.btnLink:hover {
 .selected {
   color: #25a0e2 !important;
 }
+
+button.hoverColor.btnLink:hover {
+  color: #25a0e2 !important;
+}
+
+.customIconHeight {
+  height: 18px;
+}

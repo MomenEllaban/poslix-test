@@ -1,12 +1,25 @@
+'use client';
+import { IUserBusiness } from '@models/auth.types';
 import { ILocationSettings, ITailoringExtra } from '@models/common-model';
-import { defaultInvoiceDetials } from '@models/data';
-import { setCookie } from 'cookies-next';
+import { getSession } from 'next-auth/react';
+import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { UserContext } from 'src/context/UserContext';
-import { getDecodedToken, getToken } from 'src/libs/loginlib';
-import { ELocalStorageKeys } from 'src/utils/app-contants';
+import { ROUTES } from 'src/utils/app-routes';
 
-const initialLocationState = {
+interface BusinessResponse {
+  success: boolean;
+  result: {
+    locations: IUserBusiness[];
+  };
+}
+
+interface BusinessError {
+  error: string;
+}
+
+// Initial state for location settings
+const initialLocationState: ILocationSettings = {
   value: 0,
   label: '',
   currency_decimal_places: 0,
@@ -16,13 +29,13 @@ const initialLocationState = {
   currency_symbol: '',
 };
 
-export default function UserProvider({ children }) {
+export default function UserProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<any>({});
-
-  const [tailoringSizes, setTailoringSizes] = useState([]);
-  const [tailoringExtras, setTailoringExtras] = useState<ITailoringExtra[]>();
-  const [invoicDetails, setInvoicDetails] = useState<any>(defaultInvoiceDetials);
+  const [tailoringSizes, setTailoringSizes] = useState<string[]>([]);
+  const [tailoringExtras, setTailoringExtras] = useState<ITailoringExtra[]>([]);
+  const [invoicDetails, setInvoicDetails] = useState<any>({});
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>(initialLocationState);
+  const router = useRouter();
 
   const userContext = {
     user,
@@ -38,13 +51,19 @@ export default function UserProvider({ children }) {
   };
 
   useEffect(() => {
-    const user = getDecodedToken();
-
-    if (user) {
-      setCookie(ELocalStorageKeys.TOKEN_COOKIE, getToken() ?? '');
-      setUser(user);
-    }
+    getSession().then((session) => {
+      if (session) {
+        setUser(session.user);
+      } else {
+        router.replace(ROUTES.AUTH);
+      }
+    });
   }, []);
 
-  return <UserContext.Provider value={userContext}>{children}</UserContext.Provider>;
+  return (
+    <UserContext.Provider value={userContext}>
+      {/* Render child components */}
+      {children}
+    </UserContext.Provider>
+  );
 }

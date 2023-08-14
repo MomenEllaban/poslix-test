@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
+
 $enable-negative-margins: true;
 
 @import '~bootstrap/scss/bootstrap';
@@ -10,11 +12,10 @@ $enable-negative-margins: true;
 
 @import '_custom';
 
-@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
-
 :root {
   font-size: 16px;
 }
+
 body {
   font-family: 'Open Sans', sans-serif;
 }
@@ -69,4 +70,9 @@ body {
 
 *::-ms-scrollbar-thumb:hover {
   background: #555; /* Scrollbar thumb color on hover */
+}
+
+:root,
+html {
+  font-size: 16px !important;
 }

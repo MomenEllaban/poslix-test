@@ -232,13 +232,13 @@ export const OrdersComponent = (probs: any) => {
 
   // start recipt template
   const componentRef = React.useRef(null);
-  let invoiceType = JSON.parse(localStorage.getItem('invoiceType')) ?? '';
+  let invoiceType = JSON.parse(localStorage.getItem('invoiceType')) ?? {};
   // useEffect(() => {
 
   // }, [])
   class ComponentToPrint extends React.PureComponent {
     render() {
-      return invoiceType.value == 'receipt' ? (
+      return invoiceType?.value == 'receipt' ? (
         <div className="bill">
           <div className="brand-logo">
             <img src={invoicDetails.logo} />
@@ -1505,13 +1505,7 @@ export const OrdersComponent = (probs: any) => {
                     <div onClick={() => handleLinkColor()}>{isLinking ? 'Apply' : 'link'}</div>
                   </th>
                 )}
-                <th
-                  scope="col"
-                  style={{ width: 30 }}
-                  onClick={() => {
-                    console.log(orders);
-                    console.log(quantity);
-                  }}>
+                <th scope="col" style={{ width: 30 }} onClick={() => {}}>
                   #
                 </th>
                 <th scope="col" className="text-start">

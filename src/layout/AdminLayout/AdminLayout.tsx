@@ -51,7 +51,7 @@ export default function AdminLayout({ children, shopId }: any) {
   }, [setIsShowSidebarMd]);
 
   useEffect(() => {
-    var _locs = JSON.parse(localStorage.getItem("userlocs") || "[]");
+    const _locs = JSON.parse(localStorage.getItem('locations') || '[]');
     var script = document.createElement("script");
     script.src = "https://poslix2-uee0.onrender.com/index.js";
     document.head.appendChild(script);
