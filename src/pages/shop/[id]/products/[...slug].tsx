@@ -40,27 +40,29 @@ import {
 import storage from '../../../../../firebaseConfig';
 import NotifiModal from '../../../../components/utils/NotifiModal';
 import { apiDeleteCtr, apiFetchCtr, apiInsertCtr, apiUpdateCtr } from '../../../../libs/dbUtils';
+import { findAllData, updateData } from 'src/services/crud.api';
+import withAuth from 'src/HOCs/withAuth';
 
 const Product: NextPage = (props: any) => {
   const { shopId, editId, iType } = props;
   const [formObj, setFormObj] = useState<any>({
     id: 0,
     img: '',
-    productName: '',
+    name: '',
     productName2: '',
     type: 'single',
     sku: '',
-    barcodeType: 'C128',
+    barcode_type: 'C128',
     tax_id: null,
-    unit: 11,
+    unit_id: 11,
     brand: 0,
-    cat: 0,
+    category_id: 0,
     subCat: '',
     alertQuantity: 0,
-    cost: 0,
-    price: 0,
-    isFabric: false,
-    isService: false,
+    cost_price: 0,
+    sell_price: 0,
+    is_fabric: false,
+    is_service: false,
     isSellOverStock: false,
     isMultiPrice: false,
     isFifo: false,
@@ -71,8 +73,8 @@ const Product: NextPage = (props: any) => {
   const [img, setImg] = useState<any>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
   const [errorForm, setErrorForm] = useState({
-    productName: false,
-    barcodeType: false,
+    name: false,
+    barcode_type: false,
     productName2: false,
     sku: false,
     img: false,
@@ -220,71 +222,75 @@ const Product: NextPage = (props: any) => {
   var prevUrlRef = useRef<any>();
   prevUrlRef.current = previewUrl;
 
-  async function initDataPage(id = '0') {
-    if (id != '0') setIsEdit(true);
-    const { success, newdata } = await apiFetchCtr({
-      fetch: 'products',
-      subType: 'initProductData',
-      shopId,
-      id,
-    });
-    if (!success) {
-      Toastify('error', 'error in fetching..');
-      return;
-    }
-
-    if (iType != 'Kianvqyqndr')
-      setProducTypes(producTypes.filter((p) => p.value != 'tailoring_package'));
-
-    setProducts(newdata.products);
-    setUnits(newdata.units);
-    setBrands(newdata.brands);
-    setCats(newdata.categories);
-    setAllFabrics(newdata.allFabrics);
-    seTtailoring([{ value: null, label: 'Defualt' }, ...newdata.tailorings]);
-    setTaxGroup([
-      { value: null, label: 'Defualt Tax' },
-      { value: -1, label: 'Never Tax' },
-      ...newdata.taxes,
-    ]);
-    if (newdata.pro.length > 0) {
-      setSelectedProducts(newdata.packageItems);
-      setSelectedFabrics(newdata.selectedFabrics);
-      const itm = newdata.pro[0];
+  async function initDataPage(url) {
+    console.log('url', url, url?.length);
+    
+    if (url?.length == 2) setIsEdit(true);
+    
+    if (url?.length == 2) {
+      console.log('edit');
+      const res = await findAllData(`products/${router.query.slug[1]}/show`);
+      console.log(res);
+      setSelectedProducts(res.data.result.product);
+      // setSelectedFabrics(newdata.selectedFabrics);
+      const itm = res.data.result.product;
       setPreviewUrl(itm.image);
+      
       setFormObj({
         ...formObj,
         id: itm.id,
         img: itm.image,
         type: itm.type,
-        productName: itm.name,
+        name: itm.name,
         productName2: itm.subproductname,
-        unit: itm.unit_id,
+        location_id: itm.location_id,
+        unit_id: itm.unit_id,
         brand: itm.brand_id,
         sku: itm.sku,
-        barcodeType: itm.barcode_type,
-        cat: itm.category_id,
-        cost: Number(itm.cost_price).toFixed(locationSettings?.currency_decimal_places),
-        price: Number(itm.sell_price).toFixed(locationSettings?.currency_decimal_places),
+        sell_over_stock : itm.sell_over_stock == 1,
+        barcode_type: itm.barcode_type,
+        category_id: itm.category_id,
+        cost_price: Number(itm.cost_price).toFixed(locationSettings?.currency_decimal_places),
+        sell_price: Number(itm.sell_price).toFixed(locationSettings?.currency_decimal_places),
         alertQuantity: Number(itm.alert_quantity),
         tax_id: itm.never_tax == 1 ? -1 : itm.tax,
-        isService: itm.is_service == 1,
-        isFabric: itm.is_fabric == 1,
-        isSellOverStock: itm.sell_over_stock == 1,
+        is_service: itm.is_service == 1,
+        is_fabric: itm.is_fabric == 1,
         isMultiPrice: itm.is_selling_multi_price == 1,
         isFifo: itm.is_fifo == 1,
+        never_tax: itm.never_tax,
         variations: [
-          ...newdata.variations,
+          ...res.data.result.product.variations,
           { name: '', name2: '', sku: '', cost: 0, price: 0, isNew: true },
         ],
         isTailoring:
           itm.type == 'tailoring_package' ? itm.tailoring_type_id : itm.is_tailoring == 1,
         tailoringPrices:
-          (itm.prices_json + '').length > 8
+        itm.prices_json != undefined && (itm.prices_json + '').length > 8
             ? [...JSON.parse(itm.prices_json), { name: '', from: 0, to: 0, price: 0 }]
             : [{ name: '', from: 0, to: 0, price: 0 }],
       });
+    
+    } else {
+      console.log('add');
+      // setProducts(newdata.products);
+      // setUnits(newdata.units);
+      // setBrands(newdata.brands);
+      // setCats(newdata.categories);
+      // setAllFabrics(newdata.allFabrics);
+      // seTtailoring([{ value: null, label: 'Defualt' }, ...newdata.tailorings]);
+      // setTaxGroup([
+      //   { value: null, label: 'Defualt Tax' },
+      //   { value: -1, label: 'Never Tax' },
+      //   ...newdata.taxes,
+      // ]);
     }
+    
+    // if (iType != 'Kianvqyqndr')
+    //   setProducTypes(producTypes.filter((p) => p.value != 'tailoring_package'));
+
+    
+    
     setLoading(false);
   }
 
@@ -326,22 +332,25 @@ const Product: NextPage = (props: any) => {
     }
   }
   async function editProduct(url = '') {
-    const { success, msg, code } = await apiUpdateCtr({
-      type: 'products',
-      subType: 'editProduct',
-      shopId,
-      img: url.length > 2 ? url : formObj.img,
-      data: formObjRef.current,
-      selectedProducts,
-      selectedFabrics,
-    });
-    if (success) {
-      Toastify('success', 'Product Successfuly Edited..');
-      router.push('/shop/' + shopId + '/products');
-    } else {
-      Toastify('error', msg);
-      if (code == 100) setErrorForm({ ...errorForm, skuExist: true });
-    }
+    const res = await updateData('products', router.query.slug[1], {...formObjRef.current})
+    console.log(res);
+    
+    // const { success, msg, code } = await apiUpdateCtr({
+    //   type: 'products',
+    //   subType: 'editProduct',
+    //   shopId,
+    //   img: url.length > 2 ? url : formObj.img,
+    //   data: formObjRef.current,
+    //   selectedProducts,
+    //   selectedFabrics,
+    // });
+    // if (success) {
+    //   Toastify('success', 'Product Successfuly Edited..');
+    //   router.push('/shop/' + shopId + '/products');
+    // } else {
+    //   Toastify('error', msg);
+    //   if (code == 100) setErrorForm({ ...errorForm, skuExist: true });
+    // }
     setIsSaving(false);
   }
   async function deleteFunction(delType = '', id = 0, index: number) {
@@ -364,7 +373,7 @@ const Product: NextPage = (props: any) => {
   }
 
   useEffect(() => {
-    initDataPage(editId);
+    initDataPage(router.query.slug);
   }, [router.asPath]);
 
   const imageChange = (e: any) => {
@@ -375,7 +384,7 @@ const Product: NextPage = (props: any) => {
   };
   const checkboxHandleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.name == 'is_service')
-      setFormObj({ ...formObj, isService: event.target.checked, isSellOverStock: false });
+      setFormObj({ ...formObj, is_service: event.target.checked, isSellOverStock: false });
     else if (event.target.name == 'sell_over')
       setFormObj({ ...formObj, isSellOverStock: event.target.checked });
     else if (event.target.name == 'multi_price')
@@ -383,7 +392,7 @@ const Product: NextPage = (props: any) => {
     else if (event.target.name == 'is_fifo')
       setFormObj({ ...formObj, isFifo: event.target.checked });
     else if (event.target.name == 'is_fabric')
-      setFormObj({ ...formObj, isFabric: event.target.checked });
+      setFormObj({ ...formObj, is_fabric: event.target.checked });
   };
 
   const handleTooltipClose = () => {
@@ -511,7 +520,7 @@ const Product: NextPage = (props: any) => {
       sumCost += Number(sp.cost);
       sumPrice += Number(sp.price);
     });
-    setFormObj({ ...formObj, cost: sumCost, price: sumPrice });
+    setFormObj({ ...formObj, cost_price: sumCost, سثمم_price: sumPrice });
   }, [selectedProducts]);
   const handleRemoveImg = (e: any) => {
     if (!img) {
@@ -658,12 +667,12 @@ const Product: NextPage = (props: any) => {
                               type="text"
                               className="form-control"
                               placeholder="Product/Service Name"
-                              value={formObj.productName}
+                              value={formObj.name}
                               onChange={(e) => {
-                                setFormObj({ ...formObj, productName: e.target.value });
+                                setFormObj({ ...formObj, name: e.target.value });
                               }}
                             />
-                            {errorForm.productName && (
+                            {errorForm.name && (
                               <p className="p-1 h6 text-danger ">Enter Product name</p>
                             )}
                           </div>
@@ -721,13 +730,13 @@ const Product: NextPage = (props: any) => {
                               styles={colourStyles}
                               options={barcodes}
                               value={barcodes.filter((f: any) => {
-                                return f.value == formObj.barcodeType;
+                                return f.value == formObj.barcode_type;
                               })}
                               onChange={(itm) => {
-                                setFormObj({ ...formObj, barcodeType: itm!.value });
+                                setFormObj({ ...formObj, barcode_type: itm!.value });
                               }}
                             />
-                            {errorForm.barcodeType && (
+                            {errorForm.barcode_type && (
                               <p className="p-1 h6 text-danger ">Select One Option</p>
                             )}
                           </div>
@@ -768,10 +777,10 @@ const Product: NextPage = (props: any) => {
                               styles={colourStyles}
                               options={units}
                               value={units.filter((f: any) => {
-                                return f.value == formObj.unit;
+                                return f.value == formObj.unit_id;
                               })}
                               onChange={(itm) => {
-                                setFormObj({ ...formObj, unit: itm!.value });
+                                setFormObj({ ...formObj, unit_id: itm!.value });
                               }}
                             />
                           </div>
@@ -785,7 +794,7 @@ const Product: NextPage = (props: any) => {
                             <div className="field-section">
                               <Switch
                                 name={'is_fabric'}
-                                checked={formObj.isFabric}
+                                checked={formObj.is_fabric}
                                 onChange={checkboxHandleChange}
                               />
                             </div>
@@ -821,10 +830,10 @@ const Product: NextPage = (props: any) => {
                               styles={colourStyles}
                               options={cats}
                               value={cats.find((f: any) => {
-                                return f.value == formObj.cat;
+                                return f.value == formObj.category_id;
                               })}
                               onChange={(itm) => {
-                                setFormObj({ ...formObj, cat: itm!.value });
+                                setFormObj({ ...formObj, category_id: itm!.value });
                               }}
                             />
                           </div>
@@ -848,9 +857,9 @@ const Product: NextPage = (props: any) => {
                         onClick={(e) => {
                           e.preventDefault();
                           errors = [];
-                          if (formObj.productName.length == 0) errors.push('error8');
+                          if (formObj.name.length == 0) errors.push('error8');
                           if (formObj.sku.length == 0) errors.push('error7');
-                          if (formObj.barcodeType == '0') errors.push('error6');
+                          if (formObj.barcode_type == '0') errors.push('error6');
                           if (formObj.type == 'tailoring_package') {
                             if (formObj.tailoringPrices.length <= 1) errors.push('error5');
                             if (selectedFabrics.length == 0) errors.push('error1');
@@ -866,9 +875,9 @@ const Product: NextPage = (props: any) => {
                           }
                           setErrorForm({
                             ...errorForm,
-                            productName: formObj.productName.length == 0,
+                            name: formObj.name.length == 0,
                             sku: formObj.sku.length == 0,
-                            barcodeType: formObj.barcodeType == '0',
+                            barcode_type: formObj.barcode_type == '0',
                             fabs:
                               formObj.type == 'tailoring_package' && selectedFabrics.length == 0,
                             rules:
@@ -922,7 +931,7 @@ const Product: NextPage = (props: any) => {
                         <div className="field-section">
                           <Switch
                             name={'is_service'}
-                            checked={formObj.isService}
+                            checked={formObj.is_service}
                             onChange={checkboxHandleChange}
                           />
                         </div>
@@ -1180,10 +1189,10 @@ const Product: NextPage = (props: any) => {
                                 type="text"
                                 className="form-control"
                                 placeholder="Purchase Price"
-                                value={formObj.cost}
+                                value={formObj.cost_price}
                                 onKeyPress={handleNumberKeyPress}
                                 onChange={(e) => {
-                                  setFormObj({ ...formObj, cost: e.target.value });
+                                  setFormObj({ ...formObj, cost_price: e.target.value });
                                 }}
                               />
                             </div>
@@ -1200,10 +1209,10 @@ const Product: NextPage = (props: any) => {
                                 type="text"
                                 className="form-control"
                                 placeholder="Sell Price"
-                                value={formObj.price}
+                                value={formObj.sell_price}
                                 onKeyPress={handleNumberKeyPress}
                                 onChange={(e) => {
-                                  setFormObj({ ...formObj, price: e.target.value });
+                                  setFormObj({ ...formObj, sell_price: e.target.value });
                                 }}
                               />
                             </div>
@@ -1211,7 +1220,7 @@ const Product: NextPage = (props: any) => {
                         </>
                       )}
                       {/* Alert Quantity */}
-                      {!formObj.isService && (
+                      {!formObj.is_service && (
                         <div className="field-cover">
                           <div className="field-section">
                             <p>
@@ -1232,7 +1241,7 @@ const Product: NextPage = (props: any) => {
                           </div>
                         </div>
                       )}
-                      {formObj.isService == 0 && (
+                      {formObj.is_service == 0 && (
                         <>
                           {/* Sell Over Stock */}
                           <div className="field-cover">
@@ -1361,56 +1370,4 @@ const Product: NextPage = (props: any) => {
     </>
   );
 };
-export default Product;
-export async function getServerSideProps(context: any) {
-  const parsedCookies = cookie.parse(context.req.headers.cookie || '[]');
-  var _isOk = true,
-    _rule = true,
-    iType = '';
-  //check page params
-  var shopId = context.query.id;
-  var _addOrEdit = context.query.slug[0];
-  var _EditId = context.query.slug[1];
-
-  if (shopId == undefined) _isOk = false;
-  if (_addOrEdit != 'add' && _addOrEdit != 'edit') _isOk = false;
-
-  if (!_isOk) return { redirect: { permanent: false, destination: '/page403' } };
-
-  //check user permissions
-  await verifayTokens(
-    { headers: { authorization: 'Bearer ' + parsedCookies.tokend } },
-    (repo: ITokenVerfy) => {
-      _isOk = repo.status;
-      if (_isOk) {
-        var _rules = keyValueRules(repo.data.rules || []);
-
-        if (repo.data.types != undefined && repo.data.types.length > 0) {
-          const item: any = repo.data.types.find((tp: any) => tp.id == shopId);
-          if (item !== undefined) iType = item.type;
-        }
-
-        if (
-          _rules[-2] != undefined &&
-          _rules[-2][0].stuff != undefined &&
-          _rules[-2][0].stuff == 'owner'
-        ) {
-          _rule = true;
-        } else if (_isOk && _rules[shopId] != undefined) {
-          var _stuf = '';
-          _rules[shopId].forEach((dd: any) => (_stuf += dd.stuff));
-          _addOrEdit = getRealWord(_addOrEdit);
-          const { hasPermission } = hasPermissions(_stuf, 'products', _addOrEdit);
-          _rule = hasPermission;
-        } else _rule = false;
-      }
-    }
-  );
-  if (!_rule) return { redirect: { permanent: false, destination: '/page403' } };
-  if (!_isOk || iType.length == 0)
-    return { redirect: { permanent: false, destination: '/user/auth' } };
-  return {
-    props: { shopId, editId: _addOrEdit == 'edit' ? _EditId : 0, iType },
-  };
-  //status ok
-}
+export default withAuth(Product);

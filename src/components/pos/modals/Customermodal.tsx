@@ -9,26 +9,29 @@ import Box from '@mui/material/Box';
 import SnakeAlert from '../utils/SnakeAlert';
 import mStyle from '../../../styles/Customermodal.module.css';
 import { Toastify } from 'src/libs/allToasts';
+import { createNewData, findAllData, updateData } from 'src/services/crud.api';
+import { useRouter } from 'next/router';
 
 const Customermodal = (props: any) => {
   const { openDialog, statusDialog, userdata, showType, shopId } = props;
   const customerTemplate = {
     id: 0,
-    firstName: '',
-    lastName: '',
+    first_name: '',
+    last_name: '',
     mobile: '',
-    addr1: '',
-    addr2: '',
+    address_line_1: '',
+    address_line_2: '',
     city: '',
     state: '',
     country: '',
-    zipCode: '',
-    shipAddr: '',
+    zip_code: '',
+    shipping_address: '',
   };
   const [moreInfo, setMoreInfo] = useState(false);
   const [customerInfo, setCustomerInfo] = useState(customerTemplate);
   const { customers, setCustomers } = useContext(ProductContext);
   const [open, setOpen] = useState(false);
+  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false);
   const [openSnakeBar, setOpenSnakeBar] = useState(false);
   const handleClose = () => {
@@ -44,43 +47,35 @@ const Customermodal = (props: any) => {
   }, [statusDialog]);
 
   async function insertCustomerInfo() {
-    const { success, msg, code, newdata } = await apiInsertCtr({
-      type: 'customer',
-      subType: 'addCustomer',
-      shopId,
-      data: customerInfo,
-    });
-    if (success) {
-      setCustomers([...customers, newdata]);
+    const res = await createNewData(`customers/${router.query.id}`, customerInfo)
+    if (res.data.success) {
+      setCustomers([...customers, res.data.result.profile]);
       handleClose();
       Toastify('success', 'Successfully Created');
-    } else if (code == 100) Toastify('error', msg);
+    }
     else Toastify('error', 'Has Error, Try Again...');
   }
   async function getCustomerInfo(theId: any) {
     setIsLoading(true);
     setCustomerInfo(customerTemplate);
-    var result = await apiFetchCtr({
-      fetch: 'customer',
-      subType: 'getCustomerInfo',
-      theId,
-      shopId,
-    });
-    if (result.success) {
-      const selCustomer = result?.newdata[0];
+    const res = await findAllData(`customers/${theId}/show`)
+    console.log(res);
+    
+    if (res.data.success) {
+      const selCustomer = res.data.result.profile;
       setCustomerInfo({
         ...customerInfo,
         id: theId,
         mobile: selCustomer.mobile,
-        firstName: selCustomer.first_name,
-        lastName: selCustomer.last_name,
+        first_name: selCustomer.first_name,
+        last_name: selCustomer.last_name,
         city: selCustomer.city,
         state: selCustomer.state,
-        addr1: selCustomer.addr1,
-        addr2: selCustomer.addr2,
-        zipCode: selCustomer.zip_code,
+        address_line_1: selCustomer.address_line_1,
+        address_line_2: selCustomer.address_line_2,
+        zip_code: selCustomer.zip_code,
         country: selCustomer.country,
-        shipAddr: selCustomer.shipping_address,
+        shipping_address: selCustomer.shipping_address,
       });
       setIsLoading(false);
     } else {
@@ -88,21 +83,16 @@ const Customermodal = (props: any) => {
     }
   }
   async function editCustomerInfo() {
-    var result = await apiUpdateCtr({
-      type: 'customer',
-      subType: 'editCustomerInfo',
-      shopId,
-      data: customerInfo,
-    });
-    if (result.success) {
+    const res = await updateData('customers', customerInfo.id, customerInfo)
+    if (res.data.success) {
       const cinx = customers.findIndex((customer) => customer.value === customerInfo.id);
       if (cinx > -1) {
         const upCustomer = [...customers];
         upCustomer[cinx] = {
           ...upCustomer[cinx],
           value: customerInfo.id,
-          label: customerInfo.firstName + ' ' + customerInfo.lastName + ' | ' + customerInfo.mobile,
-          mobile: result.newdata.mobile,
+          label: customerInfo.first_name + ' ' + customerInfo.last_name + ' | ' + customerInfo.mobile,
+          mobile: res.data.result.profile.mobile,
         };
         setCustomers(upCustomer);
       }
@@ -138,9 +128,9 @@ const Customermodal = (props: any) => {
                           name="cname"
                           className="form-control"
                           placeholder="First Name"
-                          value={customerInfo.firstName}
+                          value={customerInfo.first_name}
                           onChange={(e) =>
-                            setCustomerInfo({ ...customerInfo, firstName: e.target.value })
+                            setCustomerInfo({ ...customerInfo, first_name: e.target.value })
                           }
                         />
                       </div>
@@ -151,9 +141,9 @@ const Customermodal = (props: any) => {
                           name="cemail"
                           className="form-control"
                           placeholder="Last Name"
-                          value={customerInfo.lastName}
+                          value={customerInfo.last_name}
                           onChange={(e) =>
-                            setCustomerInfo({ ...customerInfo, lastName: e.target.value })
+                            setCustomerInfo({ ...customerInfo, last_name: e.target.value })
                           }
                         />
                       </div>
@@ -192,9 +182,9 @@ const Customermodal = (props: any) => {
                             name=""
                             className="form-control"
                             placeholder="Address line 1"
-                            value={customerInfo.addr1}
+                            value={customerInfo.address_line_1}
                             onChange={(e) =>
-                              setCustomerInfo({ ...customerInfo, addr1: e.target.value })
+                              setCustomerInfo({ ...customerInfo, address_line_1: e.target.value })
                             }
                           />
                         </div>
@@ -205,9 +195,9 @@ const Customermodal = (props: any) => {
                             name=""
                             className="form-control"
                             placeholder="Address line 2"
-                            value={customerInfo.addr2}
+                            value={customerInfo.address_line_2}
                             onChange={(e) =>
-                              setCustomerInfo({ ...customerInfo, addr2: e.target.value })
+                              setCustomerInfo({ ...customerInfo, address_line_2: e.target.value })
                             }
                           />
                         </div>
@@ -257,9 +247,9 @@ const Customermodal = (props: any) => {
                             name=""
                             className="form-control"
                             placeholder="Zip code"
-                            value={customerInfo.zipCode}
+                            value={customerInfo.zip_code}
                             onChange={(e) =>
-                              setCustomerInfo({ ...customerInfo, zipCode: e.target.value })
+                              setCustomerInfo({ ...customerInfo, zip_code: e.target.value })
                             }
                           />
                         </div>
@@ -271,9 +261,9 @@ const Customermodal = (props: any) => {
                         name=""
                         className="form-control"
                         placeholder="Shipping address"
-                        value={customerInfo.shipAddr}
+                        value={customerInfo.shipping_address}
                         onChange={(e) =>
-                          setCustomerInfo({ ...customerInfo, shipAddr: e.target.value })
+                          setCustomerInfo({ ...customerInfo, shipping_address: e.target.value })
                         }
                       />
                     </>

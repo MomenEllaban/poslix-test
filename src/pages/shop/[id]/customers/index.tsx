@@ -30,8 +30,10 @@ import {
 } from '@mui/x-data-grid';
 import { ProductContext } from '../../../../context/ProductContext';
 import Customermodal from '../../../../components/pos/modals/Customermodal';
+import withAuth from 'src/HOCs/withAuth';
+import { findAllData } from 'src/services/crud.api';
 
-const Product: NextPage = (props: any) => {
+const Customers: NextPage = (props: any) => {
   const { shopId, rules } = props;
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
     value: 0,
@@ -47,6 +49,7 @@ const Product: NextPage = (props: any) => {
     []
   );
 
+  const [roles, setRoles] = useState([]);
   const [show, setShow] = useState(false);
   const [selectId, setSelectId] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -67,7 +70,10 @@ const Product: NextPage = (props: any) => {
 
   const columns: GridColDef[] = [
     { field: 'id', headerName: '#', minWidth: 50 },
-    { field: 'name', headerName: 'Name', flex: 1 },
+    { field: 'name', headerName: 'Name', flex: 1,
+    renderCell: ({row}) => (
+      <p>{row.first_name} {row.last_name}</p>
+    )},
     { field: 'mobile', headerName: 'Mobile', flex: 1 },
     {
       field: 'action',
@@ -78,14 +84,15 @@ const Product: NextPage = (props: any) => {
       renderCell: ({ row }: Partial<GridRowParams>) => (
         <>
           <ButtonGroup className="mb-2 m-buttons-style">
-            {rules.hasEdit && (
+            {/* {rules?.hasEdit && true */}
+            {true && (
               <Button
                 onClick={(event) => {
                   // router.push('/shop/' + shopId + '/customers/edit/' + row.id)
                   event.stopPropagation();
                   setCustomer({
                     value: row.id,
-                    label: 'walk-in customer',
+                    label: row.first_name + ' ' + row.last_name,
                     isNew: false,
                   });
                   setShowType('edit');
@@ -94,7 +101,8 @@ const Product: NextPage = (props: any) => {
                 <FontAwesomeIcon icon={faPenToSquare} />
               </Button>
             )}
-            {rules.hasDelete && (
+            {/* {rules?.hasDelete && true */}
+            {true && (
               <Button
                 onClick={(event) => {
                   event.stopPropagation();
@@ -124,21 +132,21 @@ const Product: NextPage = (props: any) => {
     );
   }
   async function initDataPage() {
-    const { success, newdata } = await apiFetchCtr({
-      fetch: 'customer',
-      subType: 'getCustomerlist',
-      shopId,
-    });
-    if (!success) {
-      Toastify('error', 'Somthing wrong!!, try agian');
-      return;
+    if(router.query.id) {
+      const res = await findAllData(`customers/${router.query.id}`)
+      if (res.data.status !== 200) {
+        Toastify('error', 'Somthing wrong!!, try agian');
+        return;
+      }
+      setCustomers(res.data.result);
     }
-    setCustomers(newdata);
     setIsLoading(false);
   }
 
   useEffect(() => {
-    var _locs = JSON.parse(localStorage.getItem('userlocs') || '[]');
+    // const roles = JSON.parse(localStorage.getItem('roles') || '[]');
+    // setRoles(roles.stuff)
+    const _locs = JSON.parse(localStorage.getItem('locations') || '[]');
     if (_locs.toString().length > 10)
       setLocationSettings(
         _locs[
@@ -147,20 +155,13 @@ const Product: NextPage = (props: any) => {
           })
         ]
       );
-    else alert('errorr location settings');
+      else alert('errorr location settings');
     initDataPage();
   }, [router.asPath]);
 
   const handleDeleteFuc = (result: boolean, msg: string, section: string) => {
-    if (result) {
-      const _data = [...customersList];
-      const idx = _data.findIndex((itm: any) => itm.id == selectId);
-      if (idx != -1) {
-        _data.splice(idx, 1);
-        setCustomers(_data);
-      }
-    }
     if (msg.length > 0) Toastify(result ? 'success' : 'error', msg);
+    initDataPage()
     setShow(false);
   };
   const onRowsSelectionHandler = (ids: any) => {};
@@ -173,13 +174,13 @@ const Product: NextPage = (props: any) => {
           alertFun={handleDeleteFuc}
           shopId={shopId}
           id={selectId}
-          type="customer"
-          subType="deleteCustomer">
+          url={"customers"}>
           Are you Sure You Want Delete This Customer ?
         </AlertDialog>
         {/* start */}
         {/* router.push('/shop/' + shopId + '/customers/add') */}
-        {!isLoading && rules.hasInsert && (
+        {/* {!isLoading && rules?.hasInsert && ( */}
+        {!isLoading && (
           <div className="mb-2">
             <button
               className="btn btn-primary p-3"
@@ -231,42 +232,4 @@ const Product: NextPage = (props: any) => {
     </>
   );
 };
-export default Product;
-export async function getServerSideProps(context: any) {
-  const parsedCookies = cookie.parse(context.req.headers.cookie || '[]');
-  var _isOk = true,
-    _rule = true;
-  var shopId = context.query.id;
-  if (shopId == undefined) return { redirect: { permanent: false, destination: '/page403' } };
-  var _userRules = {};
-  await verifayTokens(
-    { headers: { authorization: 'Bearer ' + parsedCookies.tokend } },
-    (repo: ITokenVerfy) => {
-      _isOk = repo.status;
-      if (_isOk) {
-        var _rules = keyValueRules(repo.data.rules || []);
-        if (
-          _rules[-2] != undefined &&
-          _rules[-2][0].stuff != undefined &&
-          _rules[-2][0].stuff == 'owner'
-        ) {
-          _rule = true;
-          _userRules = { hasDelete: true, hasEdit: true, hasView: true, hasInsert: true };
-        } else if (_rules[shopId] != undefined) {
-          var _stuf = '';
-          _rules[shopId].forEach((dd: any) => (_stuf += dd.stuff));
-          const { userRules, hasPermission } = hasPermissions(_stuf, 'customers');
-          _rule = hasPermission;
-          _userRules = userRules;
-        } else _rule = false;
-      }
-    }
-  );
-  if (!_isOk) return { redirect: { permanent: false, destination: '/user/auth' } };
-  if (!_rule) return { redirect: { permanent: false, destination: '/page403' } };
-
-  //status ok
-  return {
-    props: { shopId, rules: _userRules },
-  };
-}
+export default withAuth(Customers);

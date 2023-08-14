@@ -311,18 +311,10 @@ const Product: NextPage = (props: any) => {
       );
     else alert('errorr location settings');
     initDataPage();
-  }, [router.asPath, currentPage]);
+  }, [currentPage]);
 
   const handleDeleteFuc = (result: boolean, msg: string, section: string) => {
-    if (result) {
-      // const _data = [...products];
-      // const idx = _data.findIndex((itm: any) => itm.id == selectId);
-      // if (idx != -1) {
-      //   _data.splice(idx, 1);
-      //   setProducts(_data);
-      // }
-      initDataPage();
-    }
+    initDataPage();
     if (msg.length > 0) Toastify(result ? 'success' : 'error', msg);
     setShow(false);
     setShowDeleteAll(false);
@@ -376,8 +368,7 @@ const Product: NextPage = (props: any) => {
           alertFun={handleDeleteFuc}
           shopId={shopId}
           id={selectId}
-          type="products"
-          subType="deleteProduct">
+          url={'products'}>
           Are you Sure You Want Delete This Item?
         </AlertDialog>
         <AlertDialog
@@ -437,7 +428,7 @@ const Product: NextPage = (props: any) => {
                 }}
                 rows={products}
                 columns={columns}
-                // pageSize={10}
+                pageSize={10}
                 rowsPerPageOptions={[10]}
                 onSelectionModelChange={(ids: any) => onRowsSelectionHandler(ids)}
                 onCellClick={handleCellClick}
