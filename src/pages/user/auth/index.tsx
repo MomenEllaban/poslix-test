@@ -33,7 +33,7 @@ export default function RegisterPage() {
 
   const { user, setUser } = useUser();
 
-  const [isStep1, setIsStep1] = useState(true);
+  const [isStep1, setIsStep1] = useState(false);
 
   const [hasError, setHasError] = useState(false);
   const [hasErrorMsg, setHasErrorMsg] = useState('');
@@ -41,7 +41,8 @@ export default function RegisterPage() {
 
   const [showLoginDialog, setShowLoginDialog] = useState(true);
 
-  const RenderForm = () => (showLoginDialog ? <LoginView /> : <RegisterView />);
+  const RenderForm = () =>
+    showLoginDialog ? <LoginView /> : <RegisterView setIsRegisterDone={setIsStep1} />;
 
   async function getBusiness(user) {
     const { data } = await api.get<any, AxiosResponse<ICustomResponse<IUserBusiness>>, any>(
@@ -140,7 +141,7 @@ export default function RegisterPage() {
                 <div className="login-logo-box">
                   <img src="/images/logo1.png" />
                 </div>
-                {isStep1 && (
+                {!isStep1 && (
                   <div className="login-register-box">
                     <h3>Welcome Back</h3>
                     <p>To Start Working, First Login Or Register</p>
