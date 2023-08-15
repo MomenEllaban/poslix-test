@@ -11,6 +11,7 @@ import {
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import AddNewPayment from './AddNewPayment';
 import { Toastify } from 'src/libs/allToasts';
+import { findAllData } from 'src/services/crud.api';
 const PurchasePaymentsList = (props: any) => {
   const { shopId, purchaseId, purchases } = props;
   const [information, setInformation] = useState<any>({ totalPaid: 0, totalLeft: 0, isPaid: 0 });
@@ -21,20 +22,12 @@ const PurchasePaymentsList = (props: any) => {
   const [selectedIndex, setSlectedIndex] = useState(-1);
   const [isLoading, setIsLoading] = useState(true);
   async function intPageData() {
-    const { success, newdata, msg } = await apiFetchCtr({
-      fetch: 'transactions',
-      subType: 'getPurchasePayments',
-      shopId,
-      purchaseId,
-    });
-
-    if (!success) {
-      alert(msg);
-      return;
+    const res = await findAllData(`purchase/${purchaseId}/show`)
+    if (res.data.success) {
+      setOrderPayments(res.data.result.payment);
+      setIsLoading(false);
     }
 
-    setOrderPayments(newdata);
-    setIsLoading(false);
   }
   const columns: GridColDef[] = [
     { field: 'payment_type', headerName: 'Payment Name', minWidth: 200 },
@@ -45,7 +38,7 @@ const PurchasePaymentsList = (props: any) => {
   useEffect(() => {
     if (selectedIndex == -1) return;
     var _totalPaid = 0;
-    orderPayments.map((itm) => (_totalPaid += parseFloat(itm.amount.toString())));
+    orderPayments?.map((itm) => (_totalPaid += parseFloat(itm.amount.toString())));
 
     setInformation({
       ...information,

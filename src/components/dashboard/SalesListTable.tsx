@@ -33,7 +33,7 @@ import { cartJobType } from 'src/recoil/atoms';
 import { useRecoilState } from 'recoil';
 
 export default function SalesListTable(props: any) {
-  const { shopId, rules } = props;
+  const { shopId, rules, salesList } = props;
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
     value: 0,
     label: '',
@@ -47,7 +47,7 @@ export default function SalesListTable(props: any) {
   const handleClose = () => {
     setAnchorEl(null);
   };
-  const [sales, setsales] = useState<any>([]);
+  const [sales, setSales] = useState<any>([]);
   const router = useRouter();
   const [selectId, setSelectId] = useState(0);
   const [selectRow, setSelectRow] = useState<any>({});
@@ -65,27 +65,27 @@ export default function SalesListTable(props: any) {
   //table columns
   const columns: GridColDef[] = [
     { field: 'id', headerName: '#', minWidth: 50 },
-    { field: 'customer_name', headerName: 'Customer Name', flex: 1 },
+    { field: 'contact_name', headerName: 'Customer Name', flex: 1 },
     { field: 'mobile', headerName: 'Mobile', flex: 1, disableColumnMenu: true },
-    { field: 'sale_date', headerName: 'Sale Date', flex: 1 },
+    { field: 'date', headerName: 'Sale Date', flex: 1 },
     // { field: "total_price", headerName: "Final Total ", flex: 1 },
     {
-      field: 'total_price',
+      field: 'sub_total',
       headerName: 'Final Total ',
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) => (
-        <>{Number(+row.total_price).toFixed(locationSettings?.currency_decimal_places)}</>
+        <>{Number(+row.sub_total).toFixed(locationSettings?.currency_decimal_places)}</>
       ),
     },
-    { field: 'amount', headerName: 'Amount paid', flex: 1 },
+    { field: 'payed', headerName: 'Amount paid', flex: 1 },
     {
       flex: 1,
       field: 'TotalDue',
       headerName: 'Total Due ',
       renderCell: ({ row }: Partial<GridRowParams>) => (
         <>
-          {Number(+row.total_price - +row.amount) > 0
-            ? Number(+row.total_price - +row.amount).toFixed(
+          {Number(+row.sub_total - +row.payed) > 0
+            ? Number(+row.sub_total - +row.payed).toFixed(
                 locationSettings?.currency_decimal_places
               )
             : 0}
@@ -97,13 +97,13 @@ export default function SalesListTable(props: any) {
       field: 'status',
       headerName: 'Status',
       renderCell: ({ row }: Partial<GridRowParams>) => {
-        if (Number(+row.total_price - +row.amount) === 0) {
+        if (Number(+row.sub_total - +row.payed) === 0) {
           return (
             <>
               <div className="sty_Paid">Paid</div>
             </>
           );
-        } else if (Number(+row.total_price - +row.amount) === Number(row.total_price)) {
+        } else if (Number(+row.sub_total - +row.payed) === Number(row.sub_total)) {
           return (
             <>
               <div className="sty_n_Paid">Not Paid</div>
@@ -140,7 +140,8 @@ export default function SalesListTable(props: any) {
               }}>
               <FontAwesomeIcon icon={faPenToSquare} />
             </Button>
-            {rules.hasDelete && (
+            {/* {rules.hasDelete && ( */}
+            {true && (
               <Button
                 onClick={() => {
                   setSelectId(row.id);
@@ -581,16 +582,16 @@ export default function SalesListTable(props: any) {
   }
   // init sales data
   async function initDataPage() {
-    const { success, newdata } = await apiFetchCtr({
-      fetch: 'transactions',
-      subType: 'getSales',
-      shopId,
-    });
-    if (success) {
-      setsales(newdata.data);
-      if (newdata.invoiceDetails != null && newdata.invoiceDetails.length > 10)
-        setInvoicDetails(JSON.parse(newdata.invoiceDetails));
-    }
+    // const { success, newdata } = await apiFetchCtr({
+    //   fetch: 'transactions',
+    //   subType: 'getSales',
+    //   shopId,
+    // });
+    // if (success) {
+    //   setSales(newdata.data);
+    //   if (newdata.invoiceDetails != null && newdata.invoiceDetails.length > 10)
+    //     setInvoicDetails(JSON.parse(newdata.invoiceDetails));
+    // }
   }
 
   async function getItems(id: number) {
@@ -608,7 +609,7 @@ export default function SalesListTable(props: any) {
   }
 
   useEffect(() => {
-    var _locs = JSON.parse(localStorage.getItem('userlocs') || '[]');
+    var _locs = JSON.parse(localStorage.getItem('locations') || '[]');
     if (_locs.toString().length > 10)
       setLocationSettings(
         _locs[
@@ -617,8 +618,10 @@ export default function SalesListTable(props: any) {
           })
         ]
       );
-    else alert('errorr location settings');
-    initDataPage();
+      else alert('errorr location settings');
+      console.log(locationSettings);
+      
+      initDataPage();
   }, [router.asPath]);
 
   const handleDeleteFuc = (result: boolean, msg: string, section: string) => {
@@ -627,7 +630,7 @@ export default function SalesListTable(props: any) {
       const idx = _data.findIndex((itm: any) => itm.id == selectId);
       if (idx != -1) {
         _data.splice(idx, 1);
-        setsales(_data);
+        setSales(_data);
       }
     }
     if (msg.length > 0) Toastify(result ? 'success' : 'error', msg);
@@ -650,7 +653,7 @@ export default function SalesListTable(props: any) {
             ? userData.totalDue
             : `${parseFloat(_data[idx].amount) + parseFloat(userData.totalDue)}.000`;
       }
-      setsales(_data);
+      setSales(_data);
       setSelectRow(_data[idx]);
       setSelectId(_data[idx].id);
       getItems(_data[idx].id);
@@ -728,7 +731,7 @@ export default function SalesListTable(props: any) {
               border: 'none',
             },
           }}
-          rows={sales}
+          rows={salesList}
           columns={columns}
           initialState={{
             columns: { columnVisibilityModel: { mobile: false } },
@@ -798,7 +801,7 @@ export default function SalesListTable(props: any) {
                     {edit ? (
                       <input type="text" className="form-control" value={selectRow.customer_name} />
                     ) : (
-                      <p>{selectRow.customer_name}</p>
+                      <p>{selectRow.contact_name}</p>
                     )}
                   </div>
                   <div className="top-detials-item" style={{ fontSize: '13px' }}>
@@ -878,7 +881,7 @@ export default function SalesListTable(props: any) {
                         />
                       ) : (
                         Number(selectRow.total_price).toFixed(
-                          locationSettings.currency_decimal_places
+                          locationSettings?.currency_decimal_places
                         )
                       )}
                     </div>
@@ -915,7 +918,7 @@ export default function SalesListTable(props: any) {
         statusDialog={paymentModalShow}
         setPaymentModalShow={setPaymentModalShow}
         setPaymentModalData={setPaymentModalData}
-        location={locationSettings.label}
+        location={locationSettings?.label}
         shopId={shopId}
         completeHandele={handelPaymentFun}
         handlePrint={handlePrint3}

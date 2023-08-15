@@ -223,8 +223,6 @@ const Product: NextPage = (props: any) => {
   prevUrlRef.current = previewUrl;
 
   async function initDataPage(url) {
-    console.log('url', url, url?.length);
-    
     if (url?.length == 2) setIsEdit(true);
     
     if (url?.length == 2) {

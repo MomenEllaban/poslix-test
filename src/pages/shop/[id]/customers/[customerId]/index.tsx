@@ -97,32 +97,6 @@ const Customer: NextPage = (props: any) => {
     ],
   };
 
-  async function getCustomerInfo(theId: any) {
-    setIsLoading(true);
-    setCustomerInfo(customerTemplate);
-    const res = await findAllData(`customers/${customerId}/show`)
-    if (res.data.success) {
-      const selCustomer = res.data.result?.profile;
-      setCustomerInfo({
-        ...customerInfo,
-        id: theId,
-        mobile: selCustomer.mobile,
-        first_name: selCustomer.first_name,
-        last_name: selCustomer.last_name,
-        city: selCustomer.city,
-        state: selCustomer.state,
-        address_line_1: selCustomer.address_line_1,
-        address_line_2: selCustomer.address_line_2,
-        zip_code: selCustomer.zip_code,
-        country: selCustomer.country,
-        shipping_address: selCustomer.shipping_address,
-      });
-      setIsLoading(false);
-    } else {
-      Toastify('error', 'has error, Try Again...');
-    }
-  }
-
   const columns: GridColDef[] = [
     { field: 'id', headerName: '#', minWidth: 50 },
     { field: 'customer_name', headerName: 'Customer Name', flex: 1 },
@@ -186,16 +160,34 @@ const Customer: NextPage = (props: any) => {
     },
   ];
 
-  const [sales, setsales] = useState<any>([]);
+  const [sales, setSales] = useState<any>([]);
   // init sales data
   async function initDataPage() {
-    const { success, newdata } = await apiFetchCtr({
-      fetch: 'transactions',
-      subType: 'getSales',
-      shopId,
-    });
-    if (success) {
-      setsales(newdata.data);
+    if(router.query.customerId){
+      const res = await findAllData(`customers/${router.query.customerId}/show`)
+      if (res.data.success) {
+        setSales(res.data.result?.sales);
+        setIsLoading(true);
+        setCustomerInfo(customerTemplate);
+        const selCustomer = res.data.result?.profile;
+        setCustomerInfo({
+          ...customerInfo,
+          id: selCustomer.id,
+          mobile: selCustomer.mobile,
+          first_name: selCustomer.first_name,
+          last_name: selCustomer.last_name,
+          city: selCustomer.city,
+          state: selCustomer.state,
+          address_line_1: selCustomer.address_line_1,
+          address_line_2: selCustomer.address_line_2,
+          zip_code: selCustomer.zip_code,
+          country: selCustomer.country,
+          shipping_address: selCustomer.shipping_address,
+        });
+      } else {
+        Toastify('error', 'has error, Try Again...');
+      }
+      setIsLoading(false);
     }
   }
 
@@ -226,20 +218,6 @@ const Customer: NextPage = (props: any) => {
       </GridToolbarContainer>
     );
   }
-
-  useEffect(() => {
-    let _locs = JSON.parse(localStorage.getItem('locations') || '[]');
-    if (_locs.toString().length > 10)
-      setLocationSettings(
-        _locs[
-          _locs.findIndex((loc: any) => {
-            return loc.value == shopId;
-          })
-        ]
-      );
-    else alert('errorr location settings');
-    getCustomerInfo(customerId);
-  }, [router.asPath]);
 
   return (
     <>
@@ -390,7 +368,7 @@ const Customer: NextPage = (props: any) => {
                 </div>
               </Tab>
               <Tab eventKey="Sales" title="Sales">
-                <SalesListTable shopId={shopId} rules={rules} />
+                <SalesListTable shopId={router.query.id} customerId={router.query.id} salesList={sales} />
               </Tab>
               {isOrder && (
                 <Tab eventKey="Orders" title="Orders">
