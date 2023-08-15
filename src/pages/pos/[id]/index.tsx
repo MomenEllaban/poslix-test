@@ -20,7 +20,7 @@ import {
   useTaxesList,
 } from 'src/services/pos.service';
 import OrdersComponent from '../../../components/pos/CartComponent';
-import { ItemList } from '../../../components/pos/ItemList';
+import { ItemList } from '../../../components/pos/_components/item-list/ItemList';
 import NavMenu from '../../../components/pos/parts/NavMenu';
 import { useProducts } from '../../../context/ProductContext';
 import { cartJobType } from '../../../recoil/atoms';

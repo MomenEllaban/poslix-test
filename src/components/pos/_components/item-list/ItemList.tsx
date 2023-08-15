@@ -1,21 +1,23 @@
-import { CSSProperties, useContext, useEffect, useState } from 'react';
+import { IProduct } from '@models/pos.types';
+import { CSSProperties, useEffect, useState } from 'react';
 import ClipLoader from 'react-spinners/ClipLoader';
 import { useRecoilState } from 'recoil';
 import { cartJobType } from 'src/recoil/atoms';
-import { ProductContext } from '../../context/ProductContext';
-import { IproductInfo } from '../../models/common-model';
-import BrandSwiper from './_components/brand-slider/BrandSlider';
-import { ItemCard } from './utils/ItemCard';
-import { TabPanel } from './_components/tab-panel/TabPanel';
+import { useProducts } from '../../../../context/ProductContext';
+import BrandSwiper from '../brand-slider/BrandSlider';
+import { TabPanel } from '../tab-panel/TabPanel';
+import { ItemCard } from '../../utils/ItemCard';
+import classNames from 'classnames';
+import styles from './ItemList.module.scss';
 
 export const ItemList: any = (props: any) => {
   const { lang } = props;
 
   const [selectedTab, setSelectedTab] = useState('category');
   const [isLoading, setIsLoading] = useState(true);
-  const { products, cats, brands } = useContext(ProductContext);
+  const { products, cats, brands } = useProducts();
   const [selectedCat, setSelectedCat] = useState(0);
-  const [productsItems, SetProductsItems] = useState<IproductInfo[]>([]);
+  const [productsItems, SetProductsItems] = useState<IProduct[]>([]);
   const [selectedBrand, setSelectedBrand] = useState(0);
   const [jobType] = useRecoilState(cartJobType);
 
@@ -24,10 +26,14 @@ export const ItemList: any = (props: any) => {
     margin: '0 auto',
     borderColor: '48b7b9',
   };
-  useEffect(() => {
-    SetProductsItems(products?.products);
+  const handleTabChange = (value: any) => {
+    setSelectedTab(value);
     setIsLoading(false);
-  }, [products?.products]);
+  };
+  useEffect(() => {
+    SetProductsItems(products);
+    setIsLoading(false);
+  }, [products]);
 
   useEffect(() => {
     if (jobType.req == 102) setIsLoading(true);
@@ -35,16 +41,8 @@ export const ItemList: any = (props: any) => {
 
   return (
     <div className="card" style={{ width: '60%' }}>
-      <div className="card-body">
-        {/* TabPanel   */}
-        <TabPanel
-          activeTab={selectedTab}
-          onTabChange={(value: any) => {
-            setSelectedTab(value);
-            setIsLoading(false);
-          }}
-          lang={lang}
-        />
+      <div className={classNames('card-body', styles['item-list__container'])}>
+        <TabPanel lang={lang} activeTab={selectedTab} onTabChange={handleTabChange} />
         {/* Swiper   */}
         <BrandSwiper
           onTabChange={selectedTab}
@@ -54,7 +52,7 @@ export const ItemList: any = (props: any) => {
 
             setIsLoading(true);
             setTimeout(() => {
-              setIsLoading(false);
+              setIsLoading(false); //! whyyyyyyy
             }, 100);
           }}
           dataItems={{ cats: cats, brands: brands }}
