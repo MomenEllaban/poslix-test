@@ -29,7 +29,7 @@ import {
   GridToolbarExport,
 } from '@mui/x-data-grid';
 import { ProductContext } from '../../../../context/ProductContext';
-import Customermodal from '../../../../components/pos/modals/Customermodal';
+import Customermodal from '../../../../components/pos/modals/CustomerModal';
 
 const Product: NextPage = (props: any) => {
   const { shopId, rules } = props;

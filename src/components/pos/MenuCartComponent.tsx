@@ -18,7 +18,7 @@ import {
   IreadyGroupTax,
 } from '../../models/common-model';
 import { cartJobType, clearOrders, productDetails } from '../../recoil/atoms';
-import Customermodal from './modals/Customermodal';
+import Customermodal from './modals/CustomerModal';
 import TailoringModal from './modals/TailoringModal';
 import VariationModal from './modals/VariationModal';
 import { MenuOrdersFooter } from './utils/MenuOrdersFooter';

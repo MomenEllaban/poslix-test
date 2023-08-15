@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import Select from 'react-select';
 import { useProducts } from 'src/context/ProductContext';
 import { Toastify } from 'src/libs/allToasts';
-import CustomerModal from '../modals/Customermodal';
+import CustomerModal from '../modals/CustomerModal';
 
 export default function CustomerDataSelect({
   shopId,
