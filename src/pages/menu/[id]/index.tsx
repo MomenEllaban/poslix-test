@@ -1,18 +1,20 @@
+import { faCashRegister } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { ITokenVerfy } from '@models/common-model';
+import * as cookie from 'cookie';
 import type { NextPage } from 'next';
 import Head from 'next/head';
 import Script from 'next/script';
-import { useRecoilState } from 'recoil';
-import { OrdersComponent } from '../../../components/pos/CartComponent';
-import { ItemList } from '../../../components/pos/ItemList';
-import NavMenu from '../../../components/pos/parts/NavMenu';
-import 'remixicon/fonts/remixicon.css';
 import { useContext, useEffect, useState } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCashRegister } from '@fortawesome/free-solid-svg-icons';
-import { cartJobType } from '../../../recoil/atoms';
-import { apiFetchCtr, apiInsert, apiInsertCtr } from 'src/libs/dbUtils';
+import { useRecoilState } from 'recoil';
+import 'remixicon/fonts/remixicon.css';
+import { MenuOrderComponent } from 'src/components/pos/MenuCartComponent';
+import { UserContext } from 'src/context/UserContext';
+import { Toastify } from 'src/libs/allToasts';
+import { apiFetchCtr, apiInsertCtr } from 'src/libs/dbUtils';
+import { ItemList } from '../../../components/pos/ItemList';
 import { ProductContext } from '../../../context/ProductContext';
-import * as cookie from 'cookie';
+import { cartJobType } from '../../../recoil/atoms';
 import {
   hasPermissions,
   isNumber,
@@ -20,10 +22,6 @@ import {
   locationPermission,
   verifayTokens,
 } from '../../api/checkUtils';
-import { ITokenVerfy } from '@models/common-model';
-import { UserContext } from 'src/context/UserContext';
-import { Toastify } from 'src/libs/allToasts';
-import { MenuOrderComponent } from 'src/components/pos/MenuCartComponent';
 
 const Home: NextPage = (props: any) => {
   const { shopId } = props;

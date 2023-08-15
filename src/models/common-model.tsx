@@ -97,6 +97,8 @@ export interface ITax {
   is_primary: boolean | 0 | 1;
   Etax_type: string;
   tax_group: ITaxGroup[];
+
+  isNew?: number; // this is not existed but to ignore errors
 }
 export interface IreadyGroupTax {
   primary: number;

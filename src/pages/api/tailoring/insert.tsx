@@ -47,7 +47,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
                 const sqlValues: any = [];
                 data.sizes.map((itm: ITax) => {
                   if (itm.isNew && itm.name.length > 0)
-                    sqlValues.push([tail.insertId, itm.name, itm.isPrimary]);
+                    sqlValues.push([tail.insertId, itm.name, itm.is_primary]);
                 });
 
                 if (sqlValues.length) {

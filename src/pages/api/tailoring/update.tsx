@@ -50,13 +50,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
                 const sqlValues: any = [];
                 data.sizes.map(async (itm: ITax) => {
                   if (itm.isNew && itm.name.length > 0)
-                    sqlValues.push([id, itm.name, itm.isPrimary]);
+                    sqlValues.push([id, itm.name, itm.is_primary]);
                   else {
                     await con
                       .promise()
                       .query('update tailoring_sizes set name = ?, is_primary = ? where id = ?', [
                         itm.name,
-                        itm.isPrimary,
+                        itm.is_primary,
                         itm.id,
                       ])
                       .then((rows: any, fields: any) => {})

@@ -71,7 +71,7 @@ function AddGroupModal(props: any) {
       taxesGroup.map((tg: any) => {
         if (tg.id == id) {
           setGname(tg.name);
-          setIsDefault(tg.isPrimary);
+          setIsDefault(tg.is_primary);
         }
       });
     }
@@ -81,14 +81,14 @@ function AddGroupModal(props: any) {
   const handleShow = () => props.alertFun(true);
 
   const calcu = () => {
-    const _taxs = [...allItems];
+    const _taxs = [...allItems] as any[];
     var _total = 0;
     for (var j = 0; j < _taxs.length; j++)
       _total += _taxs[j].isChoosed ? Number(_taxs[j].amount) : 0;
     setTotalTax(_total);
   };
   const handleSwitchChange = (e: any, i: number) => {
-    const _taxs = [...allItems];
+    const _taxs = [...allItems] as any[];
     _taxs[i].isChoosed = !_taxs[i].isChoosed;
     setAllItems(_taxs);
     calcu();
@@ -120,14 +120,14 @@ function AddGroupModal(props: any) {
     if (id == 0) {
       if (isDefault) {
         const _taxs = [...dataItems];
-        for (var j = 0; j < _taxs.length; j++) dataItems[j].isPrimary = false;
+        for (var j = 0; j < _taxs.length; j++) dataItems[j].is_primary = false;
       }
       dataItems.push({
         id: data,
         name: gname,
         amount: totalTax,
         amountType: '',
-        isPrimary: isDefault,
+        is_primary: isDefault,
         isChoosed: 0,
         taxType: 'group',
         isNew: 0,
@@ -135,7 +135,7 @@ function AddGroupModal(props: any) {
     } else {
       if (isDefault) {
         const _taxs = [...dataItems];
-        for (var j = 0; j < _taxs.length; j++) dataItems[j].isPrimary = id == dataItems[j].id;
+        for (var j = 0; j < _taxs.length; j++) dataItems[j].is_primary = id == dataItems[j].id;
       }
     }
     handleClose();
@@ -173,25 +173,23 @@ function AddGroupModal(props: any) {
                     if (!ex.isNew) {
                       return [
                         <>
-                          {!ex.isSplit ? (
+                          {!(ex as any).isSplit ? (
                             <tr key={i}>
                               <td>
                                 {ex.name}{' '}
                                 <span style={{ fontSize: '10px', color: '#a3a0a0' }}>
-                                  {ex.isPrimary ? '[Primary]' : ''}
+                                  {ex.is_primary ? '[Primary]' : ''}
                                 </span>
                               </td>
                               <td>
                                 {ex.amount}
-                                {ex.amountType == 'percentage'
-                                  ? '%'
-                                  : locationSettings?.currency_code}
+                                {ex.Etype == 'percentage' ? '%' : locationSettings?.currency_code}
                               </td>
                               <td>
                                 <Form.Check
                                   type="checkbox"
                                   className="custom-checkbox"
-                                  checked={ex.isChoosed ? true : false}
+                                  checked={(ex as any).isChoosed ? true : false}
                                   onChange={(e) => {
                                     handleSwitchChange(e, i);
                                   }}
