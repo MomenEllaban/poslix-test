@@ -8,6 +8,7 @@ import { ToastContainer } from 'react-toastify';
 import { RecoilRoot } from 'recoil';
 import { ProductProvider, UserProvider } from 'src/components/providers';
 import { DarkModeProvider } from 'src/context/DarkModeContext';
+import { SWRConfig } from 'swr';
 
 // CSS
 import '@fortawesome/fontawesome-svg-core/styles.css';
@@ -31,7 +32,9 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
             <ProductProvider>
               <DarkModeProvider>
                 <NextNProgress />
-                <Component {...pageProps} />
+                <SWRConfig>
+                  <Component {...pageProps} />
+                </SWRConfig>
                 <ToastContainer />
               </DarkModeProvider>
             </ProductProvider>

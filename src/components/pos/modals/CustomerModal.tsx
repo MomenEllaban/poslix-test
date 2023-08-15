@@ -1,40 +1,39 @@
 import { joiResolver } from '@hookform/resolvers/joi';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button, Form, Modal } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import FormField from 'src/components/form/FormField';
-import SelectField from 'src/components/form/SelectField';
 import { Toastify } from 'src/libs/allToasts';
 import { addCustomerSchema } from 'src/modules/pos/_schema/add-customer.schema';
-import { useCurrenciesList } from 'src/services/business.service';
 import api from 'src/utils/app-api';
-import { ProductContext } from '../../../context/ProductContext';
-import { apiFetchCtr, apiUpdateCtr } from '../../../libs/dbUtils';
 import { useSWRConfig } from 'swr';
+import { useProducts } from '../../../context/ProductContext';
+import { apiUpdateCtr } from '../../../libs/dbUtils';
+
+const customerTemplate = {
+  id: 0,
+  first_name: '',
+  last_name: '',
+  mobile: '',
+  city: '',
+  state: '',
+  country: '',
+  zip_code: '',
+  address_line_1: '',
+  address_line_2: '',
+};
 
 const CustomerModal = (props: any) => {
   const { openDialog, statusDialog, userdata, showType, shopId } = props;
-  const customerTemplate = {
-    id: 0,
-    firstName: '',
-    lastName: '',
-    mobile: '',
-    addr1: '',
-    addr2: '',
-    city: '',
-    state: '',
-    country: '',
-    zipCode: '',
-    shipAddr: '',
-  };
   const [open, setOpen] = useState(false);
   const [moreInfo, setMoreInfo] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [countryList, setCountryList] = useState<any[]>([]);
-  const { customers, setCustomers } = useContext(ProductContext);
+
   const [customerInfo, setCustomerInfo] = useState(customerTemplate);
+  const { customers, setCustomers } = useProducts();
 
   const { mutate } = useSWRConfig();
   const {
@@ -52,50 +51,54 @@ const CustomerModal = (props: any) => {
     // defaultValues: initState,
   });
 
+  const handleEditCustomer = (data: any) => {
+    api
+      .put('/customers/' + userdata.value, data)
+      .then((res) => res.data.result)
+      .then((res) => {
+        mutate('/customers/' + shopId);
+        const cinx = customers.findIndex((customer) => customer.value === res.id);
+        if (cinx > -1) {
+          const upCustomer = [...customers];
+          upCustomer[cinx] = {
+            ...upCustomer[cinx],
+            value: res.id,
+            label: res.first_name + ' ' + res.last_name + ' | ' + res.mobile,
+          };
+          setCustomers(upCustomer);
+        }
+
+        Toastify('success', 'Successfully Update');
+        handleClose();
+      })
+      .catch(() => Toastify('error', 'Has Error, Try Again...'))
+      .finally(() => setIsLoading(false));
+  };
+
+  const handleAddCustomer = (data: any) => {
+    api
+      .post('/customers/' + shopId, data)
+      .then((res) => res.data.result)
+      .then((res) => {
+        mutate('/customers/' + shopId);
+        setCustomers([...customers, res]);
+        Toastify('success', 'Successfully Created');
+        handleClose();
+      })
+      .catch(() => {
+        Toastify('error', 'Has Error, Try Again...');
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  };
+  
   const onSubmit = async (data: any) => {
     setIsLoading(true);
-    if (showType == 'edit') {
-      api
-        .put('/customers/' + userdata.value, data)
-        .then((res) => res.data.result)
-        .then((res) => {
-          mutate('/customers/' + shopId);
-          const cinx = customers.findIndex((customer) => customer.value === res.id);
-          if (cinx > -1) {
-            const upCustomer = [...customers];
-            upCustomer[cinx] = {
-              ...upCustomer[cinx],
-              value: res.id,
-              label: res.first_name + ' ' + res.last_name + ' | ' + res.mobile,
-            };
-            setCustomers(upCustomer);
-          }
-
-          Toastify('success', 'Successfully Update');
-          handleClose();
-        })
-        .catch(() => {
-          Toastify('error', 'Has Error, Try Again...');
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
+    if (showType === 'edit') {
+      handleEditCustomer(data);
     } else {
-      api
-        .post('/customers/' + shopId, data)
-        .then((res) => res.data.result)
-        .then((res) => {
-          mutate('/customers/' + shopId);
-          setCustomers([...customers, res]);
-          Toastify('success', 'Successfully Created');
-          handleClose();
-        })
-        .catch(() => {
-          Toastify('error', 'Has Error, Try Again...');
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
+      handleAddCustomer(data);
     }
   };
   const onError = (errors: any, e: any) => console.log(errors, e);
@@ -125,30 +128,6 @@ const CustomerModal = (props: any) => {
       .finally(() => {
         setIsLoading(false);
       });
-  }
-
-  async function editCustomerInfo() {
-    var result = await apiUpdateCtr({
-      type: 'customer',
-      subType: 'editCustomerInfo',
-      shopId,
-      data: customerInfo,
-    });
-    if (result.success) {
-      const cinx = customers.findIndex((customer) => customer.value === customerInfo.id);
-      if (cinx > -1) {
-        const upCustomer = [...customers];
-        upCustomer[cinx] = {
-          ...upCustomer[cinx],
-          value: customerInfo.id,
-          label: customerInfo.firstName + ' ' + customerInfo.lastName + ' | ' + customerInfo.mobile,
-          mobile: result.newdata.mobile,
-        };
-        setCustomers(upCustomer);
-      }
-      handleClose();
-      Toastify('success', 'Successfully Edited');
-    } else Toastify('error', 'has error, Try Again...');
   }
 
   useEffect(() => {
