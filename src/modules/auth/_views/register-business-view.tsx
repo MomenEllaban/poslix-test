@@ -38,9 +38,10 @@ export default function RegisterBusinessView() {
 
   useBusinessTypesList({
     onSuccess(data, key, config) {
-      const _businessTypesList = data.result.map((itm: any) => {
-        return { value: itm.id, label: itm.name };
-      });
+      const _businessTypesList = data.result.map((itm: any) => ({
+        value: itm.id,
+        label: itm.name,
+      }));
       setBusniessTypesList(_businessTypesList);
     },
   });
@@ -126,7 +127,7 @@ export default function RegisterBusinessView() {
               width={25}
               height={25}
               className="login-loading"
-              src={'/images/loading.gif'}
+              src="/images/loading.gif"
             />
           )}
           Create business
@@ -142,15 +143,14 @@ export async function getServerSideProps(context) {
   if (session) {
     if (session.user.user_type === 'owner') {
       return {
-        redirect: { destination: '/' + session.user.username + '/business', permenant: false },
-        props: { session },
-      };
-    } else {
-      return {
-        redirect: { destination: '/shop', permenant: false },
+        redirect: { destination: `/${session.user.username}/business`, permenant: false },
         props: { session },
       };
     }
+    return {
+      redirect: { destination: '/shop', permenant: false },
+      props: { session },
+    };
   }
 
   return {
