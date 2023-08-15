@@ -27,14 +27,19 @@ import { cartJobType } from '../../../recoil/atoms';
 
 import 'remixicon/fonts/remixicon.css';
 
-const Home: NextPage = (props: any) => {
+const Home: NextPage = ({ shopId: _id }: any) => {
   const router = useRouter();
-  const [shopId, setShopId] = useState(props.shopId);
 
-  // const [isOpenRegister, setIsOpenRegister] = useState(false);
+  const [lang, setLang] = useState(en);
+  const [shopId, setShopId] = useState(_id);
+  const [cusLocs, setCusLocs] = useState([]);
+  const [cashHand, setCashHand] = useState(0);
+  const [locations, setLocations] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [isOpenRegister, setIsOpenRegister] = useState(true);
 
   const [jobType] = useRecoilState(cartJobType);
+
   const {
     setCats,
     setBrands,
@@ -49,23 +54,15 @@ const Home: NextPage = (props: any) => {
   const { setLocationSettings, setTailoringSizes, setInvoicDetails, setTailoringExtras } =
     useUser();
 
-  const [isLoading, setIsLoading] = useState(false);
-  const [cashHand, setCashHand] = useState(0);
-  const [lang, setLang] = useState(en);
-  const [cusLocs, setCusLocs] = useState([]);
-  const [locations, setLocations] = useState([]);
-
   useCustomersList(shopId, {
     onSuccess(data, key, config) {
       console.log(data, 'in index');
-      const _customers = data?.result?.map((el: ICustomer) => {
-        return {
-          ...el,
-          value: el.id,
-          label: `${el.first_name} ${el.last_name} | ${el.mobile}`,
-          isNew: false,
-        };
-      });
+      const _customers = data?.result?.map((el: ICustomer) => ({
+        ...el,
+        value: el.id,
+        label: `${el.first_name} ${el.last_name} | ${el.mobile}`,
+        isNew: false,
+      }));
       setCustomers(_customers);
     },
   });
@@ -96,9 +93,9 @@ const Home: NextPage = (props: any) => {
     },
   });
 
-  /*************************************************************/
+  /** ********************************************************** */
   useEffect(() => {
-    var locs = JSON.parse(localStorage.getItem('cusLocs') ?? '[]');
+    const locs = JSON.parse(localStorage.getItem('cusLocs') ?? '[]');
     // console.log(locs);
 
     setCusLocs(locs);
@@ -127,15 +124,9 @@ const Home: NextPage = (props: any) => {
       setInvoicDetails(JSON.parse(data.invoiceDetails));
     else {
     }
-    var _locs = JSON.parse(localStorage.getItem('userlocs') || '[]');
+    const _locs = JSON.parse(localStorage.getItem('userlocs') || '[]');
     if (_locs.toString().length > 10)
-      setLocationSettings(
-        _locs[
-          _locs.findIndex((loc: any) => {
-            return loc?.value == shopId;
-          })
-        ] ?? {}
-      );
+      setLocationSettings(_locs[_locs.findIndex((loc: any) => loc?.value == shopId)] ?? {});
     else Toastify('error', 'errorr location settings');
 
     setIsLoading(false);
@@ -163,8 +154,8 @@ const Home: NextPage = (props: any) => {
   }
 
   const handleBussinesChange = (e: any) => {
-    let idx = cusLocs.findIndex((el) => el.bus_id == e.target?.value);
-    let locs = cusLocs[idx].locations;
+    const idx = cusLocs.findIndex((el) => el.bus_id == e.target?.value);
+    const locs = cusLocs[idx].locations;
     setLocations(locs);
     setShopId(locs?.[0]?.loc_id);
   };
@@ -180,7 +171,7 @@ const Home: NextPage = (props: any) => {
           <div>
             <div className="snippet" data-title="dot-flashing">
               <div className="stage">
-                <div className="dot-flashing"></div>
+                <div className="dot-flashing" />
               </div>
             </div>
           </div>

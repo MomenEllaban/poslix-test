@@ -18,12 +18,11 @@ import {
   IreadyGroupTax,
 } from '../../models/common-model';
 import { cartJobType, clearOrders, productDetails } from '../../recoil/atoms';
-import Customermodal from './modals/Customermodal';
+import CustomerDataSelect from './_components/CustomerDataSelect';
 import TailoringModal from './modals/TailoringModal';
 import VariationModal from './modals/VariationModal';
 import { OrderCalcs } from './utils/OrderCalcs';
 import { OrdersFooter } from './utils/OrdersFooter';
-import CustomerDataSelect from './_components/CustomerDataSelect';
 
 export default function OrdersComponent(props: any) {
   const { shopId, lang, direction } = props;
@@ -918,23 +917,10 @@ export default function OrdersComponent(props: any) {
       Toastify('error', 'One of items is out of stock!');
       return;
     }
-    // packagePrices.push(inenerPackagePrices)
-    // console.log(packagePrices);
-
-    // let tmpOrders: IproductInfo[] = [...orders];
-    // const idx = orders.findIndex((el: any) => { return el.product_id === product.product_id })
-
-    // if (idx === -1) {
-    //   let itm: any = products.products_multi[index1][index2];
-    //   setOrders([...tmpOrders, itm]);
-    //   let _quantity = [...quantity];
-    //   _quantity.push({ quantity: 1, productIndex: index1, itemIndex: index2, prices: [{ stock_id: 0, qty: 1, price: itm.product_price, cost: itm.cost, packs: inenerPackagePrices }], lineTotalPrice: itm.price });
-    //   setQuantity(_quantity);
-    // } else
-    //   quantityChange(idx, 'plus')
 
     return true;
   }
+  
   useEffect(() => {
     if (!allowWork) return;
     if (!product.product_id) return;
@@ -1261,9 +1247,7 @@ export default function OrdersComponent(props: any) {
       }
     }
   };
-  const customerModalHandler = (status: any) => {
-    setCustomerIsModal(false);
-  };
+
   const handleEditTailoring = (idx: number) => {
     if (quantity[idx].productIndex === -1) {
       var index1 = -1,
@@ -1379,14 +1363,7 @@ export default function OrdersComponent(props: any) {
           tailoringExtras={tailoringExtras}
         />
       )}
-      {/* <Customermodal
-        shopId={shopId}
-        showType={showType}
-        userdata={customer}
-        customers={customers}
-        statusDialog={customerIsModal}
-        openDialog={customerModalHandler}
-      /> */}
+
       <div className="card-body">
         <div className="row mb-2">
           <CustomerDataSelect

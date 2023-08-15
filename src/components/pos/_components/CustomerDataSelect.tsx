@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import Select from 'react-select';
 import { useProducts } from 'src/context/ProductContext';
 import { Toastify } from 'src/libs/allToasts';
-import Customermodal from '../modals/Customermodal';
+import CustomerModal from '../modals/Customermodal';
 
 export default function CustomerDataSelect({
   shopId,
@@ -60,8 +60,7 @@ export default function CustomerDataSelect({
           }}
           type="button"
           onClick={() => {
-            if (customer.value === '1') return;
-            if (customer) {
+            if (customer && customer.value !== '1') {
               setShowType('edit');
               setCustomerIsModal(true);
             } else Toastify('error', 'Choose Customer First!');
@@ -83,7 +82,7 @@ export default function CustomerDataSelect({
           <i className="ri-add-circle-line" />
         </button>
       </div>
-      <Customermodal
+      <CustomerModal
         shopId={shopId}
         showType={showType}
         userdata={customer}

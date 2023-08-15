@@ -31,8 +31,9 @@ const SelectField: React.FC<SelectFieldProps> = ({
         {required && <span className="text-danger ms-2">*</span>}
       </Form.Label>
       <Form.Select isInvalid={isInvalid} name={name} {...register(name)} {...props}>
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
+        {options.map((option, idx) => (
+          <option key={`${formId}-${option.value}-${idx}`} value={option.value}>
+            {/* using idx in key is bad but some values from BE get repeated as some point */}
             {option.label}
           </option>
         ))}

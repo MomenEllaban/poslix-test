@@ -1,16 +1,20 @@
-import React, { useState, useContext, useEffect } from 'react';
-import { apiFetch, apiUpdateCtr, apiInsertCtr, apiFetchCtr } from '../../../libs/dbUtils';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import { ProductContext } from '../../../context/ProductContext';
-import CircularProgress from '@mui/material/CircularProgress';
+import { joiResolver } from '@hookform/resolvers/joi';
 import Box from '@mui/material/Box';
-import SnakeAlert from '../utils/SnakeAlert';
-import mStyle from '../../../styles/Customermodal.module.css';
+import CircularProgress from '@mui/material/CircularProgress';
+import { useContext, useEffect, useState } from 'react';
+import { Button, Form, Modal } from 'react-bootstrap';
+import { useForm } from 'react-hook-form';
+import FormField from 'src/components/form/FormField';
+import SelectField from 'src/components/form/SelectField';
 import { Toastify } from 'src/libs/allToasts';
+import { addCustomerSchema } from 'src/modules/pos/_schema/add-customer.schema';
+import { useCurrenciesList } from 'src/services/business.service';
+import api from 'src/utils/app-api';
+import { ProductContext } from '../../../context/ProductContext';
+import { apiFetchCtr, apiUpdateCtr } from '../../../libs/dbUtils';
+import { useSWRConfig } from 'swr';
 
-const Customermodal = (props: any) => {
+const CustomerModal = (props: any) => {
   const { openDialog, statusDialog, userdata, showType, shopId } = props;
   const customerTemplate = {
     id: 0,
@@ -25,68 +29,104 @@ const Customermodal = (props: any) => {
     zipCode: '',
     shipAddr: '',
   };
-  const [moreInfo, setMoreInfo] = useState(false);
-  const [customerInfo, setCustomerInfo] = useState(customerTemplate);
-  const { customers, setCustomers } = useContext(ProductContext);
   const [open, setOpen] = useState(false);
+  const [moreInfo, setMoreInfo] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [openSnakeBar, setOpenSnakeBar] = useState(false);
+  const [countryList, setCountryList] = useState<any[]>([]);
+  const { customers, setCustomers } = useContext(ProductContext);
+  const [customerInfo, setCustomerInfo] = useState(customerTemplate);
+
+  const { mutate } = useSWRConfig();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    setValue,
+
+    clearErrors,
+  } = useForm({
+    mode: 'onTouched',
+    reValidateMode: 'onBlur',
+    resolver: joiResolver(addCustomerSchema),
+    // defaultValues: initState,
+  });
+
+  const onSubmit = async (data: any) => {
+    setIsLoading(true);
+    if (showType == 'edit') {
+      api
+        .put('/customers/' + userdata.value, data)
+        .then((res) => res.data.result)
+        .then((res) => {
+          mutate('/customers/' + shopId);
+          const cinx = customers.findIndex((customer) => customer.value === res.id);
+          if (cinx > -1) {
+            const upCustomer = [...customers];
+            upCustomer[cinx] = {
+              ...upCustomer[cinx],
+              value: res.id,
+              label: res.first_name + ' ' + res.last_name + ' | ' + res.mobile,
+            };
+            setCustomers(upCustomer);
+          }
+
+          Toastify('success', 'Successfully Update');
+          handleClose();
+        })
+        .catch(() => {
+          Toastify('error', 'Has Error, Try Again...');
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    } else {
+      api
+        .post('/customers/' + shopId, data)
+        .then((res) => res.data.result)
+        .then((res) => {
+          mutate('/customers/' + shopId);
+          setCustomers([...customers, res]);
+          Toastify('success', 'Successfully Created');
+          handleClose();
+        })
+        .catch(() => {
+          Toastify('error', 'Has Error, Try Again...');
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    }
+  };
+  const onError = (errors: any, e: any) => console.log(errors, e);
+
   const handleClose = () => {
     setOpen(false);
     openDialog(false);
   };
-  useEffect(() => {
-    if (!statusDialog) return;
-    setCustomerInfo(customerTemplate);
-    setOpen(statusDialog);
-    if (userdata !== undefined && showType != 'add' && statusDialog)
-      getCustomerInfo(userdata.value);
-  }, [statusDialog]);
 
-  async function insertCustomerInfo() {
-    const { success, msg, code, newdata } = await apiInsertCtr({
-      type: 'customer',
-      subType: 'addCustomer',
-      shopId,
-      data: customerInfo,
-    });
-    if (success) {
-      setCustomers([...customers, newdata]);
-      handleClose();
-      Toastify('success', 'Successfully Created');
-    } else if (code == 100) Toastify('error', msg);
-    else Toastify('error', 'Has Error, Try Again...');
-  }
   async function getCustomerInfo(theId: any) {
     setIsLoading(true);
     setCustomerInfo(customerTemplate);
-    var result = await apiFetchCtr({
-      fetch: 'customer',
-      subType: 'getCustomerInfo',
-      theId,
-      shopId,
-    });
-    if (result.success) {
-      const selCustomer = result?.newdata[0];
-      setCustomerInfo({
-        ...customerInfo,
-        id: theId,
-        mobile: selCustomer.mobile,
-        firstName: selCustomer.first_name,
-        lastName: selCustomer.last_name,
-        city: selCustomer.city,
-        state: selCustomer.state,
-        addr1: selCustomer.addr1,
-        addr2: selCustomer.addr2,
-        zipCode: selCustomer.zip_code,
-        country: selCustomer.country,
-        shipAddr: selCustomer.shipping_address,
+
+    api
+      .get('/customers/' + theId + '/show')
+      .then((res) => {
+        const selCustomer = res?.data?.result?.profile;
+
+        Object.entries(selCustomer).forEach(([key, value]) => {
+          if (!value) value = '';
+          setValue(key, value);
+        });
+      })
+      .catch(() => {
+        Toastify('error', 'has error, Try Again...');
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
-      setIsLoading(false);
-    } else {
-      Toastify('error', 'has error, Try Again...');
-    }
   }
+
   async function editCustomerInfo() {
     var result = await apiUpdateCtr({
       type: 'customer',
@@ -110,199 +150,176 @@ const Customermodal = (props: any) => {
       Toastify('success', 'Successfully Edited');
     } else Toastify('error', 'has error, Try Again...');
   }
-  const makeShowSnake = (val: any) => {
-    setOpenSnakeBar(val);
-  };
+
+  useEffect(() => {
+    if (!statusDialog) return;
+    setCustomerInfo(customerTemplate);
+    setOpen(statusDialog);
+    if (userdata !== undefined && showType != 'add' && statusDialog)
+      getCustomerInfo(userdata.value);
+  }, [statusDialog]);
+
+  useEffect(() => {
+    if (!open) {
+      reset();
+      setMoreInfo(false);
+      clearErrors();
+    }
+  }, [open]);
+
+  if (isLoading)
+    return (
+      <Modal show={open} onHide={handleClose}>
+        <Modal.Header className="poslix-modal-title text-primary text-capitalize" closeButton>
+          {showType + ' customer'}
+        </Modal.Header>
+        <Modal.Body>
+          <Box sx={{ display: 'flex', justifyContent: 'center', margin: '20px' }}>
+            <CircularProgress />
+          </Box>
+        </Modal.Body>
+      </Modal>
+    );
 
   return (
-    <>
-      <Dialog open={open} className="poslix-modal" onClose={handleClose} maxWidth={'xl'}>
-        <DialogTitle className="poslix-modal-title text-primary">
-          {showType + ' customer'}
-        </DialogTitle>
-        <DialogContent>
-          {isLoading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', margin: '20px' }}>
-              <CircularProgress />
-            </Box>
-          ) : (
-            <div className="poslix-modal">
-              <div className="modal-content">
-                <div className="modal-body">
-                  <fieldset disabled={showType == 'show' ? true : false}>
-                    <div className="row">
-                      <div className="col-lg-4 mb-3">
-                        <label>First Name :</label>
-                        <input
-                          type="text"
-                          name="cname"
-                          className="form-control"
-                          placeholder="First Name"
-                          value={customerInfo.firstName}
-                          onChange={(e) =>
-                            setCustomerInfo({ ...customerInfo, firstName: e.target.value })
-                          }
-                        />
-                      </div>
-                      <div className="col-lg-4 mb-3">
-                        <label>Last Name :</label>
-                        <input
-                          type="text"
-                          name="cemail"
-                          className="form-control"
-                          placeholder="Last Name"
-                          value={customerInfo.lastName}
-                          onChange={(e) =>
-                            setCustomerInfo({ ...customerInfo, lastName: e.target.value })
-                          }
-                        />
-                      </div>
-                      <div className="col-lg-4 mb-3">
-                        <label>Mobile</label>
-                        <input
-                          type=""
-                          name=""
-                          className="form-control"
-                          placeholder="Mobile"
-                          value={customerInfo.mobile}
-                          onChange={(e) =>
-                            setCustomerInfo({ ...customerInfo, mobile: e.target.value })
-                          }
-                        />
-                      </div>
-                    </div>
-                  </fieldset>
-                  <div className="col-lg-4 mb-3 mt-lg-4 mt-0">
-                    <button
-                      className="btn btn-primary"
-                      onClick={() => {
-                        setMoreInfo(!moreInfo);
-                      }}>
-                      {moreInfo ? 'Less ' : 'More '} Information{' '}
-                      <i className={`ri-arrow-${moreInfo ? 'up' : 'down'}-s-line ps-1`} />
-                    </button>
-                  </div>
-                  {moreInfo ? (
-                    <>
-                      <div className="row">
-                        <div className="col-lg-6 mb-3">
-                          <label>Address line 1</label>
-                          <input
-                            type=""
-                            name=""
-                            className="form-control"
-                            placeholder="Address line 1"
-                            value={customerInfo.addr1}
-                            onChange={(e) =>
-                              setCustomerInfo({ ...customerInfo, addr1: e.target.value })
-                            }
-                          />
-                        </div>
-                        <div className="col-lg-6 mb-3">
-                          <label>Address line 2</label>
-                          <input
-                            type=""
-                            name=""
-                            className="form-control"
-                            placeholder="Address line 2"
-                            value={customerInfo.addr2}
-                            onChange={(e) =>
-                              setCustomerInfo({ ...customerInfo, addr2: e.target.value })
-                            }
-                          />
-                        </div>
-                        <div className="col-lg-3 mb-3">
-                          <label>City</label>
-                          <input
-                            type=""
-                            name=""
-                            className="form-control"
-                            placeholder="City"
-                            value={customerInfo.city}
-                            onChange={(e) =>
-                              setCustomerInfo({ ...customerInfo, city: e.target.value })
-                            }
-                          />
-                        </div>
-                        <div className="col-lg-3 mb-3">
-                          <label>State</label>
-                          <input
-                            type=""
-                            name=""
-                            className="form-control"
-                            placeholder="State"
-                            value={customerInfo.state}
-                            onChange={(e) =>
-                              setCustomerInfo({ ...customerInfo, state: e.target.value })
-                            }
-                          />
-                        </div>
-                        <div className="col-lg-3 mb-3">
-                          <label>Country</label>
-                          <input
-                            type=""
-                            name=""
-                            className="form-control"
-                            placeholder="Country"
-                            value={customerInfo.country}
-                            onChange={(e) =>
-                              setCustomerInfo({ ...customerInfo, country: e.target.value })
-                            }
-                          />
-                        </div>
-                        <div className="col-lg-3 mb-3">
-                          <label>Zip code</label>
-                          <input
-                            type=""
-                            name=""
-                            className="form-control"
-                            placeholder="Zip code"
-                            value={customerInfo.zipCode}
-                            onChange={(e) =>
-                              setCustomerInfo({ ...customerInfo, zipCode: e.target.value })
-                            }
-                          />
-                        </div>
-                      </div>
-                      <hr />
-                      <label>Shipping address</label>
-                      <input
-                        type=""
-                        name=""
-                        className="form-control"
-                        placeholder="Shipping address"
-                        value={customerInfo.shipAddr}
-                        onChange={(e) =>
-                          setCustomerInfo({ ...customerInfo, shipAddr: e.target.value })
-                        }
-                      />
-                    </>
-                  ) : null}
-                </div>
-                <div className="modal-footer">
-                  <a className="btn btn-link link-success fw-medium" onClick={() => handleClose()}>
-                    <i className="ri-close-line me-1 align-middle" /> Close
-                  </a>
-                  {showType != 'show' && (
-                    <button
-                      type="button"
-                      className="btn btn-primary"
-                      onClick={() => {
-                        if (showType == 'edit') editCustomerInfo();
-                        else insertCustomerInfo();
-                      }}>
-                      {showType} Customer
-                    </button>
-                  )}
-                </div>
-              </div>
-              {/* /.modal-content */}
+    <Modal show={open} onHide={handleClose}>
+      <Modal.Header className="poslix-modal-title text-primary text-capitalize" closeButton>
+        {showType + ' customer'}
+      </Modal.Header>
+      <Modal.Body>
+        <Form noValidate onSubmit={handleSubmit(onSubmit, onError)}>
+          <Modal.Body>
+            <fieldset disabled={showType === 'show'}>
+              <FormField
+                required
+                type="text"
+                name="first_name"
+                label="First Name"
+                placeholder="First Name"
+                errors={errors}
+                register={register}
+              />
+              <FormField
+                type="text"
+                name="last_name"
+                label="Last Name"
+                placeholder="Last Name"
+                errors={errors}
+                register={register}
+              />
+              <FormField
+                required
+                type="text"
+                name="mobile"
+                label="Mobile"
+                placeholder="Enter customer mobile number"
+                errors={errors}
+                register={register}
+              />
+            </fieldset>
+            <div className="d-flex flex-row mb-3">
+              <Button
+                variant="primary"
+                className="ms-auto"
+                onClick={() => {
+                  setMoreInfo(!moreInfo);
+                }}>
+                {moreInfo ? 'Less ' : 'More '} Information{' '}
+                <i className={`ri-arrow-${moreInfo ? 'up' : 'down'}-s-line ps-1`} />
+              </Button>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
-    </>
+
+            {moreInfo ? (
+              <div className="row">
+                <div className="col-lg-6 mb-3">
+                  <FormField
+                    type="text"
+                    name="address_line_1"
+                    label="Address line 1"
+                    placeholder="Enter Address line 1"
+                    errors={errors}
+                    register={register}
+                  />
+                </div>
+
+                <div className="col-lg-6 mb-3">
+                  <FormField
+                    type="text"
+                    name="address_line_2"
+                    label="Address line 2"
+                    placeholder="Enter Address line 2"
+                    errors={errors}
+                    register={register}
+                  />
+                </div>
+
+                <div className="col-lg-3 mb-3">
+                  <FormField
+                    type="text"
+                    name="country"
+                    label="Country"
+                    placeholder="Enter Country"
+                    errors={errors}
+                    register={register}
+                  />
+                </div>
+                <div className="col-lg-3 mb-3">
+                  <FormField
+                    type="text"
+                    name="state"
+                    label="State"
+                    placeholder="Enter State"
+                    errors={errors}
+                    register={register}
+                  />
+                </div>
+                <div className="col-lg-3 mb-3">
+                  <FormField
+                    type="text"
+                    name="city"
+                    label="City"
+                    placeholder="Enter City"
+                    errors={errors}
+                    register={register}
+                  />
+                </div>
+
+                <div className="col-lg-3 mb-3">
+                  <FormField
+                    type="text"
+                    name="zip_code"
+                    label="Zip Code"
+                    placeholder="Enter Zip Code"
+                    errors={errors}
+                    register={register}
+                  />
+                </div>
+                <hr />
+                <FormField
+                  type="text"
+                  name="shipping_address"
+                  label="Shipping Address"
+                  placeholder="Enter Shipping Address"
+                  errors={errors}
+                  register={register}
+                />
+              </div>
+            ) : null}
+          </Modal.Body>
+          <Modal.Footer>
+            <a className="btn btn-link link-success fw-medium" onClick={() => handleClose()}>
+              <i className="ri-close-line me-1 align-middle" /> Close
+            </a>{' '}
+            {showType != 'show' && (
+              <Button type="submit" className="text-capitalize" onClick={() => {}}>
+                {showType} Customer
+              </Button>
+            )}
+          </Modal.Footer>
+        </Form>
+      </Modal.Body>
+    </Modal>
   );
 };
 
-export default Customermodal;
+export default CustomerModal;
