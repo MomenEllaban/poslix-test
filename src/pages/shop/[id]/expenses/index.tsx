@@ -34,8 +34,10 @@ import {
 } from '@mui/x-data-grid';
 import { UserContext } from 'src/context/UserContext';
 import AddNewExpeness from 'src/components/dashboard/AddNewExpeness';
+import withAuth from 'src/HOCs/withAuth';
+import { findAllData } from 'src/services/crud.api';
 
-const Product: NextPage = (props: any) => {
+const Expenses: NextPage = (props: any) => {
   const { shopId, rules } = props;
   const [cate, setCate] = useState<{ id: number; name: string; isNew: boolean }[]>([]);
   const [expensesList, setExpensesList] = useState<IExpenseList[]>([]);
@@ -43,6 +45,7 @@ const Product: NextPage = (props: any) => {
   const [selectId, setSelectId] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isAddExpense, setIsAddExpense] = useState(false);
+  const [categories, setCategories] = useState(false);
   const [key, setKey] = useState('list');
   const { locationSettings } = useContext(UserContext);
 
@@ -86,7 +89,8 @@ const Product: NextPage = (props: any) => {
       renderCell: ({ row }: Partial<GridRowParams>) => (
         <>
           <ButtonGroup className="mb-2 m-buttons-style">
-            {rules.hasEdit && (
+            {/* {rules.hasEdit && ( */}
+            {true && (
               <Button
                 onClick={() => {
                   setSelectId(row.id);
@@ -95,7 +99,8 @@ const Product: NextPage = (props: any) => {
                 <FontAwesomeIcon icon={faPenToSquare} />
               </Button>
             )}
-            {rules.hasDelete && (
+            {/* {rules.hasDelete && ( */}
+            {true && (
               <Button
                 onClick={() => {
                   setSelectId(row.id);
@@ -110,17 +115,14 @@ const Product: NextPage = (props: any) => {
     },
   ];
   async function initDataPage() {
-    setIsLoading(true);
-    const { success, newdata } = await apiFetchCtr({
-      fetch: 'expenses',
-      subType: 'getCateAndList',
-      shopId,
-    });
-    if (success) {
-      rules.hasInsert && newdata.cate.push({ id: 0, name: '', isNew: true });
-      setCate(newdata.cate);
-      setExpensesList(newdata.list);
-      setIsLoading(false);
+    if(router.query.id){
+      setIsLoading(true);
+      const res = await findAllData(`expenses/${router.query.id}`)
+      if (res.data.success) {
+        // rules.hasInsert && res.data.result.cate.push({ id: 0, name: '', isNew: true });
+        setExpensesList(res.data.result);
+        setIsLoading(false);
+      }
     }
   }
   async function addUpdateExpense() {
@@ -169,18 +171,22 @@ const Product: NextPage = (props: any) => {
     setSelectId(0);
     setIsAddExpense(!isAddExpense);
   };
-  useEffect(() => {
-    initDataPage();
-  }, [router.asPath]);
-  const handleDeleteFuc = (result: boolean, msg: string, section: string) => {
-    if (result) {
-      const _data = [...expensesList];
-      const idx = _data.findIndex((itm: any) => itm.id == selectId);
-      if (idx != -1) {
-        _data.splice(idx, 1);
-        setExpensesList(_data);
+
+  const getCategories = async () => {
+    if(router.query.id) {
+      const res = await findAllData(`expenses-categories/${router.query.id}`)
+      if(res.data.success) {
+        setCategories(res.data.result)
       }
     }
+  }
+  useEffect(() => {
+    initDataPage();
+    getCategories()
+  }, [router.asPath]);
+
+  const handleDeleteFuc = (result: boolean, msg: string, section: string) => {
+    initDataPage();
     if (msg.length > 0) Toastify(result ? 'success' : 'error', msg);
     setShow(false);
   };
@@ -190,11 +196,9 @@ const Product: NextPage = (props: any) => {
         <ToastContainer />
         <AlertDialog
           alertShow={show}
-          id={selectId}
           alertFun={handleDeleteFuc}
-          shopId={shopId}
-          type="expenses"
-          subType="deleteExpense">
+          id={selectId}
+          url={'expenses'}>
           Are you Sure You Want Delete This Item ?
         </AlertDialog>
         <div className="row">
@@ -209,7 +213,8 @@ const Product: NextPage = (props: any) => {
                   <h5>Expense List</h5>
                 </Card.Header>
                 <Card.Body style={{ minHeight: '650px ' }}>
-                  {!isLoading && rules.hasInsert && (
+                  {/* {!isLoading && rules.hasInsert && ( */}
+                  {!isLoading && (
                     <div className="mb-2">
                       <button className="btn btn-primary p-3" onClick={() => handlebtnAdd()}>
                         {isAddExpense ? (
@@ -251,7 +256,7 @@ const Product: NextPage = (props: any) => {
                       rows={expensesList}
                       setIsAddExpense={setIsAddExpense}
                       shopId={shopId}
-                      cats={cate}
+                      cats={categories}
                     />
                   )}
                 </Card.Body>
@@ -314,7 +319,8 @@ const Product: NextPage = (props: any) => {
                     </div>
                   )}
                 </Card.Body>
-                {rules.hasInsert && (
+                {/* {rules.hasInsert && ( */}
+                {true && (
                   <div className="m-3">
                     <button
                       className="btn m-btn btn-primary p-3"
@@ -333,46 +339,4 @@ const Product: NextPage = (props: any) => {
     </>
   );
 };
-export default Product;
-export async function getServerSideProps(context: any) {
-  const parsedCookies = cookie.parse(context.req.headers.cookie || '[]');
-  var _isOk = true,
-    _rule = true;
-  //check page params
-  //local..../shop/2/tayloring
-  var shopId = context.query.id;
-  if (shopId == undefined) return { redirect: { permanent: false, destination: '/page403' } };
-
-  //check user permissions
-  var _userRules = {};
-  await verifayTokens(
-    { headers: { authorization: 'Bearer ' + parsedCookies.tokend } },
-    (repo: ITokenVerfy) => {
-      _isOk = repo.status;
-      if (_isOk) {
-        var _rules = keyValueRules(repo.data.rules || []);
-        if (
-          _rules[-2] != undefined &&
-          _rules[-2][0].stuff != undefined &&
-          _rules[-2][0].stuff == 'owner'
-        ) {
-          _rule = true;
-          _userRules = { hasDelete: true, hasEdit: true, hasView: true, hasInsert: true };
-        } else if (_rules[shopId] != undefined) {
-          var _stuf = '';
-          _rules[shopId].forEach((dd: any) => (_stuf += dd.stuff));
-          const { userRules, hasPermission } = hasPermissions(_stuf, 'expanses');
-          _rule = hasPermission;
-          _userRules = userRules;
-        } else _rule = false;
-      }
-    }
-  );
-  if (!_isOk) return { redirect: { permanent: false, destination: '/user/auth' } };
-  if (!_rule) return { redirect: { permanent: false, destination: '/page403' } };
-
-  //status ok
-  return {
-    props: { shopId, rules: _userRules },
-  };
-}
+export default withAuth(Expenses);

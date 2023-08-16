@@ -37,7 +37,7 @@ import { apiInsertCtr } from '../../../../libs/dbUtils';
 import styles from './table.module.css';
 
 const Product: NextPage = (props: any) => {
-  const { shopId, rules } = props;
+  const {  rules } = props;
   const myLoader = (img: any) => img.src;
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
     value: 0,
@@ -186,7 +186,8 @@ const Product: NextPage = (props: any) => {
       renderCell: ({ row }: Partial<GridRowParams>) => (
         <>
           <ButtonGroup className="mb-2 m-buttons-style">
-            {rules.hasEdit && (
+            {/* {rules.hasEdit && ( */}
+            {true && (
               <Button
                 onClick={() => {
                   router.push('/shop/' + shopId + '/products/edit/' + row.id);
@@ -194,7 +195,8 @@ const Product: NextPage = (props: any) => {
                 <FontAwesomeIcon icon={faPenToSquare} />
               </Button>
             )}
-            {rules.hasDelete && (
+            {/* {rules.hasDelete && ( */}
+            {true && (
               <Button
                 onClick={() => {
                   setSelectId(row.id);
@@ -285,18 +287,20 @@ const Product: NextPage = (props: any) => {
     );
   }
   async function initDataPage() {
-    const res = await findAllData(`products/${router.query.id}?page=${currentPage}`);
-    console.log(res.data);
+    setIsLoading(false);
+    if(router.isReady) {
+      const res = await findAllData(`products/${router.query.id}?page=${currentPage}`);
+      setProducts(res.data.result.data);
+      setCurrentPage(res.data.result.current_page);
+      setLastPage(res.data.result.last_page);
+      setTotalRows(res.data.result.total);
+      // setFilteredProducts(data.products);
+      setIsLoading(false);
+    }
     // if (!success) {
     //   Toastify('error', 'Somthing wrong!!, try agian');
     //   return;
     // }
-    setProducts(res.data.result.data);
-    setCurrentPage(res.data.result.current_page);
-    setLastPage(res.data.result.last_page);
-    setTotalRows(res.data.result.total);
-    // setFilteredProducts(data.products);
-    setIsLoading(false);
   }
   useEffect(() => {
     const _locs = JSON.parse(localStorage.getItem('locations') || '[]');
@@ -355,6 +359,11 @@ const Product: NextPage = (props: any) => {
     }
   }, [searchTerm, products]);
 
+  const [shopId, setShopId] = useState('')
+  useEffect(() => {
+    if(router.isReady) setShopId(router.query.id.toString())
+  }, [])
+
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
   const isMediumScreen = useMediaQuery(theme.breakpoints.between('md', 'lg'));
@@ -399,7 +408,8 @@ const Product: NextPage = (props: any) => {
           })}
         />
         {/* start */}
-        {!isLoading && rules.hasInsert && (
+        {/* {!isLoading && rules.hasInsert && ( */}
+        {!isLoading && (
           <div className="mb-2 flex items-center justify-between">
             <button
               className="btn btn-primary p-3"
@@ -449,43 +459,3 @@ const Product: NextPage = (props: any) => {
   );
 };
 export default Product;
-/**
- * @description get server side props
- * @param {any} context
- *
- * get the cookies from the context
- * check the page params
- * check user permissions
- *
- */
-export async function getServerSideProps(context: any) {
-  // check if the user is logged in
-  const session = await getSession(context);
-  if (!session) return { redirect: { permanent: false, destination: ROUTES.AUTH } };
-
-  const shopId = context.query.id;
-  if (!shopId) return { redirect: { permanent: false, destination: '/page403' } };
-  try {
-    const getPermission = await (await authApi(session))
-      .get('permissions/13')
-      .then((res) => res.data);
-
-    const permissions = permissionStrToObj(getPermission.result.stuff) ?? {};
-
-    return {
-      props: {
-        permissions: permissions,
-        shopId,
-        rules: {
-          //! this should be dynamic
-          hasDelete: true,
-          hasEdit: true,
-          hasView: true,
-          hasInsert: true,
-        },
-      },
-    };
-  } catch (e) {
-    return { redirect: { permanent: false, destination: ROUTES.AUTH } };
-  }
-}

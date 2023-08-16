@@ -294,7 +294,7 @@ export interface IExpenseList {
   id: number;
   name: string;
   amount: number;
-  cate_name?: string;
+  category_id?: string;
   expense_id: number;
   date: Date;
 }
