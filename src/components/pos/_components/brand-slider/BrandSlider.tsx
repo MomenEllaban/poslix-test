@@ -63,7 +63,6 @@ const BrandSwiper = (props: any, swiper: ItypeSelected) => {
         </div>
       </div>
     );
-  console.log(items);
 
   return (
     <div className="swiper responsive-swiper rounded mb-3">
@@ -82,8 +81,9 @@ const BrandSwiper = (props: any, swiper: ItypeSelected) => {
                   styles['item-container'],
                   'swiper-slide swiper-slide-active',
                   {
-                    selectedCatClass: selectedTab == 'category' && activeCatId == id,
-                    selectedBrdClass: selectedTab == 'brand' && activeBrdId == id,
+                    active:
+                      (selectedTab == 'category' && activeCatId == id) ||
+                      (selectedTab == 'brand' && activeBrdId == id),
                   }
                 )}
                 onClick={() => onClickHandler(id)}

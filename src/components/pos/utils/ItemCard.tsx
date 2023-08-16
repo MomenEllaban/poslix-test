@@ -1,18 +1,19 @@
-import React, { useState, useContext } from 'react';
-import { IPackItem, IproductInfo } from '../../../models/common-model';
+import { useContext, useState } from 'react';
 import { useRecoilState } from 'recoil';
-import { productDetails } from '../../../recoil/atoms';
-import { ProductContext } from 'src/context/ProductContext';
-import PackageItemsModal from '../modals/PackageItemsModal';
+import { useProducts } from 'src/context/ProductContext';
 import { UserContext } from 'src/context/UserContext';
+import { IPackItem, IproductInfo } from '../../../models/common-model';
+import { productDetails } from '../../../recoil/atoms';
+import PackageItemsModal from '../modals/PackageItemsModal';
 
 export const ItemCard = (props: any) => {
+  const { items } = props;
+
   const [productInfo, setProducInfo] = useRecoilState(productDetails);
-  const { packageItems, products } = useContext(ProductContext);
+  const { packageItems, products } = useProducts();
   const [packItems, setPackItems] = useState([]);
   const [filterdItems, setFilterdItems] = useState<IPackItem[]>([]);
   const [isOpenDialog, setIsOpenDialog] = useState(false);
-  const { items } = props;
   const { locationSettings } = useContext(UserContext);
 
   const handleShowPackageItems = (packId: number) => {
@@ -21,7 +22,7 @@ export const ItemCard = (props: any) => {
     var onlyIds = filterd.map((itm: any) => {
       return itm.product_id;
     });
-    setPackItems(products.products.filter((pro: IproductInfo) => onlyIds.includes(pro.product_id)));
+    setPackItems(products.filter((pro: IproductInfo) => onlyIds.includes(pro.product_id)));
     setIsOpenDialog(!isOpenDialog);
   };
   return (

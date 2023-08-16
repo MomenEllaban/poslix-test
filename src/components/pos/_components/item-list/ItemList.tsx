@@ -69,33 +69,24 @@ export const ItemList: any = (props: any) => {
               data-simplebar=""
               style={{ height: 'calc(100vh - 200px)' }}>
               <div className="items-list">
-                {
-                  //cat section
-                  selectedTab == 'category'
-                    ? productsItems
-                      ? productsItems
-                          .filter((val: any) =>
-                            selectedCat == 0 ? val.category_id != 0 : val.category_id == selectedCat
-                          )
-                          .map((prod: any, idx) => (
-                            <div className="items-list-pos" key={idx}>
-                              <ItemCard items={prod} />
-                            </div>
-                          ))
-                      : ''
-                    : //brand section
-                    productsItems
-                    ? productsItems
-                        .filter((val: any) =>
-                          selectedBrand == 0 ? val.brand_id != 0 : val.brand_id == selectedBrand
-                        )
-                        .map((prod: any, idx) => (
-                          <div className="items-list-pos" key={idx}>
-                            <ItemCard items={prod} />
-                          </div>
-                        ))
-                    : ''
-                }
+                {!!productsItems?.length &&
+                  productsItems
+                    .filter((val: IProduct) => {
+                      if (selectedTab === 'category') {
+                        return selectedCat === 0
+                          ? val.category_id !== 0
+                          : val.category_id === selectedCat;
+                      } else {
+                        return selectedBrand === 0
+                          ? val.brand_id !== 0
+                          : val.brand_id === selectedBrand;
+                      }
+                    })
+                    .map((prod: IProduct, idx) => (
+                      <div className="items-list-pos" key={idx}>
+                        <ItemCard items={prod} />
+                      </div>
+                    ))}
               </div>
               {/* end row */}
             </div>
