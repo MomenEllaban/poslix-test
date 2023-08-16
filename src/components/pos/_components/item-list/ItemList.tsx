@@ -1,13 +1,13 @@
 import { IProduct } from '@models/pos.types';
+import classNames from 'classnames';
 import { CSSProperties, useEffect, useState } from 'react';
 import ClipLoader from 'react-spinners/ClipLoader';
 import { useRecoilState } from 'recoil';
 import { cartJobType } from 'src/recoil/atoms';
 import { useProducts } from '../../../../context/ProductContext';
 import BrandSwiper from '../brand-slider/BrandSlider';
+import { ItemCard } from '../item-card/ItemCard';
 import { TabPanel } from '../tab-panel/TabPanel';
-import { ItemCard } from '../../utils/ItemCard';
-import classNames from 'classnames';
 import styles from './ItemList.module.scss';
 
 export const ItemList: any = (props: any) => {
@@ -82,9 +82,9 @@ export const ItemList: any = (props: any) => {
                           : val.brand_id === selectedBrand;
                       }
                     })
-                    .map((prod: IProduct, idx) => (
-                      <div className="items-list-pos" key={idx}>
-                        <ItemCard items={prod} />
+                    .map((product: IProduct, idx) => (
+                      <div className="items-list-pos" key={product.id}>
+                        <ItemCard product={product} />
                       </div>
                     ))}
               </div>

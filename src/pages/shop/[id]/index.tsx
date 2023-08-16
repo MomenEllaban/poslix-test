@@ -140,7 +140,9 @@ const Home = (props: any) => {
   }
   useEffect(() => {
     initData();
-    var _locs = JSON.parse(localStorage.getItem('userlocs') || '[]');
+    var _locs = localStorage.getItem('userlocs')
+      ? JSON.parse(localStorage.getItem('userlocs'))
+      : [];
     if (_locs.toString().length > 10)
       setLocationSettings(
         _locs[

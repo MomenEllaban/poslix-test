@@ -31,7 +31,7 @@ export interface IProduct {
   name: string;
   business_id?: number;
   location_id: number;
-  Etype: string;
+  type: 'single' | 'variable';
   is_tailoring: number;
   is_service: 0 | 1 | boolean;
   is_fabric: 0 | 1 | boolean;
@@ -44,9 +44,9 @@ export interface IProduct {
   never_tax: 1 | 0 | boolean;
   alert_quantity: string;
   sku: string;
-  Ebarcode_type: string;
+  barcode_type: string;
   image: string;
-  product_description?: any;
+  product_description?: string;
   created_by: number;
   is_disabled: number;
   sell_price: string | number;

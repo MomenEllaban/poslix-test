@@ -498,7 +498,7 @@ export default function OrdersComponent(props: any) {
           .map((tm: any) => {
             return tm.product_id;
           });
-        var packageProducts: IproductInfo[] = products.products.filter((pro: IproductInfo) =>
+        var packageProducts: IproductInfo[] = products.filter((pro: IproductInfo) =>
           ids.includes(pro.product_id)
         );
         packageProducts.map((pp) => {
@@ -515,8 +515,8 @@ export default function OrdersComponent(props: any) {
   }
   function addToCard(fromHold: boolean, index1: number, index2: number) {
     if (index1 != -1) {
-      let _product_id = products.products[index1].product_id;
-      let _total_qty = products.products[index1].total_qty;
+      let _product_id = products?.[index1].product_id;
+      let _total_qty = products?.[index1].total_qty;
       //search into Orders and add to card
       let tmpOrders: IproductInfo[] = [...orders];
       let idx: number = 0;
@@ -541,7 +541,8 @@ export default function OrdersComponent(props: any) {
         return;
       }
       if (idx === -1 || fromHold) {
-        let itm: any = products.products_multi[index1][index2];
+        let itm: any
+        //  = products.products_multi[index1][index2];
         ordersPush.push(itm);
         setOrders([...tmpOrders, itm]);
         let _quantity = [...quantity];
@@ -682,19 +683,19 @@ export default function OrdersComponent(props: any) {
     for (let i = 0; i < _orders.length; i++) {
       index1 = -1;
       index2 = -1;
-      products.products_multi.map((topPro: IproductInfo[], index: number) => {
-        if (index2 === -1) {
-          index1 = index;
-          index2 = topPro.findIndex((itm: IproductInfo) => {
-            return itm.product_id === _orders[i].product_id;
-          });
-        }
-      });
+      // products.products_multi.map((topPro: IproductInfo[], index: number) => {
+      //   if (index2 === -1) {
+      //     index1 = index;
+      //     index2 = topPro.findIndex((itm: IproductInfo) => {
+      //       return itm.product_id === _orders[i].product_id;
+      //     });
+      //   }
+      // });
       if (index1 != -1) {
-        let _itm: any = products.products[index1];
+        let _itm: any = products?.[index1];
         //when is tailoring
         if (_itm.is_tailoring > 0 || _itm.type === 'tailoring_package') {
-          ordersPush.push(products.products_multi[index1][index2]);
+          // ordersPush.push(products.products_multi[index1][index2]);
           quantityPush.push({
             freezeQuantity: 0,
             quantity: 1,
@@ -748,14 +749,14 @@ export default function OrdersComponent(props: any) {
       //for tailoring modal
       var index1 = -1,
         index2 = -1;
-      products.products_multi.map((topPro: IproductInfo[], index: number) => {
-        if (index2 === -1) {
-          index1 = index;
-          index2 = topPro.findIndex((itm: IproductInfo) => {
-            return itm.product_id === product.product_id;
-          });
-        }
-      });
+      // products.products_multi.map((topPro: IproductInfo[], index: number) => {
+      //   if (index2 === -1) {
+      //     index1 = index;
+      //     index2 = topPro.findIndex((itm: IproductInfo) => {
+      //       return itm.product_id === product.product_id;
+      //     });
+      //   }
+      // });
       if (index1 === -1) return;
 
       let f_length = 0;
@@ -765,16 +766,16 @@ export default function OrdersComponent(props: any) {
           f_index2 = -1,
           f_id = jobType.custom?.fabric_id;
         f_length = jobType.custom?.fabric_length!;
-        products.products_multi.forEach((topPro: IproductInfo[], index: number) => {
-          if (f_index2 === -1) {
-            f_index1 = index;
-            f_index2 = topPro.findIndex((itm: IproductInfo) => {
-              return itm.product_id === f_id;
-            });
-          }
-        });
+        // products.products_multi.forEach((topPro: IproductInfo[], index: number) => {
+        //   if (f_index2 === -1) {
+        //     f_index1 = index;
+        //     f_index2 = topPro.findIndex((itm: IproductInfo) => {
+        //       return itm.product_id === f_id;
+        //     });
+        //   }
+        // });
         if (f_index1 === -1) return;
-        let _theFab: IproductInfo = products.products[f_index1];
+        let _theFab: IproductInfo = products?.[f_index1];
         if (!_theFab.sell_over_stock && (_theFab.total_qty === 0 || f_length > _theFab.total_qty)) {
           Toastify('error', 'The Selected Fabric Is Out Of Stock');
           return;
@@ -897,7 +898,7 @@ export default function OrdersComponent(props: any) {
       .map((itm: any) => {
         return itm.product_id;
       });
-    var packageProducts: IproductInfo[] = products.products.filter((pro: IproductInfo) =>
+    var packageProducts: IproductInfo[] = products.filter((pro: IproductInfo) =>
       ids.includes(pro.product_id)
     );
     let hasStock = true;
@@ -907,7 +908,7 @@ export default function OrdersComponent(props: any) {
       if (hasStock && !pp.is_service && !pp.sell_over_stock) {
         orders.map((or, index: number) => {
           if (or.product_id === pp.product_id) {
-            var _item: any = products.products[quantity[index].productIndex];
+            var _item: any = products?.[quantity[index].productIndex];
             if (quantity[index].quantity + orderQty > _item.total_qty) hasStock = false;
           }
         });
@@ -920,7 +921,7 @@ export default function OrdersComponent(props: any) {
 
     return true;
   }
-  
+
   useEffect(() => {
     if (!allowWork) return;
     if (!product.product_id) return;
@@ -958,19 +959,19 @@ export default function OrdersComponent(props: any) {
     //get all pricess of selected product
     var index1 = -1,
       index2 = -1;
-    products.products_multi.map((topPro: IproductInfo[], index: number) => {
-      if (index2 === -1) {
-        index1 = index;
-        index2 = topPro.findIndex((itm: IproductInfo) => {
-          return itm.product_id === product.product_id;
-        });
-      }
-    });
+    // products.products_multi.map((topPro: IproductInfo[], index: number) => {
+    //   if (index2 === -1) {
+    //     index1 = index;
+    //     index2 = topPro.findIndex((itm: IproductInfo) => {
+    //       return itm.product_id === product.product_id;
+    //     });
+    //   }
+    // });
     if (product.type === 'package' && !checkPackageItemsHasStock(1)) return;
     if (product.type === 'tailoring_package') {
       //tailoring_package
       setSelectedProductForVariation({
-        product: products.products_multi[index1][index2],
+        // product: products.products_multi[index1][index2],
         product_id: product.product_id,
         product_name: product.name,
         is_service: product.is_service,
@@ -1112,7 +1113,7 @@ export default function OrdersComponent(props: any) {
       const _pro: any =
         _orders[index].variation_id! > 0
           ? variations.variations[_quantity[index].productIndex]
-          : products.products[_quantity[index].productIndex];
+          : products?.[_quantity[index].productIndex];
       //get packages only for quantity check
       if (!checkProductQtyinPackagesItems(qt, _orders[index].product_id!, _pro.total_qty)) {
         Toastify('error', 'Out of stock!');
@@ -1150,9 +1151,9 @@ export default function OrdersComponent(props: any) {
             JSON.stringify(variations.variations_multi[_quantity[index].productIndex])
           );
         else
-          thePrices = JSON.parse(
-            JSON.stringify(products.products_multi[_quantity[index].productIndex])
-          );
+          // thePrices = JSON.parse(
+          //   JSON.stringify(products.products_multi[_quantity[index].productIndex])
+          // );
 
         let qtyToAllocate = qt;
         _quantity[index].prices = [];
@@ -1252,14 +1253,14 @@ export default function OrdersComponent(props: any) {
     if (quantity[idx].productIndex === -1) {
       var index1 = -1,
         index2 = -1;
-      products.products_multi.map((topPro: IproductInfo[], index: number) => {
-        if (index2 === -1) {
-          index1 = index;
-          index2 = topPro.findIndex((itm: IproductInfo) => {
-            return itm.product_id === orders[idx].product_id;
-          });
-        }
-      });
+      // products.products_multi.map((topPro: IproductInfo[], index: number) => {
+      //   if (index2 === -1) {
+      //     index1 = index;
+      //     index2 = topPro.findIndex((itm: IproductInfo) => {
+      //       return itm.product_id === orders[idx].product_id;
+      //     });
+      //   }
+      // });
       if (index1 === -1) {
         Toastify('error', 'Product not Found...');
         return;
@@ -1267,7 +1268,8 @@ export default function OrdersComponent(props: any) {
       quantity[idx].productIndex = index1;
       quantity[idx].itemIndex = index2;
     }
-    let _item: any = products.products_multi[quantity[idx].productIndex][quantity[idx].itemIndex];
+    let _item: any
+    //  = products.products_multi[quantity[idx].productIndex][quantity[idx].itemIndex];
     setSelectedProductForVariation({
       tailoringCustom: {
         fabric_id: quantity[idx].tailoringCutsom?.fabric_id,
@@ -1319,7 +1321,7 @@ export default function OrdersComponent(props: any) {
       setSearchProduct(e);
       e = _id;
       if (e.length > 0) {
-        const mfil: any = products.products.filter(
+        const mfil: any = products.filter(
           (p: any) => p.name.toLowerCase().includes(e) || p.sku.toLowerCase().includes(e)
         );
         if (mfil.length === 1) {
