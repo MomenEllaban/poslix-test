@@ -457,6 +457,7 @@ const Product: NextPage = (props: any) => {
     </>
   );
 };
+
 export default Product;
 /**
  * @description get server side props
@@ -474,16 +475,15 @@ export async function getServerSideProps(context: any) {
 
   const shopId = context.query.id;
   if (!shopId) return { redirect: { permanent: false, destination: '/page403' } };
-  try {
-    const getPermission = await (await authApi(session))
-      .get('permissions/13')
-      .then((res) => res.data);
 
-    const permissions = permissionStrToObj(getPermission.result.stuff) ?? {};
+  try {
+    const stuffPermissions = await (await authApi(session))
+      .get('permissions/13')
+      .then(({ data }) => data.result[0].stuff);
 
     return {
       props: {
-        permissions: permissions,
+        permissions: stuffPermissions ?? {},
         shopId,
         rules: {
           //! this should be dynamic

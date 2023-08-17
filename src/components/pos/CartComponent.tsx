@@ -23,8 +23,15 @@ import TailoringModal from './modals/TailoringModal';
 import VariationModal from './modals/VariationModal';
 import { OrderCalcs } from './utils/OrderCalcs';
 import { OrdersFooter } from './utils/OrdersFooter';
-
-export default function OrdersComponent(props: any) {
+export default function OrdersComponent() {
+  return (
+    <>
+      <div>ddd</div>
+    </>
+  );
+}
+function wrdersComponent(props: any) {
+  console.log('OrdersComponent');
   const { shopId, lang, direction } = props;
   const { locationSettings, tailoringSizes, invoicDetails, tailoringExtras } = useUser();
   const { products, customers, taxes, taxGroups, variations, packageItems } = useProducts();
@@ -541,7 +548,7 @@ export default function OrdersComponent(props: any) {
         return;
       }
       if (idx === -1 || fromHold) {
-        let itm: any
+        let itm: any;
         //  = products.products_multi[index1][index2];
         ordersPush.push(itm);
         setOrders([...tmpOrders, itm]);
@@ -1150,12 +1157,10 @@ export default function OrdersComponent(props: any) {
           thePrices = JSON.parse(
             JSON.stringify(variations.variations_multi[_quantity[index].productIndex])
           );
-        else
-          // thePrices = JSON.parse(
-          //   JSON.stringify(products.products_multi[_quantity[index].productIndex])
-          // );
-
-        let qtyToAllocate = qt;
+        // thePrices = JSON.parse(
+        //   JSON.stringify(products.products_multi[_quantity[index].productIndex])
+        // );
+        else let qtyToAllocate = qt;
         _quantity[index].prices = [];
 
         for (let i = 0; i < thePrices.length && qtyToAllocate > 0; i++) {
@@ -1268,7 +1273,7 @@ export default function OrdersComponent(props: any) {
       quantity[idx].productIndex = index1;
       quantity[idx].itemIndex = index2;
     }
-    let _item: any
+    let _item: any;
     //  = products.products_multi[quantity[idx].productIndex][quantity[idx].itemIndex];
     setSelectedProductForVariation({
       tailoringCustom: {
