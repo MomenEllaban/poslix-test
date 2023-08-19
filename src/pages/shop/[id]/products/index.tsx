@@ -289,11 +289,11 @@ const Product: NextPage = (props: any) => {
   async function initDataPage() {
     setIsLoading(false);
     if(router.isReady) {
-      const res = await findAllData(`products/${router.query.id}?page=${currentPage}`);
-      setProducts(res.data.result.data);
-      setCurrentPage(res.data.result.current_page);
-      setLastPage(res.data.result.last_page);
-      setTotalRows(res.data.result.total);
+      const res = await findAllData(`products/${router.query.id}?all_data=1`);
+      setProducts(res.data.result);
+      // setCurrentPage(res.data.result.current_page);
+      // setLastPage(res.data.result.last_page);
+      // setTotalRows(res.data.result.total);
       // setFilteredProducts(data.products);
       setIsLoading(false);
     }
@@ -315,7 +315,7 @@ const Product: NextPage = (props: any) => {
       );
     else alert('errorr location settings');
     initDataPage();
-  }, [currentPage]);
+  }, []);
 
   const handleDeleteFuc = (result: boolean, msg: string, section: string) => {
     initDataPage();
@@ -443,9 +443,9 @@ const Product: NextPage = (props: any) => {
                 onSelectionModelChange={(ids: any) => onRowsSelectionHandler(ids)}
                 onCellClick={handleCellClick}
                 components={{ Toolbar: CustomToolbar }}
-                rowCount={totalRows}
-                onPageChange={(params) => setCurrentPage(params + 1)}
-                pagination
+                // rowCount={totalRows}
+                // onPageChange={(params) => setCurrentPage(params + 1)}
+                // pagination
               />
             </div>
           </>

@@ -6,6 +6,7 @@ import { apiFetchCtr, apiInsertCtr } from '../../libs/dbUtils';
 import { ITax } from '../../models/common-model';
 import { Toastify } from 'src/libs/allToasts';
 import { UserContext } from 'src/context/UserContext';
+import { findAllData } from 'src/services/crud.api';
 function AddGroupModal(props: any) {
   const { allTaxes, dataItems, shopId, id, type, alertShow } = props;
   const { taxes, excise, services, taxesGroup } = allTaxes;
@@ -41,41 +42,36 @@ function AddGroupModal(props: any) {
   }, [alertShow]);
 
   async function initForEdit(id: number) {
-    const { success, newdata } = await apiFetchCtr({
-      fetch: 'taxes',
-      subType: 'getGroupItems',
-      id,
-      shopId,
-    });
-    if (!success) {
-      Toastify('error', 'Has Error ,try Again');
-      return;
+    const res = await findAllData(`taxes/${id}/show`)
+    if (res.data.success) {
+        let _total = 0;
+        const _taxs = [
+          ...taxes,
+          { isSplit: true, name: 'Excise Taxes List' },
+          ...excise,
+          { isSplit: true, name: 'Service Charge Taxes List' },
+          ...services,
+        ];
+        const newTaxes = [...allTaxes.excise, ...allTaxes.taxes, allTaxes.services]
+        
+        _taxs.forEach((item1: any) => {
+          console.log(item1);
+          
+          if (newTaxes.some((item2: any) => item2.id === item1.id)) {
+            item1.isChoosed = true;
+            _total += Number(item1.amount);
+          } else item1.isChoosed = false;
+        });
+        setAllItems(_taxs);
+        setTotalTax(_total);
+        taxesGroup.map((tg: any) => {
+          if (tg.id == id) {
+            setGname(tg.name);
+            setIsDefault(tg.is_primary);
+          }
+        });
+      setIsLoading(false);
     }
-    if (newdata.length > 0) {
-      let _total = 0;
-      const _taxs = [
-        ...taxes,
-        { isSplit: true, name: 'Excise Taxes List' },
-        ...excise,
-        { isSplit: true, name: 'Service Charge Taxes List' },
-        ...services,
-      ];
-      _taxs.forEach((item1: any) => {
-        if (newdata.some((item2: any) => item2.tax_id === item1.id)) {
-          item1.isChoosed = true;
-          _total += Number(item1.amount);
-        } else item1.isChoosed = false;
-      });
-      setAllItems(_taxs);
-      setTotalTax(_total);
-      taxesGroup.map((tg: any) => {
-        if (tg.id == id) {
-          setGname(tg.name);
-          setIsDefault(tg.is_primary);
-        }
-      });
-    }
-    setIsLoading(false);
   }
   const handleClose = () => props.alertFun(false);
   const handleShow = () => props.alertFun(true);

@@ -27,7 +27,7 @@ import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/chec
 import { Toastify } from 'src/libs/allToasts';
 import { ToastContainer } from 'react-toastify';
 import withAuth from 'src/HOCs/withAuth';
-import { createNewData, findAllData, updateData } from 'src/services/crud.api';
+import { createNewData, deleteData, findAllData, updateData } from 'src/services/crud.api';
 
 const Taxes: NextPage = (props: any) => {
   const { shopId, rules } = props;
@@ -59,10 +59,13 @@ const Taxes: NextPage = (props: any) => {
     { label: 'Fixed', value: 'fixed' },
   ];
 
+  const [taxesList, setTaxesList] = useState()
+
   async function initDataPage() {
     if(router.query.id){
       const res = await findAllData(`taxes/${router.query.id}`)
       const newData = res.data.result.taxes
+      setTaxesList(res.data.result.taxes.filter(t => t.tax_type !== 'group'))
       if (res.data.success) {
         // if (rules.hasInsert) {
           newData.push({
@@ -195,27 +198,9 @@ const Taxes: NextPage = (props: any) => {
       } as any);
     setTaxs(_taxs);
   };
-  const handleDelete = (i: number, type: string) => {
-    const _taxs =
-      type == 'primary'
-        ? [...taxs]
-        : type == 'excise'
-        ? [...taxsExcise]
-        : type == 'group'
-        ? [...taxesGroup]
-        : [...taxsService];
-    if (_taxs[i].isNew) {
-      _taxs.splice(i, 1);
-      type == 'primary'
-        ? setTaxs(_taxs)
-        : type == 'excise'
-        ? setTaxsExcise(_taxs)
-        : setTaxsService(_taxs);
-    } else {
-      setShow(true);
-      setSelectId(_taxs[i].id);
-      setSelectType(type);
-    }
+  const handleDelete = async (i: number, type: string) => {
+    const res =  await deleteData('taxes', i)
+    initDataPage()
   };
   const handleChangeExcAndService = (e: any, i: number, isExc: boolean) => {
     const _taxes = isExc ? [...taxsExcise] : [...taxsService];
@@ -286,18 +271,15 @@ const Taxes: NextPage = (props: any) => {
   };
 
   const handleSave = async (item: any) => {
-    console.log(item);
-    
     const tax = {...item}
-    tax.type = tax.tax_type
-    delete tax.tax_type
     delete tax.id
+    tax.type = 'percentage'
     let res;
     
     if(item.id === 0) {
       res = await createNewData(`taxes/${router.query.id}`, tax)
     } else {
-      res = await updateData('taxes', tax.id, tax)
+      res = await updateData('taxes', item.id, tax)
     }
     if(res.data.success) Toastify('success', 'successfuly Done!');
     else Toastify('error', 'Error On Add New')
@@ -426,7 +408,7 @@ const Taxes: NextPage = (props: any) => {
                               <ButtonGroup className="mb-2 m-buttons-style">
                                 {/* {rules.hasDelete && ( */}
                                 {true && (
-                                  <Button onClick={() => handleDelete(i, 'primary')}>
+                                  <Button onClick={() => handleDelete(ex.id, 'primary')}>
                                     <FontAwesomeIcon icon={faTrash} />
                                   </Button>
                                 )}
@@ -515,9 +497,17 @@ const Taxes: NextPage = (props: any) => {
                                 <Button
                                   // disabled={!rules.hasInsert}
                                   disabled={false}
-                                  onClick={() => handleDelete(i, 'excise')}>
+                                  onClick={() => handleDelete(ex.id, 'excise')}>
                                   <FontAwesomeIcon icon={faTrash} />
                                 </Button>
+                              </ButtonGroup>
+                              <ButtonGroup className="mb-2 m-buttons-style">
+                                {/* {rules.hasDelete && ( */}
+                                {true && (
+                                  <Button onClick={() => handleSave(ex)}>
+                                    <FontAwesomeIcon icon={faCheck} />
+                                  </Button>
+                                )}
                               </ButtonGroup>
                             </td>
                           </tr>
@@ -614,8 +604,16 @@ const Taxes: NextPage = (props: any) => {
                               <ButtonGroup className="mb-2 m-buttons-style">
                                 {/* {rules.hasDelete && ( */}
                                 {true && (
-                                  <Button onClick={() => handleDelete(i, 'service')}>
+                                  <Button onClick={() => handleDelete(ex.id, 'service')}>
                                     <FontAwesomeIcon icon={faTrash} />
+                                  </Button>
+                                )}
+                              </ButtonGroup>
+                              <ButtonGroup className="mb-2 m-buttons-style">
+                                {/* {rules.hasDelete && ( */}
+                                {true && (
+                                  <Button onClick={() => handleSave(ex)}>
+                                    <FontAwesomeIcon icon={faCheck} />
                                   </Button>
                                 )}
                               </ButtonGroup>
@@ -676,7 +674,7 @@ const Taxes: NextPage = (props: any) => {
                               <ButtonGroup className="mb-2 m-buttons-style">
                                 {/* {rules.hasDelete && ( */}
                                 {true && (
-                                  <Button onClick={() => handleDelete(i, 'group')}>
+                                  <Button onClick={() => handleDelete(ex.id, 'group')}>
                                     <FontAwesomeIcon icon={faTrash} />
                                   </Button>
                                 )}
