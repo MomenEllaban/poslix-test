@@ -42,10 +42,11 @@ const Expenses: NextPage = (props: any) => {
   const [cate, setCate] = useState<{ id: number; name: string; isNew: boolean }[]>([]);
   const [expensesList, setExpensesList] = useState<IExpenseList[]>([]);
   const [show, setShow] = useState(false);
+  const [type, setType] = useState('');
   const [selectId, setSelectId] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isAddExpense, setIsAddExpense] = useState(false);
-  const [categories, setCategories] = useState(false);
+  const [categories, setCategories] = useState([]);
   const [key, setKey] = useState('list');
   const { locationSettings } = useContext(UserContext);
 
@@ -105,6 +106,7 @@ const Expenses: NextPage = (props: any) => {
                 onClick={() => {
                   setSelectId(row.id);
                   setShow(true);
+                  setType('expenses')
                 }}>
                 <FontAwesomeIcon icon={faTrash} />
               </Button>
@@ -198,7 +200,7 @@ const Expenses: NextPage = (props: any) => {
           alertShow={show}
           alertFun={handleDeleteFuc}
           id={selectId}
-          url={'expenses'}>
+          url={type}>
           Are you Sure You Want Delete This Item ?
         </AlertDialog>
         <div className="row">
@@ -265,7 +267,7 @@ const Expenses: NextPage = (props: any) => {
             <Tab eventKey="category" title="Category">
               <Card>
                 <Card.Header className="p-3 bg-white">
-                  <h5>Expense List</h5>
+                  <h5>Category List</h5>
                 </Card.Header>
                 <Card.Body className="table-responsive text-nowrap">
                   {!isLoading ? (
@@ -278,14 +280,15 @@ const Expenses: NextPage = (props: any) => {
                         </tr>
                       </thead>
                       <tbody>
-                        {cate.map((ex: any, i: number) => {
+                        {categories.map((ex: any, i: number) => {
                           return (
                             <tr key={i} style={{ background: ex.isNew ? '#c6e9e6' : '' }}>
                               <th scope="row">{i + 1}</th>
                               <td>
                                 <input
                                   type="text"
-                                  disabled={!rules.hasInsert}
+                                  // disabled={!rules.hasInsert}
+                                  disabled={false}
                                   name="tax-name"
                                   className="form-control p-2"
                                   placeholder="Enter New Tax Name"
@@ -297,11 +300,13 @@ const Expenses: NextPage = (props: any) => {
                               </td>
                               <td>
                                 <ButtonGroup className="mb-2 m-buttons-style">
-                                  {rules.hasDelete && (
+                                  {/* {rules.hasDelete && ( */}
+                                  {true && (
                                     <Button
                                       onClick={() => {
                                         setSelectId(ex.id);
                                         setShow(true);
+                                        setType('expenses-categories')
                                       }}>
                                       <FontAwesomeIcon icon={faTrash} />
                                     </Button>

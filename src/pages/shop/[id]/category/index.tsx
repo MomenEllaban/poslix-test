@@ -14,36 +14,36 @@ import * as cookie from 'cookie';
 import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/checkUtils';
 import { ITokenVerfy } from '@models/common-model';
 import { Toastify } from 'src/libs/allToasts';
+import withAuth from 'src/HOCs/withAuth';
+import { findAllData } from 'src/services/crud.api';
 
-const Category = ({ shopId, rules }: any) => {
+const Category = ({ rules }: any) => {
   const [cats, setCats] = useState<{ id: number; name: string }[]>([]);
   const [brands, setBrands] = useState<{ id: number; name: string }[]>([]);
   const router = useRouter();
   const [show, setShow] = useState(false);
+  const [shopId, setShopId] = useState('');
+  const [type, setType] = useState('');
   const [selectId, setSelectId] = useState(0);
-  const [key, setKey] = useState('Categories');
+  const [key, setKey] = useState('categories');
   const [isloading, setIsloading] = useState(true);
 
   async function initDataPage() {
-    const { success, newdata } = await apiFetchCtr({
-      fetch: 'categery_brand',
-      subType: 'getCatsAndBrands',
-      shopId,
-    });
-
-    if (success) {
-      setCats(newdata.cates);
-      setBrands(newdata.brands);
+    if(router.isReady) {
+      setShopId(router.query.id.toString())
+      const resCategories = await findAllData(`categories/${router.query.id}`)
+      const resBrands = await findAllData(`brands/${router.query.id}`)
+      if (resCategories.data.success) {
+        setCats(resCategories.data.result);
+      }
+      if (resBrands.data.success) {
+        setBrands(resBrands.data.result);
+      }
       setIsloading(false);
     }
   }
   useEffect(() => {
-    const key = localStorage.getItem('key');
-    if (key) {
-      setKey(key);
-    }
     initDataPage();
-    return () => localStorage.removeItem('key');
   }, [router.asPath]);
 
   return (
@@ -51,27 +51,32 @@ const Category = ({ shopId, rules }: any) => {
       <AdminLayout shopId={shopId}>
         <AlertDialog
           alertShow={show}
-          alertFun={(e: boolean) => setShow(e)}
+          alertFun={(e: boolean) => {
+            setShow(false)
+            Toastify('success', 'successfuly Done!');
+            initDataPage()
+          }}
           id={selectId}
-          expenses={cats}>
+          expenses={cats}
+          url={type}>
           Are you Sure You Want Delete This Item ?
         </AlertDialog>
         <div className="row">
-          {rules.hasInsert && (
+          {/* {rules.hasInsert && ( */}
+          {true && (
             <div className="mb-4">
               <button
                 className="btn btn-primary p-3"
                 onClick={() => {
-                  localStorage.setItem('key', key);
-                  if (key === 'Categories')
+                  if (key === 'categories')
                     router.push({
                       pathname: '/shop/' + shopId + '/category/add',
-                      query: { type: 'category' },
+                      query: { type: 'categories' },
                     });
-                  else if (key === 'Brands')
+                  else if (key === 'brands')
                     router.push({
                       pathname: '/shop/' + shopId + '/category/add',
-                      query: { type: 'brand' },
+                      query: { type: 'brands' },
                     });
                   else Toastify('error', 'Error On Add New');
                 }}>
@@ -84,7 +89,7 @@ const Category = ({ shopId, rules }: any) => {
             activeKey={key}
             onSelect={(k: any) => setKey(k)}
             className="mb-3 p-3">
-            <Tab eventKey="Categories" title="Categories">
+            <Tab eventKey="categories" title="Categories">
               <Card>
                 <Card.Header className="p-3 bg-white">
                   <h5>Category List</h5>
@@ -109,22 +114,25 @@ const Category = ({ shopId, rules }: any) => {
                               <td>{ex.tax_name}</td>
                               <td>
                                 <ButtonGroup className="mb-2 m-buttons-style">
-                                  {rules.hasEdit && (
+                                  {/* {rules.hasEdit && ( */}
+                                  {true && (
                                     <Button
                                       onClick={() =>
                                         router.push({
                                           pathname: '/shop/' + shopId + '/category/edit/' + ex.id,
-                                          query: { type: 'category' },
+                                          query: { type: 'categories' }
                                         })
                                       }>
                                       <FontAwesomeIcon icon={faPenToSquare} />
                                     </Button>
                                   )}
-                                  {rules.hasDelete && (
+                                  {/* {rules.hasDelete && ( */}
+                                  {true && (
                                     <Button
                                       onClick={() => {
                                         setSelectId(ex.id);
                                         setShow(true);
+                                        setType('categories');
                                       }}>
                                       <FontAwesomeIcon icon={faTrash} />
                                     </Button>
@@ -145,7 +153,7 @@ const Category = ({ shopId, rules }: any) => {
               </Card>
             </Tab>
 
-            <Tab eventKey="Brands" title="Brands">
+            <Tab eventKey="brands" title="Brands">
               <Card>
                 <Card.Header className="p-3 bg-white">
                   <h5>Brands List</h5>
@@ -175,22 +183,25 @@ const Category = ({ shopId, rules }: any) => {
                               <td>{ex.tax_name}</td>
                               <td>
                                 <ButtonGroup className="mb-2 m-buttons-style">
-                                  {rules.hasEdit && (
+                                  {/* {rules.hasEdit && ( */}
+                                  {true && (
                                     <Button
                                       onClick={() =>
                                         router.push({
                                           pathname: '/shop/' + shopId + '/category/edit/' + ex.id,
-                                          query: { type: 'brand' },
+                                          query: { type: 'brands' }
                                         })
                                       }>
                                       <FontAwesomeIcon icon={faPenToSquare} />
                                     </Button>
                                   )}
-                                  {rules.hasDelete && (
+                                  {/* {rules.hasDelete && ( */}
+                                  {true && (
                                     <Button
                                       onClick={() => {
                                         setSelectId(ex.id);
                                         setShow(true);
+                                        setType('brands');
                                       }}>
                                       <FontAwesomeIcon icon={faTrash} />
                                     </Button>
@@ -216,44 +227,4 @@ const Category = ({ shopId, rules }: any) => {
     </>
   );
 };
-export default Category;
-export async function getServerSideProps(context: any) {
-  const parsedCookies = cookie.parse(context.req.headers.cookie || '[]');
-  var _isOk = true,
-    _hasPer = true;
-  //check page params
-  var shopId = context.query.id;
-  if (shopId == undefined) return { redirect: { permanent: false, destination: '/page403' } };
-
-  //check user permissions
-  var _userRules;
-  await verifayTokens(
-    { headers: { authorization: 'Bearer ' + parsedCookies.tokend } },
-    (repo: ITokenVerfy) => {
-      _isOk = repo.status;
-      if (_isOk) {
-        var _rules = keyValueRules(repo.data.rules || []);
-        if (
-          _rules[-2] != undefined &&
-          _rules[-2][0].stuff != undefined &&
-          _rules[-2][0].stuff == 'owner'
-        ) {
-          _hasPer = true;
-          _userRules = { hasDelete: true, hasEdit: true, hasView: true, hasInsert: true };
-        } else if (_isOk && _rules[shopId] != undefined) {
-          var _stuf = '';
-          _rules[shopId].forEach((dd: any) => (_stuf += dd.stuff));
-          const { userRules, hasPermission } = hasPermissions(_stuf, 'category');
-          _userRules = userRules;
-          _hasPer = hasPermission;
-        } else _hasPer = false;
-      }
-    }
-  );
-  if (!_isOk) return { redirect: { permanent: false, destination: '/user/auth' } };
-  if (!_hasPer) return { redirect: { permanent: false, destination: '/page403' } };
-  //status ok
-  return {
-    props: { shopId: context.query.id, rules: _userRules },
-  };
-}
+export default withAuth(Category);

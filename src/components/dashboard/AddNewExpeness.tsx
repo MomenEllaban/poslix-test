@@ -4,7 +4,7 @@ import { IExpenseList, IPayment } from '@models/common-model';
 import Select from 'react-select';
 import { Toastify } from 'src/libs/allToasts';
 import DatePicker from 'react-datepicker';
-import { createNewData } from 'src/services/crud.api';
+import { createNewData, updateData } from 'src/services/crud.api';
 import { useRouter } from 'next/router';
 
 const AddNewExpeness = (props: any) => {
@@ -41,28 +41,22 @@ const AddNewExpeness = (props: any) => {
     }
   }
   async function editEpense() {
-    const { success, msg } = await apiUpdateCtr({
-      type: 'expenses',
-      subType: 'editExpense',
-      data: formObj,
-      shopId,
-    });
-
-    if (!success) {
-      Toastify('error', msg);
-      return;
+    console.log(formObj);
+    
+    const res = await updateData('expenses', selectId, formObj)
+    if (res.data.success) {
+      let _i = rows.findIndex((rw: any) => rw.id == selectId);
+      if (_i > -1) {
+        let _rows = [...rows];
+        _rows[_i].name = formObj.name;
+        _rows[_i].category = formObj.category_id;
+        _rows[_i].amount = formObj.amount;
+        _rows[_i].date = formObj.date;
+        setExpensesList(_rows);
+      }
+  
+      setIsAddExpense(false);
     }
-    let _i = rows.findIndex((rw: any) => rw.id == selectId);
-    if (_i > -1) {
-      let _rows = [...rows];
-      _rows[_i].name = formObj.name;
-      _rows[_i].category = formObj.category_id;
-      _rows[_i].amount = formObj.amount;
-      _rows[_i].date = formObj.date;
-      setExpensesList(_rows);
-    }
-
-    setIsAddExpense(false);
   }
   var errors = [];
   useEffect(() => {
