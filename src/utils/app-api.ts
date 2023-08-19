@@ -50,9 +50,12 @@ const responseInterceptor = api.interceptors.response.use(
       if (!isRefreshing) {
         isRefreshing = true;
         try {
+          const session = await getSession();
           const newToken = await authService.refreshToken();
           isRefreshing = false;
+
           api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+          session.user.token = newToken;
           processQueue(null, newToken);
         } catch (refreshError) {
           isRefreshing = false;
