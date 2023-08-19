@@ -266,12 +266,12 @@ export type IsaleProductItem = {
   def_tax: boolean;
 };
 export interface ILocationSettings {
-  value: number;
-  label: string;
+  location_id: number;
+  location_name: string;
+  location_decimal_places: number;
   currency_id: number;
+  currency_name: string;
   currency_code: string;
-  currency_decimal_places: number;
-  currency_rate: number;
   currency_symbol: string;
 }
 export interface IPurchaseExpndes {

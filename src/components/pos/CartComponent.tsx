@@ -23,14 +23,8 @@ import TailoringModal from './modals/TailoringModal';
 import VariationModal from './modals/VariationModal';
 import { OrderCalcs } from './utils/OrderCalcs';
 import { OrdersFooter } from './utils/OrdersFooter';
-export default function OrdersComponent() {
-  return (
-    <>
-      <div>ddd</div>
-    </>
-  );
-}
-function wrdersComponent(props: any) {
+
+export default function OrdersComponent(props: any) {
   console.log('OrdersComponent');
   const { shopId, lang, direction } = props;
   const { locationSettings, tailoringSizes, invoicDetails, tailoringExtras } = useUser();
@@ -73,7 +67,7 @@ function wrdersComponent(props: any) {
     orderId: 0,
   });
   const [shippingRate] = useState<number>(0);
-  const [customerIsModal, setCustomerIsModal] = useState<boolean>(false);
+
   const [customer, setCustomer] = useState<{
     value: string;
     label: string;
@@ -1160,53 +1154,57 @@ function wrdersComponent(props: any) {
         // thePrices = JSON.parse(
         //   JSON.stringify(products.products_multi[_quantity[index].productIndex])
         // );
-        else let qtyToAllocate = qt;
-        _quantity[index].prices = [];
+        else {
+          let qtyToAllocate = qt;
+          _quantity[index].prices = [];
 
-        for (let i = 0; i < thePrices.length && qtyToAllocate > 0; i++) {
-          const stockItem = thePrices[i];
-          if (stockItem.qty >= qtyToAllocate) {
-            // Allocate full quantity from this stock item
-            stockItem.qty -= qtyToAllocate;
-            if (_quantity[index].prices.length > i) _quantity[index].prices[i].qty = qtyToAllocate;
-            else
-              _quantity[index].prices.push({
-                stock_id: stockItem.stock_id,
-                qty: qtyToAllocate,
-                price: stockItem.price,
-                cost: stockItem.cost,
-              });
+          for (let i = 0; i < thePrices.length && qtyToAllocate > 0; i++) {
+            const stockItem = thePrices[i];
+            if (stockItem.qty >= qtyToAllocate) {
+              // Allocate full quantity from this stock item
+              stockItem.qty -= qtyToAllocate;
+              if (_quantity[index].prices.length > i)
+                _quantity[index].prices[i].qty = qtyToAllocate;
+              else
+                _quantity[index].prices.push({
+                  stock_id: stockItem.stock_id,
+                  qty: qtyToAllocate,
+                  price: stockItem.price,
+                  cost: stockItem.cost,
+                });
 
-            qtyToAllocate = 0;
-          } else {
-            // Allocate partial quantity from this stock item
-            qtyToAllocate -= stockItem.qty;
-            if (_quantity[index].prices.length > i) _quantity[index].prices[i].qty = stockItem.qty;
-            else
-              _quantity[index].prices.push({
-                stock_id: stockItem.stock_id,
-                qty: stockItem.qty,
-                price: stockItem.price,
-                cost: stockItem.cost,
-              });
+              qtyToAllocate = 0;
+            } else {
+              // Allocate partial quantity from this stock item
+              qtyToAllocate -= stockItem.qty;
+              if (_quantity[index].prices.length > i)
+                _quantity[index].prices[i].qty = stockItem.qty;
+              else
+                _quantity[index].prices.push({
+                  stock_id: stockItem.stock_id,
+                  qty: stockItem.qty,
+                  price: stockItem.price,
+                  cost: stockItem.cost,
+                });
 
-            stockItem.qty = 0;
+              stockItem.qty = 0;
+            }
           }
-        }
-        _quantity[index].quantity = qt;
-        //is over selling
-        if (qtyToAllocate > 0.5 && _orders[index].sell_over_stock!) {
-          if (_quantity[index].prices[_quantity[index].prices.length - 1].stock_id != 0) {
-            _quantity[index].prices.push({
-              stock_id: 0,
-              qty: qtyToAllocate,
-              price: isVar ? _pro.variation_price! : _pro.product_price,
-              cost: isVar ? _pro.variation_cost! : _pro.product_cost!,
-            });
-          } else _quantity[index].prices[_quantity[index].prices.length - 1].qty = qt;
-        } else if (qtyToAllocate > 0.5) {
-          _quantity[index].quantity -= qtyToAllocate;
-          Toastify('error', 'Out Of Stock');
+          _quantity[index].quantity = qt;
+          //is over selling
+          if (qtyToAllocate > 0.5 && _orders[index].sell_over_stock!) {
+            if (_quantity[index].prices[_quantity[index].prices.length - 1].stock_id != 0) {
+              _quantity[index].prices.push({
+                stock_id: 0,
+                qty: qtyToAllocate,
+                price: isVar ? _pro.variation_price! : _pro.product_price,
+                cost: isVar ? _pro.variation_cost! : _pro.product_cost!,
+              });
+            } else _quantity[index].prices[_quantity[index].prices.length - 1].qty = qt;
+          } else if (qtyToAllocate > 0.5) {
+            _quantity[index].quantity -= qtyToAllocate;
+            Toastify('error', 'Out Of Stock');
+          }
         }
         //
         _quantity[index].itemIndex = _quantity[index].prices.length - 1;
@@ -1375,7 +1373,6 @@ function wrdersComponent(props: any) {
         <div className="row mb-2">
           <CustomerDataSelect
             shopId={shopId}
-            selectStyle={selectStyle}
             isOrderEdit={isOrderEdit}
             setCustomer={setCustomer}
             orderEditDetails={orderEditDetails}

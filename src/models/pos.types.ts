@@ -53,18 +53,35 @@ export interface IProduct {
   cost_price: string | number;
   sell_over_stock: string;
   qty_over_sold: string;
-  created_at?: any;
-  updated_at?: any;
+  created_at?: string;
+  updated_at?: string;
   is_selling_multi_price: number;
   is_fifo: number;
   status: string;
   stock: number;
-  variations?: any[];
+  variations?: IVariation[];
   packages: IPackage[];
   stocks: IStock[];
   category: ICategory;
 }
-
+export interface IVariation {
+  id: number;
+  location_id: number;
+  parent_id: number;
+  name: string;
+  name2: string;
+  sku: string;
+  cost: string;
+  price: string;
+  sell_over_stock: number;
+  is_selling_multi_price: number;
+  is_service: 0 | 1 | boolean;
+  is_active: number;
+  created_by: number;
+  created_at?: string;
+  stock: number;
+  stocks: IStock[];
+}
 export interface IPackage {
   id: number;
   location_id: number;

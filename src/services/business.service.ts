@@ -39,7 +39,15 @@ const businessService = {
       )
       .then((data) => data.data);
   },
-  updateLocationSettings: async (id, payload: { [x: string]: any }) => {  
+  getLocationSettings: async (id) => {
+    const session = await getSession();
+
+    return (await authApi(session))
+      .get<any, TServiceResponse<IUserBusiness[]>, any>(`/business/locations/${id}`)
+      .then((data) => data.data);
+  },
+
+  updateLocationSettings: async (id, payload: { [x: string]: any }) => {
     const session = await getSession();
 
     return (await authApi(session))
@@ -52,7 +60,6 @@ const businessService = {
       )
       .then((data) => data.data);
   },
-  
 
   listBusinessTypes: async () => {
     const session = await getSession();
@@ -170,6 +177,23 @@ export const useBusinessLocations = (params?: { [x: string]: any }, config?: SWR
 
   return {
     businessLocations: data?.result ?? [],
+    isLoading,
+    error,
+    refetch: mutate,
+  };
+};
+
+export const useGetBusinessLocation = (id: string, config?: SWRConfiguration) => {
+  const { data, error, isLoading, mutate } = useSWR(
+    config?.suspense ? null : `/business/locations/${id}`, // Adjust the API endpoint according to your needs
+    () => businessService.getLocationSettings(id), // Adjust the data fetching function
+    {
+      ...config,
+    }
+  );
+
+  return {
+    businessLocation: (data?.result ?? {}) as IUserBusiness, //this for the data of only one business
     isLoading,
     error,
     refetch: mutate,

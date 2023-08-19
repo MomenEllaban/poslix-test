@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Router from 'next/router';
 import { useEffect, useState } from 'react';
 import CloseRegister from '../modals/CloseRegister';
-import styles from './NavMenu.module.css';
+import styles from './NavMenu.module.scss';
 
 const NavMenu: any = (props: any) => {
   const { shopId, lang, setLang } = props;
@@ -67,6 +67,7 @@ const NavMenu: any = (props: any) => {
           </Link>
         </div>
       </div>
+      <div className={styles.navbar__sizer} />
     </>
   );
 };

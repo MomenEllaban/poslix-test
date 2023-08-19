@@ -26,6 +26,8 @@ import { useProducts } from '../../../context/ProductContext';
 import { cartJobType } from '../../../recoil/atoms';
 
 import 'remixicon/fonts/remixicon.css';
+import CartPanel from 'src/components/pos/_components/cart-panel/CartPanel';
+import { useGetBusinessLocation } from 'src/services/business.service';
 
 const Home: NextPage = ({ shopId: _id }: any) => {
   const router = useRouter();
@@ -53,6 +55,12 @@ const Home: NextPage = ({ shopId: _id }: any) => {
 
   const { setLocationSettings, setTailoringSizes, setInvoicDetails, setTailoringExtras } =
     useUser();
+
+  useGetBusinessLocation(shopId, {
+    onSuccess(data) {
+      setLocationSettings(data?.result ?? {});
+    },
+  });
 
   useCustomersList(shopId, {
     onSuccess(data, key, config) {
@@ -183,7 +191,9 @@ const Home: NextPage = ({ shopId: _id }: any) => {
     return (
       <PosLayout>
         <NavMenu shopId={shopId} lang={lang} setLang={setLang} />
-        <OrdersComponent shopId={shopId} lang={lang.pos} direction={lang == ar ? 'rtl' : ''} />
+
+        <CartPanel shopId={shopId} lang={lang.pos} direction={lang == ar ? 'rtl' : ''} />
+        {/* <OrdersComponent shopId={shopId} lang={lang.pos} direction={lang == ar ? 'rtl' : ''} /> */}
         <ItemList lang={lang.pos.itemList} />
       </PosLayout>
     );

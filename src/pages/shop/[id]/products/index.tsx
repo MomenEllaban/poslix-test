@@ -27,7 +27,6 @@ import ShowPriceListModal from 'src/components/dashboard/modal/ShowPriceListModa
 import LocationModal from 'src/components/pos/modals/LocationModal';
 import AlertDialog from 'src/components/utils/AlertDialog';
 import { Toastify } from 'src/libs/allToasts';
-import permissionStrToObj from 'src/modules/shop/_utils/permissionStrToObj';
 import { findAllData } from 'src/services/crud.api';
 import { ROUTES } from 'src/utils/app-routes';
 import { authApi } from 'src/utils/auth-api';

@@ -1,6 +1,6 @@
 import { IProduct } from '@models/pos.types';
 import classNames from 'classnames';
-import { CSSProperties, useEffect, useState } from 'react';
+import { CSSProperties, useEffect, useMemo, useState } from 'react';
 import ClipLoader from 'react-spinners/ClipLoader';
 import { useRecoilState } from 'recoil';
 import { cartJobType } from 'src/recoil/atoms';
@@ -10,29 +10,49 @@ import { ItemCard } from '../item-card/ItemCard';
 import { TabPanel } from '../tab-panel/TabPanel';
 import styles from './ItemList.module.scss';
 
-export const ItemList: any = (props: any) => {
-  const { lang } = props;
+const override: CSSProperties = {
+  display: 'block',
+  margin: '0 auto',
+  borderColor: '48b7b9',
+};
 
-  const [selectedTab, setSelectedTab] = useState('category');
-  const [isLoading, setIsLoading] = useState(true);
-  const { products, cats, brands } = useProducts();
-  const [selectedCat, setSelectedCat] = useState(0);
-  const [productsItems, SetProductsItems] = useState<IProduct[]>([]);
-  const [selectedBrand, setSelectedBrand] = useState(0);
+export const ItemList = ({ lang }: any) => {
   const [jobType] = useRecoilState(cartJobType);
+  const { products, cats, brands } = useProducts();
 
-  const override: CSSProperties = {
-    display: 'block',
-    margin: '0 auto',
-    borderColor: '48b7b9',
-  };
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedCat, setSelectedCat] = useState(0);
+  const [selectedBrand, setSelectedBrand] = useState(0);
+  const [selectedTab, setSelectedTab] = useState('category');
+  const [productsItems, SetProductsItems] = useState<IProduct[]>([]);
+
   const handleTabChange = (value: any) => {
     setSelectedTab(value);
     setIsLoading(false);
   };
+
+  const renderProductsFn = (product: IProduct, idx) => (
+    <div className="items-list-pos" key={product.id}>
+      <ItemCard product={product} />
+    </div>
+  );
+
+  const filteredProducts = useMemo(() => {
+    if (!productsItems?.length) return [];
+    else
+      return productsItems?.filter((val: IProduct) => {
+        if (selectedTab === 'category') {
+          return selectedCat === 0 ? val.category_id !== 0 : val.category_id === selectedCat;
+        } else {
+          return selectedBrand === 0 ? val.brand_id !== 0 : val.brand_id === selectedBrand;
+        }
+      });
+  }, [productsItems, selectedTab, selectedCat, selectedBrand]);
+
   useEffect(() => {
     SetProductsItems(products);
     setIsLoading(false);
+    console.log('fetching products');
   }, [products]);
 
   useEffect(() => {
@@ -58,8 +78,8 @@ export const ItemList: any = (props: any) => {
           dataItems={{ cats: cats, brands: brands }}
         />
 
-        {isLoading ? (
-          <ClipLoader color="48b7b9" loading={isLoading} cssOverride={override} size="150" />
+        {!productsItems?.length ? (
+          <ClipLoader color="48b7b9" loading={true} cssOverride={override} size="150px" />
         ) : (
           <div className="tab-content text-muted">
             <div
@@ -68,26 +88,7 @@ export const ItemList: any = (props: any) => {
               role="tabpanel"
               data-simplebar=""
               style={{ height: 'calc(100vh - 200px)' }}>
-              <div className="items-list">
-                {!!productsItems?.length &&
-                  productsItems
-                    .filter((val: IProduct) => {
-                      if (selectedTab === 'category') {
-                        return selectedCat === 0
-                          ? val.category_id !== 0
-                          : val.category_id === selectedCat;
-                      } else {
-                        return selectedBrand === 0
-                          ? val.brand_id !== 0
-                          : val.brand_id === selectedBrand;
-                      }
-                    })
-                    .map((product: IProduct, idx) => (
-                      <div className="items-list-pos" key={product.id}>
-                        <ItemCard product={product} />
-                      </div>
-                    ))}
-              </div>
+              <div className="items-list">{filteredProducts.map(renderProductsFn)}</div>
               {/* end row */}
             </div>
           </div>

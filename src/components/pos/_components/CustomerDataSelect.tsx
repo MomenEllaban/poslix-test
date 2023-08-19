@@ -5,16 +5,23 @@ import { useProducts } from 'src/context/ProductContext';
 import { Toastify } from 'src/libs/allToasts';
 import CustomerModal from '../modals/CustomerModal';
 
+const selectStyle = {
+  control: (style: any) => ({
+    ...style,
+    fontSize: '12px',
+    border: '1px solid #efefef',
+    borderRadius: '12px',
+  }),
+};
+
 export default function CustomerDataSelect({
   shopId,
-  selectStyle,
   isOrderEdit,
   setCustomer,
   orderEditDetails,
   customer,
 }: {
   shopId: number;
-  selectStyle: { control: (style: any) => any };
   isOrderEdit: number;
   setCustomer: React.Dispatch<
     React.SetStateAction<{ value: string; label: string; isNew: boolean }>
@@ -38,6 +45,7 @@ export default function CustomerDataSelect({
       <div className="d-flex">
         <div className="flex-grow-1">
           <Select
+            isLoading={customers.length === 0}
             styles={selectStyle}
             isDisabled={isOrderEdit > 0}
             options={customers}
