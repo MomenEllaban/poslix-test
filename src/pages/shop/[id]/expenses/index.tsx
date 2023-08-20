@@ -90,8 +90,7 @@ const Expenses: NextPage = (props: any) => {
       renderCell: ({ row }: Partial<GridRowParams>) => (
         <>
           <ButtonGroup className="mb-2 m-buttons-style">
-            {/* {rules.hasEdit && ( */}
-            {true && (
+            {permissions.hasEdit && (
               <Button
                 onClick={() => {
                   setSelectId(row.id);
@@ -100,8 +99,7 @@ const Expenses: NextPage = (props: any) => {
                 <FontAwesomeIcon icon={faPenToSquare} />
               </Button>
             )}
-            {/* {rules.hasDelete && ( */}
-            {true && (
+            {permissions.hasDelete && (
               <Button
                 onClick={() => {
                   setSelectId(row.id);
@@ -121,10 +119,14 @@ const Expenses: NextPage = (props: any) => {
       setIsLoading(true);
       const res = await findAllData(`expenses/${router.query.id}`)
       if (res.data.success) {
-        // rules.hasInsert && res.data.result.cate.push({ id: 0, name: '', isNew: true });
+        catPermissions.hasInsert && res.data.result.cate.push({ id: 0, name: '', isNew: true });
         setExpensesList(res.data.result);
-        setIsLoading(false);
       }
+      const catRes = await findAllData(`expenses-categories/${router.query.id}`)
+      if(catRes.data.success) {
+        setCategories(catRes.data.result)
+      }
+      setIsLoading(false);
     }
   }
   async function addUpdateExpense() {
@@ -176,12 +178,30 @@ const Expenses: NextPage = (props: any) => {
 
   const getCategories = async () => {
     if(router.query.id) {
-      const res = await findAllData(`expenses-categories/${router.query.id}`)
-      if(res.data.success) {
-        setCategories(res.data.result)
-      }
+      
     }
   }
+
+  const [permissions, setPermissions] = useState<any>()
+  const [catPermissions, setCatPermissions] = useState<any>()
+  useEffect(() => {
+    const perms = JSON.parse(localStorage.getItem('permissions'));
+    const getPermissions = {hasView: false, hasInsert: false, hasEdit: false, hasDelete: false}
+    const getCatPermissions = {hasCategories: false, hasView: false, hasInsert: false, hasEdit: false, hasDelete: false}
+    perms.expense.map((perm) => 
+      perm.name.includes('categories GET') ? getCatPermissions.hasCategories = true
+      : perm.name.includes('category GET') ? getCatPermissions.hasView = true
+      : perm.name.includes('category PUT') ? getCatPermissions.hasEdit = true
+      : perm.name.includes('category POST') ? getCatPermissions.hasInsert = true
+      : perm.name.includes('category DELETE') ? getCatPermissions.hasDelete = true
+      : perm.name.includes('expense POST') ? getPermissions.hasInsert = true
+      : perm.name.includes('expense PUT') ? getPermissions.hasEdit = true
+      : perm.name.includes('expense DELETE') ? getPermissions.hasDelete = true : null)
+    
+    setPermissions(getPermissions)
+    setCatPermissions(getCatPermissions)
+  }, [])
+
   useEffect(() => {
     initDataPage();
     getCategories()
@@ -215,8 +235,7 @@ const Expenses: NextPage = (props: any) => {
                   <h5>Expense List</h5>
                 </Card.Header>
                 <Card.Body style={{ minHeight: '650px ' }}>
-                  {/* {!isLoading && rules.hasInsert && ( */}
-                  {!isLoading && (
+                  {!isLoading && permissions.hasInsert && (
                     <div className="mb-2">
                       <button className="btn btn-primary p-3" onClick={() => handlebtnAdd()}>
                         {isAddExpense ? (
@@ -287,8 +306,7 @@ const Expenses: NextPage = (props: any) => {
                               <td>
                                 <input
                                   type="text"
-                                  // disabled={!rules.hasInsert}
-                                  disabled={false}
+                                  disabled={!catPermissions.hasInsert}
                                   name="tax-name"
                                   className="form-control p-2"
                                   placeholder="Enter New Tax Name"
@@ -300,8 +318,7 @@ const Expenses: NextPage = (props: any) => {
                               </td>
                               <td>
                                 <ButtonGroup className="mb-2 m-buttons-style">
-                                  {/* {rules.hasDelete && ( */}
-                                  {true && (
+                                  {catPermissions.hasDelete && (
                                     <Button
                                       onClick={() => {
                                         setSelectId(ex.id);
@@ -324,16 +341,6 @@ const Expenses: NextPage = (props: any) => {
                     </div>
                   )}
                 </Card.Body>
-                {/* {rules.hasInsert && ( */}
-                {true && (
-                  <div className="m-3">
-                    <button
-                      className="btn m-btn btn-primary p-3"
-                      onClick={() => addUpdateExpense()}>
-                      <FontAwesomeIcon icon={faFloppyDisk} /> save
-                    </button>
-                  </div>
-                )}
               </Card>
             </Tab>
           </Tabs>

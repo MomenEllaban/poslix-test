@@ -112,7 +112,7 @@ const PricingGroups = (props) => {
     }
   
     useEffect(() => {
-      var _locs = JSON.parse(localStorage.getItem('userlocs') || '[]');
+      var _locs = JSON.parse(localStorage.getItem('locations') || '[]');
       if (_locs.toString().length > 10)
         setLocationSettings(_locs[_locs.findIndex((loc: any) => { return loc.value == shopId })])
       else alert("errorr location settings")

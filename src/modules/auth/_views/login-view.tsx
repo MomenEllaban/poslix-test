@@ -8,6 +8,7 @@ import { MdVisibility, MdVisibilityOff } from 'react-icons/md';
 import loginSchema from '../login.schema';
 import { Toastify } from 'src/libs/allToasts';
 import { useRouter } from 'next/router';
+import { findAllData } from 'src/services/crud.api';
 
 type Inputs = {
   email: string;
@@ -38,8 +39,10 @@ export default function LoginView() {
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     setLoading(true);
     const res = await signIn('credentials', { redirect: false, ...data })
-      .then((res) => {
+      .then(async (res) => {
         if (res.error) throw new Error(res.error);
+        const permissions = await findAllData('permissions')
+        localStorage.setItem('permissions', JSON.stringify(permissions.data.result))
 
         Toastify('success', 'Login Success');
         router.push('/');

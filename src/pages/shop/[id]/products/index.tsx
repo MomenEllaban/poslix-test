@@ -186,8 +186,7 @@ const Product: NextPage = (props: any) => {
       renderCell: ({ row }: Partial<GridRowParams>) => (
         <>
           <ButtonGroup className="mb-2 m-buttons-style">
-            {/* {rules.hasEdit && ( */}
-            {true && (
+            {permissions.hasEdit && (
               <Button
                 onClick={() => {
                   router.push('/shop/' + shopId + '/products/edit/' + row.id);
@@ -195,8 +194,7 @@ const Product: NextPage = (props: any) => {
                 <FontAwesomeIcon icon={faPenToSquare} />
               </Button>
             )}
-            {/* {rules.hasDelete && ( */}
-            {true && (
+            {permissions.hasDelete && (
               <Button
                 onClick={() => {
                   setSelectId(row.id);
@@ -302,7 +300,18 @@ const Product: NextPage = (props: any) => {
     //   return;
     // }
   }
+  const [permissions, setPermissions] = useState<any>()
   useEffect(() => {
+    const perms = JSON.parse(localStorage.getItem('permissions'));
+    const getPermissions = {hasView: false, hasInsert: false, hasEdit: false, hasDelete: false}
+    perms.product.map((perm) => 
+      perm.name.includes('GET') ? getPermissions.hasView = true
+      : perm.name.includes('POST') ? getPermissions.hasInsert = true
+      : perm.name.includes('PUT') ? getPermissions.hasEdit = true
+      : perm.name.includes('DELETE') ? getPermissions.hasDelete = true : null)
+    
+    setPermissions(getPermissions)
+    
     const _locs = JSON.parse(localStorage.getItem('locations') || '[]');
     setLocations(_locs);
     if (_locs.toString().length > 10)
@@ -408,8 +417,7 @@ const Product: NextPage = (props: any) => {
           })}
         />
         {/* start */}
-        {/* {!isLoading && rules.hasInsert && ( */}
-        {!isLoading && (
+        {!isLoading && permissions.hasInsert && (
           <div className="mb-2 flex items-center justify-between">
             <button
               className="btn btn-primary p-3"

@@ -19,9 +19,12 @@ const Roles = ({ username }: any) => {
 
   async function initDataPage() {
     const res = await findAllData('permissions');
-
     // const { success, newdata } = await apiFetch({ fetch: 'getStuffsMyBusiness' });
-    setStuffs(res.data.result);
+    for (const iterator in res.data.result) {
+      console.log(iterator, res.data.result[iterator]);
+      
+    }
+    // setStuffs(res.data.result);
     setIsLoading(false);
   }
 
@@ -81,7 +84,7 @@ const Roles = ({ username }: any) => {
           <div className="col-md-12">
             <Card>
               <Card.Header className="p-3 bg-white">
-                <h5>Rules </h5>
+                <h5>Rules</h5>
               </Card.Header>
               <Card.Body>
                 {!isLoading ? (
@@ -95,7 +98,7 @@ const Roles = ({ username }: any) => {
                       </tr>
                     </thead>
                     <tbody>
-                      {stuffs.map((user: any, i: number) => {
+                      {stuffs?.map((user: any, i: number) => {
                         return (
                           <tr>
                             <th scope="row">{i + 1}</th>

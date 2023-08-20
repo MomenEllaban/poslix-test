@@ -103,15 +103,15 @@ const Purchases: NextPage = (props: any) => {
               }}>
               <FontAwesomeIcon icon={faDollarSign} />
             </Button>
-            <Button onClick={() => router.push('/shop/' + shopId + '/purchases/edit/' + row.id)}>
+            {permissions.hasEdit && <Button onClick={() => router.push('/shop/' + shopId + '/purchases/edit/' + row.id)}>
               <FontAwesomeIcon icon={faPenToSquare} />
-            </Button>
-            <Button onClick={() => {
+            </Button>}
+            {permissions.hasDelete && <Button onClick={() => {
               setSelectId(row.id);
               setShow(true);
             }}>
               <FontAwesomeIcon icon={faTrash} />
-            </Button>
+            </Button>}
           </ButtonGroup>
         </>
       ),
@@ -153,6 +153,18 @@ const Purchases: NextPage = (props: any) => {
     else alert('errorr location settings');
     initDataPage();
   }, [router.asPath]);
+
+  const [permissions, setPermissions] = useState<any>()
+  useEffect(() => {
+    const perms = JSON.parse(localStorage.getItem('permissions'));
+    const getPermissions = {hasView: false, hasInsert: false, hasEdit: false, hasDelete: false}
+    perms.purchase.map((perm) => 
+      perm.name.includes('POST') ? getPermissions.hasInsert = true
+      : perm.name.includes('PUT') ? getPermissions.hasEdit = true
+      : perm.name.includes('DELETE') ? getPermissions.hasDelete = true : null)
+    
+    setPermissions(getPermissions)
+  }, [])
   function getStatusStyle(status: string) {
     switch (status) {
       case 'paid':
@@ -206,7 +218,7 @@ const Purchases: NextPage = (props: any) => {
         {!isShowQtyManager && !isShowPayments && (
           <div className="row">
             <div className="col-md-12">
-              {!isloading && (
+              {!isloading && permissions.hasInsert && (
                 <div className="mb-4">
                   <button
                     className="btn m-btn btn-primary p-3"
