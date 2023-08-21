@@ -60,14 +60,15 @@ const Taxes: NextPage = (props: any) => {
   ];
 
   const [taxesList, setTaxesList] = useState()
+  const [permissions, setPermissions] = useState<any>()
 
   async function initDataPage() {
-    if(router.query.id){
+    if(router.query.id && permissions){
       const res = await findAllData(`taxes/${router.query.id}`)
       const newData = res.data.result.taxes
       setTaxesList(res.data.result.taxes.filter(t => t.tax_type !== 'group'))
       if (res.data.success) {
-        // if (rules.hasInsert) {
+        if (permissions.hasInsert) {
           newData.push({
             id: 0,
             name: '',
@@ -96,7 +97,7 @@ const Taxes: NextPage = (props: any) => {
             tax_type: 'service',
             isNew: 1,
           });
-        // }
+        }
         setTaxs(
           newData.filter((p: ITax) => {
             return p.tax_type == 'primary';
@@ -165,10 +166,6 @@ const Taxes: NextPage = (props: any) => {
     Toastify('success', 'successfuly Done!');
   }
 
-  useEffect(() => {
-    initDataPage();
-  }, [router.asPath]);
-
   const handlePrimarySwitchChange = (e: any, i: number) => {
     const _taxs = [...taxs];
     var sv = _taxs[i].is_primary;
@@ -224,7 +221,7 @@ const Taxes: NextPage = (props: any) => {
     isExc ? setTaxsExcise(_taxes) : setTaxsService(_taxes);
   };
   const addNewGroup = (id = 0) => {
-    setSelectType('edit');
+    setSelectType(id === 0 ? '' : 'edit');
     setSelectId(id);
     setGroupModal(true);
   };
@@ -285,6 +282,18 @@ const Taxes: NextPage = (props: any) => {
     else Toastify('error', 'Error On Add New')
   }
 
+  useEffect(() => {
+    const perms = JSON.parse(localStorage.getItem('permissions'));
+    const getPermissions = {hasView: false, hasInsert: false, hasEdit: false, hasDelete: false}
+    perms.tax.map((perm) => 
+      perm.name.includes('GET') ? getPermissions.hasView = true
+      : perm.name.includes('POST') ? getPermissions.hasInsert = true
+      : perm.name.includes('PUT') ? getPermissions.hasEdit = true
+      : perm.name.includes('DELETE') ? getPermissions.hasDelete = true : null)
+    
+    setPermissions(getPermissions)
+    initDataPage()
+  }, [router.asPath])
   return (
     <>
       <AdminLayout shopId={shopId}>
@@ -365,8 +374,7 @@ const Taxes: NextPage = (props: any) => {
                                 type="text"
                                 name="tax-name"
                                 className="form-control p-2"
-                                // disabled={!rules.hasInsert}
-                                disabled={false}
+                                disabled={!permissions.hasInsert}
                                 placeholder="Enter New Tax Name"
                                 value={ex.name}
                                 onChange={(e) => {
@@ -381,8 +389,7 @@ const Taxes: NextPage = (props: any) => {
                                 max={100}
                                 step={1}
                                 name="tax-value"
-                                // disabled={!rules.hasInsert}
-                                disabled={false}
+                                disabled={!permissions.hasInsert}
                                 className="form-control p-2"
                                 placeholder="Tax Value"
                                 value={ex.amount}
@@ -395,8 +402,7 @@ const Taxes: NextPage = (props: any) => {
                               <Form.Check
                                 type="switch"
                                 id="custom-switch"
-                                // disabled={!rules.hasInsert}
-                                disabled={false}
+                                disabled={!permissions.hasInsert}
                                 className="custom-switch"
                                 checked={ex.is_primary ? true : false}
                                 onChange={(e) => {
@@ -406,16 +412,14 @@ const Taxes: NextPage = (props: any) => {
                             </td>
                             <td>
                               <ButtonGroup className="mb-2 m-buttons-style">
-                                {/* {rules.hasDelete && ( */}
-                                {true && (
+                                {permissions.hasDelete && (
                                   <Button onClick={() => handleDelete(ex.id, 'primary')}>
                                     <FontAwesomeIcon icon={faTrash} />
                                   </Button>
                                 )}
                               </ButtonGroup>
                               <ButtonGroup className="mb-2 m-buttons-style">
-                                {/* {rules.hasDelete && ( */}
-                                {true && (
+                                {permissions.hasEdit && (
                                   <Button onClick={() => handleSave(ex)}>
                                     <FontAwesomeIcon icon={faCheck} />
                                   </Button>
@@ -433,8 +437,7 @@ const Taxes: NextPage = (props: any) => {
                   </div>
                 )}
               </Card.Body>
-              {/* {rules.hasInsert && ( */}
-              {true && (
+              {!isLoading && permissions.hasInsert && (
                 <div className="m-3">
                   <button className="btn m-btn btn-primary p-3" onClick={() => addUpdateTaxs(taxs)}>
                     <FontAwesomeIcon icon={faFloppyDisk} /> save
@@ -467,8 +470,7 @@ const Taxes: NextPage = (props: any) => {
                                 type="text"
                                 name="tax-name"
                                 className="form-control p-2"
-                                // disabled={!rules.hasInsert}
-                                disabled={false}
+                                disabled={!permissions.hasInsert}
                                 placeholder="Enter New Tax Name"
                                 value={ex.name}
                                 onChange={(e) => {
@@ -482,8 +484,7 @@ const Taxes: NextPage = (props: any) => {
                                 min={0}
                                 step={1}
                                 name="tax-value"
-                                // disabled={!rules.hasInsert}
-                                disabled={false}
+                                disabled={!permissions.hasInsert}
                                 className="form-control p-2"
                                 placeholder="Add Excise Tax Value"
                                 value={ex.amount}
@@ -495,15 +496,13 @@ const Taxes: NextPage = (props: any) => {
                             <td>
                               <ButtonGroup className="mb-2 m-buttons-style">
                                 <Button
-                                  // disabled={!rules.hasInsert}
-                                  disabled={false}
+                                  disabled={!permissions.hasInsert}
                                   onClick={() => handleDelete(ex.id, 'excise')}>
                                   <FontAwesomeIcon icon={faTrash} />
                                 </Button>
                               </ButtonGroup>
                               <ButtonGroup className="mb-2 m-buttons-style">
-                                {/* {rules.hasDelete && ( */}
-                                {true && (
+                                {permissions.hasDelete && (
                                   <Button onClick={() => handleSave(ex)}>
                                     <FontAwesomeIcon icon={faCheck} />
                                   </Button>
@@ -521,8 +520,7 @@ const Taxes: NextPage = (props: any) => {
                   </div>
                 )}
               </Card.Body>
-              {/* {rules.hasInsert && ( */}
-              {true && (
+              {!isLoading && permissions.hasInsert && (
                 <div className="m-3">
                   <button
                     className="btn m-btn btn-primary p-3"
@@ -555,8 +553,7 @@ const Taxes: NextPage = (props: any) => {
                           <tr key={i} style={{ background: ex.isNew ? '#c6e9e6' : '' }}>
                             <Select
                               className="p-2 m-brd-bottom"
-                              // isDisabled={!rules.hasInsert}
-                              isDisabled={false}
+                              isDisabled={!permissions.hasInsert}
                               styles={selectStyle}
                               options={taxValueType}
                               value={taxValueType.filter((it: any) => {
@@ -575,8 +572,7 @@ const Taxes: NextPage = (props: any) => {
                                 type="text"
                                 name="tax-name"
                                 className="form-control p-2"
-                                // disabled={!rules.hasInsert}
-                                disabled={false}
+                                disabled={!permissions.hasInsert}
                                 placeholder="Tax Name"
                                 value={ex.name}
                                 onChange={(e) => {
@@ -590,8 +586,7 @@ const Taxes: NextPage = (props: any) => {
                                 min={0}
                                 step={1}
                                 name="tax-value"
-                                // disabled={!rules.hasInsert}
-                                disabled={false}
+                                disabled={!permissions.hasInsert}
                                 className="form-control p-2"
                                 placeholder="Add Service Charge Value"
                                 value={ex.amount}
@@ -602,16 +597,14 @@ const Taxes: NextPage = (props: any) => {
                             </td>
                             <td>
                               <ButtonGroup className="mb-2 m-buttons-style">
-                                {/* {rules.hasDelete && ( */}
-                                {true && (
+                                {permissions.hasDelete && (
                                   <Button onClick={() => handleDelete(ex.id, 'service')}>
                                     <FontAwesomeIcon icon={faTrash} />
                                   </Button>
                                 )}
                               </ButtonGroup>
                               <ButtonGroup className="mb-2 m-buttons-style">
-                                {/* {rules.hasDelete && ( */}
-                                {true && (
+                                {permissions.hasEdit && (
                                   <Button onClick={() => handleSave(ex)}>
                                     <FontAwesomeIcon icon={faCheck} />
                                   </Button>
@@ -629,8 +622,7 @@ const Taxes: NextPage = (props: any) => {
                   </div>
                 )}
               </Card.Body>
-              {/* {rules.hasInsert && ( */}
-              {true && (
+              {!isLoading && permissions.hasInsert && (
                 <div className="m-3">
                   <button
                     className="btn m-btn btn-primary p-3"
@@ -672,8 +664,7 @@ const Taxes: NextPage = (props: any) => {
                             </td>
                             <td>
                               <ButtonGroup className="mb-2 m-buttons-style">
-                                {/* {rules.hasDelete && ( */}
-                                {true && (
+                                {permissions.hasDelete && (
                                   <Button onClick={() => handleDelete(ex.id, 'group')}>
                                     <FontAwesomeIcon icon={faTrash} />
                                   </Button>
@@ -685,8 +676,7 @@ const Taxes: NextPage = (props: any) => {
                                     <FontAwesomeIcon icon={faEye} />
                                   )}
                                 </Button>
-                                {/* {rules.hasInsert && ( */}
-                                {true && (
+                                {!isLoading && permissions.hasInsert && (
                                   <Button onClick={() => addNewGroup(ex.id)}>
                                     <FontAwesomeIcon icon={faEdit} />
                                   </Button>
@@ -704,8 +694,7 @@ const Taxes: NextPage = (props: any) => {
                   </div>
                 )}
               </Card.Body>
-              {/* {rules.hasInsert && ( */}
-              {true && (
+              {!isLoading && permissions.hasInsert && (
                 <div className="m-3">
                   <button className="btn m-btn btn-primary p-3" onClick={() => addNewGroup()}>
                     <FontAwesomeIcon icon={faPlus} /> Add New Group{' '}

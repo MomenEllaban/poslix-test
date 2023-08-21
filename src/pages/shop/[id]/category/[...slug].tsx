@@ -27,13 +27,14 @@ const CategorySlug: NextPage = (props: any) => {
     id: 0,
     name: '',
     description: '',
-    tax: null,
+    tax_id: null,
   });
   const [errorForm, setErrorForm] = useState({ name: false });
   const colourStyles = {
     control: (style: any) => ({ ...style, borderRadius: '10px' }),
   };
   const [taxGroup, setTaxGroup] = useState<{ value: number; label: string }[]>([]);
+  const [selectedTax, setSelectedTax] = useState();
   const [type, setType] = useState('categories');
   const [typeName, setTypeName] = useState('Category');
   const [loading, setLoading] = useState(true);
@@ -50,7 +51,11 @@ const CategorySlug: NextPage = (props: any) => {
       setShopId(router.query.id.toString())
       const routerParams = router.query.slug
       const res = await findAllData(`taxes/${router.query.id}`)
+      res.data.result.taxes.map(tax => tax.label = tax.name)
       setTaxGroup(res.data.result.taxes)
+      setSelectedTax(res.data.result.taxes.filter((f: any) => {
+        return f.id == formObj.tax_id;
+      }))
       if(routerParams[0] === 'edit') {
         setIsEdit(true)
         const res = await findAllData(`${router.query.type}/${routerParams[1]}/show`)
@@ -61,7 +66,7 @@ const CategorySlug: NextPage = (props: any) => {
           id: itm.id,
           name: itm.name,
           description: itm.description,
-          tax: itm.never_tax == 1 ? -1 : itm.tax_id,
+          tax_id: itm.never_tax == 1 ? -1 : itm.tax_id,
         });
         
       }
@@ -161,11 +166,11 @@ const CategorySlug: NextPage = (props: any) => {
                     <Select
                       // styles={colourStyles}
                       options={taxGroup}
-                      value={taxGroup.filter((f: any) => {
-                        return f.value == formObj.tax;
-                      })}
+                      value={selectedTax || undefined}
                       onChange={(itm) => {
-                        setFormObj({ ...formObj, tax: itm!.value });
+                        console.log(itm);
+                        setSelectedTax(itm)
+                        setFormObj({ ...formObj, tax_id: itm?.id });
                       }}
                     />
                   </div>

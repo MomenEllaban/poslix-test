@@ -46,6 +46,26 @@ const Category = ({ rules }: any) => {
     initDataPage();
   }, [router.asPath]);
 
+  const [categoryPermissions, setCategoryPermissions] = useState<any>()
+  const [brandPermissions, setBrandPermissions] = useState<any>()
+  useEffect(() => {
+    const perms = JSON.parse(localStorage.getItem('permissions'));
+    const getCategoryPermissions = {hasView: false, hasInsert: false, hasEdit: false, hasDelete: false}
+    const getBrandPermissions = {hasView: false, hasInsert: false, hasEdit: false, hasDelete: false}
+    perms.category.map((perm) =>
+      perm.name.includes('GET') ? getCategoryPermissions.hasView = true
+      : perm.name.includes('POST') ? getCategoryPermissions.hasInsert = true
+      : perm.name.includes('PUT') ? getCategoryPermissions.hasEdit = true
+      : perm.name.includes('DELETE') ? getCategoryPermissions.hasDelete = true : null)
+    perms.category.map((perm) =>
+      perm.name.includes('GET') ? getBrandPermissions.hasView = true
+      : perm.name.includes('POST') ? getBrandPermissions.hasInsert = true
+      : perm.name.includes('PUT') ? getBrandPermissions.hasEdit = true
+      : perm.name.includes('DELETE') ? getBrandPermissions.hasDelete = true : null)
+
+    setCategoryPermissions(getCategoryPermissions)
+    setBrandPermissions(getBrandPermissions)
+  }, [])
   return (
     <>
       <AdminLayout shopId={shopId}>
@@ -62,18 +82,17 @@ const Category = ({ rules }: any) => {
           Are you Sure You Want Delete This Item ?
         </AlertDialog>
         <div className="row">
-          {/* {rules.hasInsert && ( */}
-          {true && (
+          {!isloading && (categoryPermissions.hasInsert || brandPermissions.hasInsert) && (
             <div className="mb-4">
               <button
                 className="btn btn-primary p-3"
                 onClick={() => {
-                  if (key === 'categories')
+                  if (key === 'categories' && categoryPermissions.hasInsert)
                     router.push({
                       pathname: '/shop/' + shopId + '/category/add',
                       query: { type: 'categories' },
                     });
-                  else if (key === 'brands')
+                  else if (key === 'brands' && brandPermissions.hasInsert)
                     router.push({
                       pathname: '/shop/' + shopId + '/category/add',
                       query: { type: 'brands' },
@@ -114,8 +133,7 @@ const Category = ({ rules }: any) => {
                               <td>{ex.tax_name}</td>
                               <td>
                                 <ButtonGroup className="mb-2 m-buttons-style">
-                                  {/* {rules.hasEdit && ( */}
-                                  {true && (
+                                  {categoryPermissions.hasEdit && (
                                     <Button
                                       onClick={() =>
                                         router.push({
@@ -126,8 +144,7 @@ const Category = ({ rules }: any) => {
                                       <FontAwesomeIcon icon={faPenToSquare} />
                                     </Button>
                                   )}
-                                  {/* {rules.hasDelete && ( */}
-                                  {true && (
+                                  {categoryPermissions.hasDelete && (
                                     <Button
                                       onClick={() => {
                                         setSelectId(ex.id);
@@ -183,8 +200,7 @@ const Category = ({ rules }: any) => {
                               <td>{ex.tax_name}</td>
                               <td>
                                 <ButtonGroup className="mb-2 m-buttons-style">
-                                  {/* {rules.hasEdit && ( */}
-                                  {true && (
+                                  {brandPermissions.hasEdit && (
                                     <Button
                                       onClick={() =>
                                         router.push({
@@ -195,8 +211,7 @@ const Category = ({ rules }: any) => {
                                       <FontAwesomeIcon icon={faPenToSquare} />
                                     </Button>
                                   )}
-                                  {/* {rules.hasDelete && ( */}
-                                  {true && (
+                                  {brandPermissions.hasDelete && (
                                     <Button
                                       onClick={() => {
                                         setSelectId(ex.id);

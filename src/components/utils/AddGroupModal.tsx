@@ -6,7 +6,8 @@ import { apiFetchCtr, apiInsertCtr } from '../../libs/dbUtils';
 import { ITax } from '../../models/common-model';
 import { Toastify } from 'src/libs/allToasts';
 import { UserContext } from 'src/context/UserContext';
-import { findAllData } from 'src/services/crud.api';
+import { createNewData, findAllData, updateData } from 'src/services/crud.api';
+import { useRouter } from 'next/router';
 function AddGroupModal(props: any) {
   const { allTaxes, dataItems, shopId, id, type, alertShow } = props;
   const { taxes, excise, services, taxesGroup } = allTaxes;
@@ -14,8 +15,10 @@ function AddGroupModal(props: any) {
   const [isLoading, setIsLoading] = useState(true);
   const [totalTax, setTotalTax] = useState<number>(0);
   const [gname, setGname] = useState('');
+  const [taxData, setTaxData] = useState('');
   const [isDefault, setIsDefault] = useState(false);
   const { locationSettings } = useContext(UserContext);
+  const router = useRouter()
 
   useEffect(() => {
     if (alertShow) {
@@ -44,6 +47,7 @@ function AddGroupModal(props: any) {
   async function initForEdit(id: number) {
     const res = await findAllData(`taxes/${id}/show`)
     if (res.data.success) {
+      setTaxData(res.data.result.tax)
         let _total = 0;
         const _taxs = [
           ...taxes,
@@ -52,24 +56,18 @@ function AddGroupModal(props: any) {
           { isSplit: true, name: 'Service Charge Taxes List' },
           ...services,
         ];
-        const newTaxes = [...allTaxes.excise, ...allTaxes.taxes, allTaxes.services]
         
         _taxs.forEach((item1: any) => {
           console.log(item1);
-          
-          if (newTaxes.some((item2: any) => item2.id === item1.id)) {
+          if (res.data.result.tax.tax_group.some((item2: any) => item2.id === item1.id)) {
             item1.isChoosed = true;
             _total += Number(item1.amount);
           } else item1.isChoosed = false;
         });
         setAllItems(_taxs);
         setTotalTax(_total);
-        taxesGroup.map((tg: any) => {
-          if (tg.id == id) {
-            setGname(tg.name);
-            setIsDefault(tg.is_primary);
-          }
-        });
+        setGname(res.data.result.tax.name)
+        setIsDefault(res.data.result.tax.is_primary)
       setIsLoading(false);
     }
   }
@@ -99,17 +97,15 @@ function AddGroupModal(props: any) {
       return;
     }
     setIsLoading(true);
-    var result = await apiInsertCtr({
-      type: 'taxes',
-      subType: 'insertGroupTax',
-      shopId,
-      data: allItems,
-      gname,
-      isDefault,
-      id,
-    });
-    const { success, data } = result;
-    if (!success) {
+    const tax_ids = []
+    allItems.filter(tax => tax.id > 0 && tax['isChoosed']).map(tax => tax_ids.push(tax.id))
+    let res;
+    if(id) {
+      res = await updateData('taxes', id, {name: gname, amount: 0, is_primary: isDefault, type: 'percentage', tax_type: 'group', tax_ids})
+    } else {
+      res = await createNewData(`taxes/${router.query.id}`, {name: gname, amount: 0, is_primary: isDefault, type: 'percentage', tax_type: 'group', tax_ids})
+    }
+    if (!res.data.success) {
       Toastify('error', 'Has Error ,try Again');
       return;
     }
@@ -119,7 +115,7 @@ function AddGroupModal(props: any) {
         for (var j = 0; j < _taxs.length; j++) dataItems[j].is_primary = false;
       }
       dataItems.push({
-        id: data,
+        id: res.data.result.tax,
         name: gname,
         amount: totalTax,
         amountType: '',
@@ -149,7 +145,7 @@ function AddGroupModal(props: any) {
         keyboard={false}
         centered>
         <Modal.Header closeButton>
-          <Modal.Title>Add New Group</Modal.Title>
+          <Modal.Title>{type === 'edit' ? 'Edit' : 'Add New'} Group</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Card.Body>
