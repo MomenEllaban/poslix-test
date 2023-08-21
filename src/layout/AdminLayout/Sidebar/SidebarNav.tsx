@@ -383,7 +383,7 @@ export function SidebarNav(probs: any): any {
           </SidebarNavItem>
         )}
         {permiss.hasAppStore && (
-          <SidebarNavItem icon={faCalendarDay} href={"/menu/" + shopId}>
+          <SidebarNavItem icon={faCalendarDay} href={"/digital/" + shopId}>
             Digital Menu
             <small className="ms-auto"></small>
           </SidebarNavItem>
