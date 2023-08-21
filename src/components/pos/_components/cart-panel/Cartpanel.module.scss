@@ -8,4 +8,6 @@
   width: 40%;
   max-height: calc(100vh - 2 * 10px);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }

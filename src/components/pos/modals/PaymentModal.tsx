@@ -84,7 +84,7 @@ const PaymentModal = (props: any) => {
 
     let _mustPay = +Math.abs(
       __WithDiscountFeature__total + details.totalAmount - details.subTotal
-    ).toFixed(locationSettings?.currency_decimal_places);
+    ).toFixed(locationSettings?.location_decimal_places);
 
     setMustPay(_mustPay);
     // mohamed elsayed
@@ -109,7 +109,7 @@ const PaymentModal = (props: any) => {
         _id = holdObj.quantity[i].tailoringCutsom?.fabric_id!;
         let index = fabs.findIndex((item: any) => item.product_id == _id);
         if (index !== -1)
-          fabs[index].qty +=
+          fabs?.[index].qty +=
             holdObj.quantity[i].tailoringCutsom?.fabric_length! * holdObj.quantity[i].quantity;
         else
           fabs.push({
@@ -123,8 +123,8 @@ const PaymentModal = (props: any) => {
         _id = od.product_id;
         let index = fabs.findIndex((item: any) => item.product_id == _id);
         if (index !== -1) {
-          let _sum = fabs[index].qty + holdObj.quantity[i].quantity;
-          let _pro: any = products.products[holdObj.quantity[i].productIndex];
+          let _sum = fabs?.[index].qty + holdObj.quantity[i].quantity;
+          let _pro: any = products?.[holdObj.quantity[i].productIndex];
           if (_sum > _pro.total_qty) {
             Toastify('error', 'Over Stock #' + od.name);
             openDialog(false);
@@ -147,31 +147,31 @@ const PaymentModal = (props: any) => {
   const paymentRowChange = (index: any, evnt: any): void => {
     const _rows: any = [...paymentRows];
 
-    if ('label' in evnt) _rows[index].method = evnt.value;
+    if ('label' in evnt) _rows?.[index].method = evnt.value;
     // mohamed elsayed
     else {
       const { name, value } = evnt.target;
-      _rows[index][name] = value;
+      _rows?.[index][name] = value;
       if (name === 'amount') {
         let diff = Number(
-          (_rows[index]['total'] - (Number(value) + toBeAdded)).toFixed(
+          (_rows?.[index]['total'] - (Number(value) + toBeAdded)).toFixed(
             locationSettings?.currency_decimal_places
           )
         );
 
         if (diff < 0) {
-          _rows[index]['return'] = Number(diff * -1);
-          _rows[index]['totalDue'] = 0;
+          _rows?.[index]['return'] = Number(diff * -1);
+          _rows?.[index]['totalDue'] = 0;
         } else {
-          _rows[index]['totalDue'] = Number(diff);
-          _rows[index]['return'] = 0;
+          _rows?.[index]['totalDue'] = Number(diff);
+          _rows?.[index]['return'] = 0;
         }
-        // _rows[index]['return'] = (difference * -1)
+        // _rows?.[index]['return'] = (difference * -1)
       }
     }
     // --------------------
     setPaymentRows(_rows);
-    // setPaymentRows((Prev) => [...Prev][0]={..._rows[index], totalDue: [...Prev][0].totalDue, return: [...Prev][0].return});
+    // setPaymentRows((Prev) => [...Prev][0]={..._rows?.[index], totalDue: [...Prev][0].totalDue, return: [...Prev][0].return});
     calculation(_rows);
     let calcTotal = 0;
     _rows.map((row) => (calcTotal += Number(row.amount)));
@@ -197,13 +197,13 @@ const PaymentModal = (props: any) => {
     setToBeAdded(totals);
 
     rows.push({
-      total: rows[rows.length - 1].total,
+      total: rows?.[rows.length - 1].total,
       amount: difference < 0 ? Math.abs(difference) : 0,
       // amount: totals,
       method: 'cash',
       notes: '',
-      return: difference < 0 ? 0 : rows[rows.length - 1].return,
-      totalDue: difference < 0 ? 0 : rows[rows.length - 1].totalDue,
+      return: difference < 0 ? 0 : rows?.[rows.length - 1].return,
+      totalDue: difference < 0 ? 0 : rows?.[rows.length - 1].totalDue,
     });
     setPaymentRows(rows);
     setCurrentRow(rows.length - 1);
@@ -214,7 +214,7 @@ const PaymentModal = (props: any) => {
   };
   // -----------------------
   useEffect(() => {
-    let isCash = paymentRows[0].method === 'cash' ? true : false;
+    let isCash = paymentRows?.[0].method === 'cash' ? true : false;
     if (orderEditDetails.isEdit) {
       // setCanPay(isCash ? totalPaid >= _WithDiscountFeature_total : true);
       setCanPay(true);
@@ -271,8 +271,8 @@ const PaymentModal = (props: any) => {
     let sumQty = 0;
     holdObj.quantity.map((qt: any, index: number) => {
       sumQty = 0;
-      if (holdObj.orders[index].is_service == 0) {
-        if (holdObj.orders[index].variation_id > 0) {
+      if (holdObj.orders?.[index].is_service == 0) {
+        if (holdObj.orders?.[index].variation_id > 0) {
           //for variations
           if (qt.productIndex != -1) {
             var _variations_multi: any = variations.variations_multi[qt.productIndex];
@@ -287,9 +287,9 @@ const PaymentModal = (props: any) => {
               if (isMore && items.qty == 0) _variations_multi.splice(multi_idex, 1);
             });
             var _variations: any = variations.variations;
-            _variations[qt.productIndex] = {
-              ..._variations[qt.productIndex],
-              total_qty: _variations[qt.productIndex].total_qty - sumQty,
+            _variations?.[qt.productIndex] = {
+              ..._variations?.[qt.productIndex],
+              total_qty: _variations?.[qt.productIndex].total_qty - sumQty,
             };
           }
         } else {
@@ -308,10 +308,10 @@ const PaymentModal = (props: any) => {
             });
             var _products: any = products.products;
             const _dd = {
-              ..._products[qt.productIndex],
-              total_qty: _products[qt.productIndex].total_qty - sumQty,
+              ..._products?.[qt.productIndex],
+              total_qty: _products?.[qt.productIndex].total_qty - sumQty,
             };
-            _products[qt.productIndex] = _dd;
+            _products?.[qt.productIndex] = _dd;
           }
         }
       }
@@ -356,7 +356,7 @@ const PaymentModal = (props: any) => {
     if (paymentRows.length > 0) {
       const _rows: any = [...paymentRows];
       if (paymentRows.length == 1)
-        paymentRows[0].amount =
+        paymentRows?.[0].amount =
           __WithDiscountFeature__total +
           Number(
             (details.totalAmount - details.subTotal).toFixed(
@@ -365,8 +365,8 @@ const PaymentModal = (props: any) => {
           );
       else
         difference > 0
-          ? (paymentRows[paymentRows.length - 1].amount! -= difference)
-          : (paymentRows[paymentRows.length - 1].amount! += difference);
+          ? (paymentRows?.[paymentRows.length - 1].amount! -= difference)
+          : (paymentRows?.[paymentRows.length - 1].amount! += difference);
       setPaymentRows(_rows);
       calculation(_rows);
     }
@@ -467,7 +467,7 @@ const PaymentModal = (props: any) => {
                 <span>
                   {locationSettings?.currency_code +
                     ' ' +
-                    paymentRows[paymentRows.length - 1].total}
+                    paymentRows?.[paymentRows.length - 1].total}
                 </span>
               </div>
               <div className="view_payment_item">
@@ -477,7 +477,7 @@ const PaymentModal = (props: any) => {
                   {locationSettings?.currency_code +
                     ' ' +
                     (
-                      totalPaying || paymentRows[paymentRows.length - 1].amount + toBeAdded
+                      totalPaying || paymentRows?.[paymentRows.length - 1].amount + toBeAdded
                     ).toString()}
                 </span>
               </div>
@@ -487,7 +487,7 @@ const PaymentModal = (props: any) => {
                   {' '}
                   {locationSettings?.currency_code +
                     ' ' +
-                    paymentRows[paymentRows.length - 1].return}
+                    paymentRows?.[paymentRows.length - 1].return}
                 </span>
               </div>
               <div className="view_payment_item">
@@ -495,7 +495,7 @@ const PaymentModal = (props: any) => {
                 <span>
                   {locationSettings?.currency_code +
                     ' ' +
-                    paymentRows[paymentRows.length - 1].totalDue}
+                    paymentRows?.[paymentRows.length - 1].totalDue}
                 </span>
               </div>
             </div>

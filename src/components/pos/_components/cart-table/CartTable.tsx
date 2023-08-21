@@ -1,25 +1,26 @@
-import { Button, ButtonGroup, Table } from 'react-bootstrap';
-import { useAppDispatch, useAppSelector } from 'src/hooks';
-import styles from './CartTable.module.scss';
 import { useEffect } from 'react';
+import { Table } from 'react-bootstrap';
+import { useAppDispatch, useAppSelector } from 'src/hooks';
 import {
   addToCart,
   decreaseItemQuantity,
   removeFromCart,
+  selectCartByLocation,
   setCart,
 } from 'src/redux/slices/cart.slice';
+import styles from './CartTable.module.scss';
 
-export default function CartTable({ lang }) {
-  const cart = useAppSelector((state) => state.cart);
+export default function CartTable({ lang, shopId }) {
+  const selectCartForLocation = selectCartByLocation(shopId);
+  const cart = useAppSelector(selectCartForLocation);
+
   const dispatch = useAppDispatch();
 
   useEffect(() => {
     const cart = localStorage.getItem('cart');
-
-    if (cart) {
-      dispatch(setCart(JSON.parse(cart)));
-    }
+    if (cart) dispatch(setCart(JSON.parse(cart)));
   }, []);
+
   return (
     <div className={styles['table__container']}>
       <Table striped hover>
@@ -34,14 +35,14 @@ export default function CartTable({ lang }) {
         </thead>
 
         <tbody className={styles['table-body']}>
-          {!cart.cartItems.length && (
+          {!cart?.cartItems?.length && (
             <tr>
               <td colSpan={5} className="text-center">
                 {lang.cartComponent.add}
               </td>
             </tr>
           )}
-          {cart.cartItems?.map((product, idx) => (
+          {cart?.cartItems?.map((product, idx) => (
             <tr key={product.id}>
               <td>{idx + 1}</td>
               <td>{product.name}</td>

@@ -20,7 +20,7 @@ const PackageItemsModal = ({
 }) => {
   const dispatch = useAppDispatch();
   const { locationSettings } = useUser();
-  console.log('variations', product, variations);
+
   const handleClose = () => {
     setShow(false);
   };
@@ -38,40 +38,38 @@ const PackageItemsModal = ({
   };
 
   return (
-    <div>
-      <Modal show={show} onHide={handleClose}>
-        <Modal.Header className="poslix-modal-title text-primary text-capitalize" closeButton>
-          Package Content{' '}
-        </Modal.Header>
-        <Modal.Body>
-          <div className={styles['items__container']}>
-            {variations?.map((v, i: number) => {
-              return (
-                <button
-                  onClick={() => handleAddItem(v)}
-                  className={styles['item']}
-                  disabled={+v.stock < 1}
-                  key={v.id}>
-                  <div className={styles['icon']}>
-                    <MdAddShoppingCart />
-                  </div>
-                  <h4 className={styles['name']}>{v.name}</h4>
-                  <h5 className={styles['amount']}>
-                    {Number(v.price).toFixed(2)} {locationSettings?.currency_name}
-                  </h5>
-                  <h6 className={styles['remaining']}>{+v.stock} remaining</h6>
-                </button>
-              );
-            })}
-          </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button type="button" variant="secondary" onClick={handleClose}>
-            Close
-          </Button>
-        </Modal.Footer>
-      </Modal>
-    </div>
+    <Modal show={show} onHide={handleClose}>
+      <Modal.Header className="poslix-modal-title text-primary text-capitalize" closeButton>
+        Package Content{' '}
+      </Modal.Header>
+      <Modal.Body>
+        <div className={styles['items__container']}>
+          {variations?.map((v, i: number) => {
+            return (
+              <button
+                onClick={() => handleAddItem(v)}
+                className={styles['item']}
+                disabled={+v.stock < 1}
+                key={v.id}>
+                <div className={styles['icon']}>
+                  <MdAddShoppingCart />
+                </div>
+                <h4 className={styles['name']}>{v.name}</h4>
+                <h5 className={styles['amount']}>
+                  {Number(v.price).toFixed(2)} {locationSettings?.currency_name}
+                </h5>
+                <h6 className={styles['remaining']}>{+v.stock} remaining</h6>
+              </button>
+            );
+          })}
+        </div>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button type="button" variant="secondary" onClick={handleClose}>
+          Close
+        </Button>
+      </Modal.Footer>
+    </Modal>
   );
 };
 
