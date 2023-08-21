@@ -22,7 +22,7 @@ import CustomerDataSelect from './_components/CustomerDataSelect';
 import TailoringModal from './modals/TailoringModal';
 import VariationModal from './modals/VariationModal';
 import { OrderCalcs } from './utils/OrderCalcs';
-import { OrdersFooter } from './utils/OrdersFooter';
+import { OrdersFooter } from './_components/orders-footer/OrdersFooter';
 
 export default function OrdersComponent(props: any) {
   console.log('OrdersComponent');

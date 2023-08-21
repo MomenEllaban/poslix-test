@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useRecoilState } from 'recoil';
 import { clearOrders } from '../../../recoil/atoms';
 import HoldModal from '../modals/HoldModal';
-import OrdersModal from '../modals/OrdersModal';
+import OrdersModal from '../modals/hold-orders/HoldOrdersModal';
 import PaymentModal from '../modals/PaymentModal';
 import { Toastify } from 'src/libs/allToasts';
 import { Container } from 'react-bootstrap';

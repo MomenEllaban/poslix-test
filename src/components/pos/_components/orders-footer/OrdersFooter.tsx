@@ -4,7 +4,7 @@ import { useAppDispatch, useAppSelector } from 'src/hooks';
 import { Toastify } from 'src/libs/allToasts';
 import { clearCart } from 'src/redux/slices/cart.slice';
 import HoldModal from '../../modals/HoldModal';
-import OrdersModal from '../../modals/OrdersModal';
+import OrdersModal from '../../modals/hold-orders/HoldOrdersModal';
 import PaymentModal from '../../modals/PaymentModal';
 import ConfirmationModal from 'src/components/modals/confirmation-modal/ConfirmationModal';
 import { selectCartByLocation } from 'src/redux/slices/cart.slice';
@@ -43,13 +43,6 @@ export const OrdersFooter = ({
     dispatch(clearCart({ location_id: shopId }));
     setClearCartModal(false);
   };
-  const OrdersModalHandler = (status: boolean) => {
-    setIsShowOrdersModal(status);
-  };
-  const holdCartHandler = () => {
-    if (!cart?.cartItems?.length) return Toastify('error', 'Cart is empty');
-    setHoldModal(true);
-  };
 
   return (
     <>
@@ -67,14 +60,7 @@ export const OrdersFooter = ({
         setDiscount={setDiscount}
         totalDiscount={totalDiscount}
       /> */}
-      {isShowOrdersModal && (
-        <OrdersModal
-          shopId={shopId}
-          openDialog={OrdersModalHandler}
-          isShowModal={isShowOrdersModal}
-          lang={lang}
-        />
-      )}
+
       <div className="footer-up-flex gap-1">
         <Button
           disabled={!cart?.cartItems?.length}
@@ -83,21 +69,8 @@ export const OrdersFooter = ({
           variant="danger">
           {lang.cartComponent.delete}
         </Button>
-        <Button
-          type="button"
-          variant="warning"
-          onClick={holdCartHandler}
-          disabled={!cart?.cartItems?.length}
-          className="flex-grow-1">
-          {lang.cartComponent.hold}
-        </Button>
-        <Button
-          type="button"
-          onClick={() => setIsShowOrdersModal(true)}
-          className="flex-grow-1"
-          variant="info">
-          {lang.cartComponent.orders}
-        </Button>
+        <HoldModal shopId={shopId} lang={lang} />
+        <OrdersModal shopId={shopId} lang={lang} />
       </div>
       <div
         className="btn-group footer-payment-btns d-flex flex-grow-1 mt-1"
@@ -124,7 +97,6 @@ export const OrdersFooter = ({
         onClose={() => setClearCartModal(false)}
         message="Are you sure you want to clear cart?"
       />
-      <HoldModal shopId={shopId} setShow={setHoldModal} show={holdModal} />
     </>
   );
 };
