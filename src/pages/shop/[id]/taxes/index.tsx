@@ -12,6 +12,7 @@ import {
   faEye,
   faSpinner,
   faEdit,
+  faCheck,
 } from '@fortawesome/free-solid-svg-icons';
 import { Button, ButtonGroup, Card } from 'react-bootstrap';
 import React, { useState, useEffect } from 'react';
@@ -25,6 +26,8 @@ import * as cookie from 'cookie';
 import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/checkUtils';
 import { Toastify } from 'src/libs/allToasts';
 import { ToastContainer } from 'react-toastify';
+import withAuth from 'src/HOCs/withAuth';
+import { createNewData, deleteData, findAllData, updateData } from 'src/services/crud.api';
 
 const Taxes: NextPage = (props: any) => {
   const { shopId, rules } = props;
@@ -56,65 +59,71 @@ const Taxes: NextPage = (props: any) => {
     { label: 'Fixed', value: 'fixed' },
   ];
 
+  const [taxesList, setTaxesList] = useState()
+  const [permissions, setPermissions] = useState<any>()
+
   async function initDataPage() {
-    var result = await apiFetchCtr({ fetch: 'taxes', subType: 'getTaxs', shopId });
-    const { success, newdata } = result;
-    if (success) {
-      if (rules.hasInsert) {
-        newdata.push({
-          id: 0,
-          name: '',
-          amount: 0,
-          type: '',
-          is_primary: false,
-          Etax_type: 'primary',
-          isNew: 1,
-        });
-        newdata.push({
-          id: 0,
-          name: '',
-          amount: 0,
-          type: '',
-          is_primary: false,
-          Etax_type: 'excise',
-          isNew: 1,
-        });
-        newdata.push({
-          id: 0,
-          name: '',
-          amount: 0,
-          type: '',
-          amountType: 'percentage',
-          is_primary: false,
-          Etax_type: 'service',
-          isNew: 1,
-        });
-      }
-      setTaxs(
-        newdata.filter((p: ITax) => {
-          return p.Etax_type == 'primary';
-        })
-      );
-      setTaxsExcise(
-        newdata.filter((p: ITax) => {
-          return p.Etax_type == 'excise';
-        })
-      );
-      setTaxsService(
-        newdata.filter((p: ITax) => {
-          return p.Etax_type == 'service';
-        })
-      );
-      setTaxesGroup(
-        newdata.filter((p: ITax) => {
-          return p.Etax_type == 'group';
-        })
-      );
-      setIsLoading(false);
+    if(router.query.id && permissions){
+      const res = await findAllData(`taxes/${router.query.id}`)
+      const newData = res.data.result.taxes
+      setTaxesList(res.data.result.taxes.filter(t => t.tax_type !== 'group'))
+      if (res.data.success) {
+        if (permissions.hasInsert) {
+          newData.push({
+            id: 0,
+            name: '',
+            amount: 0,
+            type: '',
+            is_primary: false,
+            tax_type: 'primary',
+            isNew: 1,
+          });
+          newData.push({
+            id: 0,
+            name: '',
+            amount: 0,
+            type: '',
+            is_primary: false,
+            tax_type: 'excise',
+            isNew: 1,
+          });
+          newData.push({
+            id: 0,
+            name: '',
+            amount: 0,
+            type: '',
+            amountType: 'percentage',
+            is_primary: false,
+            tax_type: 'service',
+            isNew: 1,
+          });
+        }
+        setTaxs(
+          newData.filter((p: ITax) => {
+            return p.tax_type == 'primary';
+          })
+        );
+        setTaxsExcise(
+          newData.filter((p: ITax) => {
+            return p.tax_type == 'excise';
+          })
+        );
+        setTaxsService(
+          newData.filter((p: ITax) => {
+            return p.tax_type == 'service';
+          })
+        );
+        setTaxesGroup(
+          newData.filter((p: ITax) => {
+            return p.tax_type == 'group';
+          })
+        );
+        setIsLoading(false);
+    }
     }
   }
   async function addUpdateTaxs(rows: ITax[]) {
-    if (rows[0].Etax_type == 'primary') {
+    if (rows[0].tax_type == 'primary') {
       let notHas = true;
       for (var j = 0; j < rows.length - 1; j++) {
         if (rows[j].is_primary) notHas = false;
@@ -136,9 +145,9 @@ const Taxes: NextPage = (props: any) => {
     }
     let jj = 0;
     const _taxs =
-      rows[0].Etax_type == 'primary'
+      rows[0].tax_type == 'primary'
         ? [...taxs]
-        : rows[0].Etax_type == 'excise'
+        : rows[0].tax_type == 'excise'
         ? [...taxsExcise]
         : [...taxsService];
     for (var j = 0; j < _taxs.length - 1; j++) {
@@ -149,17 +158,13 @@ const Taxes: NextPage = (props: any) => {
       }
     }
 
-    rows[0].Etax_type == 'primary'
+    rows[0].tax_type == 'primary'
       ? setTaxs(_taxs)
-      : rows[0].Etax_type == 'excise'
+      : rows[0].tax_type == 'excise'
       ? setTaxsExcise(_taxs)
       : setTaxsService(_taxs);
     Toastify('success', 'successfuly Done!');
   }
-
-  useEffect(() => {
-    initDataPage();
-  }, [router.asPath]);
 
   const handlePrimarySwitchChange = (e: any, i: number) => {
     const _taxs = [...taxs];
@@ -185,32 +190,14 @@ const Taxes: NextPage = (props: any) => {
         amount: 0,
         Etype: '',
         is_primary: false,
-        Etax_type: 'primary',
+        tax_type: 'primary',
         isNew: 1,
       } as any);
     setTaxs(_taxs);
   };
-  const handleDelete = (i: number, type: string) => {
-    const _taxs =
-      type == 'primary'
-        ? [...taxs]
-        : type == 'excise'
-        ? [...taxsExcise]
-        : type == 'group'
-        ? [...taxesGroup]
-        : [...taxsService];
-    if (_taxs[i].isNew) {
-      _taxs.splice(i, 1);
-      type == 'primary'
-        ? setTaxs(_taxs)
-        : type == 'excise'
-        ? setTaxsExcise(_taxs)
-        : setTaxsService(_taxs);
-    } else {
-      setShow(true);
-      setSelectId(_taxs[i].id);
-      setSelectType(type);
-    }
+  const handleDelete = async (i: number, type: string) => {
+    const res =  await deleteData('taxes', i)
+    initDataPage()
   };
   const handleChangeExcAndService = (e: any, i: number, isExc: boolean) => {
     const _taxes = isExc ? [...taxsExcise] : [...taxsService];
@@ -227,14 +214,14 @@ const Taxes: NextPage = (props: any) => {
         name: '',
         amount: 0,
         Etype: 'percentage',
-        Etax_type: isExc ? 'excise' : 'service',
+        tax_type: isExc ? 'excise' : 'service',
         is_primary: false,
         isNew: 1,
       } as any);
     isExc ? setTaxsExcise(_taxes) : setTaxsService(_taxes);
   };
   const addNewGroup = (id = 0) => {
-    setSelectType('edit');
+    setSelectType(id === 0 ? '' : 'edit');
     setSelectId(id);
     setGroupModal(true);
   };
@@ -280,6 +267,33 @@ const Taxes: NextPage = (props: any) => {
     setShow(false);
   };
 
+  const handleSave = async (item: any) => {
+    const tax = {...item}
+    delete tax.id
+    tax.type = 'percentage'
+    let res;
+    
+    if(item.id === 0) {
+      res = await createNewData(`taxes/${router.query.id}`, tax)
+    } else {
+      res = await updateData('taxes', item.id, tax)
+    }
+    if(res.data.success) Toastify('success', 'successfuly Done!');
+    else Toastify('error', 'Error On Add New')
+  }
+
+  useEffect(() => {
+    const perms = JSON.parse(localStorage.getItem('permissions'));
+    const getPermissions = {hasView: false, hasInsert: false, hasEdit: false, hasDelete: false}
+    perms.tax.map((perm) => 
+      perm.name.includes('GET') ? getPermissions.hasView = true
+      : perm.name.includes('POST') ? getPermissions.hasInsert = true
+      : perm.name.includes('PUT') ? getPermissions.hasEdit = true
+      : perm.name.includes('DELETE') ? getPermissions.hasDelete = true : null)
+    
+    setPermissions(getPermissions)
+    initDataPage()
+  }, [router.asPath])
   return (
     <>
       <AdminLayout shopId={shopId}>
@@ -289,8 +303,7 @@ const Taxes: NextPage = (props: any) => {
           shopId={shopId}
           alertFun={handleDeleteFuc}
           id={selectId}
-          type="taxes"
-          subType="deleteTax"
+          url="taxes"
           section={selectType}>
           Are you Sure You Want Delete This Item ?
         </AlertDialog>
@@ -361,7 +374,7 @@ const Taxes: NextPage = (props: any) => {
                                 type="text"
                                 name="tax-name"
                                 className="form-control p-2"
-                                disabled={!rules.hasInsert}
+                                disabled={!permissions.hasInsert}
                                 placeholder="Enter New Tax Name"
                                 value={ex.name}
                                 onChange={(e) => {
@@ -376,7 +389,7 @@ const Taxes: NextPage = (props: any) => {
                                 max={100}
                                 step={1}
                                 name="tax-value"
-                                disabled={!rules.hasInsert}
+                                disabled={!permissions.hasInsert}
                                 className="form-control p-2"
                                 placeholder="Tax Value"
                                 value={ex.amount}
@@ -389,7 +402,7 @@ const Taxes: NextPage = (props: any) => {
                               <Form.Check
                                 type="switch"
                                 id="custom-switch"
-                                disabled={!rules.hasInsert}
+                                disabled={!permissions.hasInsert}
                                 className="custom-switch"
                                 checked={ex.is_primary ? true : false}
                                 onChange={(e) => {
@@ -399,9 +412,16 @@ const Taxes: NextPage = (props: any) => {
                             </td>
                             <td>
                               <ButtonGroup className="mb-2 m-buttons-style">
-                                {rules.hasDelete && (
-                                  <Button onClick={() => handleDelete(i, 'primary')}>
+                                {permissions.hasDelete && (
+                                  <Button onClick={() => handleDelete(ex.id, 'primary')}>
                                     <FontAwesomeIcon icon={faTrash} />
+                                  </Button>
+                                )}
+                              </ButtonGroup>
+                              <ButtonGroup className="mb-2 m-buttons-style">
+                                {permissions.hasEdit && (
+                                  <Button onClick={() => handleSave(ex)}>
+                                    <FontAwesomeIcon icon={faCheck} />
                                   </Button>
                                 )}
                               </ButtonGroup>
@@ -417,7 +437,7 @@ const Taxes: NextPage = (props: any) => {
                   </div>
                 )}
               </Card.Body>
-              {rules.hasInsert && (
+              {!isLoading && permissions.hasInsert && (
                 <div className="m-3">
                   <button className="btn m-btn btn-primary p-3" onClick={() => addUpdateTaxs(taxs)}>
                     <FontAwesomeIcon icon={faFloppyDisk} /> save
@@ -450,7 +470,7 @@ const Taxes: NextPage = (props: any) => {
                                 type="text"
                                 name="tax-name"
                                 className="form-control p-2"
-                                disabled={!rules.hasInsert}
+                                disabled={!permissions.hasInsert}
                                 placeholder="Enter New Tax Name"
                                 value={ex.name}
                                 onChange={(e) => {
@@ -464,7 +484,7 @@ const Taxes: NextPage = (props: any) => {
                                 min={0}
                                 step={1}
                                 name="tax-value"
-                                disabled={!rules.hasInsert}
+                                disabled={!permissions.hasInsert}
                                 className="form-control p-2"
                                 placeholder="Add Excise Tax Value"
                                 value={ex.amount}
@@ -476,10 +496,17 @@ const Taxes: NextPage = (props: any) => {
                             <td>
                               <ButtonGroup className="mb-2 m-buttons-style">
                                 <Button
-                                  disabled={!rules.hasInsert}
-                                  onClick={() => handleDelete(i, 'excise')}>
+                                  disabled={!permissions.hasInsert}
+                                  onClick={() => handleDelete(ex.id, 'excise')}>
                                   <FontAwesomeIcon icon={faTrash} />
                                 </Button>
+                              </ButtonGroup>
+                              <ButtonGroup className="mb-2 m-buttons-style">
+                                {permissions.hasDelete && (
+                                  <Button onClick={() => handleSave(ex)}>
+                                    <FontAwesomeIcon icon={faCheck} />
+                                  </Button>
+                                )}
                               </ButtonGroup>
                             </td>
                           </tr>
@@ -493,7 +520,7 @@ const Taxes: NextPage = (props: any) => {
                   </div>
                 )}
               </Card.Body>
-              {rules.hasInsert && (
+              {!isLoading && permissions.hasInsert && (
                 <div className="m-3">
                   <button
                     className="btn m-btn btn-primary p-3"
@@ -526,7 +553,7 @@ const Taxes: NextPage = (props: any) => {
                           <tr key={i} style={{ background: ex.isNew ? '#c6e9e6' : '' }}>
                             <Select
                               className="p-2 m-brd-bottom"
-                              isDisabled={!rules.hasInsert}
+                              isDisabled={!permissions.hasInsert}
                               styles={selectStyle}
                               options={taxValueType}
                               value={taxValueType.filter((it: any) => {
@@ -545,7 +572,7 @@ const Taxes: NextPage = (props: any) => {
                                 type="text"
                                 name="tax-name"
                                 className="form-control p-2"
-                                disabled={!rules.hasInsert}
+                                disabled={!permissions.hasInsert}
                                 placeholder="Tax Name"
                                 value={ex.name}
                                 onChange={(e) => {
@@ -559,7 +586,7 @@ const Taxes: NextPage = (props: any) => {
                                 min={0}
                                 step={1}
                                 name="tax-value"
-                                disabled={!rules.hasInsert}
+                                disabled={!permissions.hasInsert}
                                 className="form-control p-2"
                                 placeholder="Add Service Charge Value"
                                 value={ex.amount}
@@ -570,9 +597,16 @@ const Taxes: NextPage = (props: any) => {
                             </td>
                             <td>
                               <ButtonGroup className="mb-2 m-buttons-style">
-                                {rules.hasDelete && (
-                                  <Button onClick={() => handleDelete(i, 'service')}>
+                                {permissions.hasDelete && (
+                                  <Button onClick={() => handleDelete(ex.id, 'service')}>
                                     <FontAwesomeIcon icon={faTrash} />
+                                  </Button>
+                                )}
+                              </ButtonGroup>
+                              <ButtonGroup className="mb-2 m-buttons-style">
+                                {permissions.hasEdit && (
+                                  <Button onClick={() => handleSave(ex)}>
+                                    <FontAwesomeIcon icon={faCheck} />
                                   </Button>
                                 )}
                               </ButtonGroup>
@@ -588,7 +622,7 @@ const Taxes: NextPage = (props: any) => {
                   </div>
                 )}
               </Card.Body>
-              {rules.hasInsert && (
+              {!isLoading && permissions.hasInsert && (
                 <div className="m-3">
                   <button
                     className="btn m-btn btn-primary p-3"
@@ -630,8 +664,8 @@ const Taxes: NextPage = (props: any) => {
                             </td>
                             <td>
                               <ButtonGroup className="mb-2 m-buttons-style">
-                                {rules.hasDelete && (
-                                  <Button onClick={() => handleDelete(i, 'group')}>
+                                {permissions.hasDelete && (
+                                  <Button onClick={() => handleDelete(ex.id, 'group')}>
                                     <FontAwesomeIcon icon={faTrash} />
                                   </Button>
                                 )}
@@ -642,7 +676,7 @@ const Taxes: NextPage = (props: any) => {
                                     <FontAwesomeIcon icon={faEye} />
                                   )}
                                 </Button>
-                                {rules.hasInsert && (
+                                {!isLoading && permissions.hasInsert && (
                                   <Button onClick={() => addNewGroup(ex.id)}>
                                     <FontAwesomeIcon icon={faEdit} />
                                   </Button>
@@ -660,7 +694,7 @@ const Taxes: NextPage = (props: any) => {
                   </div>
                 )}
               </Card.Body>
-              {rules.hasInsert && (
+              {!isLoading && permissions.hasInsert && (
                 <div className="m-3">
                   <button className="btn m-btn btn-primary p-3" onClick={() => addNewGroup()}>
                     <FontAwesomeIcon icon={faPlus} /> Add New Group{' '}
@@ -674,44 +708,4 @@ const Taxes: NextPage = (props: any) => {
     </>
   );
 };
-export default Taxes;
-export async function getServerSideProps(context: any) {
-  const parsedCookies = cookie.parse(context.req.headers.cookie || '[]');
-  var _isOk = true,
-    _rule = true;
-  //check page params
-  var shopId = context.query.id;
-  if (shopId == undefined) return { redirect: { permanent: false, destination: '/page403' } };
-
-  //check user permissions
-  var _userRules = {};
-  await verifayTokens(
-    { headers: { authorization: 'Bearer ' + parsedCookies.tokend } },
-    (repo: ITokenVerfy) => {
-      _isOk = repo.status;
-      if (_isOk) {
-        var _rules = keyValueRules(repo.data.rules || []);
-        if (
-          _rules[-2] != undefined &&
-          _rules[-2][0].stuff != undefined &&
-          _rules[-2][0].stuff == 'owner'
-        ) {
-          _rule = true;
-          _userRules = { hasDelete: true, hasEdit: true, hasView: true, hasInsert: true };
-        } else if (_rules[shopId] != undefined) {
-          var _stuf = '';
-          _rules[shopId].forEach((dd: any) => (_stuf += dd.stuff));
-          const { userRules, hasPermission } = hasPermissions(_stuf, 'taxes');
-          _rule = hasPermission;
-          _userRules = userRules;
-        } else _rule = false;
-      }
-    }
-  );
-  if (!_isOk) return { redirect: { permanent: false, destination: '/user/auth' } };
-  if (!_rule) return { redirect: { permanent: false, destination: '/page403' } };
-  //status ok
-  return {
-    props: { shopId, rules: _userRules },
-  };
-}
+export default withAuth(Taxes);

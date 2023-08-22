@@ -52,7 +52,7 @@ const Transfermodal = (props: any) => {
 
   const { customers, setCustomers } = useContext(ProductContext);
   const [open, setOpen] = useState(false);
-  // JSON.parse(localStorage.getItem('userlocs') || '[]')
+  // JSON.parse(localStorage.getItem('locations') || '[]')
   const [locations, setLocations] = useState<{ value: number; label: string }[]>([]);
 
   const [isLoading, setIsLoading] = useState(false);
@@ -68,7 +68,7 @@ const Transfermodal = (props: any) => {
     if (userdata !== undefined && showType != 'add' && statusDialog) {
     }
     // getCustomerInfo(userdata.value);
-    var _locs = JSON.parse(localStorage.getItem('userlocs') || '[]');
+    var _locs = JSON.parse(localStorage.getItem('locations') || '[]');
     setLocations(_locs);
   }, [statusDialog]);
 

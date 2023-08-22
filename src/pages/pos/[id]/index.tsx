@@ -7,11 +7,14 @@ import type { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { useRecoilState } from 'recoil';
+import 'remixicon/fonts/remixicon.css';
 import withAuth from 'src/HOCs/withAuth';
+import CartPanel from 'src/components/pos/_components/cart-panel/CartPanel';
 import { useUser } from 'src/context/UserContext';
 import { Toastify } from 'src/libs/allToasts';
 import { apiFetchCtr, apiInsertCtr } from 'src/libs/dbUtils';
 import PosLayout from 'src/modules/pos/_components/layout/pos.layout';
+import { useGetBusinessLocation } from 'src/services/business.service';
 import {
   useBrandsList,
   useCategoriesList,
@@ -19,15 +22,10 @@ import {
   useProductsList,
   useTaxesList,
 } from 'src/services/pos.service';
-import OrdersComponent from '../../../components/pos/CartComponent';
 import { ItemList } from '../../../components/pos/_components/item-list/ItemList';
 import NavMenu from '../../../components/pos/parts/NavMenu';
 import { useProducts } from '../../../context/ProductContext';
 import { cartJobType } from '../../../recoil/atoms';
-
-import 'remixicon/fonts/remixicon.css';
-import CartPanel from 'src/components/pos/_components/cart-panel/CartPanel';
-import { useGetBusinessLocation } from 'src/services/business.service';
 
 const Home: NextPage = ({ shopId: _id }: any) => {
   const router = useRouter();

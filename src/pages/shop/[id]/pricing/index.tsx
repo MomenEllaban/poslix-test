@@ -3,17 +3,16 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { AdminLayout } from '@layout';
 import { ILocationSettings, ITokenVerfy } from '@models/common-model';
 import { DataGrid, GridColDef, GridRowParams } from '@mui/x-data-grid';
+import * as cookie from 'cookie';
 import { useRouter } from 'next/router';
-import React, { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Button, ButtonGroup, Spinner, ToastContainer } from 'react-bootstrap';
-import Customermodal from 'src/components/pos/modals/CustomerModal';
+import PricingModal from 'src/components/pos/modals/PricingGroupsModal';
 import AlertDialog from 'src/components/utils/AlertDialog';
 import { ProductContext } from 'src/context/ProductContext';
 import { Toastify } from 'src/libs/allToasts';
 import { apiFetchCtr } from 'src/libs/dbUtils';
-import * as cookie from 'cookie';
 import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/checkUtils';
-import PricingModal from 'src/components/pos/modals/PricingGroupsModal';
 
 const PricingGroups = (props) => {
   const { shopId, rules } = props;

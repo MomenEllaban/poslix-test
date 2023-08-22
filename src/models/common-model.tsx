@@ -95,7 +95,7 @@ export interface ITax {
   is_inc_or_exc: string;
   Etype: 'percentage' | 'fixed';
   is_primary: boolean | 0 | 1;
-  Etax_type: string;
+  tax_type: string;
   tax_group: ITaxGroup[];
 
   isNew?: number; // this is not existed but to ignore errors
@@ -295,7 +295,7 @@ export interface IExpenseList {
   id: number;
   name: string;
   amount: number;
-  cate_name?: string;
+  category_id?: string;
   expense_id: number;
   date: Date;
 }

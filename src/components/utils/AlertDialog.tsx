@@ -2,16 +2,19 @@ import React, { useEffect, useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import { apiDeleteCtr } from "../../libs/dbUtils"
+import { deleteData } from 'src/services/crud.api';
 
 export default function AlertDialog(props: any) {
-    const { shopId, type, subType, id, section } = props
+    const { url, id, shopId, type, subType, section } = props
     const handleClose = () => props.alertFun(false, '');
     async function deleteProd() {
-        const { success, msg } = await apiDeleteCtr({ shopId, type, subType, id, section })
-        if (success) {
+        const res = await deleteData(url, id)
+        console.log(res.data.result.status);
+        
+        if (res.data.status) {
             props.alertFun(true, "Item successfully deleted!!", section)
         } else
-            props.alertFun(false, msg)
+            props.alertFun(false, "Please try again!")
 
     }
     const actionHandle = () => {

@@ -36,7 +36,7 @@ import { apiInsertCtr } from '../../../../libs/dbUtils';
 import styles from './table.module.css';
 
 const Product: NextPage = (props: any) => {
-  const { shopId, rules } = props;
+  const { rules } = props;
   const myLoader = (img: any) => img.src;
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
     value: 0,
@@ -134,12 +134,12 @@ const Product: NextPage = (props: any) => {
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       renderCell: ({ row }: Partial<GridRowParams>) => {
         if (row.type == 'single')
-          return Number(row.sell_price).toFixed(locationSettings?.currency_decimal_places);
+          return Number(row.sell_price).toFixed(locationSettings?.location_decimal_places);
         else
           return (
-            Number(row.min_price).toFixed(locationSettings?.currency_decimal_places) +
+            Number(row.min_price).toFixed(locationSettings?.location_decimal_places) +
             ' - ' +
-            Number(row.max_price).toFixed(locationSettings?.currency_decimal_places)
+            Number(row.max_price).toFixed(locationSettings?.location_decimal_places)
           );
       },
     },
@@ -185,7 +185,7 @@ const Product: NextPage = (props: any) => {
       renderCell: ({ row }: Partial<GridRowParams>) => (
         <>
           <ButtonGroup className="mb-2 m-buttons-style">
-            {rules.hasEdit && (
+            {permissions.hasEdit && (
               <Button
                 onClick={() => {
                   router.push('/shop/' + shopId + '/products/edit/' + row.id);
@@ -193,7 +193,7 @@ const Product: NextPage = (props: any) => {
                 <FontAwesomeIcon icon={faPenToSquare} />
               </Button>
             )}
-            {rules.hasDelete && (
+            {permissions.hasDelete && (
               <Button
                 onClick={() => {
                   setSelectId(row.id);
@@ -284,20 +284,39 @@ const Product: NextPage = (props: any) => {
     );
   }
   async function initDataPage() {
-    const res = await findAllData(`products/${router.query.id}?page=${currentPage}`);
-    console.log(res.data);
+    setIsLoading(false);
+    if (router.isReady) {
+      const res = await findAllData(`products/${router.query.id}?all_data=1`);
+      setProducts(res.data.result);
+      // setCurrentPage(res.data.result.current_page);
+      // setLastPage(res.data.result.last_page);
+      // setTotalRows(res.data.result.total);
+      // setFilteredProducts(data.products);
+      setIsLoading(false);
+    }
     // if (!success) {
     //   Toastify('error', 'Somthing wrong!!, try agian');
     //   return;
     // }
-    setProducts(res.data.result.data);
-    setCurrentPage(res.data.result.current_page);
-    setLastPage(res.data.result.last_page);
-    setTotalRows(res.data.result.total);
-    // setFilteredProducts(data.products);
-    setIsLoading(false);
   }
+  const [permissions, setPermissions] = useState<any>();
   useEffect(() => {
+    const perms = JSON.parse(localStorage.getItem('permissions'));
+    const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
+    perms.product.map((perm) =>
+      perm.name.includes('GET')
+        ? (getPermissions.hasView = true)
+        : perm.name.includes('POST')
+        ? (getPermissions.hasInsert = true)
+        : perm.name.includes('PUT')
+        ? (getPermissions.hasEdit = true)
+        : perm.name.includes('DELETE')
+        ? (getPermissions.hasDelete = true)
+        : null
+    );
+
+    setPermissions(getPermissions);
+
     const _locs = JSON.parse(localStorage.getItem('locations') || '[]');
     setLocations(_locs);
     if (_locs.toString().length > 10)
@@ -310,18 +329,10 @@ const Product: NextPage = (props: any) => {
       );
     else alert('errorr location settings');
     initDataPage();
-  }, [router.asPath, currentPage]);
+  }, []);
 
   const handleDeleteFuc = (result: boolean, msg: string, section: string) => {
-    if (result) {
-      // const _data = [...products];
-      // const idx = _data.findIndex((itm: any) => itm.id == selectId);
-      // if (idx != -1) {
-      //   _data.splice(idx, 1);
-      //   setProducts(_data);
-      // }
-      initDataPage();
-    }
+    initDataPage();
     if (msg.length > 0) Toastify(result ? 'success' : 'error', msg);
     setShow(false);
     setShowDeleteAll(false);
@@ -362,6 +373,11 @@ const Product: NextPage = (props: any) => {
     }
   }, [searchTerm, products]);
 
+  const [shopId, setShopId] = useState('');
+  useEffect(() => {
+    if (router.isReady) setShopId(router.query.id.toString());
+  }, []);
+
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
   const isMediumScreen = useMediaQuery(theme.breakpoints.between('md', 'lg'));
@@ -375,8 +391,7 @@ const Product: NextPage = (props: any) => {
           alertFun={handleDeleteFuc}
           shopId={shopId}
           id={selectId}
-          type="products"
-          subType="deleteProduct">
+          url={'products'}>
           Are you Sure You Want Delete This Item?
         </AlertDialog>
         <AlertDialog
@@ -407,7 +422,7 @@ const Product: NextPage = (props: any) => {
           })}
         />
         {/* start */}
-        {!isLoading && rules.hasInsert && (
+        {!isLoading && permissions.hasInsert && (
           <div className="mb-2 flex items-center justify-between">
             <button
               className="btn btn-primary p-3"
@@ -436,14 +451,14 @@ const Product: NextPage = (props: any) => {
                 }}
                 rows={products}
                 columns={columns}
-                // pageSize={10}
+                pageSize={10}
                 rowsPerPageOptions={[10]}
                 onSelectionModelChange={(ids: any) => onRowsSelectionHandler(ids)}
                 onCellClick={handleCellClick}
                 components={{ Toolbar: CustomToolbar }}
-                rowCount={totalRows}
-                onPageChange={(params) => setCurrentPage(params + 1)}
-                pagination
+                // rowCount={totalRows}
+                // onPageChange={(params) => setCurrentPage(params + 1)}
+                // pagination
               />
             </div>
           </>

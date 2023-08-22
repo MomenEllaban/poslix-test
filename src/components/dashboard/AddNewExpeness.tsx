@@ -4,6 +4,8 @@ import { IExpenseList, IPayment } from '@models/common-model';
 import Select from 'react-select';
 import { Toastify } from 'src/libs/allToasts';
 import DatePicker from 'react-datepicker';
+import { createNewData, updateData } from 'src/services/crud.api';
+import { useRouter } from 'next/router';
 
 const AddNewExpeness = (props: any) => {
   const { shopId, setExpensesList, rows, cats, setIsAddExpense, selectId } = props;
@@ -13,58 +15,48 @@ const AddNewExpeness = (props: any) => {
     name: '',
     amount: 0,
     date: new Date(),
-    cate_name: '',
+    category_id: '',
   });
   const [cateData, setCateData] = useState<{ id: number; name: string; value: number }[]>([]);
   const [errorForm, setErrorForm] = useState({ expense_id: false, name: false, amount: false });
   const colourStyles = { control: (style: any) => ({ ...style, borderRadius: '10px' }) };
+  const router = useRouter()
   async function addExpense() {
-    const { success, newdata, msg } = await apiInsertCtr({
-      type: 'expenses',
-      subType: 'addExpenseList',
-      data: formObj,
-      shopId,
-    });
-
-    if (!success) {
-      Toastify('error', msg);
-      return;
+    if(router.query.id){      
+      const res = await createNewData(`expenses/${router.query.id}`, formObj)
+      console.log(res);
+      if (res.data.success || res.data.status == 201) {
+        Toastify('success', 'successfully Creat');
+        let _rows = [...rows];
+        _rows.push({
+          id: res.data.result,
+          name: formObj.name,
+          category: formObj.category_id,
+          amount: formObj.amount,
+          date: formObj.date,
+        });
+        setExpensesList(_rows);
+        setIsAddExpense(false);
+      }
     }
-    Toastify('success', 'successfully Creat');
-    let _rows = [...rows];
-    _rows.push({
-      id: newdata,
-      name: formObj.name,
-      category: formObj.cate_name,
-      amount: formObj.amount,
-      date: formObj.date,
-    });
-    setExpensesList(_rows);
-    setIsAddExpense(false);
   }
   async function editEpense() {
-    const { success, msg } = await apiUpdateCtr({
-      type: 'expenses',
-      subType: 'editExpense',
-      data: formObj,
-      shopId,
-    });
-
-    if (!success) {
-      Toastify('error', msg);
-      return;
+    console.log(formObj);
+    
+    const res = await updateData('expenses', selectId, formObj)
+    if (res.data.success) {
+      let _i = rows.findIndex((rw: any) => rw.id == selectId);
+      if (_i > -1) {
+        let _rows = [...rows];
+        _rows[_i].name = formObj.name;
+        _rows[_i].category = formObj.category_id;
+        _rows[_i].amount = formObj.amount;
+        _rows[_i].date = formObj.date;
+        setExpensesList(_rows);
+      }
+  
+      setIsAddExpense(false);
     }
-    let _i = rows.findIndex((rw: any) => rw.id == selectId);
-    if (_i > -1) {
-      let _rows = [...rows];
-      _rows[_i].name = formObj.name;
-      _rows[_i].category = formObj.cate_name;
-      _rows[_i].amount = formObj.amount;
-      _rows[_i].date = formObj.date;
-      setExpensesList(_rows);
-    }
-
-    setIsAddExpense(false);
   }
   var errors = [];
   useEffect(() => {
@@ -77,7 +69,7 @@ const AddNewExpeness = (props: any) => {
           date: rows[_i].date.length > 0 ? new Date(rows[_i].date) : new Date(),
           expense_id: rows[_i].expense_id,
           id: rows[_i].id,
-          cate_name: rows[_i].category,
+          category_id: rows[_i].category,
           name: rows[_i].name,
         });
     }
@@ -99,7 +91,7 @@ const AddNewExpeness = (props: any) => {
                   if (f.value == formObj.expense_id) return { label: f.name, value: f.id };
                 })}
                 onChange={(itm: any) => {
-                  setFormObj({ ...formObj, expense_id: itm!.value, cate_name: itm!.label });
+                  setFormObj({ ...formObj, expense_id: itm!.value, category_id: itm!.value });
                 }}
               />
               {errorForm.expense_id && <p className="p-1 h6 text-danger ">Select Category</p>}

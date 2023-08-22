@@ -199,7 +199,7 @@ export default function SalesReport(props: any) {
   }
   // init sales data
   async function initDataPage() {
-    var _locs = JSON.parse(localStorage.getItem('userlocs') || '[]');
+    var _locs = JSON.parse(localStorage.getItem('locations') || '[]');
     if (_locs.toString().length > 10)
       setLocationSettings(
         _locs[
@@ -236,7 +236,7 @@ export default function SalesReport(props: any) {
   }
 
   useEffect(() => {
-    var _locs = JSON.parse(localStorage.getItem('userlocs') || '[]');
+    var _locs = JSON.parse(localStorage.getItem('locations') || '[]');
     if (_locs.toString().length > 10)
       setLocationSettings(
         _locs[

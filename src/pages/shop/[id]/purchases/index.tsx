@@ -29,6 +29,10 @@ import {
   GridToolbarContainer,
   GridToolbarExport,
 } from '@mui/x-data-grid';
+import withAuth from 'src/HOCs/withAuth';
+import { findAllData } from 'src/services/crud.api';
+import { Toastify } from 'src/libs/allToasts';
+import AlertDialog from 'src/components/utils/AlertDialog';
 
 const Purchases: NextPage = (props: any) => {
   const { shopId } = props;
@@ -47,6 +51,8 @@ const Purchases: NextPage = (props: any) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isShowPayments, setIsShowPayments] = useState(false);
   const [purchaseId, setPurchaseId] = useState(0);
+  const [selectId, setSelectId] = useState(0);
+  const [show, setShow] = useState(false);
   const router = useRouter();
 
   const columns: GridColDef[] = [
@@ -97,12 +103,15 @@ const Purchases: NextPage = (props: any) => {
               }}>
               <FontAwesomeIcon icon={faDollarSign} />
             </Button>
-            <Button onClick={() => router.push('/shop/' + shopId + '/purchases/edit/' + row.id)}>
+            {permissions.hasEdit && <Button onClick={() => router.push('/shop/' + shopId + '/purchases/edit/' + row.id)}>
               <FontAwesomeIcon icon={faPenToSquare} />
-            </Button>
-            <Button>
+            </Button>}
+            {permissions.hasDelete && <Button onClick={() => {
+              setSelectId(row.id);
+              setShow(true);
+            }}>
               <FontAwesomeIcon icon={faTrash} />
-            </Button>
+            </Button>}
           </ButtonGroup>
         </>
       ),
@@ -116,20 +125,24 @@ const Purchases: NextPage = (props: any) => {
       </GridToolbarContainer>
     );
   }
+  const handleDeleteFuc = (result: boolean, msg: string, section: string) => {
+    initDataPage();
+    if (msg.length > 0) Toastify(result ? 'success' : 'error', msg);
+    setShow(false);
+  };
   async function initDataPage() {
-    const { success, newdata } = await apiFetchCtr({
-      fetch: 'transactions',
-      subType: 'getAll',
-      shopId,
-    });
-    if (success) {
-      setPurchases(newdata);
-      setIsloading(false);
+    setIsloading(true)
+    if(router.query.id) {
+      const res = await findAllData(`purchase/${router.query.id}`)
+      if (res.data.success) {
+        setPurchases(res.data.result);
+      }
     }
+    setIsloading(false);
   }
   useEffect(() => {
-    var _locs = JSON.parse(localStorage.getItem('userlocs') || '[]');
-    if (_locs.toString().length > 10)
+    var _locs = JSON.parse(localStorage.getItem('locations') || '[]');
+    if (_locs.toString()?.length > 10)
       setLocationSettings(
         _locs[
           _locs.findIndex((loc: any) => {
@@ -140,6 +153,18 @@ const Purchases: NextPage = (props: any) => {
     else alert('errorr location settings');
     initDataPage();
   }, [router.asPath]);
+
+  const [permissions, setPermissions] = useState<any>()
+  useEffect(() => {
+    const perms = JSON.parse(localStorage.getItem('permissions'));
+    const getPermissions = {hasView: false, hasInsert: false, hasEdit: false, hasDelete: false}
+    perms.purchase.map((perm) => 
+      perm.name.includes('POST') ? getPermissions.hasInsert = true
+      : perm.name.includes('PUT') ? getPermissions.hasEdit = true
+      : perm.name.includes('DELETE') ? getPermissions.hasDelete = true : null)
+    
+    setPermissions(getPermissions)
+  }, [])
   function getStatusStyle(status: string) {
     switch (status) {
       case 'paid':
@@ -163,6 +188,14 @@ const Purchases: NextPage = (props: any) => {
     <>
       <AdminLayout shopId={shopId}>
         <ToastContainer />
+        <AlertDialog
+          alertShow={show}
+          alertFun={handleDeleteFuc}
+          shopId={shopId}
+          id={selectId}
+          url={'purchase'}>
+          Are you Sure You Want Delete This Item?
+        </AlertDialog>
         {isShowQtyManager && (
           <PurchasesQtyCheckList
             selectedIndex={selectedIndex}
@@ -185,7 +218,7 @@ const Purchases: NextPage = (props: any) => {
         {!isShowQtyManager && !isShowPayments && (
           <div className="row">
             <div className="col-md-12">
-              {!isloading && (
+              {!isloading && permissions.hasInsert && (
                 <div className="mb-4">
                   <button
                     className="btn m-btn btn-primary p-3"
@@ -230,42 +263,4 @@ const Purchases: NextPage = (props: any) => {
     </>
   );
 };
-export default Purchases;
-export async function getServerSideProps(context: any) {
-  const parsedCookies = cookie.parse(context.req.headers.cookie || '[]');
-  var _isOk = true,
-    _hasPer = true;
-  //check page params
-  var shopId = context.query.id;
-  if (shopId == undefined) return { redirect: { permanent: false, destination: '/page403' } };
-
-  //check user permissions
-  var _userRules = {};
-  await verifayTokens(
-    { headers: { authorization: 'Bearer ' + parsedCookies.tokend } },
-    (repo: ITokenVerfy) => {
-      _isOk = repo.status;
-      var _rules = keyValueRules(repo.data.rules || []);
-      if (
-        _rules[-2] != undefined &&
-        _rules[-2][0].stuff != undefined &&
-        _rules[-2][0].stuff == 'owner'
-      ) {
-        _hasPer = true;
-        _userRules = { hasDelete: true, hasEdit: true, hasView: true, hasInsert: true };
-      } else if (_isOk && _rules[shopId] != undefined) {
-        var _stuf = '';
-        _rules[shopId].forEach((dd: any) => (_stuf += dd.stuff));
-        const { userRules, hasPermission } = hasPermissions(_stuf, 'purchases');
-        _isOk = hasPermission;
-        _userRules = userRules;
-      } else _hasPer = false;
-    }
-  );
-  if (!_isOk) return { redirect: { permanent: false, destination: '/user/auth' } };
-  if (!_hasPer) return { redirect: { permanent: false, destination: '/page403' } };
-  return {
-    props: { shopId: context.query.id, rules: _userRules },
-  };
-  //status ok
-}
+export default withAuth(Purchases);

@@ -75,7 +75,7 @@ const Home: NextPage = (props: any) => {
       setInvoicDetails(invoiceDetails);
     } else {
     }
-    var _locs = JSON.parse(localStorage.getItem('userlocs') || '[]');
+    var _locs = JSON.parse(localStorage.getItem('locations') || '[]');
     if (_locs.toString().length > 10)
       setLocationSettings(
         _locs[

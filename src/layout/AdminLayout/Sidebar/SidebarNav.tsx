@@ -158,7 +158,6 @@ export function SidebarNav(props: any): any {
 
   async function intData() {
     const res = await findAllData('permissions/13');
-    console.log(res.data);
 
     // let { success, newdata } = await apiFetch({ fetch: 'checkwt' });
     // if (newdata.types == undefined || newdata.types.length == 0) success = false;
@@ -166,7 +165,7 @@ export function SidebarNav(props: any): any {
       res.data.result.name == 'owner' ||
       true //! this is a turn around
     ) {
-      setPermiss({
+      const newPermissions = {
         ...permiss,
         hasProducts: true,
         hasCats: true,
@@ -189,7 +188,10 @@ export function SidebarNav(props: any): any {
         hasSupplierSales: true,
         hasQuotations: true,
         hasRegister: true,
-      });
+      }
+      setPermiss({...newPermissions});
+    // localStorage.setItem('roles', JSON.stringify(newPermissions))
+
       setLoading(false);
     } else {
       let _stuf = '';

@@ -36,6 +36,7 @@ import {
 import { Button, ButtonGroup } from 'react-bootstrap';
 import SalesListTable from 'src/components/dashboard/SalesListTable';
 import OrdersTable from 'src/components/dashboard/OrdersTable';
+import { findAllData } from 'src/services/crud.api';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -56,16 +57,16 @@ const Customer: NextPage = (props: any) => {
   const [isLoading, setIsLoading] = useState(true);
   const customerTemplate = {
     id: 0,
-    firstName: '',
-    lastName: '',
+    first_name: '',
+    last_name: '',
     mobile: '',
-    addr1: '',
-    addr2: '',
+    address_line_1: '',
+    address_line_2: '',
     city: '',
     state: '',
     country: '',
-    zipCode: '',
-    shipAddr: '',
+    zip_code: '',
+    shipping_address: '',
   };
   const [customerInfo, setCustomerInfo] = useState(customerTemplate);
 
@@ -95,37 +96,6 @@ const Customer: NextPage = (props: any) => {
       },
     ],
   };
-
-  async function getCustomerInfo(theId: any) {
-    setIsLoading(true);
-    setCustomerInfo(customerTemplate);
-    var result = await apiFetchCtr({
-      fetch: 'customer',
-      subType: 'getCustomerInfo',
-      theId,
-      shopId,
-    });
-    if (result.success) {
-      const selCustomer = result?.newdata[0];
-      setCustomerInfo({
-        ...customerInfo,
-        id: theId,
-        mobile: selCustomer.mobile,
-        firstName: selCustomer.first_name,
-        lastName: selCustomer.last_name,
-        city: selCustomer.city,
-        state: selCustomer.state,
-        addr1: selCustomer.addr1,
-        addr2: selCustomer.addr2,
-        zipCode: selCustomer.zip_code,
-        country: selCustomer.country,
-        shipAddr: selCustomer.shipping_address,
-      });
-      setIsLoading(false);
-    } else {
-      Toastify('error', 'has error, Try Again...');
-    }
-  }
 
   const columns: GridColDef[] = [
     { field: 'id', headerName: '#', minWidth: 50 },
@@ -190,21 +160,39 @@ const Customer: NextPage = (props: any) => {
     },
   ];
 
-  const [sales, setsales] = useState<any>([]);
+  const [sales, setSales] = useState<any>([]);
   // init sales data
   async function initDataPage() {
-    const { success, newdata } = await apiFetchCtr({
-      fetch: 'transactions',
-      subType: 'getSales',
-      shopId,
-    });
-    if (success) {
-      setsales(newdata.data);
+    if(router.query.customerId){
+      const res = await findAllData(`customers/${router.query.customerId}/show`)
+      if (res.data.success) {
+        setSales(res.data.result?.sales);
+        setIsLoading(true);
+        setCustomerInfo(customerTemplate);
+        const selCustomer = res.data.result?.profile;
+        setCustomerInfo({
+          ...customerInfo,
+          id: selCustomer.id,
+          mobile: selCustomer.mobile,
+          first_name: selCustomer.first_name,
+          last_name: selCustomer.last_name,
+          city: selCustomer.city,
+          state: selCustomer.state,
+          address_line_1: selCustomer.address_line_1,
+          address_line_2: selCustomer.address_line_2,
+          zip_code: selCustomer.zip_code,
+          country: selCustomer.country,
+          shipping_address: selCustomer.shipping_address,
+        });
+      } else {
+        Toastify('error', 'has error, Try Again...');
+      }
+      setIsLoading(false);
     }
   }
 
   useEffect(() => {
-    var _locs = JSON.parse(localStorage.getItem('userlocs') || '[]');
+    let _locs = JSON.parse(localStorage.getItem('locations') || '[]');
     if (_locs.toString().length > 10)
       setLocationSettings(
         _locs[
@@ -231,20 +219,6 @@ const Customer: NextPage = (props: any) => {
     );
   }
 
-  useEffect(() => {
-    var _locs = JSON.parse(localStorage.getItem('userlocs') || '[]');
-    if (_locs.toString().length > 10)
-      setLocationSettings(
-        _locs[
-          _locs.findIndex((loc: any) => {
-            return loc.value == shopId;
-          })
-        ]
-      );
-    else alert('errorr location settings');
-    getCustomerInfo(customerId);
-  }, [router.asPath]);
-
   return (
     <>
       <AdminLayout shopId={shopId}>
@@ -266,7 +240,7 @@ const Customer: NextPage = (props: any) => {
                           <div className="card">
                             <div className="card-body">
                               <h6 className="mb-3">
-                                {customerInfo.firstName} {customerInfo.lastName}
+                                {customerInfo.first_name} {customerInfo.last_name}
                               </h6>
                               <h5>Last login</h5>
                             </div>
@@ -290,11 +264,11 @@ const Customer: NextPage = (props: any) => {
                                 <Row>
                                   <Col xs={12}>
                                     <h6 className="d-inline-block">First Name:</h6>{' '}
-                                    {customerInfo.firstName}
+                                    {customerInfo.first_name}
                                   </Col>
                                   <Col xs={12}>
                                     <h6 className="d-inline-block">Last Name:</h6>{' '}
-                                    {customerInfo.lastName}
+                                    {customerInfo.last_name}
                                   </Col>
                                   <Col xs={12}>
                                     <h6 className="d-inline-block">City:</h6> {customerInfo.city}
@@ -304,23 +278,23 @@ const Customer: NextPage = (props: any) => {
                                   </Col>
                                   <Col xs={12}>
                                     <h6 className="d-inline-block">Address 1:</h6>{' '}
-                                    {customerInfo.addr1}
+                                    {customerInfo.address_line_1}
                                   </Col>
                                   <Col xs={12}>
                                     <h6 className="d-inline-block">Address 2:</h6>{' '}
-                                    {customerInfo.addr2}
+                                    {customerInfo.address_line_2}
                                   </Col>
                                   <Col xs={12}>
-                                    <h6 className="d-inline-block">zipCode:</h6>{' '}
-                                    {customerInfo.zipCode}
+                                    <h6 className="d-inline-block">zip_code:</h6>{' '}
+                                    {customerInfo.zip_code}
                                   </Col>
                                   <Col xs={12}>
                                     <h6 className="d-inline-block">country:</h6>{' '}
                                     {customerInfo.country}
                                   </Col>
                                   <Col xs={12}>
-                                    <h6 className="d-inline-block">shipAddr:</h6>{' '}
-                                    {customerInfo.shipAddr}
+                                    <h6 className="d-inline-block">shipping_address:</h6>{' '}
+                                    {customerInfo.shipping_address}
                                   </Col>
                                 </Row>
                               </Container>
@@ -394,7 +368,7 @@ const Customer: NextPage = (props: any) => {
                 </div>
               </Tab>
               <Tab eventKey="Sales" title="Sales">
-                <SalesListTable shopId={shopId} rules={rules} />
+                <SalesListTable shopId={router.query.id} customerId={router.query.id} salesList={sales} />
               </Tab>
               {isOrder && (
                 <Tab eventKey="Orders" title="Orders">
@@ -451,42 +425,3 @@ const Customer: NextPage = (props: any) => {
   );
 };
 export default Customer;
-export async function getServerSideProps(context: any) {
-  const parsedCookies = cookie.parse(context.req.headers.cookie || '[]');
-  var _isOk = true,
-    _rule = true;
-  var customerId = context.query.customerId;
-  var shopId = context.query.id;
-  if (shopId == undefined) return { redirect: { permanent: false, destination: '/page403' } };
-  var _userRules = {};
-  await verifayTokens(
-    { headers: { authorization: 'Bearer ' + parsedCookies.tokend } },
-    (repo: ITokenVerfy) => {
-      _isOk = repo.status;
-      if (_isOk) {
-        var _rules = keyValueRules(repo.data.rules || []);
-        if (
-          _rules[-2] != undefined &&
-          _rules[-2][0].stuff != undefined &&
-          _rules[-2][0].stuff == 'owner'
-        ) {
-          _rule = true;
-          _userRules = { hasDelete: true, hasEdit: true, hasView: true, hasInsert: true };
-        } else if (_rules[shopId] != undefined) {
-          var _stuf = '';
-          _rules[shopId].forEach((dd: any) => (_stuf += dd.stuff));
-          const { userRules, hasPermission } = hasPermissions(_stuf, 'customers');
-          _rule = hasPermission;
-          _userRules = userRules;
-        } else _rule = false;
-      }
-    }
-  );
-  if (!_isOk) return { redirect: { permanent: false, destination: '/user/auth' } };
-  if (!_rule) return { redirect: { permanent: false, destination: '/page403' } };
-
-  //status ok
-  return {
-    props: { shopId, rules: _userRules, customerId },
-  };
-}

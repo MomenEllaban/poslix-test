@@ -34,15 +34,19 @@ import {
 } from '@mui/x-data-grid';
 import { UserContext } from 'src/context/UserContext';
 import AddNewExpeness from 'src/components/dashboard/AddNewExpeness';
+import withAuth from 'src/HOCs/withAuth';
+import { findAllData } from 'src/services/crud.api';
 
-const Product: NextPage = (props: any) => {
+const Expenses: NextPage = (props: any) => {
   const { shopId, rules } = props;
   const [cate, setCate] = useState<{ id: number; name: string; isNew: boolean }[]>([]);
   const [expensesList, setExpensesList] = useState<IExpenseList[]>([]);
   const [show, setShow] = useState(false);
+  const [type, setType] = useState('');
   const [selectId, setSelectId] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isAddExpense, setIsAddExpense] = useState(false);
+  const [categories, setCategories] = useState([]);
   const [key, setKey] = useState('list');
   const { locationSettings } = useContext(UserContext);
 
@@ -86,7 +90,7 @@ const Product: NextPage = (props: any) => {
       renderCell: ({ row }: Partial<GridRowParams>) => (
         <>
           <ButtonGroup className="mb-2 m-buttons-style">
-            {rules.hasEdit && (
+            {permissions.hasEdit && (
               <Button
                 onClick={() => {
                   setSelectId(row.id);
@@ -95,11 +99,12 @@ const Product: NextPage = (props: any) => {
                 <FontAwesomeIcon icon={faPenToSquare} />
               </Button>
             )}
-            {rules.hasDelete && (
+            {permissions.hasDelete && (
               <Button
                 onClick={() => {
                   setSelectId(row.id);
                   setShow(true);
+                  setType('expenses')
                 }}>
                 <FontAwesomeIcon icon={faTrash} />
               </Button>
@@ -110,16 +115,17 @@ const Product: NextPage = (props: any) => {
     },
   ];
   async function initDataPage() {
-    setIsLoading(true);
-    const { success, newdata } = await apiFetchCtr({
-      fetch: 'expenses',
-      subType: 'getCateAndList',
-      shopId,
-    });
-    if (success) {
-      rules.hasInsert && newdata.cate.push({ id: 0, name: '', isNew: true });
-      setCate(newdata.cate);
-      setExpensesList(newdata.list);
+    if(router.query.id){
+      setIsLoading(true);
+      const res = await findAllData(`expenses/${router.query.id}`)
+      if (res.data.success) {
+        catPermissions.hasInsert && res.data.result.cate.push({ id: 0, name: '', isNew: true });
+        setExpensesList(res.data.result);
+      }
+      const catRes = await findAllData(`expenses-categories/${router.query.id}`)
+      if(catRes.data.success) {
+        setCategories(catRes.data.result)
+      }
       setIsLoading(false);
     }
   }
@@ -169,18 +175,40 @@ const Product: NextPage = (props: any) => {
     setSelectId(0);
     setIsAddExpense(!isAddExpense);
   };
+
+  const getCategories = async () => {
+    if(router.query.id) {
+      
+    }
+  }
+
+  const [permissions, setPermissions] = useState<any>()
+  const [catPermissions, setCatPermissions] = useState<any>()
+  useEffect(() => {
+    const perms = JSON.parse(localStorage.getItem('permissions'));
+    const getPermissions = {hasView: false, hasInsert: false, hasEdit: false, hasDelete: false}
+    const getCatPermissions = {hasCategories: false, hasView: false, hasInsert: false, hasEdit: false, hasDelete: false}
+    perms.expense.map((perm) => 
+      perm.name.includes('categories GET') ? getCatPermissions.hasCategories = true
+      : perm.name.includes('category GET') ? getCatPermissions.hasView = true
+      : perm.name.includes('category PUT') ? getCatPermissions.hasEdit = true
+      : perm.name.includes('category POST') ? getCatPermissions.hasInsert = true
+      : perm.name.includes('category DELETE') ? getCatPermissions.hasDelete = true
+      : perm.name.includes('expense POST') ? getPermissions.hasInsert = true
+      : perm.name.includes('expense PUT') ? getPermissions.hasEdit = true
+      : perm.name.includes('expense DELETE') ? getPermissions.hasDelete = true : null)
+    
+    setPermissions(getPermissions)
+    setCatPermissions(getCatPermissions)
+  }, [])
+
   useEffect(() => {
     initDataPage();
+    getCategories()
   }, [router.asPath]);
+
   const handleDeleteFuc = (result: boolean, msg: string, section: string) => {
-    if (result) {
-      const _data = [...expensesList];
-      const idx = _data.findIndex((itm: any) => itm.id == selectId);
-      if (idx != -1) {
-        _data.splice(idx, 1);
-        setExpensesList(_data);
-      }
-    }
+    initDataPage();
     if (msg.length > 0) Toastify(result ? 'success' : 'error', msg);
     setShow(false);
   };
@@ -190,11 +218,9 @@ const Product: NextPage = (props: any) => {
         <ToastContainer />
         <AlertDialog
           alertShow={show}
-          id={selectId}
           alertFun={handleDeleteFuc}
-          shopId={shopId}
-          type="expenses"
-          subType="deleteExpense">
+          id={selectId}
+          url={type}>
           Are you Sure You Want Delete This Item ?
         </AlertDialog>
         <div className="row">
@@ -209,7 +235,7 @@ const Product: NextPage = (props: any) => {
                   <h5>Expense List</h5>
                 </Card.Header>
                 <Card.Body style={{ minHeight: '650px ' }}>
-                  {!isLoading && rules.hasInsert && (
+                  {!isLoading && permissions.hasInsert && (
                     <div className="mb-2">
                       <button className="btn btn-primary p-3" onClick={() => handlebtnAdd()}>
                         {isAddExpense ? (
@@ -251,7 +277,7 @@ const Product: NextPage = (props: any) => {
                       rows={expensesList}
                       setIsAddExpense={setIsAddExpense}
                       shopId={shopId}
-                      cats={cate}
+                      cats={categories}
                     />
                   )}
                 </Card.Body>
@@ -260,7 +286,7 @@ const Product: NextPage = (props: any) => {
             <Tab eventKey="category" title="Category">
               <Card>
                 <Card.Header className="p-3 bg-white">
-                  <h5>Expense List</h5>
+                  <h5>Category List</h5>
                 </Card.Header>
                 <Card.Body className="table-responsive text-nowrap">
                   {!isLoading ? (
@@ -273,14 +299,14 @@ const Product: NextPage = (props: any) => {
                         </tr>
                       </thead>
                       <tbody>
-                        {cate.map((ex: any, i: number) => {
+                        {categories.map((ex: any, i: number) => {
                           return (
                             <tr key={i} style={{ background: ex.isNew ? '#c6e9e6' : '' }}>
                               <th scope="row">{i + 1}</th>
                               <td>
                                 <input
                                   type="text"
-                                  disabled={!rules.hasInsert}
+                                  disabled={!catPermissions.hasInsert}
                                   name="tax-name"
                                   className="form-control p-2"
                                   placeholder="Enter New Tax Name"
@@ -292,11 +318,12 @@ const Product: NextPage = (props: any) => {
                               </td>
                               <td>
                                 <ButtonGroup className="mb-2 m-buttons-style">
-                                  {rules.hasDelete && (
+                                  {catPermissions.hasDelete && (
                                     <Button
                                       onClick={() => {
                                         setSelectId(ex.id);
                                         setShow(true);
+                                        setType('expenses-categories')
                                       }}>
                                       <FontAwesomeIcon icon={faTrash} />
                                     </Button>
@@ -314,15 +341,6 @@ const Product: NextPage = (props: any) => {
                     </div>
                   )}
                 </Card.Body>
-                {rules.hasInsert && (
-                  <div className="m-3">
-                    <button
-                      className="btn m-btn btn-primary p-3"
-                      onClick={() => addUpdateExpense()}>
-                      <FontAwesomeIcon icon={faFloppyDisk} /> save
-                    </button>
-                  </div>
-                )}
               </Card>
             </Tab>
           </Tabs>
@@ -333,46 +351,4 @@ const Product: NextPage = (props: any) => {
     </>
   );
 };
-export default Product;
-export async function getServerSideProps(context: any) {
-  const parsedCookies = cookie.parse(context.req.headers.cookie || '[]');
-  var _isOk = true,
-    _rule = true;
-  //check page params
-  //local..../shop/2/tayloring
-  var shopId = context.query.id;
-  if (shopId == undefined) return { redirect: { permanent: false, destination: '/page403' } };
-
-  //check user permissions
-  var _userRules = {};
-  await verifayTokens(
-    { headers: { authorization: 'Bearer ' + parsedCookies.tokend } },
-    (repo: ITokenVerfy) => {
-      _isOk = repo.status;
-      if (_isOk) {
-        var _rules = keyValueRules(repo.data.rules || []);
-        if (
-          _rules[-2] != undefined &&
-          _rules[-2][0].stuff != undefined &&
-          _rules[-2][0].stuff == 'owner'
-        ) {
-          _rule = true;
-          _userRules = { hasDelete: true, hasEdit: true, hasView: true, hasInsert: true };
-        } else if (_rules[shopId] != undefined) {
-          var _stuf = '';
-          _rules[shopId].forEach((dd: any) => (_stuf += dd.stuff));
-          const { userRules, hasPermission } = hasPermissions(_stuf, 'expanses');
-          _rule = hasPermission;
-          _userRules = userRules;
-        } else _rule = false;
-      }
-    }
-  );
-  if (!_isOk) return { redirect: { permanent: false, destination: '/user/auth' } };
-  if (!_rule) return { redirect: { permanent: false, destination: '/page403' } };
-
-  //status ok
-  return {
-    props: { shopId, rules: _userRules },
-  };
-}
+export default withAuth(Expenses);

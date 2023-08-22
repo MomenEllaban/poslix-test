@@ -45,6 +45,8 @@ import { cartJobType } from 'src/recoil/atoms';
 import { useRecoilState } from 'recoil';
 import { ToastContainer } from 'react-toastify';
 import { Toastify } from 'src/libs/allToasts';
+import { findAllData } from 'src/services/crud.api';
+import withAuth from 'src/HOCs/withAuth';
 const AddPurchase: NextPage = (props: any) => {
   const { shopId, editId } = props;
 
@@ -254,106 +256,101 @@ const AddPurchase: NextPage = (props: any) => {
     </div>
   );
 
-  async function initDataPage(id = '0') {
-    if (id != '0') setIsEdit(true);
-    const { success, newdata } = await apiFetchCtr({
-      fetch: 'transactions',
-      subType: 'initPurchase',
-      shopId,
-      id,
-    });
-    if (!success) {
-      Toastify('error', 'error in loading..');
-      return;
-    }
-    setProducts(newdata.products);
-    setSuppliers([...newdata.suppliers, { label: 'Walk-in Supplier', value: 1 }]);
-    setCurrencies(newdata.currencies);
-    setExpends(newdata.expenses);
-    setAllVariations(newdata.allVariations);
-    if (newdata.purchase.length > 0) {
-      if (newdata.selected_lines.length > 0) {
-        var _rows: any = [],
-          cop = 0;
-        newdata.selected_lines.map((sp: any) => {
-          cop++;
-          _rows.push({
-            id:
-              +Number(sp.product_id) +
-              Math.floor(Math.random() * 7990) +
-              cop +
-              Math.floor(Math.random() * 1200),
-            product_id: sp.product_id,
-            variation_id: sp.variation_id,
-            name: sp.name,
-            quantity: Number(sp.quantity).toFixed(locationSettings?.currency_decimal_places),
-            price: Number(sp.price).toFixed(locationSettings?.currency_decimal_places),
-            cost: Number(sp.cost).toFixed(locationSettings?.currency_decimal_places),
-            lineTotal: (parseFloat(sp.cost) * parseFloat(sp.quantity)).toFixed(
-              locationSettings?.currency_decimal_places
-            ),
-            taxAmount: 0,
-            costType: sp.cost_type,
-            trans_id: sp.trans_id,
+  async function initDataPage(url) {
+    if (url?.length == 2) setIsEdit(true);
+    
+    if (url?.length == 2) {
+      const res = await findAllData(`purchase/${router.query.slug[1]}/show`);
+      const itm = res.data.result;
+      setProducts(itm?.products);
+      // setSuppliers([...itm?.suppliers, { label: 'Walk-in Supplier', value: 1 }]);
+      setCurrencies(itm?.currencies);
+      setExpends(itm?.expenses);
+      setAllVariations(itm?.allVariations);
+      if (itm?.purchase?.length > 0) {
+        if (itm?.selected_lines.length > 0) {
+          var _rows: any = [],
+            cop = 0;
+          itm?.selected_lines.map((sp: any) => {
+            cop++;
+            _rows.push({
+              id:
+                +Number(sp.product_id) +
+                Math.floor(Math.random() * 7990) +
+                cop +
+                Math.floor(Math.random() * 1200),
+              product_id: sp.product_id,
+              variation_id: sp.variation_id,
+              name: sp.name,
+              quantity: Number(sp.quantity).toFixed(locationSettings?.currency_decimal_places),
+              price: Number(sp.price).toFixed(locationSettings?.currency_decimal_places),
+              cost: Number(sp.cost).toFixed(locationSettings?.currency_decimal_places),
+              lineTotal: (parseFloat(sp.cost) * parseFloat(sp.quantity)).toFixed(
+                locationSettings?.currency_decimal_places
+              ),
+              taxAmount: 0,
+              costType: sp.cost_type,
+              trans_id: sp.trans_id,
+            });
           });
+          setSelectProducts([..._rows]);
+        } else {
+          //error!
+        }
+        setSelectedExpendsEdit(itm?.selected_expnses);
+        let _sumTotalExp = 0;
+        itm?.selected_expnses.map(
+          (mp: any) => (_sumTotalExp += parseFloat((mp.enterd_value * mp.currency_rate).toString()))
+        );
+        const itm1 = itm?.purchase[0];
+        let paymentType = '',
+          amount = 0,
+          pay_id = 0;
+        if (itm?.selected_payment.length > 0) {
+          paymentType = itm?.selected_payment[0].payment_type;
+          amount = itm?.selected_payment[0].amount;
+          pay_id = itm?.selected_payment[0].id;
+        }
+        let _taxes = JSON.parse(itm.taxes);
+        setSelectedTaxes(_taxes);
+        // itm.currency_id
+        const pidex = itm?.currencies.findIndex((ps: any) => ps.value == itm.currency_id);
+
+        let crate = 0,
+          cCode = '';
+        if (pidex > -1) {
+          crate = itm?.currencies[pidex].exchange_rate;
+          cCode = itm?.currencies[pidex].code;
+        }
+
+        setFormObj({
+          ...formObj,
+          id: itm1.id,
+          supplier_id: itm1.contact_id,
+          currency_id: itm1.currency_id,
+          currency_rate: crate,
+          currency_symbol: '',
+          currency_code: cCode,
+          total_price: itm1.total_price,
+          ref_no: itm1.invoice_no,
+          date: new Date(),
+          taxs: 0,
+          subTotal_price: 0,
+          total_tax: itm1.total_taxes,
+          total_expense: _sumTotalExp,
+          discount_type: 'fixed',
+          discount_amount: 0,
+          purchaseStatus: itm1.status,
+          paymentStatus: itm1.payment_status,
+          paid_amount: Number(amount),
+          total_discount: 0,
+          paymentType: paymentType,
+          paymentDate: new Date(),
+          payment_id: pay_id,
         });
-        setSelectProducts([..._rows]);
-      } else {
-        //error!
       }
-      setSelectedExpendsEdit(newdata.selected_expnses);
-      let _sumTotalExp = 0;
-      newdata.selected_expnses.map(
-        (mp: any) => (_sumTotalExp += parseFloat((mp.enterd_value * mp.currency_rate).toString()))
-      );
-      const itm = newdata.purchase[0];
-      let paymentType = '',
-        amount = 0,
-        pay_id = 0;
-      if (newdata.selected_payment.length > 0) {
-        paymentType = newdata.selected_payment[0].payment_type;
-        amount = newdata.selected_payment[0].amount;
-        pay_id = newdata.selected_payment[0].id;
-      }
-      let _taxes = JSON.parse(itm.taxes);
-      setSelectedTaxes(_taxes);
-      // itm.currency_id
-      const pidex = newdata.currencies.findIndex((ps: any) => ps.value == itm.currency_id);
-
-      let crate = 0,
-        cCode = '';
-      if (pidex > -1) {
-        crate = newdata.currencies[pidex].exchange_rate;
-        cCode = newdata.currencies[pidex].code;
-      }
-
-      setFormObj({
-        ...formObj,
-        id: Number(id),
-        supplier_id: itm.contact_id,
-        currency_id: itm.currency_id,
-        currency_rate: crate,
-        currency_symbol: '',
-        currency_code: cCode,
-        total_price: itm.total_price,
-        ref_no: itm.invoice_no,
-        date: new Date(),
-        taxs: 0,
-        subTotal_price: 0,
-        total_tax: itm.total_taxes,
-        total_expense: _sumTotalExp,
-        discount_type: 'fixed',
-        discount_amount: 0,
-        purchaseStatus: itm.status,
-        paymentStatus: itm.payment_status,
-        paid_amount: Number(amount),
-        total_discount: 0,
-        paymentType: paymentType,
-        paymentDate: new Date(),
-        payment_id: pay_id,
-      });
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   async function insertPurchase() {
@@ -396,7 +393,7 @@ const AddPurchase: NextPage = (props: any) => {
   }
   var errors = [];
   useEffect(() => {
-    var _locs = JSON.parse(localStorage.getItem('userlocs') || '[]');
+    var _locs = JSON.parse(localStorage.getItem('locations') || '[]');
     if (_locs.toString().length > 10)
       setLocationSettings(
         _locs[
@@ -406,8 +403,7 @@ const AddPurchase: NextPage = (props: any) => {
         ]
       );
     else alert('errorr location settings');
-
-    initDataPage(editId);
+    initDataPage(router.query.slug)
   }, [router.asPath]);
 
   function getPriority(type: string, subTotal: number): number {
@@ -978,7 +974,7 @@ const AddPurchase: NextPage = (props: any) => {
                   <Select
                     styles={selectStyle}
                     options={currencies}
-                    value={currencies.filter((f: any) => {
+                    value={currencies?.filter((f: any) => {
                       return f.value == formObj.currency_id;
                     })}
                     onChange={(itm) => {
@@ -1293,48 +1289,4 @@ const AddPurchase: NextPage = (props: any) => {
     </>
   );
 };
-export default AddPurchase;
-export async function getServerSideProps(context: any) {
-  const parsedCookies = cookie.parse(context.req.headers.cookie || '[]');
-  var _isOk = true,
-    _hasPer = true;
-  //check page params
-  var shopId = context.query.id;
-  var _addOrEdit = context.query.slug[0];
-  var _EditId = context.query.slug[1];
-
-  if (shopId == undefined) _isOk = false;
-  if (_addOrEdit != 'add' && _addOrEdit != 'edit') _isOk = false;
-
-  if (!_isOk) return { redirect: { permanent: false, destination: '/page403' } };
-
-  //check user permissions
-  await verifayTokens(
-    { headers: { authorization: 'Bearer ' + parsedCookies.tokend } },
-    (repo: ITokenVerfy) => {
-      _isOk = repo.status;
-      if (_isOk) {
-        var _rules = keyValueRules(repo.data.rules || []);
-        if (
-          _rules[-2] != undefined &&
-          _rules[-2][0].stuff != undefined &&
-          _rules[-2][0].stuff == 'owner'
-        ) {
-          _hasPer = true;
-        } else if (_rules[shopId] != undefined) {
-          var _stuf = '';
-          _rules[shopId].forEach((dd: any) => (_stuf += dd.stuff));
-          _addOrEdit = getRealWord(_addOrEdit);
-          const { hasPermission } = hasPermissions(_stuf, 'products', _addOrEdit);
-          _hasPer = hasPermission;
-        } else _hasPer = false;
-      }
-    }
-  );
-  if (!_isOk) return { redirect: { permanent: false, destination: '/user/auth' } };
-  if (!_hasPer) return { redirect: { permanent: false, destination: '/page403' } };
-  return {
-    props: { shopId, editId: _addOrEdit == 'edit' ? _EditId : 0 },
-  };
-  //status ok
-}
+export default withAuth(AddPurchase);
