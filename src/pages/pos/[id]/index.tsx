@@ -7,11 +7,14 @@ import type { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { useRecoilState } from 'recoil';
+import 'remixicon/fonts/remixicon.css';
 import withAuth from 'src/HOCs/withAuth';
+import CartPanel from 'src/components/pos/_components/cart-panel/CartPanel';
 import { useUser } from 'src/context/UserContext';
 import { Toastify } from 'src/libs/allToasts';
 import { apiFetchCtr, apiInsertCtr } from 'src/libs/dbUtils';
 import PosLayout from 'src/modules/pos/_components/layout/pos.layout';
+import { useGetBusinessLocation } from 'src/services/business.service';
 import {
   useBrandsList,
   useCategoriesList,
@@ -19,22 +22,24 @@ import {
   useProductsList,
   useTaxesList,
 } from 'src/services/pos.service';
-import OrdersComponent from '../../../components/pos/CartComponent';
-import { ItemList } from '../../../components/pos/ItemList';
+import { ItemList } from '../../../components/pos/_components/item-list/ItemList';
 import NavMenu from '../../../components/pos/parts/NavMenu';
 import { useProducts } from '../../../context/ProductContext';
 import { cartJobType } from '../../../recoil/atoms';
 
-import 'remixicon/fonts/remixicon.css';
-
-const Home: NextPage = (props: any) => {
+const Home: NextPage = ({ shopId: _id }: any) => {
   const router = useRouter();
-  const [shopId, setShopId] = useState(props.shopId);
 
-  // const [isOpenRegister, setIsOpenRegister] = useState(false);
+  const [lang, setLang] = useState(en);
+  const [shopId, setShopId] = useState(_id);
+  const [cusLocs, setCusLocs] = useState([]);
+  const [cashHand, setCashHand] = useState(0);
+  const [locations, setLocations] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [isOpenRegister, setIsOpenRegister] = useState(true);
 
   const [jobType] = useRecoilState(cartJobType);
+
   const {
     setCats,
     setBrands,
@@ -49,23 +54,21 @@ const Home: NextPage = (props: any) => {
   const { setLocationSettings, setTailoringSizes, setInvoicDetails, setTailoringExtras } =
     useUser();
 
-  const [isLoading, setIsLoading] = useState(false);
-  const [cashHand, setCashHand] = useState(0);
-  const [lang, setLang] = useState(en);
-  const [cusLocs, setCusLocs] = useState([]);
-  const [locations, setLocations] = useState([]);
+  useGetBusinessLocation(shopId, {
+    onSuccess(data) {
+      setLocationSettings(data?.result ?? {});
+    },
+  });
 
   useCustomersList(shopId, {
     onSuccess(data, key, config) {
       console.log(data, 'in index');
-      const _customers = data?.result?.map((el: ICustomer) => {
-        return {
-          ...el,
-          value: el.id,
-          label: `${el.first_name} ${el.last_name} | ${el.mobile}`,
-          isNew: false,
-        };
-      });
+      const _customers = data?.result?.map((el: ICustomer) => ({
+        ...el,
+        value: el.id,
+        label: `${el.first_name} ${el.last_name} | ${el.mobile}`,
+        isNew: false,
+      }));
       setCustomers(_customers);
     },
   });
@@ -96,9 +99,9 @@ const Home: NextPage = (props: any) => {
     },
   });
 
-  /*************************************************************/
+  /** ********************************************************** */
   useEffect(() => {
-    var locs = JSON.parse(localStorage.getItem('cusLocs') ?? '[]');
+    const locs = JSON.parse(localStorage.getItem('cusLocs') ?? '[]');
     // console.log(locs);
 
     setCusLocs(locs);
@@ -127,15 +130,9 @@ const Home: NextPage = (props: any) => {
       setInvoicDetails(JSON.parse(data.invoiceDetails));
     else {
     }
-    var _locs = JSON.parse(localStorage.getItem('locations') || '[]');
+    const _locs = JSON.parse(localStorage.getItem('userlocs') || '[]');
     if (_locs.toString().length > 10)
-      setLocationSettings(
-        _locs[
-          _locs.findIndex((loc: any) => {
-            return loc?.value == shopId;
-          })
-        ] ?? {}
-      );
+      setLocationSettings(_locs[_locs.findIndex((loc: any) => loc?.value == shopId)] ?? {});
     else Toastify('error', 'errorr location settings');
 
     setIsLoading(false);
@@ -163,8 +160,8 @@ const Home: NextPage = (props: any) => {
   }
 
   const handleBussinesChange = (e: any) => {
-    let idx = cusLocs.findIndex((el) => el.bus_id == e.target?.value);
-    let locs = cusLocs[idx].locations;
+    const idx = cusLocs.findIndex((el) => el.bus_id == e.target?.value);
+    const locs = cusLocs[idx].locations;
     setLocations(locs);
     setShopId(locs?.[0]?.loc_id);
   };
@@ -180,7 +177,7 @@ const Home: NextPage = (props: any) => {
           <div>
             <div className="snippet" data-title="dot-flashing">
               <div className="stage">
-                <div className="dot-flashing"></div>
+                <div className="dot-flashing" />
               </div>
             </div>
           </div>
@@ -192,8 +189,10 @@ const Home: NextPage = (props: any) => {
     return (
       <PosLayout>
         <NavMenu shopId={shopId} lang={lang} setLang={setLang} />
-        <OrdersComponent shopId={shopId} lang={lang.pos} direction={lang == ar ? 'rtl' : ''} />
-        <ItemList lang={lang.pos.itemList} />
+
+        <CartPanel shopId={shopId} lang={lang.pos} direction={lang == ar ? 'rtl' : ''} />
+        {/* <OrdersComponent shopId={shopId} lang={lang.pos} direction={lang == ar ? 'rtl' : ''} /> */}
+        <ItemList shopId={shopId} lang={lang.pos.itemList} />
       </PosLayout>
     );
 

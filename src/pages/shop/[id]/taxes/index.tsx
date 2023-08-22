@@ -59,14 +59,14 @@ const Taxes: NextPage = (props: any) => {
     { label: 'Fixed', value: 'fixed' },
   ];
 
-  const [taxesList, setTaxesList] = useState()
-  const [permissions, setPermissions] = useState<any>()
+  const [taxesList, setTaxesList] = useState();
+  const [permissions, setPermissions] = useState<any>();
 
   async function initDataPage() {
-    if(router.query.id && permissions){
-      const res = await findAllData(`taxes/${router.query.id}`)
-      const newData = res.data.result.taxes
-      setTaxesList(res.data.result.taxes.filter(t => t.tax_type !== 'group'))
+    if (router.query.id && permissions) {
+      const res = await findAllData(`taxes/${router.query.id}`);
+      const newData = res.data.result.taxes;
+      setTaxesList(res.data.result.taxes.filter((t) => t.tax_type !== 'group'));
       if (res.data.success) {
         if (permissions.hasInsert) {
           newData.push({
@@ -119,7 +119,7 @@ const Taxes: NextPage = (props: any) => {
           })
         );
         setIsLoading(false);
-    }
+      }
     }
   }
   async function addUpdateTaxs(rows: ITax[]) {
@@ -196,8 +196,8 @@ const Taxes: NextPage = (props: any) => {
     setTaxs(_taxs);
   };
   const handleDelete = async (i: number, type: string) => {
-    const res =  await deleteData('taxes', i)
-    initDataPage()
+    const res = await deleteData('taxes', i);
+    initDataPage();
   };
   const handleChangeExcAndService = (e: any, i: number, isExc: boolean) => {
     const _taxes = isExc ? [...taxsExcise] : [...taxsService];
@@ -205,7 +205,7 @@ const Taxes: NextPage = (props: any) => {
       ? (_taxes[i].name = e.target.value)
       : e.target.name == 'tax-value'
       ? (_taxes[i].amount = e.target.value)
-      : (_taxes[i].Etype = e.target.value);
+      : (_taxes[i].type = e.target.value);
     var hasEmpty = false;
     for (var j = 0; j < _taxes.length; j++) if (_taxes[j].name.length == 0) hasEmpty = true;
     if (!hasEmpty)
@@ -268,32 +268,38 @@ const Taxes: NextPage = (props: any) => {
   };
 
   const handleSave = async (item: any) => {
-    const tax = {...item}
-    delete tax.id
-    tax.type = 'percentage'
+    const tax = { ...item };
+    delete tax.id;
+    tax.type = 'percentage';
     let res;
-    
-    if(item.id === 0) {
-      res = await createNewData(`taxes/${router.query.id}`, tax)
+
+    if (item.id === 0) {
+      res = await createNewData(`taxes/${router.query.id}`, tax);
     } else {
-      res = await updateData('taxes', item.id, tax)
+      res = await updateData('taxes', item.id, tax);
     }
-    if(res.data.success) Toastify('success', 'successfuly Done!');
-    else Toastify('error', 'Error On Add New')
-  }
+    if (res.data.success) Toastify('success', 'successfuly Done!');
+    else Toastify('error', 'Error On Add New');
+  };
 
   useEffect(() => {
     const perms = JSON.parse(localStorage.getItem('permissions'));
-    const getPermissions = {hasView: false, hasInsert: false, hasEdit: false, hasDelete: false}
-    perms.tax.map((perm) => 
-      perm.name.includes('GET') ? getPermissions.hasView = true
-      : perm.name.includes('POST') ? getPermissions.hasInsert = true
-      : perm.name.includes('PUT') ? getPermissions.hasEdit = true
-      : perm.name.includes('DELETE') ? getPermissions.hasDelete = true : null)
-    
-    setPermissions(getPermissions)
-    initDataPage()
-  }, [router.asPath])
+    const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
+    perms.tax.map((perm) =>
+      perm.name.includes('GET')
+        ? (getPermissions.hasView = true)
+        : perm.name.includes('POST')
+        ? (getPermissions.hasInsert = true)
+        : perm.name.includes('PUT')
+        ? (getPermissions.hasEdit = true)
+        : perm.name.includes('DELETE')
+        ? (getPermissions.hasDelete = true)
+        : null
+    );
+
+    setPermissions(getPermissions);
+    initDataPage();
+  }, [router.asPath]);
   return (
     <>
       <AdminLayout shopId={shopId}>
@@ -557,7 +563,7 @@ const Taxes: NextPage = (props: any) => {
                               styles={selectStyle}
                               options={taxValueType}
                               value={taxValueType.filter((it: any) => {
-                                return it.value == ex.Etype;
+                                return it.value == ex.type;
                               })}
                               onChange={(itm) => {
                                 handleChangeExcAndService(

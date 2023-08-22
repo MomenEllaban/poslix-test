@@ -12,7 +12,7 @@ import { MenuOrderComponent } from 'src/components/pos/MenuCartComponent';
 import { UserContext } from 'src/context/UserContext';
 import { Toastify } from 'src/libs/allToasts';
 import { apiFetchCtr, apiInsertCtr } from 'src/libs/dbUtils';
-import { ItemList } from '../../../components/pos/ItemList';
+import { ItemList } from '../../../components/pos/_components/item-list/ItemList';
 import { ProductContext } from '../../../context/ProductContext';
 import { cartJobType } from '../../../recoil/atoms';
 import {

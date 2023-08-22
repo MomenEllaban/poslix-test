@@ -60,7 +60,7 @@ const Expenses: NextPage = (props: any) => {
       headerName: 'amount',
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) =>
-        Number(row.amount).toFixed(locationSettings?.currency_decimal_places),
+        Number(row.amount).toFixed(locationSettings?.location_decimal_places),
     },
     {
       field: 'date',
@@ -104,7 +104,7 @@ const Expenses: NextPage = (props: any) => {
                 onClick={() => {
                   setSelectId(row.id);
                   setShow(true);
-                  setType('expenses')
+                  setType('expenses');
                 }}>
                 <FontAwesomeIcon icon={faTrash} />
               </Button>
@@ -115,16 +115,16 @@ const Expenses: NextPage = (props: any) => {
     },
   ];
   async function initDataPage() {
-    if(router.query.id){
+    if (router.query.id) {
       setIsLoading(true);
-      const res = await findAllData(`expenses/${router.query.id}`)
+      const res = await findAllData(`expenses/${router.query.id}`);
       if (res.data.success) {
         catPermissions.hasInsert && res.data.result.cate.push({ id: 0, name: '', isNew: true });
         setExpensesList(res.data.result);
       }
-      const catRes = await findAllData(`expenses-categories/${router.query.id}`)
-      if(catRes.data.success) {
-        setCategories(catRes.data.result)
+      const catRes = await findAllData(`expenses-categories/${router.query.id}`);
+      if (catRes.data.success) {
+        setCategories(catRes.data.result);
       }
       setIsLoading(false);
     }
@@ -177,34 +177,49 @@ const Expenses: NextPage = (props: any) => {
   };
 
   const getCategories = async () => {
-    if(router.query.id) {
-      
+    if (router.query.id) {
     }
-  }
+  };
 
-  const [permissions, setPermissions] = useState<any>()
-  const [catPermissions, setCatPermissions] = useState<any>()
+  const [permissions, setPermissions] = useState<any>();
+  const [catPermissions, setCatPermissions] = useState<any>();
   useEffect(() => {
     const perms = JSON.parse(localStorage.getItem('permissions'));
-    const getPermissions = {hasView: false, hasInsert: false, hasEdit: false, hasDelete: false}
-    const getCatPermissions = {hasCategories: false, hasView: false, hasInsert: false, hasEdit: false, hasDelete: false}
-    perms.expense.map((perm) => 
-      perm.name.includes('categories GET') ? getCatPermissions.hasCategories = true
-      : perm.name.includes('category GET') ? getCatPermissions.hasView = true
-      : perm.name.includes('category PUT') ? getCatPermissions.hasEdit = true
-      : perm.name.includes('category POST') ? getCatPermissions.hasInsert = true
-      : perm.name.includes('category DELETE') ? getCatPermissions.hasDelete = true
-      : perm.name.includes('expense POST') ? getPermissions.hasInsert = true
-      : perm.name.includes('expense PUT') ? getPermissions.hasEdit = true
-      : perm.name.includes('expense DELETE') ? getPermissions.hasDelete = true : null)
-    
-    setPermissions(getPermissions)
-    setCatPermissions(getCatPermissions)
-  }, [])
+    const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
+    const getCatPermissions = {
+      hasCategories: false,
+      hasView: false,
+      hasInsert: false,
+      hasEdit: false,
+      hasDelete: false,
+    };
+    perms.expense.map((perm) =>
+      perm.name.includes('categories GET')
+        ? (getCatPermissions.hasCategories = true)
+        : perm.name.includes('category GET')
+        ? (getCatPermissions.hasView = true)
+        : perm.name.includes('category PUT')
+        ? (getCatPermissions.hasEdit = true)
+        : perm.name.includes('category POST')
+        ? (getCatPermissions.hasInsert = true)
+        : perm.name.includes('category DELETE')
+        ? (getCatPermissions.hasDelete = true)
+        : perm.name.includes('expense POST')
+        ? (getPermissions.hasInsert = true)
+        : perm.name.includes('expense PUT')
+        ? (getPermissions.hasEdit = true)
+        : perm.name.includes('expense DELETE')
+        ? (getPermissions.hasDelete = true)
+        : null
+    );
+
+    setPermissions(getPermissions);
+    setCatPermissions(getCatPermissions);
+  }, []);
 
   useEffect(() => {
     initDataPage();
-    getCategories()
+    getCategories();
   }, [router.asPath]);
 
   const handleDeleteFuc = (result: boolean, msg: string, section: string) => {
@@ -216,11 +231,7 @@ const Expenses: NextPage = (props: any) => {
     <>
       <AdminLayout shopId={shopId}>
         <ToastContainer />
-        <AlertDialog
-          alertShow={show}
-          alertFun={handleDeleteFuc}
-          id={selectId}
-          url={type}>
+        <AlertDialog alertShow={show} alertFun={handleDeleteFuc} id={selectId} url={type}>
           Are you Sure You Want Delete This Item ?
         </AlertDialog>
         <div className="row">
@@ -323,7 +334,7 @@ const Expenses: NextPage = (props: any) => {
                                       onClick={() => {
                                         setSelectId(ex.id);
                                         setShow(true);
-                                        setType('expenses-categories')
+                                        setType('expenses-categories');
                                       }}>
                                       <FontAwesomeIcon icon={faTrash} />
                                     </Button>

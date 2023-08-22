@@ -18,7 +18,7 @@ function AddGroupModal(props: any) {
   const [taxData, setTaxData] = useState('');
   const [isDefault, setIsDefault] = useState(false);
   const { locationSettings } = useContext(UserContext);
-  const router = useRouter()
+  const router = useRouter();
 
   useEffect(() => {
     if (alertShow) {
@@ -45,29 +45,29 @@ function AddGroupModal(props: any) {
   }, [alertShow]);
 
   async function initForEdit(id: number) {
-    const res = await findAllData(`taxes/${id}/show`)
+    const res = await findAllData(`taxes/${id}/show`);
     if (res.data.success) {
-      setTaxData(res.data.result.tax)
-        let _total = 0;
-        const _taxs = [
-          ...taxes,
-          { isSplit: true, name: 'Excise Taxes List' },
-          ...excise,
-          { isSplit: true, name: 'Service Charge Taxes List' },
-          ...services,
-        ];
-        
-        _taxs.forEach((item1: any) => {
-          console.log(item1);
-          if (res.data.result.tax.tax_group.some((item2: any) => item2.id === item1.id)) {
-            item1.isChoosed = true;
-            _total += Number(item1.amount);
-          } else item1.isChoosed = false;
-        });
-        setAllItems(_taxs);
-        setTotalTax(_total);
-        setGname(res.data.result.tax.name)
-        setIsDefault(res.data.result.tax.is_primary)
+      setTaxData(res.data.result.tax);
+      let _total = 0;
+      const _taxs = [
+        ...taxes,
+        { isSplit: true, name: 'Excise Taxes List' },
+        ...excise,
+        { isSplit: true, name: 'Service Charge Taxes List' },
+        ...services,
+      ];
+
+      _taxs.forEach((item1: any) => {
+        console.log(item1);
+        if (res.data.result.tax.tax_group.some((item2: any) => item2.id === item1.id)) {
+          item1.isChoosed = true;
+          _total += Number(item1.amount);
+        } else item1.isChoosed = false;
+      });
+      setAllItems(_taxs);
+      setTotalTax(_total);
+      setGname(res.data.result.tax.name);
+      setIsDefault(res.data.result.tax.is_primary);
       setIsLoading(false);
     }
   }
@@ -97,13 +97,27 @@ function AddGroupModal(props: any) {
       return;
     }
     setIsLoading(true);
-    const tax_ids = []
-    allItems.filter(tax => tax.id > 0 && tax['isChoosed']).map(tax => tax_ids.push(tax.id))
+    const tax_ids = [];
+    allItems.filter((tax) => tax.id > 0 && tax['isChoosed']).map((tax) => tax_ids.push(tax.id));
     let res;
-    if(id) {
-      res = await updateData('taxes', id, {name: gname, amount: 0, is_primary: isDefault, type: 'percentage', tax_type: 'group', tax_ids})
+    if (id) {
+      res = await updateData('taxes', id, {
+        name: gname,
+        amount: 0,
+        is_primary: isDefault,
+        type: 'percentage',
+        tax_type: 'group',
+        tax_ids,
+      });
     } else {
-      res = await createNewData(`taxes/${router.query.id}`, {name: gname, amount: 0, is_primary: isDefault, type: 'percentage', tax_type: 'group', tax_ids})
+      res = await createNewData(`taxes/${router.query.id}`, {
+        name: gname,
+        amount: 0,
+        is_primary: isDefault,
+        type: 'percentage',
+        tax_type: 'group',
+        tax_ids,
+      });
     }
     if (!res.data.success) {
       Toastify('error', 'Has Error ,try Again');
@@ -175,7 +189,7 @@ function AddGroupModal(props: any) {
                               </td>
                               <td>
                                 {ex.amount}
-                                {ex.Etype == 'percentage' ? '%' : locationSettings?.currency_code}
+                                {ex.type == 'percentage' ? '%' : locationSettings?.currency_code}
                               </td>
                               <td>
                                 <Form.Check

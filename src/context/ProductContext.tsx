@@ -1,8 +1,7 @@
-import { createContext, useContext } from 'react';
-import { IreadyGroupTax } from '../models/common-model';
 import { ITax } from '@models/pos.types';
+import { createContext, useContext } from 'react';
 export const ProductContext = createContext({
-  products: { products: [], products_multi: [] },
+  products: [],
   setProducts: (products: any) => {},
   cats: [],
   setCats: (cats: any) => {},

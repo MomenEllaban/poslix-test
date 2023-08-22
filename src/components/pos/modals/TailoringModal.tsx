@@ -139,7 +139,7 @@ const TailoringModal = (props: any) => {
       const _fabric_ids = selectedProduct.product.fabric_ids
         .split(',')
         .map((str: any) => parseInt(str));
-      const filtered_products = products.products.filter((product: any) =>
+      const filtered_products = products.filter((product: any) =>
         _fabric_ids.includes(product.product_id)
       );
       if (filtered_products.length == 0) {
@@ -162,7 +162,7 @@ const TailoringModal = (props: any) => {
         const _extra_ids = selectedProduct.product.product_ids
           .split(',')
           .map((str: any) => parseInt(str));
-        const _extra_filters = products.products.filter((product: any) =>
+        const _extra_filters = products.filter((product: any) =>
           _extra_ids.includes(product.product_id)
         );
         if (_extra_filters.length == 0) {

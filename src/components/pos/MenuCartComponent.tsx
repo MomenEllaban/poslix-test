@@ -18,7 +18,7 @@ import {
   IreadyGroupTax,
 } from '../../models/common-model';
 import { cartJobType, clearOrders, productDetails } from '../../recoil/atoms';
-import Customermodal from './modals/Customermodal';
+import Customermodal from './modals/CustomerModal';
 import TailoringModal from './modals/TailoringModal';
 import VariationModal from './modals/VariationModal';
 import { MenuOrdersFooter } from './utils/MenuOrdersFooter';
@@ -191,7 +191,7 @@ export const MenuOrderComponent = (props: any) => {
             <td>{rs.qty}</td>
             <td>{_it.name}</td>
             <th></th>
-            <td>{Number(rs.price).toFixed(locationSettings?.currency_decimal_places)}</td>
+            <td>{Number(rs.price).toFixed(locationSettings?.location_decimal_places)}</td>
           </tr>
         );
       });
@@ -268,7 +268,7 @@ export const MenuOrderComponent = (props: any) => {
                 </td>
                 <td></td>
                 <td>
-                  {(totalAmount - subTotal).toFixed(locationSettings?.currency_decimal_places)}
+                  {(totalAmount - subTotal).toFixed(locationSettings?.location_decimal_places)}
                 </td>
               </tr>
               <tr className="net-amount">
@@ -278,7 +278,7 @@ export const MenuOrderComponent = (props: any) => {
                 </td>
                 <td></td>
                 <td className="txt-bold">
-                  {Number(totalAmount).toFixed(locationSettings?.currency_decimal_places)}
+                  {Number(totalAmount).toFixed(locationSettings?.location_decimal_places)}
                 </td>
               </tr>
             </thead>
@@ -310,7 +310,7 @@ export const MenuOrderComponent = (props: any) => {
           .map((tm: any) => {
             return tm.product_id;
           });
-        var packageProducts: IproductInfo[] = products.products.filter((pro: IproductInfo) =>
+        var packageProducts: IproductInfo[] = products.filter((pro: IproductInfo) =>
           ids.includes(pro.product_id)
         );
         packageProducts.map((pp) => {
@@ -327,8 +327,8 @@ export const MenuOrderComponent = (props: any) => {
   }
   function addToCard(fromHold: boolean, index1: number, index2: number) {
     if (index1 != -1) {
-      let _product_id = products.products[index1].product_id;
-      let _total_qty = products.products[index1].total_qty;
+      let _product_id = products[index1].product_id;
+      let _total_qty = products[index1].total_qty;
       //search into Orders and add to card
       let tmpOrders: IproductInfo[] = [...orders];
       let idx: number = 0;
@@ -353,7 +353,7 @@ export const MenuOrderComponent = (props: any) => {
         return;
       }
       if (idx == -1 || fromHold) {
-        let itm: any = products.products_multi[index1][index2];
+        let itm: any = products[index1][index2];
 
         ordersPush.push(itm);
         setOrders([...tmpOrders, itm]);
@@ -471,7 +471,7 @@ export const MenuOrderComponent = (props: any) => {
     for (let i = 0; i < _orders.length; i++) {
       index1 = -1;
       index2 = -1;
-      products.products_multi.map((topPro: IproductInfo[], index: number) => {
+      products.map((topPro: IproductInfo[], index: number) => {
         if (index2 == -1) {
           index1 = index;
           index2 = topPro.findIndex((itm: IproductInfo) => {
@@ -480,10 +480,10 @@ export const MenuOrderComponent = (props: any) => {
         }
       });
       if (index1 != -1) {
-        let _itm: any = products.products[index1];
+        let _itm: any = products[index1];
         //when is tailoring
         if (_itm.is_tailoring > 0 || _itm.type == 'tailoring_package') {
-          ordersPush.push(products.products_multi[index1][index2]);
+          ordersPush.push(products[index1][index2]);
           quantityPush.push({
             freezeQuantity: 0,
             quantity: 1,
@@ -535,7 +535,7 @@ export const MenuOrderComponent = (props: any) => {
       //for tailoring modal
       var index1 = -1,
         index2 = -1;
-      products.products_multi.map((topPro: IproductInfo[], index: number) => {
+      products.map((topPro: IproductInfo[], index: number) => {
         if (index2 == -1) {
           index1 = index;
           index2 = topPro.findIndex((itm: IproductInfo) => {
@@ -552,7 +552,7 @@ export const MenuOrderComponent = (props: any) => {
           f_index2 = -1,
           f_id = jobType.custom?.fabric_id;
         f_length = jobType.custom?.fabric_length!;
-        products.products_multi.forEach((topPro: IproductInfo[], index: number) => {
+        products.forEach((topPro: IproductInfo[], index: number) => {
           if (f_index2 == -1) {
             f_index1 = index;
             f_index2 = topPro.findIndex((itm: IproductInfo) => {
@@ -561,7 +561,7 @@ export const MenuOrderComponent = (props: any) => {
           }
         });
         if (f_index1 == -1) return;
-        let _theFab: IproductInfo = products.products[f_index1];
+        let _theFab: IproductInfo = products[f_index1];
         if (!_theFab.sell_over_stock && (_theFab.total_qty == 0 || f_length > _theFab.total_qty)) {
           Toastify('error', 'The Selected Fabric Is Out Of Stock');
           return;
@@ -661,13 +661,14 @@ export const MenuOrderComponent = (props: any) => {
       _excises = 0,
       _servies_percetage = 0,
       _servies_fixed = 0;
-    taxes.map((tx: ITax) => {
-      if (tx.Etax_type == 'primary' && tx.is_primary) _primary += tx.amount;
-      else if (tx.Etax_type == 'primary') _none += tx.amount;
-      else if (tx.Etax_type == 'excise') _excises += tx.amount;
-      else if (tx.Etax_type == 'service' && tx.Etype == 'percentage')
-        _servies_percetage += tx.amount;
-      else if (tx.Etax_type == 'service' && tx.Etype == 'fixed') _servies_fixed += tx.amount;
+
+    // @ts-ignore
+    taxes.forEach((tx: ITax, _idx: number) => {
+      if (tx.tax_type == 'primary' && tx.is_primary) _primary += tx.amount;
+      else if (tx.tax_type == 'primary') _none += tx.amount;
+      else if (tx.tax_type == 'excise') _excises += tx.amount;
+      else if (tx.tax_type == 'service' && tx.type == 'percentage') _servies_percetage += tx.amount;
+      else if (tx.tax_type == 'service' && tx.type == 'fixed') _servies_fixed += tx.amount;
     });
     setDefTaxGroup({
       primary: _primary / 100,
@@ -690,7 +691,7 @@ export const MenuOrderComponent = (props: any) => {
       .map((itm: any) => {
         return itm.product_id;
       });
-    var packageProducts: IproductInfo[] = products.products.filter((pro: IproductInfo) =>
+    var packageProducts: IproductInfo[] = products.filter((pro: IproductInfo) =>
       ids.includes(pro.product_id)
     );
     let hasStock = true;
@@ -700,7 +701,7 @@ export const MenuOrderComponent = (props: any) => {
       if (hasStock && !pp.is_service && !pp.sell_over_stock) {
         orders.map((or, index: number) => {
           if (or.product_id == pp.product_id) {
-            var _item: any = products.products[quantity[index].productIndex];
+            var _item: any = products[quantity[index].productIndex];
             if (quantity[index].quantity + orderQty > _item.total_qty) hasStock = false;
             else {
               console.log('hast ', quantity[index]);
@@ -767,7 +768,7 @@ export const MenuOrderComponent = (props: any) => {
     //get all pricess of selected product
     var index1 = -1,
       index2 = -1;
-    products.products_multi.map((topPro: IproductInfo[], index: number) => {
+    products.map((topPro: IproductInfo[], index: number) => {
       if (index2 == -1) {
         index1 = index;
         index2 = topPro.findIndex((itm: IproductInfo) => {
@@ -779,7 +780,7 @@ export const MenuOrderComponent = (props: any) => {
     if (product.type == 'tailoring_package') {
       //tailoring_package
       setSelectedProductForVariation({
-        product: products.products_multi[index1][index2],
+        product: products[index1][index2],
         product_id: product.product_id,
         product_name: product.name,
         is_service: product.is_service,
@@ -790,7 +791,7 @@ export const MenuOrderComponent = (props: any) => {
       setIsOpenTailoringDialog(true);
       return;
     }
-    console.log('foundt ', products.products_multi[index1][index2]);
+    console.log('foundt ', products[index1][index2]);
     addToCard(false, index1, index2);
   }, [product]);
   //calculate tax..
@@ -888,7 +889,7 @@ export const MenuOrderComponent = (props: any) => {
       const _pro: any =
         _orders[index].variation_id! > 0
           ? variations.variations[_quantity[index].productIndex]
-          : products.products[_quantity[index].productIndex];
+          : products[_quantity[index].productIndex];
       console.log('_pro', _pro);
 
       //get packages only for quantity check
@@ -931,10 +932,7 @@ export const MenuOrderComponent = (props: any) => {
           thePrices = JSON.parse(
             JSON.stringify(variations.variations_multi[_quantity[index].productIndex])
           );
-        else
-          thePrices = JSON.parse(
-            JSON.stringify(products.products_multi[_quantity[index].productIndex])
-          );
+        else thePrices = JSON.parse(JSON.stringify(products[_quantity[index].productIndex]));
 
         let qtyToAllocate = qt;
         console.log('start for ', qtyToAllocate);
@@ -1045,7 +1043,7 @@ export const MenuOrderComponent = (props: any) => {
     if (quantity[idx].productIndex == -1) {
       var index1 = -1,
         index2 = -1;
-      products.products_multi.map((topPro: IproductInfo[], index: number) => {
+      products.map((topPro: IproductInfo[], index: number) => {
         if (index2 == -1) {
           index1 = index;
           index2 = topPro.findIndex((itm: IproductInfo) => {
@@ -1060,7 +1058,7 @@ export const MenuOrderComponent = (props: any) => {
       quantity[idx].productIndex = index1;
       quantity[idx].itemIndex = index2;
     }
-    let _item: any = products.products_multi[quantity[idx].productIndex][quantity[idx].itemIndex];
+    let _item: any = products[quantity[idx].productIndex][quantity[idx].itemIndex];
     setSelectedProductForVariation({
       tailoringCustom: {
         fabric_id: quantity[idx].tailoringCutsom?.fabric_id,
@@ -1116,7 +1114,7 @@ export const MenuOrderComponent = (props: any) => {
       setSearchProduct(e);
       e = _id;
       if (e.length > 0) {
-        const mfil: any = products.products.filter(
+        const mfil: any = products.filter(
           (p: any) => p.name.toLowerCase().includes(e) || p.sku.toLowerCase().includes(e)
         );
         if (mfil.length == 1) {
@@ -1307,7 +1305,7 @@ export const MenuOrderComponent = (props: any) => {
                       <td className="text-end">
                         <span>
                           {Number(quantity[i].lineTotalPrice).toFixed(
-                            locationSettings?.currency_decimal_places
+                            locationSettings?.location_decimal_places
                           )}
                         </span>
                       </td>
@@ -1319,10 +1317,10 @@ export const MenuOrderComponent = (props: any) => {
           {/*end table*/}
         </div>
         <OrderCalcs
+        shopId={shopId}
           orderEditDetails={orderEditDetails}
           taxRate={taxRate}
           subTotal={subTotal}
-          totalAmount={totalAmount}
           shippingRate={shippingRate}
         />
 

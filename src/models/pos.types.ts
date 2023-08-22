@@ -31,7 +31,7 @@ export interface IProduct {
   name: string;
   business_id?: number;
   location_id: number;
-  Etype: string;
+  type: 'single' | 'variable';
   is_tailoring: number;
   is_service: 0 | 1 | boolean;
   is_fabric: 0 | 1 | boolean;
@@ -44,27 +44,44 @@ export interface IProduct {
   never_tax: 1 | 0 | boolean;
   alert_quantity: string;
   sku: string;
-  Ebarcode_type: string;
+  barcode_type: string;
   image: string;
-  product_description?: any;
+  product_description?: string;
   created_by: number;
   is_disabled: number;
   sell_price: string | number;
   cost_price: string | number;
   sell_over_stock: string;
   qty_over_sold: string;
-  created_at?: any;
-  updated_at?: any;
+  created_at?: string;
+  updated_at?: string;
   is_selling_multi_price: number;
   is_fifo: number;
   status: string;
   stock: number;
-  variations?: any[];
+  variations?: IVariation[];
   packages: IPackage[];
   stocks: IStock[];
   category: ICategory;
 }
-
+export interface IVariation {
+  id: number;
+  location_id: number;
+  parent_id: number;
+  name: string;
+  name2: string;
+  sku: string;
+  cost: string;
+  price: string;
+  sell_over_stock: number;
+  is_selling_multi_price: number;
+  is_service: 0 | 1 | boolean;
+  is_active: number;
+  created_by: number;
+  created_at?: string;
+  stock: number;
+  stocks: IStock[];
+}
 export interface IPackage {
   id: number;
   location_id: number;

@@ -34,7 +34,7 @@ export async function getServerSideProps(context: any) {
         .then((res) => res.data);
       const location = locationResponse.result[0];
 
-      if (!location || !location.location_id)
+      if (!location || !location?.location_id)
         return {
           props: {},
           redirect: {
@@ -59,6 +59,14 @@ export async function getServerSideProps(context: any) {
         },
       };
     }
+  } else if (session.user.user_type === 'owner' && !context?.query?.shopId) {
+    return {
+      props: {},
+      redirect: {
+        permanent: false,
+        destination: '/page403',
+      },
+    };
   }
 
   return {

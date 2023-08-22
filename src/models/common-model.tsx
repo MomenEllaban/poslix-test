@@ -93,7 +93,7 @@ export interface ITax {
   for_tax_inclusive: number;
   for_tax_exclusive: number;
   is_inc_or_exc: string;
-  Etype: 'percentage' | 'fixed';
+  type: 'percentage' | 'fixed';
   is_primary: boolean | 0 | 1;
   tax_type: string;
   tax_group: ITaxGroup[];
@@ -150,8 +150,9 @@ export type Discount = {
 };
 
 export interface IOrdersCalcs {
+  shopId: number;
   taxRate: number;
-  totalAmount: number;
+
   shippingRate: number;
   subTotal: number;
   orderEditDetails: IOrderMiniDetails;
@@ -266,12 +267,12 @@ export type IsaleProductItem = {
   def_tax: boolean;
 };
 export interface ILocationSettings {
-  value: number;
-  label: string;
+  location_id: number;
+  location_name: string;
+  location_decimal_places: number;
   currency_id: number;
+  currency_name: string;
   currency_code: string;
-  currency_decimal_places: number;
-  currency_rate: number;
   currency_symbol: string;
 }
 export interface IPurchaseExpndes {
@@ -354,6 +355,7 @@ export interface ITailoringExtraItems {
   name: string;
 }
 export interface IHold {
+  id: string | number;
   name: string;
   data: string;
   length: number;

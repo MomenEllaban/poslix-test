@@ -3,18 +3,25 @@ import { useEffect, useState } from 'react';
 import Select from 'react-select';
 import { useProducts } from 'src/context/ProductContext';
 import { Toastify } from 'src/libs/allToasts';
-import Customermodal from '../modals/Customermodal';
+import CustomerModal from '../modals/CustomerModal';
+
+const selectStyle = {
+  control: (style: any) => ({
+    ...style,
+    fontSize: '12px',
+    border: '1px solid #efefef',
+    borderRadius: '12px',
+  }),
+};
 
 export default function CustomerDataSelect({
   shopId,
-  selectStyle,
   isOrderEdit,
   setCustomer,
   orderEditDetails,
   customer,
 }: {
   shopId: number;
-  selectStyle: { control: (style: any) => any };
   isOrderEdit: number;
   setCustomer: React.Dispatch<
     React.SetStateAction<{ value: string; label: string; isNew: boolean }>
@@ -38,6 +45,7 @@ export default function CustomerDataSelect({
       <div className="d-flex">
         <div className="flex-grow-1">
           <Select
+            isLoading={customers.length === 0}
             styles={selectStyle}
             isDisabled={isOrderEdit > 0}
             options={customers}
@@ -60,8 +68,7 @@ export default function CustomerDataSelect({
           }}
           type="button"
           onClick={() => {
-            if (customer.value === '1') return;
-            if (customer) {
+            if (customer && customer.value !== '1') {
               setShowType('edit');
               setCustomerIsModal(true);
             } else Toastify('error', 'Choose Customer First!');
@@ -83,7 +90,7 @@ export default function CustomerDataSelect({
           <i className="ri-add-circle-line" />
         </button>
       </div>
-      <Customermodal
+      <CustomerModal
         shopId={shopId}
         showType={showType}
         userdata={customer}

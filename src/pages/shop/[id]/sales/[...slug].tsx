@@ -123,12 +123,12 @@ const AddSale: NextPage = (props: any) => {
         _servies_percetage = 0,
         _servies_fixed = 0;
       newdata.taxes.map((tx: ITax) => {
-        if (tx.Etax_type == 'primary' && tx.is_primary) _primary += tx.amount;
-        else if (tx.Etax_type == 'primary') _none += tx.amount;
-        else if (tx.Etax_type == 'excise') _excises += tx.amount;
-        else if (tx.Etax_type == 'service' && tx.Etype == 'percentage')
+        if (tx.tax_type == 'primary' && tx.is_primary) _primary += tx.amount;
+        else if (tx.tax_type == 'primary') _none += tx.amount;
+        else if (tx.tax_type == 'excise') _excises += tx.amount;
+        else if (tx.tax_type == 'service' && tx.type == 'percentage')
           _servies_percetage += tx.amount;
-        else if (tx.Etax_type == 'service' && tx.Etype == 'fixed') _servies_fixed += tx.amount;
+        else if (tx.tax_type == 'service' && tx.type == 'fixed') _servies_fixed += tx.amount;
       });
       setDefTaxGroup({
         primary: _primary / 100,

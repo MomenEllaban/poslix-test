@@ -20,6 +20,7 @@ interface BusinessError {
 
 // Initial state for location settings
 const initialLocationState: ILocationSettings = {
+  // @ts-ignore
   value: 0,
   label: '',
   currency_decimal_places: 0,

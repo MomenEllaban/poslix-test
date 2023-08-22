@@ -224,7 +224,7 @@ const Product: NextPage = (props: any) => {
 
   async function initDataPage(url) {
     if (url?.length == 2) setIsEdit(true);
-    
+
     if (url?.length == 2) {
       console.log('edit');
       const res = await findAllData(`products/${router.query.slug[1]}/show`);
@@ -233,7 +233,7 @@ const Product: NextPage = (props: any) => {
       // setSelectedFabrics(newdata.selectedFabrics);
       const itm = res.data.result.product;
       setPreviewUrl(itm.image);
-      
+
       setFormObj({
         ...formObj,
         id: itm.id,
@@ -245,11 +245,11 @@ const Product: NextPage = (props: any) => {
         unit_id: itm.unit_id,
         brand: itm.brand_id,
         sku: itm.sku,
-        sell_over_stock : itm.sell_over_stock == 1,
+        sell_over_stock: itm.sell_over_stock == 1,
         barcode_type: itm.barcode_type,
         category_id: itm.category_id,
-        cost_price: Number(itm.cost_price).toFixed(locationSettings?.currency_decimal_places),
-        sell_price: Number(itm.sell_price).toFixed(locationSettings?.currency_decimal_places),
+        cost_price: Number(itm.cost_price).toFixed(locationSettings?.location_decimal_places),
+        sell_price: Number(itm.sell_price).toFixed(locationSettings?.location_decimal_places),
         alertQuantity: Number(itm.alert_quantity),
         tax_id: itm.never_tax == 1 ? -1 : itm.tax,
         is_service: itm.is_service == 1,
@@ -264,11 +264,10 @@ const Product: NextPage = (props: any) => {
         isTailoring:
           itm.type == 'tailoring_package' ? itm.tailoring_type_id : itm.is_tailoring == 1,
         tailoringPrices:
-        itm.prices_json != undefined && (itm.prices_json + '').length > 8
+          itm.prices_json != undefined && (itm.prices_json + '').length > 8
             ? [...JSON.parse(itm.prices_json), { name: '', from: 0, to: 0, price: 0 }]
             : [{ name: '', from: 0, to: 0, price: 0 }],
       });
-    
     } else {
       console.log('add');
       // setProducts(newdata.products);
@@ -283,12 +282,10 @@ const Product: NextPage = (props: any) => {
       //   ...newdata.taxes,
       // ]);
     }
-    
+
     // if (iType != 'Kianvqyqndr')
     //   setProducTypes(producTypes.filter((p) => p.value != 'tailoring_package'));
 
-    
-    
     setLoading(false);
   }
 
@@ -330,9 +327,9 @@ const Product: NextPage = (props: any) => {
     }
   }
   async function editProduct(url = '') {
-    const res = await updateData('products', router.query.slug[1], {...formObjRef.current})
+    const res = await updateData('products', router.query.slug[1], { ...formObjRef.current });
     console.log(res);
-    
+
     // const { success, msg, code } = await apiUpdateCtr({
     //   type: 'products',
     //   subType: 'editProduct',

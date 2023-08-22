@@ -39,6 +39,7 @@ const Purchases: NextPage = (props: any) => {
   const [purchases, setPurchases] = useState<{ id: number; name: string; sku: string }[]>([]);
   const [isloading, setIsloading] = useState(true);
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
+    // @ts-ignore
     value: 0,
     label: '',
     currency_decimal_places: 0,
@@ -76,7 +77,7 @@ const Purchases: NextPage = (props: any) => {
       headerName: 'Total Price',
       flex: 1,
       renderCell: (params) =>
-        Number(params.value).toFixed(locationSettings?.currency_decimal_places),
+        Number(params.value).toFixed(locationSettings?.location_decimal_places),
     },
     {
       field: 'action',
@@ -103,15 +104,20 @@ const Purchases: NextPage = (props: any) => {
               }}>
               <FontAwesomeIcon icon={faDollarSign} />
             </Button>
-            {permissions.hasEdit && <Button onClick={() => router.push('/shop/' + shopId + '/purchases/edit/' + row.id)}>
-              <FontAwesomeIcon icon={faPenToSquare} />
-            </Button>}
-            {permissions.hasDelete && <Button onClick={() => {
-              setSelectId(row.id);
-              setShow(true);
-            }}>
-              <FontAwesomeIcon icon={faTrash} />
-            </Button>}
+            {permissions.hasEdit && (
+              <Button onClick={() => router.push('/shop/' + shopId + '/purchases/edit/' + row.id)}>
+                <FontAwesomeIcon icon={faPenToSquare} />
+              </Button>
+            )}
+            {permissions.hasDelete && (
+              <Button
+                onClick={() => {
+                  setSelectId(row.id);
+                  setShow(true);
+                }}>
+                <FontAwesomeIcon icon={faTrash} />
+              </Button>
+            )}
           </ButtonGroup>
         </>
       ),
@@ -131,9 +137,9 @@ const Purchases: NextPage = (props: any) => {
     setShow(false);
   };
   async function initDataPage() {
-    setIsloading(true)
-    if(router.query.id) {
-      const res = await findAllData(`purchase/${router.query.id}`)
+    setIsloading(true);
+    if (router.query.id) {
+      const res = await findAllData(`purchase/${router.query.id}`);
       if (res.data.success) {
         setPurchases(res.data.result);
       }
@@ -154,17 +160,22 @@ const Purchases: NextPage = (props: any) => {
     initDataPage();
   }, [router.asPath]);
 
-  const [permissions, setPermissions] = useState<any>()
+  const [permissions, setPermissions] = useState<any>();
   useEffect(() => {
     const perms = JSON.parse(localStorage.getItem('permissions'));
-    const getPermissions = {hasView: false, hasInsert: false, hasEdit: false, hasDelete: false}
-    perms.purchase.map((perm) => 
-      perm.name.includes('POST') ? getPermissions.hasInsert = true
-      : perm.name.includes('PUT') ? getPermissions.hasEdit = true
-      : perm.name.includes('DELETE') ? getPermissions.hasDelete = true : null)
-    
-    setPermissions(getPermissions)
-  }, [])
+    const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
+    perms.purchase.map((perm) =>
+      perm.name.includes('POST')
+        ? (getPermissions.hasInsert = true)
+        : perm.name.includes('PUT')
+        ? (getPermissions.hasEdit = true)
+        : perm.name.includes('DELETE')
+        ? (getPermissions.hasDelete = true)
+        : null
+    );
+
+    setPermissions(getPermissions);
+  }, []);
   function getStatusStyle(status: string) {
     switch (status) {
       case 'paid':

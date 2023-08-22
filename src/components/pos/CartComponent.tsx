@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import { useReactToPrint } from 'react-to-print';
@@ -18,14 +19,14 @@ import {
   IreadyGroupTax,
 } from '../../models/common-model';
 import { cartJobType, clearOrders, productDetails } from '../../recoil/atoms';
-import Customermodal from './modals/Customermodal';
+import CustomerDataSelect from './_components/CustomerDataSelect';
 import TailoringModal from './modals/TailoringModal';
 import VariationModal from './modals/VariationModal';
 import { OrderCalcs } from './utils/OrderCalcs';
-import { OrdersFooter } from './utils/OrdersFooter';
-import CustomerDataSelect from './_components/CustomerDataSelect';
+import { OrdersFooter } from './_components/orders-footer/OrdersFooter';
 
 export default function OrdersComponent(props: any) {
+  console.log('OrdersComponent');
   const { shopId, lang, direction } = props;
   const { locationSettings, tailoringSizes, invoicDetails, tailoringExtras } = useUser();
   const { products, customers, taxes, taxGroups, variations, packageItems } = useProducts();
@@ -67,7 +68,7 @@ export default function OrdersComponent(props: any) {
     orderId: 0,
   });
   const [shippingRate] = useState<number>(0);
-  const [customerIsModal, setCustomerIsModal] = useState<boolean>(false);
+
   const [customer, setCustomer] = useState<{
     value: string;
     label: string;
@@ -213,7 +214,7 @@ export default function OrdersComponent(props: any) {
             <td>{rs.qty}</td>
             <td>{_it.name}</td>
             <th></th>
-            <td>{Number(rs.price).toFixed(locationSettings?.currency_decimal_places)}</td>
+            <td>{Number(rs.price).toFixed(locationSettings?.location_decimal_places)}</td>
           </tr>
         );
       });
@@ -298,7 +299,7 @@ export default function OrdersComponent(props: any) {
                 </td>
                 <td></td>
                 <td>
-                  {(totalAmount - subTotal).toFixed(locationSettings?.currency_decimal_places)}
+                  {(totalAmount - subTotal).toFixed(locationSettings?.location_decimal_places)}
                 </td>
               </tr>
               <tr className="net-amount">
@@ -308,7 +309,7 @@ export default function OrdersComponent(props: any) {
                   {invoicDetails.isMultiLang && invoicDetails.txtDiscount2}
                 </td>
                 <td></td>
-                <td>{totalDiscount.toFixed(locationSettings?.currency_decimal_places)}</td>
+                <td>{totalDiscount.toFixed(locationSettings?.location_decimal_places)}</td>
               </tr>
               <tr className="net-amount">
                 <td></td>
@@ -318,7 +319,7 @@ export default function OrdersComponent(props: any) {
                 <td></td>
                 <td className="txt-bold">
                   {Number(__WithDiscountFeature__total + (totalAmount - subTotal)).toFixed(
-                    locationSettings?.currency_decimal_places
+                    locationSettings?.location_decimal_places
                   )}
                 </td>
               </tr>
@@ -330,7 +331,7 @@ export default function OrdersComponent(props: any) {
                 </td>
                 <td></td>
                 <td className="txt-bold">
-                  {amount && Number(totalPaid).toFixed(locationSettings?.currency_decimal_places)}
+                  {amount && Number(totalPaid).toFixed(locationSettings?.location_decimal_places)}
                 </td>
               </tr>
               <tr className="net-amount">
@@ -348,7 +349,7 @@ export default function OrdersComponent(props: any) {
                         __WithDiscountFeature__total +
                           +(totalAmount - subTotal) -
                           (amount && totalPaid)
-                      ).toFixed(locationSettings?.currency_decimal_places)
+                      ).toFixed(locationSettings?.location_decimal_places)
                     : 0}
                 </td>
               </tr>
@@ -437,7 +438,7 @@ export default function OrdersComponent(props: any) {
                   </td>
                   <td>
                     {Number(__WithDiscountFeature__total + (totalAmount - subTotal)).toFixed(
-                      locationSettings?.currency_decimal_places
+                      locationSettings?.location_decimal_places
                     )}
                   </td>
                 </tr>
@@ -447,7 +448,7 @@ export default function OrdersComponent(props: any) {
                   </td>
                   <td className="txt_bold_invoice">
                     {Number(__WithDiscountFeature__total + (totalAmount - subTotal)).toFixed(
-                      locationSettings?.currency_decimal_places
+                      locationSettings?.location_decimal_places
                     )}
                   </td>
                 </tr>
@@ -465,7 +466,7 @@ export default function OrdersComponent(props: any) {
                           __WithDiscountFeature__total +
                             +(totalAmount - subTotal) -
                             (amount && totalPaid)
-                        ).toFixed(locationSettings?.currency_decimal_places)
+                        ).toFixed(locationSettings?.location_decimal_places)
                       : 0}
                   </td>
                 </tr>
@@ -499,7 +500,7 @@ export default function OrdersComponent(props: any) {
           .map((tm: any) => {
             return tm.product_id;
           });
-        var packageProducts: IproductInfo[] = products.products.filter((pro: IproductInfo) =>
+        var packageProducts: IproductInfo[] = products.filter((pro: IproductInfo) =>
           ids.includes(pro.product_id)
         );
         packageProducts.map((pp) => {
@@ -516,8 +517,8 @@ export default function OrdersComponent(props: any) {
   }
   function addToCard(fromHold: boolean, index1: number, index2: number) {
     if (index1 != -1) {
-      let _product_id = products.products[index1].product_id;
-      let _total_qty = products.products[index1].total_qty;
+      let _product_id = products?.[index1].product_id;
+      let _total_qty = products?.[index1].total_qty;
       //search into Orders and add to card
       let tmpOrders: IproductInfo[] = [...orders];
       let idx: number = 0;
@@ -542,7 +543,8 @@ export default function OrdersComponent(props: any) {
         return;
       }
       if (idx === -1 || fromHold) {
-        let itm: any = products.products_multi[index1][index2];
+        let itm: any;
+        //  = products.products_multi[index1][index2];
         ordersPush.push(itm);
         setOrders([...tmpOrders, itm]);
         let _quantity = [...quantity];
@@ -683,19 +685,19 @@ export default function OrdersComponent(props: any) {
     for (let i = 0; i < _orders.length; i++) {
       index1 = -1;
       index2 = -1;
-      products.products_multi.map((topPro: IproductInfo[], index: number) => {
-        if (index2 === -1) {
-          index1 = index;
-          index2 = topPro.findIndex((itm: IproductInfo) => {
-            return itm.product_id === _orders[i].product_id;
-          });
-        }
-      });
+      // products.products_multi.map((topPro: IproductInfo[], index: number) => {
+      //   if (index2 === -1) {
+      //     index1 = index;
+      //     index2 = topPro.findIndex((itm: IproductInfo) => {
+      //       return itm.product_id === _orders[i].product_id;
+      //     });
+      //   }
+      // });
       if (index1 != -1) {
-        let _itm: any = products.products[index1];
+        let _itm: any = products?.[index1];
         //when is tailoring
         if (_itm.is_tailoring > 0 || _itm.type === 'tailoring_package') {
-          ordersPush.push(products.products_multi[index1][index2]);
+          // ordersPush.push(products.products_multi[index1][index2]);
           quantityPush.push({
             freezeQuantity: 0,
             quantity: 1,
@@ -749,14 +751,14 @@ export default function OrdersComponent(props: any) {
       //for tailoring modal
       var index1 = -1,
         index2 = -1;
-      products.products_multi.map((topPro: IproductInfo[], index: number) => {
-        if (index2 === -1) {
-          index1 = index;
-          index2 = topPro.findIndex((itm: IproductInfo) => {
-            return itm.product_id === product.product_id;
-          });
-        }
-      });
+      // products.products_multi.map((topPro: IproductInfo[], index: number) => {
+      //   if (index2 === -1) {
+      //     index1 = index;
+      //     index2 = topPro.findIndex((itm: IproductInfo) => {
+      //       return itm.product_id === product.product_id;
+      //     });
+      //   }
+      // });
       if (index1 === -1) return;
 
       let f_length = 0;
@@ -766,16 +768,16 @@ export default function OrdersComponent(props: any) {
           f_index2 = -1,
           f_id = jobType.custom?.fabric_id;
         f_length = jobType.custom?.fabric_length!;
-        products.products_multi.forEach((topPro: IproductInfo[], index: number) => {
-          if (f_index2 === -1) {
-            f_index1 = index;
-            f_index2 = topPro.findIndex((itm: IproductInfo) => {
-              return itm.product_id === f_id;
-            });
-          }
-        });
+        // products.products_multi.forEach((topPro: IproductInfo[], index: number) => {
+        //   if (f_index2 === -1) {
+        //     f_index1 = index;
+        //     f_index2 = topPro.findIndex((itm: IproductInfo) => {
+        //       return itm.product_id === f_id;
+        //     });
+        //   }
+        // });
         if (f_index1 === -1) return;
-        let _theFab: IproductInfo = products.products[f_index1];
+        let _theFab: IproductInfo = products?.[f_index1];
         if (!_theFab.sell_over_stock && (_theFab.total_qty === 0 || f_length > _theFab.total_qty)) {
           Toastify('error', 'The Selected Fabric Is Out Of Stock');
           return;
@@ -875,12 +877,12 @@ export default function OrdersComponent(props: any) {
       _servies_percetage = 0,
       _servies_fixed = 0;
     taxes?.map((tx: ITax) => {
-      if (tx.Etax_type === 'primary' && tx.is_primary) _primary += tx.amount;
-      else if (tx.Etax_type === 'primary') _none += tx.amount;
-      else if (tx.Etax_type === 'excise') _excises += tx.amount;
-      else if (tx.Etax_type === 'service' && tx.Etype === 'percentage')
+      if (tx.tax_type === 'primary' && tx.is_primary) _primary += tx.amount;
+      else if (tx.tax_type === 'primary') _none += tx.amount;
+      else if (tx.tax_type === 'excise') _excises += tx.amount;
+      else if (tx.tax_type === 'service' && tx.type === 'percentage')
         _servies_percetage += tx.amount;
-      else if (tx.Etax_type === 'service' && tx.Etype === 'fixed') _servies_fixed += tx.amount;
+      else if (tx.tax_type === 'service' && tx.type === 'fixed') _servies_fixed += tx.amount;
     });
     setDefTaxGroup({
       primary: _primary / 100,
@@ -898,7 +900,7 @@ export default function OrdersComponent(props: any) {
       .map((itm: any) => {
         return itm.product_id;
       });
-    var packageProducts: IproductInfo[] = products.products.filter((pro: IproductInfo) =>
+    var packageProducts: IproductInfo[] = products.filter((pro: IproductInfo) =>
       ids.includes(pro.product_id)
     );
     let hasStock = true;
@@ -908,7 +910,7 @@ export default function OrdersComponent(props: any) {
       if (hasStock && !pp.is_service && !pp.sell_over_stock) {
         orders.map((or, index: number) => {
           if (or.product_id === pp.product_id) {
-            var _item: any = products.products[quantity[index].productIndex];
+            var _item: any = products?.[quantity[index].productIndex];
             if (quantity[index].quantity + orderQty > _item.total_qty) hasStock = false;
           }
         });
@@ -918,23 +920,10 @@ export default function OrdersComponent(props: any) {
       Toastify('error', 'One of items is out of stock!');
       return;
     }
-    // packagePrices.push(inenerPackagePrices)
-    // console.log(packagePrices);
-
-    // let tmpOrders: IproductInfo[] = [...orders];
-    // const idx = orders.findIndex((el: any) => { return el.product_id === product.product_id })
-
-    // if (idx === -1) {
-    //   let itm: any = products.products_multi[index1][index2];
-    //   setOrders([...tmpOrders, itm]);
-    //   let _quantity = [...quantity];
-    //   _quantity.push({ quantity: 1, productIndex: index1, itemIndex: index2, prices: [{ stock_id: 0, qty: 1, price: itm.product_price, cost: itm.cost, packs: inenerPackagePrices }], lineTotalPrice: itm.price });
-    //   setQuantity(_quantity);
-    // } else
-    //   quantityChange(idx, 'plus')
 
     return true;
   }
+
   useEffect(() => {
     if (!allowWork) return;
     if (!product.product_id) return;
@@ -972,19 +961,19 @@ export default function OrdersComponent(props: any) {
     //get all pricess of selected product
     var index1 = -1,
       index2 = -1;
-    products.products_multi.map((topPro: IproductInfo[], index: number) => {
-      if (index2 === -1) {
-        index1 = index;
-        index2 = topPro.findIndex((itm: IproductInfo) => {
-          return itm.product_id === product.product_id;
-        });
-      }
-    });
+    // products.products_multi.map((topPro: IproductInfo[], index: number) => {
+    //   if (index2 === -1) {
+    //     index1 = index;
+    //     index2 = topPro.findIndex((itm: IproductInfo) => {
+    //       return itm.product_id === product.product_id;
+    //     });
+    //   }
+    // });
     if (product.type === 'package' && !checkPackageItemsHasStock(1)) return;
     if (product.type === 'tailoring_package') {
       //tailoring_package
       setSelectedProductForVariation({
-        product: products.products_multi[index1][index2],
+        // product: products.products_multi[index1][index2],
         product_id: product.product_id,
         product_name: product.name,
         is_service: product.is_service,
@@ -1126,7 +1115,7 @@ export default function OrdersComponent(props: any) {
       const _pro: any =
         _orders[index].variation_id! > 0
           ? variations.variations[_quantity[index].productIndex]
-          : products.products[_quantity[index].productIndex];
+          : products?.[_quantity[index].productIndex];
       //get packages only for quantity check
       if (!checkProductQtyinPackagesItems(qt, _orders[index].product_id!, _pro.total_qty)) {
         Toastify('error', 'Out of stock!');
@@ -1163,58 +1152,60 @@ export default function OrdersComponent(props: any) {
           thePrices = JSON.parse(
             JSON.stringify(variations.variations_multi[_quantity[index].productIndex])
           );
-        else
-          thePrices = JSON.parse(
-            JSON.stringify(products.products_multi[_quantity[index].productIndex])
-          );
+        // thePrices = JSON.parse(
+        //   JSON.stringify(products.products_multi[_quantity[index].productIndex])
+        // );
+        else {
+          let qtyToAllocate = qt;
+          _quantity[index].prices = [];
 
-        let qtyToAllocate = qt;
-        _quantity[index].prices = [];
+          for (let i = 0; i < thePrices.length && qtyToAllocate > 0; i++) {
+            const stockItem = thePrices[i];
+            if (stockItem.qty >= qtyToAllocate) {
+              // Allocate full quantity from this stock item
+              stockItem.qty -= qtyToAllocate;
+              if (_quantity[index].prices.length > i)
+                _quantity[index].prices[i].qty = qtyToAllocate;
+              else
+                _quantity[index].prices.push({
+                  stock_id: stockItem.stock_id,
+                  qty: qtyToAllocate,
+                  price: stockItem.price,
+                  cost: stockItem.cost,
+                });
 
-        for (let i = 0; i < thePrices.length && qtyToAllocate > 0; i++) {
-          const stockItem = thePrices[i];
-          if (stockItem.qty >= qtyToAllocate) {
-            // Allocate full quantity from this stock item
-            stockItem.qty -= qtyToAllocate;
-            if (_quantity[index].prices.length > i) _quantity[index].prices[i].qty = qtyToAllocate;
-            else
-              _quantity[index].prices.push({
-                stock_id: stockItem.stock_id,
-                qty: qtyToAllocate,
-                price: stockItem.price,
-                cost: stockItem.cost,
-              });
+              qtyToAllocate = 0;
+            } else {
+              // Allocate partial quantity from this stock item
+              qtyToAllocate -= stockItem.qty;
+              if (_quantity[index].prices.length > i)
+                _quantity[index].prices[i].qty = stockItem.qty;
+              else
+                _quantity[index].prices.push({
+                  stock_id: stockItem.stock_id,
+                  qty: stockItem.qty,
+                  price: stockItem.price,
+                  cost: stockItem.cost,
+                });
 
-            qtyToAllocate = 0;
-          } else {
-            // Allocate partial quantity from this stock item
-            qtyToAllocate -= stockItem.qty;
-            if (_quantity[index].prices.length > i) _quantity[index].prices[i].qty = stockItem.qty;
-            else
-              _quantity[index].prices.push({
-                stock_id: stockItem.stock_id,
-                qty: stockItem.qty,
-                price: stockItem.price,
-                cost: stockItem.cost,
-              });
-
-            stockItem.qty = 0;
+              stockItem.qty = 0;
+            }
           }
-        }
-        _quantity[index].quantity = qt;
-        //is over selling
-        if (qtyToAllocate > 0.5 && _orders[index].sell_over_stock!) {
-          if (_quantity[index].prices[_quantity[index].prices.length - 1].stock_id != 0) {
-            _quantity[index].prices.push({
-              stock_id: 0,
-              qty: qtyToAllocate,
-              price: isVar ? _pro.variation_price! : _pro.product_price,
-              cost: isVar ? _pro.variation_cost! : _pro.product_cost!,
-            });
-          } else _quantity[index].prices[_quantity[index].prices.length - 1].qty = qt;
-        } else if (qtyToAllocate > 0.5) {
-          _quantity[index].quantity -= qtyToAllocate;
-          Toastify('error', 'Out Of Stock');
+          _quantity[index].quantity = qt;
+          //is over selling
+          if (qtyToAllocate > 0.5 && _orders[index].sell_over_stock!) {
+            if (_quantity[index].prices[_quantity[index].prices.length - 1].stock_id != 0) {
+              _quantity[index].prices.push({
+                stock_id: 0,
+                qty: qtyToAllocate,
+                price: isVar ? _pro.variation_price! : _pro.product_price,
+                cost: isVar ? _pro.variation_cost! : _pro.product_cost!,
+              });
+            } else _quantity[index].prices[_quantity[index].prices.length - 1].qty = qt;
+          } else if (qtyToAllocate > 0.5) {
+            _quantity[index].quantity -= qtyToAllocate;
+            Toastify('error', 'Out Of Stock');
+          }
         }
         //
         _quantity[index].itemIndex = _quantity[index].prices.length - 1;
@@ -1261,21 +1252,19 @@ export default function OrdersComponent(props: any) {
       }
     }
   };
-  const customerModalHandler = (status: any) => {
-    setCustomerIsModal(false);
-  };
+
   const handleEditTailoring = (idx: number) => {
     if (quantity[idx].productIndex === -1) {
       var index1 = -1,
         index2 = -1;
-      products.products_multi.map((topPro: IproductInfo[], index: number) => {
-        if (index2 === -1) {
-          index1 = index;
-          index2 = topPro.findIndex((itm: IproductInfo) => {
-            return itm.product_id === orders[idx].product_id;
-          });
-        }
-      });
+      // products.products_multi.map((topPro: IproductInfo[], index: number) => {
+      //   if (index2 === -1) {
+      //     index1 = index;
+      //     index2 = topPro.findIndex((itm: IproductInfo) => {
+      //       return itm.product_id === orders[idx].product_id;
+      //     });
+      //   }
+      // });
       if (index1 === -1) {
         Toastify('error', 'Product not Found...');
         return;
@@ -1283,7 +1272,8 @@ export default function OrdersComponent(props: any) {
       quantity[idx].productIndex = index1;
       quantity[idx].itemIndex = index2;
     }
-    let _item: any = products.products_multi[quantity[idx].productIndex][quantity[idx].itemIndex];
+    let _item: any;
+    //  = products.products_multi[quantity[idx].productIndex][quantity[idx].itemIndex];
     setSelectedProductForVariation({
       tailoringCustom: {
         fabric_id: quantity[idx].tailoringCutsom?.fabric_id,
@@ -1335,7 +1325,7 @@ export default function OrdersComponent(props: any) {
       setSearchProduct(e);
       e = _id;
       if (e.length > 0) {
-        const mfil: any = products.products.filter(
+        const mfil: any = products.filter(
           (p: any) => p.name.toLowerCase().includes(e) || p.sku.toLowerCase().includes(e)
         );
         if (mfil.length === 1) {
@@ -1379,19 +1369,11 @@ export default function OrdersComponent(props: any) {
           tailoringExtras={tailoringExtras}
         />
       )}
-      {/* <Customermodal
-        shopId={shopId}
-        showType={showType}
-        userdata={customer}
-        customers={customers}
-        statusDialog={customerIsModal}
-        openDialog={customerModalHandler}
-      /> */}
+
       <div className="card-body">
         <div className="row mb-2">
           <CustomerDataSelect
             shopId={shopId}
-            selectStyle={selectStyle}
             isOrderEdit={isOrderEdit}
             setCustomer={setCustomer}
             orderEditDetails={orderEditDetails}
@@ -1579,7 +1561,7 @@ export default function OrdersComponent(props: any) {
                       <td className="text-end">
                         <span>
                           {Number(quantity[i].lineTotalPrice).toFixed(
-                            locationSettings?.currency_decimal_places
+                            locationSettings?.location_decimal_places
                           )}
                         </span>
                       </td>
@@ -1591,10 +1573,10 @@ export default function OrdersComponent(props: any) {
           {/*end table*/}
         </div>
         <OrderCalcs
+          shopId={shopId}
           orderEditDetails={orderEditDetails}
           taxRate={taxRate}
           subTotal={subTotal}
-          totalAmount={totalAmount}
           shippingRate={shippingRate}
           // with discount feature
           tax={tax}

@@ -30,6 +30,7 @@ const Product: NextPage = (props: any) => {
   const { shopId, rules } = props;
   const myLoader = (img: any) => img.src;
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
+    // @ts-ignore
     value: 0,
     label: '',
     currency_decimal_places: 0,

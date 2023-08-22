@@ -90,6 +90,7 @@ const Home = (props: any) => {
   const title3 = useRef(null);
   const title4 = useRef(null);
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
+    // @ts-ignore
     value: 0,
     label: '',
     currency_decimal_places: 0,
@@ -279,7 +280,7 @@ const Home = (props: any) => {
             <h5 ref={title1}>{txtP1.name}</h5>
             <h3>
               {Number(box1Price[txtP1.index - 1]).toFixed(
-                locationSettings?.currency_decimal_places
+                locationSettings?.location_decimal_places
               )}
               <span>{locationSettings?.currency_code}</span>
             </h3>
@@ -305,7 +306,7 @@ const Home = (props: any) => {
             <h5 ref={title3}>{txtP3.name}</h5>
             <h3>
               {Number(box3Price[txtP3.index - 1]).toFixed(
-                locationSettings?.currency_decimal_places
+                locationSettings?.location_decimal_places
               )}
               <span>{locationSettings?.currency_code}</span>
             </h3>
@@ -331,7 +332,7 @@ const Home = (props: any) => {
             <h5 ref={title2}>{txtP2.name}</h5>
             <h3>
               {Number(box2Price[txtP2.index - 1]).toFixed(
-                locationSettings?.currency_decimal_places
+                locationSettings?.location_decimal_places
               )}
               <span>{locationSettings?.currency_code}</span>
             </h3>
@@ -419,7 +420,7 @@ const Home = (props: any) => {
                     <div className="m-fileds">{itm.id}</div>
                     <div className="m-fileds">{getRightTime(itm.created_at)}</div>
                     <div className="m-fileds">
-                      {Number(itm.total_price).toFixed(locationSettings?.currency_decimal_places)}{' '}
+                      {Number(itm.total_price).toFixed(locationSettings?.location_decimal_places)}{' '}
                       {locationSettings?.currency_code}
                     </div>
                     <div className="m-fileds">{itm.created_by}</div>

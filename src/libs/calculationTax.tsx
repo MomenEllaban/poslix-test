@@ -8,8 +8,8 @@ export function groupCalculation(taxGroup: ITax[]) {
       id: v.id,
       name: v.name,
       amount: v.amount,
-      amountType: v.Etype,
-      taxType: v.Etax_type,
+      amountType: v.type,
+      taxType: v.tax_type,
       is_primary: v.is_primary,
     };
     return c;
@@ -23,12 +23,12 @@ export function groupCalculation(taxGroup: ITax[]) {
       _servies_percetage = 0;
     for (var iKey in newGroup[key]) {
       var obj: ITax = newGroup[key][iKey];
-      if (obj.Etax_type == 'primary' && obj.is_primary) _primary = obj.amount;
-      else if (obj.Etax_type == 'primary') _nonPrimary += obj.amount;
-      else if (obj.Etax_type == 'excise') _excises += obj.amount;
-      else if (obj.Etax_type == 'service' && obj.Etype == 'percentage')
+      if (obj.tax_type == 'primary' && obj.is_primary) _primary = obj.amount;
+      else if (obj.tax_type == 'primary') _nonPrimary += obj.amount;
+      else if (obj.tax_type == 'excise') _excises += obj.amount;
+      else if (obj.tax_type == 'service' && obj.type == 'percentage')
         _servies_percetage += obj.amount;
-      else if (obj.Etax_type == 'service' && obj.Etype == 'fixed') _servies_fixed += obj.amount;
+      else if (obj.tax_type == 'service' && obj.type == 'fixed') _servies_fixed += obj.amount;
     }
     readTaxGroup[key] = {
       primary: _primary / 100,

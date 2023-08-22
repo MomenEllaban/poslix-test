@@ -20,6 +20,7 @@ import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/chec
 export default function SalesReport(props: any) {
   const { shopId, rules } = props;
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
+    // @ts-ignore
     value: 0,
     label: '',
     currency_decimal_places: 0,
@@ -60,35 +61,35 @@ export default function SalesReport(props: any) {
       headerName: 'hand cash',
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) =>
-        Number(row.closing_amount).toFixed(locationSettings?.currency_decimal_places),
+        Number(row.closing_amount).toFixed(locationSettings?.location_decimal_places),
     },
     {
       field: 'total_card_slips',
       headerName: 'Card',
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) =>
-        Number(row.total_card_slips).toFixed(locationSettings?.currency_decimal_places),
+        Number(row.total_card_slips).toFixed(locationSettings?.location_decimal_places),
     },
     {
       field: 'total_cash',
       headerName: 'Cash',
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) =>
-        Number(row.total_cash).toFixed(locationSettings?.currency_decimal_places),
+        Number(row.total_cash).toFixed(locationSettings?.location_decimal_places),
     },
     {
       field: 'total_cheques',
       headerName: 'Cheques',
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) =>
-        Number(row.total_cheques).toFixed(locationSettings?.currency_decimal_places),
+        Number(row.total_cheques).toFixed(locationSettings?.location_decimal_places),
     },
     {
       field: 'total_bank',
       headerName: 'Bank',
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) =>
-        Number(row.total_bank).toFixed(locationSettings?.currency_decimal_places),
+        Number(row.total_bank).toFixed(locationSettings?.location_decimal_places),
     },
     {
       field: 'created_at',
@@ -170,7 +171,7 @@ export default function SalesReport(props: any) {
                   {invoicDetails.txtTax} {invoicDetails.isMultiLang && invoicDetails.txtTax2}
                 </td>
                 <td></td>
-                {/* <td>{(selectRow.total_price).toFixed(locationSettings?.currency_decimal_places)}</td> */}
+                {/* <td>{(selectRow.total_price).toFixed(locationSettings?.location_decimal_places)}</td> */}
               </tr>
               <tr className="net-amount">
                 <td></td>
@@ -179,7 +180,7 @@ export default function SalesReport(props: any) {
                 </td>
                 <td></td>
                 <td className="txt-bold">
-                  {Number(selectRow.total_price).toFixed(locationSettings?.currency_decimal_places)}
+                  {Number(selectRow.total_price).toFixed(locationSettings?.location_decimal_places)}
                 </td>
               </tr>
             </thead>

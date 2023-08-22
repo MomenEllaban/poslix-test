@@ -45,6 +45,7 @@ const Customer: NextPage = (props: any) => {
   const [key, setKey] = useState('profile');
   const [isOrder, setIsOrder] = useState(false);
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
+    // @ts-ignore
     value: 0,
     label: '',
     currency_decimal_places: 0,
@@ -163,8 +164,8 @@ const Customer: NextPage = (props: any) => {
   const [sales, setSales] = useState<any>([]);
   // init sales data
   async function initDataPage() {
-    if(router.query.customerId){
-      const res = await findAllData(`customers/${router.query.customerId}/show`)
+    if (router.query.customerId) {
+      const res = await findAllData(`customers/${router.query.customerId}/show`);
       if (res.data.success) {
         setSales(res.data.result?.sales);
         setIsLoading(true);
@@ -368,7 +369,11 @@ const Customer: NextPage = (props: any) => {
                 </div>
               </Tab>
               <Tab eventKey="Sales" title="Sales">
-                <SalesListTable shopId={router.query.id} customerId={router.query.id} salesList={sales} />
+                <SalesListTable
+                  shopId={router.query.id}
+                  customerId={router.query.id}
+                  salesList={sales}
+                />
               </Tab>
               {isOrder && (
                 <Tab eventKey="Orders" title="Orders">

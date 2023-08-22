@@ -51,6 +51,7 @@ const AddPurchase: NextPage = (props: any) => {
   const { shopId, editId } = props;
 
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
+    // @ts-ignore
     value: 0,
     label: '',
     currency_decimal_places: 0,
@@ -166,7 +167,7 @@ const AddPurchase: NextPage = (props: any) => {
           {locationSettings?.currency_id != formObj.currency_id && (
             <div className="purchase-converted-cost">
               {(formObj.currency_rate * row.cost).toFixed(
-                locationSettings?.currency_decimal_places
+                locationSettings?.location_decimal_places
               )}{' '}
               <span style={{ opacity: '0.5', fontSize: '10px' }}>
                 {' '}
@@ -213,9 +214,9 @@ const AddPurchase: NextPage = (props: any) => {
         <>
           <div>
             {locationSettings?.currency_id == formObj.currency_id
-              ? Number(row.cost * row.quantity).toFixed(locationSettings?.currency_decimal_places)
+              ? Number(row.cost * row.quantity).toFixed(locationSettings?.location_decimal_places)
               : (formObj.currency_rate * row.cost).toFixed(
-                  locationSettings?.currency_decimal_places
+                  locationSettings?.location_decimal_places
                 )}
           </div>
         </>
@@ -258,7 +259,7 @@ const AddPurchase: NextPage = (props: any) => {
 
   async function initDataPage(url) {
     if (url?.length == 2) setIsEdit(true);
-    
+
     if (url?.length == 2) {
       const res = await findAllData(`purchase/${router.query.slug[1]}/show`);
       const itm = res.data.result;
@@ -282,11 +283,11 @@ const AddPurchase: NextPage = (props: any) => {
               product_id: sp.product_id,
               variation_id: sp.variation_id,
               name: sp.name,
-              quantity: Number(sp.quantity).toFixed(locationSettings?.currency_decimal_places),
-              price: Number(sp.price).toFixed(locationSettings?.currency_decimal_places),
-              cost: Number(sp.cost).toFixed(locationSettings?.currency_decimal_places),
+              quantity: Number(sp.quantity).toFixed(locationSettings?.location_decimal_places),
+              price: Number(sp.price).toFixed(locationSettings?.location_decimal_places),
+              cost: Number(sp.cost).toFixed(locationSettings?.location_decimal_places),
               lineTotal: (parseFloat(sp.cost) * parseFloat(sp.quantity)).toFixed(
-                locationSettings?.currency_decimal_places
+                locationSettings?.location_decimal_places
               ),
               taxAmount: 0,
               costType: sp.cost_type,
@@ -403,7 +404,7 @@ const AddPurchase: NextPage = (props: any) => {
         ]
       );
     else alert('errorr location settings');
-    initDataPage(router.query.slug)
+    initDataPage(router.query.slug);
   }, [router.asPath]);
 
   function getPriority(type: string, subTotal: number): number {
@@ -472,7 +473,7 @@ const AddPurchase: NextPage = (props: any) => {
 
     setFormObj({
       ...formObj,
-      total_expense: +_sum.toFixed(locationSettings?.currency_decimal_places),
+      total_expense: +_sum.toFixed(locationSettings?.location_decimal_places),
     });
     calculationLabels(_sum, formObj.total_tax);
   }, [selectedExpends, selectedExpendsEdit]);
@@ -577,7 +578,7 @@ const AddPurchase: NextPage = (props: any) => {
       _expends[index].currency_id == locationSettings?.currency_id
         ? _expends[index].value
         : _expends[index].value * _expends[index].currency_rate
-    ).toFixed(locationSettings?.currency_decimal_places);
+    ).toFixed(locationSettings?.location_decimal_places);
     if (isNew) setSelectedExpends(_expends);
     else setSelectedExpendsEdit(_expends);
   };
@@ -585,7 +586,7 @@ const AddPurchase: NextPage = (props: any) => {
   useEffect(() => {
     var _tx = 0;
     selectedTaxes.map((ep: any) => (_tx += Number(ep.converted_value)));
-    setFormObj({ ...formObj, total_tax: +_tx.toFixed(locationSettings?.currency_decimal_places) });
+    setFormObj({ ...formObj, total_tax: +_tx.toFixed(locationSettings?.location_decimal_places) });
     calculationLabels(formObj.total_expense, _tx);
   }, [selectedTaxes]);
   const deleteRowTaxes = (index: any) => {
@@ -607,7 +608,7 @@ const AddPurchase: NextPage = (props: any) => {
       _rows[index].currency_id == locationSettings?.currency_id
         ? _rows[index].value
         : _rows[index].value * _rows[index].currency_rate
-    ).toFixed(locationSettings?.currency_decimal_places);
+    ).toFixed(locationSettings?.location_decimal_places);
     setSelectedTaxes(_rows);
   };
   useEffect(() => {
@@ -679,10 +680,10 @@ const AddPurchase: NextPage = (props: any) => {
         _datas[found].lineTotal =
           locationSettings?.currency_id == formObj.currency_id
             ? Number(_datas[found].cost * _datas[found].quantity).toFixed(
-                locationSettings?.currency_decimal_places
+                locationSettings?.location_decimal_places
               )
             : Number(_datas[found].cost * formObj.currency_rate * _datas[found].quantity).toFixed(
-                locationSettings?.currency_decimal_places
+                locationSettings?.location_decimal_places
               );
 
       setSelectProducts([..._datas]);
@@ -719,7 +720,7 @@ const AddPurchase: NextPage = (props: any) => {
       _rows[i].notifyExpensePrice =
         _ExpVal > 0
           ? +Number(_ExpVal + parseFloat(getCost(sp.cost).toString())).toFixed(
-              locationSettings?.currency_decimal_places
+              locationSettings?.location_decimal_places
             )
           : 0;
       if (_ExpVal == 0 && _rows[i].costType == 1) _rows[i].costType = 0;
@@ -727,14 +728,14 @@ const AddPurchase: NextPage = (props: any) => {
       _rows[i].notifyTaxPrice =
         _TaxVal > 0
           ? +Number(_TaxVal + parseFloat(getCost(sp.cost).toString())).toFixed(
-              locationSettings?.currency_decimal_places
+              locationSettings?.location_decimal_places
             )
           : 0;
       if (_TaxVal == 0 && _rows[i].costType == 2) _rows[i].costType = 0;
 
       _rows[i].notifyTotalPrice = Number(
         _rows[i].notifyExpensePrice + _rows[i].notifyTaxPrice
-      ).toFixed(locationSettings?.currency_decimal_places);
+      ).toFixed(locationSettings?.location_decimal_places);
       if (_rows[i].notifyTotalPrice == 0 && _rows[i].costType == 2) _rows[i].costType = 0;
     });
     setSelectProducts(_rows);
@@ -1093,7 +1094,7 @@ const AddPurchase: NextPage = (props: any) => {
                           <p>Sub Total</p>
                           <p>
                             {Number(formObj.subTotal_price).toFixed(
-                              locationSettings?.currency_decimal_places
+                              locationSettings?.location_decimal_places
                             )}{' '}
                             <span style={{ opacity: '0.5' }}>
                               {' '}
@@ -1152,7 +1153,7 @@ const AddPurchase: NextPage = (props: any) => {
                                     <p>&nbsp;</p>
                                     <p className="fixed-width">
                                       {formObj.total_discount.toFixed(
-                                        locationSettings?.currency_decimal_places
+                                        locationSettings?.location_decimal_places
                                       )}{' '}
                                     </p>
                                   </div>
@@ -1160,7 +1161,7 @@ const AddPurchase: NextPage = (props: any) => {
                                 {pd.value == 'expense' && (
                                   <p>
                                     {formObj.total_expense.toFixed(
-                                      locationSettings?.currency_decimal_places
+                                      locationSettings?.location_decimal_places
                                     )}
                                   </p>
                                 )}
@@ -1190,7 +1191,7 @@ const AddPurchase: NextPage = (props: any) => {
                                     <p className="fixed-width">
                                       {formObj.total_tax}%(
                                       {((formObj.total_tax / 100) * formObj.subTotal_price).toFixed(
-                                        locationSettings?.currency_decimal_places
+                                        locationSettings?.location_decimal_places
                                       )}
                                       )
                                     </p>
@@ -1208,7 +1209,7 @@ const AddPurchase: NextPage = (props: any) => {
                           <p>Total</p>
                           <p>
                             {Number(formObj.total_price).toFixed(
-                              locationSettings?.currency_decimal_places
+                              locationSettings?.location_decimal_places
                             )}
                             <span style={{ opacity: '0.5', fontSize: '10px' }}>
                               {' '}
@@ -1219,7 +1220,7 @@ const AddPurchase: NextPage = (props: any) => {
                         <div className="purchase-text">
                           <p>Total Paid</p>
                           <p>
-                            {formObj.paid_amount.toFixed(locationSettings?.currency_decimal_places)}
+                            {formObj.paid_amount.toFixed(locationSettings?.location_decimal_places)}
                             <span style={{ opacity: '0.5', fontSize: '10px' }}>
                               {' '}
                               {locationSettings?.currency_code}
@@ -1230,7 +1231,7 @@ const AddPurchase: NextPage = (props: any) => {
                           <p>Total Remaining</p>
                           <p>
                             {(formObj.total_price - formObj.paid_amount).toFixed(
-                              locationSettings?.currency_decimal_places
+                              locationSettings?.location_decimal_places
                             )}
                             <span style={{ opacity: '0.5', fontSize: '10px' }}>
                               {' '}
