@@ -1,5 +1,6 @@
 import { faFolderOpen } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { Button, ButtonGroup } from 'react-bootstrap';
 
@@ -14,14 +15,15 @@ export default function LocationRow({ location, locations, businessId }) {
 
       <td>
         <ButtonGroup className="mb-2 m-buttons-style">
-          <Button
-            onClick={() => {
-              localStorage.setItem("businessId", businessId)
-              localStorage.setItem("locations", JSON.stringify(locations))
-              router.push(`/shop/${location.location_id}/products`);
-            }}>
-            <FontAwesomeIcon icon={faFolderOpen} />
-          </Button>
+          <Link href={`/shop/${location.location_id}/products`}>
+            <Button
+              onClick={() => {
+                localStorage.setItem('businessId', businessId);
+                localStorage.setItem('locations', JSON.stringify(locations));
+              }}>
+              <FontAwesomeIcon icon={faFolderOpen} />
+            </Button>
+          </Link>
         </ButtonGroup>
       </td>
     </tr>

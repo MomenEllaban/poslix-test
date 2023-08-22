@@ -491,25 +491,17 @@ export async function getServerSideProps(context: any) {
   const shopId = context.query.id;
   if (!shopId) return { redirect: { permanent: false, destination: '/page403' } };
 
-  try {
-    const stuffPermissions = await (await authApi(session))
-      .get('permissions/13')
-      .then(({ data }) => data.result[0].stuff);
-
-    return {
-      props: {
-        permissions: stuffPermissions ?? {},
-        shopId,
-        rules: {
-          //! this should be dynamic
-          hasDelete: true,
-          hasEdit: true,
-          hasView: true,
-          hasInsert: true,
-        },
+  return {
+    props: {
+      permissions: {},
+      shopId,
+      rules: {
+        //! this should be dynamic
+        hasDelete: true,
+        hasEdit: true,
+        hasView: true,
+        hasInsert: true,
       },
-    };
-  } catch (e) {
-    return { redirect: { permanent: false, destination: ROUTES.AUTH } };
-  }
+    },
+  };
 }
