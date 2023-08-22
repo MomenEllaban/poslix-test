@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Table } from 'react-bootstrap';
+import { Button, Table } from 'react-bootstrap';
 import { useAppDispatch, useAppSelector } from 'src/hooks';
 import {
   addToCart,
@@ -9,6 +9,8 @@ import {
   setCart,
 } from 'src/redux/slices/cart.slice';
 import styles from './CartTable.module.scss';
+import { MdDeleteForever } from 'react-icons/md';
+import { BsDashLg, BsPlusLg } from 'react-icons/bs';
 
 export default function CartTable({ lang, shopId }) {
   const selectCartForLocation = selectCartByLocation(shopId);
@@ -48,28 +50,34 @@ export default function CartTable({ lang, shopId }) {
               <td>{product.name}</td>
               <td>
                 <span className={styles['qty-col']}>
-                  <button
-                    className={styles['cart-quantity-btn']}
+                  <Button
+                    size="sm"
+                    variant="outline-info"
+                    // className={styles['cart-quantity-btn']}
                     onClick={() => dispatch(decreaseItemQuantity(product))}>
-                    -
-                  </button>
+                    <BsDashLg size={13} />
+                  </Button>
                   <span className={styles['qty']}>{product.quantity}</span>
-                  <button
-                    className={styles['cart-quantity-btn']}
+                  <Button
+                    size="sm"
+                    variant="outline-info"
+                    // className={styles['cart-quantity-btn']}
                     onClick={() => {
                       if (product.quantity < product.stock) dispatch(addToCart(product));
                     }}>
-                    +
-                  </button>
+                    <BsPlusLg size={13} />
+                  </Button>
                 </span>
               </td>
               <td>{(product.quantity * +product.sell_price).toFixed(2)}</td>
               <td className={styles['delete-col']}>
-                <button
-                  className={styles['cart-delete-btn']}
+                <Button
+                  size="sm"
+                  variant="outline-danger"
+                  // className={styles['cart-delete-btn']}
                   onClick={() => dispatch(removeFromCart(product))}>
-                  X
-                </button>
+                  <MdDeleteForever size={15} />
+                </Button>
               </td>
             </tr>
           ))}

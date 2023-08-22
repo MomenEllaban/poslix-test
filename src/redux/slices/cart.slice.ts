@@ -13,7 +13,6 @@ interface ICart {
 const initialState: ICart[] = [];
 
 const findOrCreateCart = (state: ICart[], location_id: string): ICart => {
-
   const existingCart = state.find((cart) => +cart.location_id === +location_id);
 
   if (existingCart) {
@@ -95,7 +94,7 @@ const cartSlice = createSlice({
 
 export default cartSlice.reducer;
 export const selectCart = (state: any) => state.cart;
-export const selectCartByLocation = (location_id: string) =>
+export const selectCartByLocation = (location_id: string | number) =>
   createSelector(
     selectCart,
     (cartState) =>

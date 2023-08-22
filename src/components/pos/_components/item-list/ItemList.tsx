@@ -9,6 +9,7 @@ import BrandSwiper from '../brand-slider/BrandSlider';
 import { ItemCard } from '../item-card/ItemCard';
 import { TabPanel } from '../tab-panel/TabPanel';
 import styles from './ItemList.module.scss';
+import { useBrandsList, useCategoriesList } from 'src/services/pos.service';
 
 const override: CSSProperties = {
   display: 'block',
@@ -16,15 +17,18 @@ const override: CSSProperties = {
   borderColor: '48b7b9',
 };
 
-export const ItemList = ({ lang }: any) => {
+export const ItemList = ({ lang, shopId }: any) => {
   const [jobType] = useRecoilState(cartJobType);
-  const { products, cats, brands } = useProducts();
+  const { products } = useProducts();
 
   const [isLoading, setIsLoading] = useState(true);
   const [selectedCat, setSelectedCat] = useState(0);
   const [selectedBrand, setSelectedBrand] = useState(0);
   const [selectedTab, setSelectedTab] = useState('category');
   const [productsItems, SetProductsItems] = useState<IProduct[]>([]);
+
+  const { categoriesList, isLoading: isCategoriesLoading } = useCategoriesList(shopId);
+  const { brandsList, isLoading: isBrandsLoadding } = useBrandsList(shopId);
 
   const handleTabChange = (value: any) => {
     setSelectedTab(value);
@@ -38,21 +42,24 @@ export const ItemList = ({ lang }: any) => {
   );
 
   const filteredProducts = useMemo(() => {
-    if (!productsItems?.length) return [];
-    else
-      return productsItems?.filter((val: IProduct) => {
-        if (selectedTab === 'category') {
-          return selectedCat === 0 ? val.category_id !== 0 : val.category_id === selectedCat;
-        } else {
-          return selectedBrand === 0 ? val.brand_id !== 0 : val.brand_id === selectedBrand;
-        }
-      });
-  }, [productsItems, selectedTab, selectedCat, selectedBrand]);
+    if (selectedTab === 'category') {
+      const _selectedCat = categoriesList.find((val) => val.id === selectedCat);
+    
+      
+      if (_selectedCat) return _selectedCat.products || [];
+      return categoriesList.map((item) => item.products).flat();
+    } else {
+      const _selectedBrand = brandsList.find((val) => val.id === selectedBrand);
+      
+      if (_selectedBrand) return _selectedBrand.products || [];
+      return brandsList.map((item) => item.products).flat();
+    }
+  }, [selectedTab, selectedCat, selectedBrand, categoriesList, brandsList]);
 
   useEffect(() => {
     SetProductsItems(products);
     setIsLoading(false);
-    console.log('fetching products');
+
   }, [products]);
 
   useEffect(() => {
@@ -75,10 +82,10 @@ export const ItemList = ({ lang }: any) => {
               setIsLoading(false); //! whyyyyyyy
             }, 100);
           }}
-          dataItems={{ cats: cats, brands: brands }}
+          dataItems={{ cats: categoriesList, brands: brandsList }}
         />
 
-        {!productsItems?.length ? (
+        {!filteredProducts?.length ? (
           <ClipLoader color="48b7b9" loading={true} cssOverride={override} size="150px" />
         ) : (
           <div className="tab-content text-muted">

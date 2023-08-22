@@ -150,8 +150,9 @@ export type Discount = {
 };
 
 export interface IOrdersCalcs {
+  shopId: number;
   taxRate: number;
-  totalAmount: number;
+
   shippingRate: number;
   subTotal: number;
   orderEditDetails: IOrderMiniDetails;

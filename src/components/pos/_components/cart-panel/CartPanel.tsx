@@ -5,6 +5,7 @@ import CartTable from '../cart-table/CartTable';
 import { OrdersFooter } from '../orders-footer/OrdersFooter';
 import styles from './CartPanel.module.scss';
 import { selectCartByLocation } from 'src/redux/slices/cart.slice';
+import { OrderCalcs } from '../../utils/OrderCalcs';
 
 interface ICustomerItem {
   value: string;
@@ -31,6 +32,8 @@ const initOrder = {
   total_price: 0,
   orderId: 0,
 };
+
+//! models need the full data to be refactored from static to dynamic
 
 export default function CartPanel({ shopId, lang, direction }) {
   const selectCartForLocation = selectCartByLocation(shopId ?? 0);
@@ -65,6 +68,19 @@ export default function CartPanel({ shopId, lang, direction }) {
       <CartTable shopId={shopId} lang={lang} />
       <hr />
 
+      <OrderCalcs
+        shopId={shopId}
+        orderEditDetails={orderEditDetails}
+        taxRate={taxRate}
+        subTotal={subTotal}
+        shippingRate={0}
+        // with discount feature
+        tax={tax}
+        __WithDiscountFeature__total={__WithDiscountFeature__total}
+        setDiscount={setDiscount}
+        totalDiscount={0}
+        lang={lang}
+      />
       <OrdersFooter
         selectedHold={selectedHold}
         orderEditDetails={orderEditDetails}

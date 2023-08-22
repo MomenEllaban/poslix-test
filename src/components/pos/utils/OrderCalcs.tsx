@@ -1,27 +1,42 @@
-import React, { ChangeEvent, useContext, useEffect, useState } from 'react';
-import { UserContext } from 'src/context/UserContext';
-import { DiscountType, IOrdersCalcs } from '../../../models/common-model';
 import EditIcon from '@mui/icons-material/Edit';
+import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
+import { ChangeEvent, useState } from 'react';
+import { useUser } from 'src/context/UserContext';
+import { DiscountType, IOrdersCalcs } from '../../../models/common-model';
+import { selectCartByLocation } from 'src/redux/slices/cart.slice';
+import { useAppSelector } from 'src/hooks';
 
 const defaultDiscountType = 'fixed';
 const defaultDuscount = 0;
 
-export const OrderCalcs = (calcs: IOrdersCalcs) => {
-  const { taxRate, orderEditDetails, subTotal, totalAmount, shippingRate, lang } = calcs;
-  // with discount feature
-  const { tax, __WithDiscountFeature__total, setDiscount, totalDiscount } = calcs;
-  const { locationSettings } = useContext(UserContext);
+export const OrderCalcs = ({
+  taxRate,
+  orderEditDetails,
+  subTotal,
 
+  shippingRate,
+  lang,
+  tax,
+  __WithDiscountFeature__total,
+  setDiscount,
+  shopId,
+  totalDiscount,
+}: IOrdersCalcs) => {
+  const { locationSettings } = useUser();
+  const selectCartForLocation = selectCartByLocation(shopId);
+  const allCart = useAppSelector((state) => state.cart);
+  const cart = useAppSelector(selectCartForLocation); // current location order
+
+  const totalAmount = cart?.cartCostTotal || 0;
   const [isDiscountModalOpen, setIsDiscountModalOpen] = useState(false);
   const [discountType, setDiscountType] = useState<DiscountType>(defaultDiscountType);
   const [discountAmount, setDiscountAmount] = useState(defaultDuscount);
@@ -53,11 +68,13 @@ export const OrderCalcs = (calcs: IOrdersCalcs) => {
             <div>
               {lang.cartComponent.tax} ({taxRate}%)
             </div>
-            <div>{(totalAmount - subTotal).toFixed(locationSettings?.currency_decimal_places)}</div>
+            <div>
+              {(totalAmount - subTotal).toFixed(+locationSettings?.location_decimal_places)}
+            </div>
           </div>
           <div className="py-1 calcs-details-col">
             <div>{lang.cartComponent.shipping} (+)</div>
-            <div>{shippingRate?.toFixed(locationSettings?.currency_decimal_places)}</div>
+            <div>{shippingRate?.toFixed(+locationSettings?.location_decimal_places)}</div>
           </div>
         </div>
         <div className="calcs-details-row">
@@ -73,7 +90,7 @@ export const OrderCalcs = (calcs: IOrdersCalcs) => {
                 }}
               />
               <span>
-                {totalDiscount.toFixed(locationSettings?.currency_decimal_places)}{' '}
+                {totalDiscount.toFixed(locationSettings?.location_decimal_places)}{' '}
                 <span style={{ fontSize: '10px' }}>{locationSettings?.currency_code}</span>
               </span>
             </div>
@@ -82,7 +99,7 @@ export const OrderCalcs = (calcs: IOrdersCalcs) => {
             <div>{lang.cartComponent.total}</div>
             <div>
               {(__WithDiscountFeature__total + (totalAmount - subTotal)).toFixed(
-                locationSettings?.currency_decimal_places
+                locationSettings?.location_decimal_places
               )}{' '}
               <span style={{ fontSize: '10px' }}>{locationSettings?.currency_code}</span>
             </div>
@@ -93,7 +110,7 @@ export const OrderCalcs = (calcs: IOrdersCalcs) => {
             __WithDiscountFeature__total +
             (totalAmount - subTotal) -
             orderEditDetails?.total_price
-          ).toFixed(locationSettings?.currency_decimal_places) != 0 && (
+          ).toFixed(locationSettings?.location_decimal_places) != 0 && (
             <div className="calcs-details-row">
               <div className="py-1 calcs-details-col">
                 <div></div>
@@ -106,7 +123,7 @@ export const OrderCalcs = (calcs: IOrdersCalcs) => {
                     __WithDiscountFeature__total +
                     (totalAmount - subTotal) -
                     orderEditDetails?.total_price
-                  ).toFixed(locationSettings?.currency_decimal_places)}{' '}
+                  ).toFixed(locationSettings?.location_decimal_places)}{' '}
                   <span style={{ fontSize: '10px' }}>{locationSettings?.currency_code}</span>
                 </div>
               </div>

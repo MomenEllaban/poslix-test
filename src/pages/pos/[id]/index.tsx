@@ -194,7 +194,7 @@ const Home: NextPage = ({ shopId: _id }: any) => {
 
         <CartPanel shopId={shopId} lang={lang.pos} direction={lang == ar ? 'rtl' : ''} />
         {/* <OrdersComponent shopId={shopId} lang={lang.pos} direction={lang == ar ? 'rtl' : ''} /> */}
-        <ItemList lang={lang.pos.itemList} />
+        <ItemList shopId={shopId} lang={lang.pos.itemList} />
       </PosLayout>
     );
 
