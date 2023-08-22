@@ -23,12 +23,15 @@ import {
 const OrdersTable = (props: any) => {
   const { shopId, rules } = props;
   const myLoader = (img: any) => img.src;
-  const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
+  const [locationSettings, setLocationSettings] = useState<
+    ILocationSettings & { value: number; label: string }
+  >({
     value: 0,
     label: '',
-    currency_decimal_places: 0,
+    location_decimal_places: 0,
     currency_code: '',
     currency_id: 0,
+    // @ts-ignore
     currency_rate: 1,
     currency_symbol: '',
   });

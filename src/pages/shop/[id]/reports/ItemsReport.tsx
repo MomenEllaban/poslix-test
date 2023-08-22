@@ -33,6 +33,7 @@ import DatePicker from 'src/components/filters/Date';
 export default function ItemsReport(props: any) {
   const { shopId, rules } = props;
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
+    // @ts-ignore
     value: 0,
     label: '',
     currency_decimal_places: 0,
@@ -218,7 +219,7 @@ export default function ItemsReport(props: any) {
                   {invoicDetails.txtTax} {invoicDetails.isMultiLang && invoicDetails.txtTax2}
                 </td>
                 <td></td>
-                {/* <td>{(selectRow.total_price).toFixed(locationSettings?.currency_decimal_places)}</td> */}
+                {/* <td>{(selectRow.total_price).toFixed(locationSettings?.location_decimal_places)}</td> */}
               </tr>
               <tr className="net-amount">
                 <td></td>
@@ -227,7 +228,7 @@ export default function ItemsReport(props: any) {
                 </td>
                 <td></td>
                 <td className="txt-bold">
-                  {Number(selectRow.total_price).toFixed(locationSettings?.currency_decimal_places)}
+                  {Number(selectRow.total_price).toFixed(locationSettings?.location_decimal_places)}
                 </td>
               </tr>
             </thead>

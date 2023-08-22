@@ -17,6 +17,7 @@ import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/chec
 const PricingGroups = (props) => {
   const { shopId, rules } = props;
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
+    // @ts-ignore
     value: 0,
     label: '',
     currency_decimal_places: 0,

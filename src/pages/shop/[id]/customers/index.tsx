@@ -1,9 +1,4 @@
-import {
-  faEye,
-  faPenToSquare,
-  faPlus,
-  faTrash
-} from '@fortawesome/free-solid-svg-icons';
+import { faEye, faPenToSquare, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { AdminLayout } from '@layout';
 import { ILocationSettings } from '@models/common-model';
@@ -31,6 +26,7 @@ import { ProductContext } from '../../../../context/ProductContext';
 const Customers: NextPage = (props: any) => {
   const { shopId, rules } = props;
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
+    // @ts-ignore
     value: 0,
     label: '',
     currency_decimal_places: 0,
@@ -65,10 +61,16 @@ const Customers: NextPage = (props: any) => {
 
   const columns: GridColDef[] = [
     { field: 'id', headerName: '#', minWidth: 50 },
-    { field: 'name', headerName: 'Name', flex: 1,
-    renderCell: ({row}) => (
-      <p>{row.first_name} {row.last_name}</p>
-    )},
+    {
+      field: 'name',
+      headerName: 'Name',
+      flex: 1,
+      renderCell: ({ row }) => (
+        <p>
+          {row.first_name} {row.last_name}
+        </p>
+      ),
+    },
     { field: 'mobile', headerName: 'Mobile', flex: 1 },
     {
       field: 'action',
@@ -127,8 +129,8 @@ const Customers: NextPage = (props: any) => {
     );
   }
   async function initDataPage() {
-    if(router.query.id) {
-      const res = await findAllData(`customers/${router.query.id}`)
+    if (router.query.id) {
+      const res = await findAllData(`customers/${router.query.id}`);
       if (res.data.status !== 200) {
         Toastify('error', 'Somthing wrong!!, try agian');
         return;
@@ -150,13 +152,13 @@ const Customers: NextPage = (props: any) => {
           })
         ]
       );
-      else alert('errorr location settings');
+    else alert('errorr location settings');
     initDataPage();
   }, [router.asPath]);
 
   const handleDeleteFuc = (result: boolean, msg: string, section: string) => {
     if (msg.length > 0) Toastify(result ? 'success' : 'error', msg);
-    initDataPage()
+    initDataPage();
     setShow(false);
   };
   const onRowsSelectionHandler = (ids: any) => {};
@@ -169,7 +171,7 @@ const Customers: NextPage = (props: any) => {
           alertFun={handleDeleteFuc}
           shopId={shopId}
           id={selectId}
-          url={"customers"}>
+          url={'customers'}>
           Are you Sure You Want Delete This Customer ?
         </AlertDialog>
         {/* start */}

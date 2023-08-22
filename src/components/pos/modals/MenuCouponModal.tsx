@@ -168,7 +168,7 @@ const MenuCouponModal = (props: any) => {
                                       <td>({ord.name})</td>
                                       <td>
                                         {Number(ord.total_price).toFixed(
-                                          locationSettings?.currency_decimal_places
+                                          locationSettings?.location_decimal_places
                                         )}{' '}
                                         <span style={{ fontSize: '10px' }}>
                                           {locationSettings?.currency_code}
@@ -220,7 +220,7 @@ const MenuCouponModal = (props: any) => {
                                       <td>
                                         $
                                         {Number(ord.price).toFixed(
-                                          locationSettings?.currency_decimal_places
+                                          locationSettings?.location_decimal_places
                                         )}
                                       </td>
                                       <td>{Number(ord.qty).toFixed(0)}</td>

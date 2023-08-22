@@ -22,7 +22,6 @@ export const OrderCalcs = ({
   taxRate,
   orderEditDetails,
   subTotal,
-
   shippingRate,
   lang,
   tax,

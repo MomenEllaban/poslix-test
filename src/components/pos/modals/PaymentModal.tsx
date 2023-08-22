@@ -1,21 +1,21 @@
-import React, { useState, useContext, useEffect } from 'react';
-import { useRecoilState } from 'recoil';
+// @ts-nocheck
+import { faTrash } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { paymentTypeData } from '@models/data';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import { IHold, IpaymentRow } from '../../../models/common-model';
-import { apiFetchCtr, apiInsertCtr } from '../../../libs/dbUtils';
-import { cartJobType } from '../../../recoil/atoms';
+import { useContext, useEffect, useState } from 'react';
+import { Button, ButtonGroup } from 'react-bootstrap';
 import Select from 'react-select';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Button, ButtonGroup, Card } from 'react-bootstrap';
-import { faTrash } from '@fortawesome/free-solid-svg-icons';
-import { paymentTypeData } from '@models/data';
+import { ToastContainer } from 'react-toastify';
+import { useRecoilState } from 'recoil';
 import { ProductContext } from 'src/context/ProductContext';
 import { UserContext } from 'src/context/UserContext';
 import { Toastify } from 'src/libs/allToasts';
-import { ToastContainer } from 'react-toastify';
-import { Prev } from 'react-bootstrap/esm/PageItem';
+import { apiInsertCtr } from '../../../libs/dbUtils';
+import { IHold, IpaymentRow } from '../../../models/common-model';
+import { cartJobType } from '../../../recoil/atoms';
 const PaymentModal = (props: any) => {
   const { locationSettings } = useContext(UserContext);
   const { openDialog, statusDialog, holdObj, details, shopId, orderEditDetails, selectedHold } =
@@ -140,7 +140,7 @@ const PaymentModal = (props: any) => {
     let _sum = 0;
     localStorage.setItem('payment', JSON.stringify(_rows));
     _rows.map((_i: IpaymentRow) => (_sum += Number(_i.amount!)));
-    setTotalPaid(+Number(_sum).toFixed(locationSettings?.currency_decimal_places));
+    setTotalPaid(+Number(_sum).toFixed(locationSettings?.location_decimal_places));
   }
   const style = { minWidth: '500px' };
 
@@ -155,7 +155,7 @@ const PaymentModal = (props: any) => {
       if (name === 'amount') {
         let diff = Number(
           (_rows?.[index]['total'] - (Number(value) + toBeAdded)).toFixed(
-            locationSettings?.currency_decimal_places
+            locationSettings?.location_decimal_places
           )
         );
 
@@ -222,15 +222,15 @@ const PaymentModal = (props: any) => {
         +Number(
           totalPaid -
             +(__WithDiscountFeature__total + (details.totalAmount - details.subTotal)).toFixed(
-              locationSettings?.currency_decimal_places
+              locationSettings?.location_decimal_places
             )
-        ).toFixed(locationSettings?.currency_decimal_places)
+        ).toFixed(locationSettings?.location_decimal_places)
       );
     } else {
       // setCanPay( isCash ?
-      //   totalPaid.toFixed(locationSettings?.currency_decimal_places) >=
+      //   totalPaid.toFixed(locationSettings?.location_decimal_places) >=
       //     _WithDiscountFeature_total.toFixed(
-      //       locationSettings?.currency_decimal_places
+      //       locationSettings?.location_decimal_places
       //     ) : true
       // );
 
@@ -243,9 +243,9 @@ const PaymentModal = (props: any) => {
         +Number(
           totalPaid -
             +(__WithDiscountFeature__total + (details.totalAmount - details.subTotal)).toFixed(
-              locationSettings?.currency_decimal_places
+              locationSettings?.location_decimal_places
             )
-        ).toFixed(locationSettings?.currency_decimal_places)
+        ).toFixed(locationSettings?.location_decimal_places)
       );
     }
     const _rows: any = [...paymentRows];
@@ -352,6 +352,7 @@ const PaymentModal = (props: any) => {
       alert('has error, Try Again...');
     }
   }
+  // @ts-ignore
   function fixAmount() {
     if (paymentRows.length > 0) {
       const _rows: any = [...paymentRows];
@@ -360,7 +361,7 @@ const PaymentModal = (props: any) => {
           __WithDiscountFeature__total +
           Number(
             (details.totalAmount - details.subTotal).toFixed(
-              locationSettings?.currency_decimal_places
+              locationSettings?.location_decimal_places
             )
           );
       else

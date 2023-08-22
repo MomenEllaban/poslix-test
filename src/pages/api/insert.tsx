@@ -693,9 +693,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
                   itm.name,
                   Number(itm.amount),
                   repo.data.id,
-                  itm.Etax_type != 'service' ? 'percentage' : itm.Etype,
+                  itm.tax_type != 'service' ? 'percentage' : itm.type,
                   itm.is_primary,
-                  itm.Etax_type,
+                  itm.tax_type,
                 ]);
             });
 
@@ -718,7 +718,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
                       data[idx].name,
                       data[idx].amount,
                       data[idx].is_primary,
-                      data[idx].Etype,
+                      data[idx].type,
                       data[idx].id,
                     ]
                   )

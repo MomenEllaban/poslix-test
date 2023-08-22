@@ -35,6 +35,7 @@ import { useRecoilState } from 'recoil';
 export default function SalesListTable(props: any) {
   const { shopId, rules, salesList } = props;
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
+    // @ts-ignore
     value: 0,
     label: '',
     currency_decimal_places: 0,
@@ -74,7 +75,7 @@ export default function SalesListTable(props: any) {
       headerName: 'Final Total ',
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) => (
-        <>{Number(+row.sub_total).toFixed(locationSettings?.currency_decimal_places)}</>
+        <>{Number(+row.sub_total).toFixed(locationSettings?.location_decimal_places)}</>
       ),
     },
     { field: 'payed', headerName: 'Amount paid', flex: 1 },
@@ -85,9 +86,7 @@ export default function SalesListTable(props: any) {
       renderCell: ({ row }: Partial<GridRowParams>) => (
         <>
           {Number(+row.sub_total - +row.payed) > 0
-            ? Number(+row.sub_total - +row.payed).toFixed(
-                locationSettings?.currency_decimal_places
-              )
+            ? Number(+row.sub_total - +row.payed).toFixed(locationSettings?.location_decimal_places)
             : 0}
         </>
       ),
@@ -170,7 +169,7 @@ export default function SalesListTable(props: any) {
                     totalDue:
                       Number(+row.total_price - +row.amount) > 0
                         ? Number(+row.total_price - +row.amount).toFixed(
-                            locationSettings?.currency_decimal_places
+                            locationSettings?.location_decimal_places
                           )
                         : 0,
                   });
@@ -257,7 +256,7 @@ export default function SalesListTable(props: any) {
                   {invoicDetails.txtTax} {invoicDetails.isMultiLang && invoicDetails.txtTax2}
                 </td>
                 <td></td>
-                {/* <td>{(selectRow.total_price).toFixed(locationSettings?.currency_decimal_places)}</td> */}
+                {/* <td>{(selectRow.total_price).toFixed(locationSettings?.location_decimal_places)}</td> */}
               </tr>
               <tr className="net-amount">
                 <td></td>
@@ -266,7 +265,7 @@ export default function SalesListTable(props: any) {
                 </td>
                 <td></td>
                 <td className="txt-bold">
-                  {Number(selectRow.total_price).toFixed(locationSettings?.currency_decimal_places)}
+                  {Number(selectRow.total_price).toFixed(locationSettings?.location_decimal_places)}
                 </td>
               </tr>
             </thead>
@@ -393,7 +392,7 @@ export default function SalesListTable(props: any) {
                   {invoicDetails.txtTotal} {invoicDetails.isMultiLang && invoicDetails.txtTotal2}
                 </td>
                 <td className="txt_bold_invoice">
-                  {Number(selectRow.total_price).toFixed(locationSettings?.currency_decimal_places)}
+                  {Number(selectRow.total_price).toFixed(locationSettings?.location_decimal_places)}
                 </td>
               </tr>
             </tbody>
@@ -428,13 +427,13 @@ export default function SalesListTable(props: any) {
                 <td></td>
                 <td>{invoicDetails.txtTax} {invoicDetails.isMultiLang && invoicDetails.txtTax2}</td>
                 <td></td>
-                <td>{(selectRow.total_price).toFixed(locationSettings?.currency_decimal_places)}</td>
+                <td>{(selectRow.total_price).toFixed(locationSettings?.location_decimal_places)}</td>
               </tr>
               <tr className="net-amount">
                 <td></td>
                 <td className='txt-bold'>{invoicDetails.txtTotal} {invoicDetails.isMultiLang && invoicDetails.txtTotal2}</td>
                 <td></td>
-                <td className='txt-bold'>{Number(selectRow.total_price).toFixed(locationSettings?.currency_decimal_places)}</td>
+                <td className='txt-bold'>{Number(selectRow.total_price).toFixed(locationSettings?.location_decimal_places)}</td>
               </tr>
             </thead>
           </table> */}
@@ -522,7 +521,7 @@ export default function SalesListTable(props: any) {
                   {invoicDetails.txtTax} {invoicDetails.isMultiLang && invoicDetails.txtTax2}
                 </td>
                 <td></td>
-                {/* <td>{(selectRow.total_price).toFixed(locationSettings?.currency_decimal_places)}</td> */}
+                {/* <td>{(selectRow.total_price).toFixed(locationSettings?.location_decimal_places)}</td> */}
               </tr>
               <tr className="net-amount">
                 <td></td>
@@ -531,7 +530,7 @@ export default function SalesListTable(props: any) {
                 </td>
                 <td></td>
                 <td className="txt-bold">
-                  {Number(selectRow.total_price).toFixed(locationSettings?.currency_decimal_places)}
+                  {Number(selectRow.total_price).toFixed(locationSettings?.location_decimal_places)}
                 </td>
               </tr>
               <tr className="net-amount">
@@ -541,7 +540,7 @@ export default function SalesListTable(props: any) {
                 </td>
                 <td></td>
                 <td className="txt-bold">
-                  {Number(selectRow.amount).toFixed(locationSettings?.currency_decimal_places)}
+                  {Number(selectRow.amount).toFixed(locationSettings?.location_decimal_places)}
                 </td>
               </tr>
               <tr className="net-amount">
@@ -553,7 +552,7 @@ export default function SalesListTable(props: any) {
                 <td></td>
                 <td className="txt-bold">
                   {Number(selectRow.total_price - selectRow.amount).toFixed(
-                    locationSettings?.currency_decimal_places
+                    locationSettings?.location_decimal_places
                   )}
                 </td>
               </tr>
@@ -618,10 +617,10 @@ export default function SalesListTable(props: any) {
           })
         ]
       );
-      else alert('errorr location settings');
-      console.log(locationSettings);
-      
-      initDataPage();
+    else alert('errorr location settings');
+    console.log(locationSettings);
+
+    initDataPage();
   }, [router.asPath]);
 
   const handleDeleteFuc = (result: boolean, msg: string, section: string) => {
@@ -785,13 +784,13 @@ export default function SalesListTable(props: any) {
                         type="text"
                         className="form-control"
                         value={Number(selectRow.total_price).toFixed(
-                          locationSettings?.currency_decimal_places
+                          locationSettings?.location_decimal_places
                         )}
                       />
                     ) : (
                       <p>
                         {Number(selectRow.total_price).toFixed(
-                          locationSettings?.currency_decimal_places
+                          locationSettings?.location_decimal_places
                         )}
                       </p>
                     )}
@@ -857,7 +856,7 @@ export default function SalesListTable(props: any) {
                           )}
                         </div>
                         <div>
-                          {Number(line.price).toFixed(locationSettings?.currency_decimal_places)}
+                          {Number(line.price).toFixed(locationSettings?.location_decimal_places)}
                         </div>
                         {edit && (
                           <div>
@@ -876,12 +875,12 @@ export default function SalesListTable(props: any) {
                           type="text"
                           className="form-control"
                           value={Number(selectRow.total_price).toFixed(
-                            locationSettings?.currency_decimal_places
+                            locationSettings?.location_decimal_places
                           )}
                         />
                       ) : (
                         Number(selectRow.total_price).toFixed(
-                          locationSettings?.currency_decimal_places
+                          locationSettings?.location_decimal_places
                         )
                       )}
                     </div>
@@ -918,7 +917,7 @@ export default function SalesListTable(props: any) {
         statusDialog={paymentModalShow}
         setPaymentModalShow={setPaymentModalShow}
         setPaymentModalData={setPaymentModalData}
-        location={locationSettings?.label}
+        location={locationSettings?.location_name}
         shopId={shopId}
         completeHandele={handelPaymentFun}
         handlePrint={handlePrint3}

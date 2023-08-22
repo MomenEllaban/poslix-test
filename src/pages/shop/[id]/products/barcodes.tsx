@@ -25,6 +25,7 @@ import withAuth from 'src/HOCs/withAuth';
 const Barcodes: NextPage = (props: any) => {
   const { shopId, rules } = props;
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
+    // @ts-ignore
     value: 0,
     label: '',
     currency_decimal_places: 0,
@@ -240,7 +241,7 @@ const Barcodes: NextPage = (props: any) => {
               <div key={`${sp.sku}-${i}`} style={{ height: '120px' }}>
                 {options.businessName && (
                   <h6 style={{ textAlign: 'center', fontSize: '20px' }}>
-                    {locationSettings.label}
+                    {locationSettings.location_name}
                   </h6>
                 )}
                 {options.name && (
@@ -248,7 +249,7 @@ const Barcodes: NextPage = (props: any) => {
                 )}
                 {options.price && (
                   <h6 style={{ textAlign: 'center', fontSize: '20px' }}>
-                    {Number(sp.price).toFixed(locationSettings?.currency_decimal_places)}{' '}
+                    {Number(sp.price).toFixed(locationSettings?.location_decimal_places)}{' '}
                     {locationSettings?.currency_code}
                   </h6>
                 )}

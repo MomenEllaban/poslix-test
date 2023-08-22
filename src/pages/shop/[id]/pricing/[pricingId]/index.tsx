@@ -13,6 +13,7 @@ const PricingGroup = (props: any) => {
   const { shopId, rules } = props;
   const [isLoading, setIsLoading] = useState(true);
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
+    // @ts-ignore
     value: 0,
     label: '',
     currency_decimal_places: 0,
@@ -31,12 +32,12 @@ const PricingGroup = (props: any) => {
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) => {
         if (row.type == 'single')
-          return Number(row.sell_price).toFixed(locationSettings?.currency_decimal_places);
+          return Number(row.sell_price).toFixed(locationSettings?.location_decimal_places);
         else
           return (
-            Number(row.min_price).toFixed(locationSettings?.currency_decimal_places) +
+            Number(row.min_price).toFixed(locationSettings?.location_decimal_places) +
             ' - ' +
-            Number(row.max_price).toFixed(locationSettings?.currency_decimal_places)
+            Number(row.max_price).toFixed(locationSettings?.location_decimal_places)
           );
       },
     },

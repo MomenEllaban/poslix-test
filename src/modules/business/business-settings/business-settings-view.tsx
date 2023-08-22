@@ -144,14 +144,11 @@ export default function BusinessSettingsView({
       })
       .catch((err) => {
         Toastify('error', 'Error Updating Business Settings');
-
       })
       .finally(() => {
         setLoading(false);
       });
-
-
-    }
+  }
   const onError = (errors: any, e: any) => console.error(errors, e);
 
   return (

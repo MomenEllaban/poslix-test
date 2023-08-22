@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import { useReactToPrint } from 'react-to-print';
@@ -213,7 +214,7 @@ export default function OrdersComponent(props: any) {
             <td>{rs.qty}</td>
             <td>{_it.name}</td>
             <th></th>
-            <td>{Number(rs.price).toFixed(locationSettings?.currency_decimal_places)}</td>
+            <td>{Number(rs.price).toFixed(locationSettings?.location_decimal_places)}</td>
           </tr>
         );
       });
@@ -298,7 +299,7 @@ export default function OrdersComponent(props: any) {
                 </td>
                 <td></td>
                 <td>
-                  {(totalAmount - subTotal).toFixed(locationSettings?.currency_decimal_places)}
+                  {(totalAmount - subTotal).toFixed(locationSettings?.location_decimal_places)}
                 </td>
               </tr>
               <tr className="net-amount">
@@ -308,7 +309,7 @@ export default function OrdersComponent(props: any) {
                   {invoicDetails.isMultiLang && invoicDetails.txtDiscount2}
                 </td>
                 <td></td>
-                <td>{totalDiscount.toFixed(locationSettings?.currency_decimal_places)}</td>
+                <td>{totalDiscount.toFixed(locationSettings?.location_decimal_places)}</td>
               </tr>
               <tr className="net-amount">
                 <td></td>
@@ -318,7 +319,7 @@ export default function OrdersComponent(props: any) {
                 <td></td>
                 <td className="txt-bold">
                   {Number(__WithDiscountFeature__total + (totalAmount - subTotal)).toFixed(
-                    locationSettings?.currency_decimal_places
+                    locationSettings?.location_decimal_places
                   )}
                 </td>
               </tr>
@@ -330,7 +331,7 @@ export default function OrdersComponent(props: any) {
                 </td>
                 <td></td>
                 <td className="txt-bold">
-                  {amount && Number(totalPaid).toFixed(locationSettings?.currency_decimal_places)}
+                  {amount && Number(totalPaid).toFixed(locationSettings?.location_decimal_places)}
                 </td>
               </tr>
               <tr className="net-amount">
@@ -348,7 +349,7 @@ export default function OrdersComponent(props: any) {
                         __WithDiscountFeature__total +
                           +(totalAmount - subTotal) -
                           (amount && totalPaid)
-                      ).toFixed(locationSettings?.currency_decimal_places)
+                      ).toFixed(locationSettings?.location_decimal_places)
                     : 0}
                 </td>
               </tr>
@@ -437,7 +438,7 @@ export default function OrdersComponent(props: any) {
                   </td>
                   <td>
                     {Number(__WithDiscountFeature__total + (totalAmount - subTotal)).toFixed(
-                      locationSettings?.currency_decimal_places
+                      locationSettings?.location_decimal_places
                     )}
                   </td>
                 </tr>
@@ -447,7 +448,7 @@ export default function OrdersComponent(props: any) {
                   </td>
                   <td className="txt_bold_invoice">
                     {Number(__WithDiscountFeature__total + (totalAmount - subTotal)).toFixed(
-                      locationSettings?.currency_decimal_places
+                      locationSettings?.location_decimal_places
                     )}
                   </td>
                 </tr>
@@ -465,7 +466,7 @@ export default function OrdersComponent(props: any) {
                           __WithDiscountFeature__total +
                             +(totalAmount - subTotal) -
                             (amount && totalPaid)
-                        ).toFixed(locationSettings?.currency_decimal_places)
+                        ).toFixed(locationSettings?.location_decimal_places)
                       : 0}
                   </td>
                 </tr>
@@ -876,12 +877,12 @@ export default function OrdersComponent(props: any) {
       _servies_percetage = 0,
       _servies_fixed = 0;
     taxes?.map((tx: ITax) => {
-      if (tx.Etax_type === 'primary' && tx.is_primary) _primary += tx.amount;
-      else if (tx.Etax_type === 'primary') _none += tx.amount;
-      else if (tx.Etax_type === 'excise') _excises += tx.amount;
-      else if (tx.Etax_type === 'service' && tx.Etype === 'percentage')
+      if (tx.tax_type === 'primary' && tx.is_primary) _primary += tx.amount;
+      else if (tx.tax_type === 'primary') _none += tx.amount;
+      else if (tx.tax_type === 'excise') _excises += tx.amount;
+      else if (tx.tax_type === 'service' && tx.type === 'percentage')
         _servies_percetage += tx.amount;
-      else if (tx.Etax_type === 'service' && tx.Etype === 'fixed') _servies_fixed += tx.amount;
+      else if (tx.tax_type === 'service' && tx.type === 'fixed') _servies_fixed += tx.amount;
     });
     setDefTaxGroup({
       primary: _primary / 100,
@@ -1560,7 +1561,7 @@ export default function OrdersComponent(props: any) {
                       <td className="text-end">
                         <span>
                           {Number(quantity[i].lineTotalPrice).toFixed(
-                            locationSettings?.currency_decimal_places
+                            locationSettings?.location_decimal_places
                           )}
                         </span>
                       </td>
@@ -1572,10 +1573,10 @@ export default function OrdersComponent(props: any) {
           {/*end table*/}
         </div>
         <OrderCalcs
+          shopId={shopId}
           orderEditDetails={orderEditDetails}
           taxRate={taxRate}
           subTotal={subTotal}
-          totalAmount={totalAmount}
           shippingRate={shippingRate}
           // with discount feature
           tax={tax}
