@@ -2,37 +2,56 @@ import { faArrowAltCircleLeft, faEdit, faPlus, faTrash } from '@fortawesome/free
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { OwnerAdminLayout } from '@layout';
 import { userDashboard } from '@models/common-model';
+import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { Button, ButtonGroup, Card, Spinner, Table } from 'react-bootstrap';
 import { ToastContainer } from 'react-toastify';
 import withAuth from 'src/HOCs/withAuth';
 import AddNewUser from 'src/components/dashboard/AddNewUser';
+import AlertDialog from 'src/components/utils/AlertDialog';
+import { Toastify } from 'src/libs/allToasts';
 import { apiFetchCtr } from 'src/libs/dbUtils';
+import { findAllData } from 'src/services/crud.api';
 
 const Locations = ({ username }: any) => {
   const [users, setUsers] = useState<userDashboard[]>([]);
+  const [show, setShow] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isAddUser, setIsAddUser] = useState(false);
   const [selectedId, setSelectedId] = useState(0);
+  const router = useRouter()
+
+  const handleDeleteFunc = () => {
+    
+  }
+
   async function initDataPage() {
-    const { success, newdata } = await apiFetchCtr({
-      fetch: 'owner',
-      subType: 'getUsersMyBusiness',
-    });
-    if (!success) {
-      alert('error');
-      return;
+    if(router.isReady) {
+      const res = await findAllData('users')
+      if (res.data.success) {
+        setUsers(res.data.result);
+        setIsLoading(false);
+      }
     }
-    setUsers(newdata.myusers);
-    setIsLoading(false);
   }
   useEffect(() => {
     initDataPage();
-  }, []);
+  }, [router.asPath]);
 
   return (
     <>
       <OwnerAdminLayout>
+        <AlertDialog
+          alertShow={show}
+          alertFun={(result: boolean, msg: string) => {
+            if (msg.length > 0) Toastify(result ? 'success' : 'error', msg);
+              initDataPage()
+            setShow(false);
+          }}
+          id={selectedId}
+          url={"delete-user"}>
+          Are you Sure You Want Delete This Customer ?
+        </AlertDialog>
         <ToastContainer />
         <button
           className="mb-4 btn btn-primary p-3"
@@ -44,7 +63,7 @@ const Locations = ({ username }: any) => {
           <FontAwesomeIcon icon={!isAddUser ? faPlus : faArrowAltCircleLeft} />{' '}
           {!isAddUser ? 'Add User' : 'Back'}
         </button>
-        {isAddUser && <AddNewUser setIsAddUser={setIsAddUser} users={users} index={selectedId} />}
+        {isAddUser && <AddNewUser setIsAddUser={setIsAddUser} users={users} index={selectedId} initData={initDataPage} />}
         {!isAddUser && (
           <div className="row">
             <div className="col-md-12">
@@ -69,12 +88,15 @@ const Locations = ({ username }: any) => {
                           return (
                             <tr>
                               <th scope="row">{i + 1}</th>
-                              <th>{user.name}</th>
+                              <th>{user.first_name + (user?.last_name ? ' ' + user?.last_name : '')}</th>
                               <td>{user.email}</td>
                               <td>{user.password}</td>
                               <td>
                                 <ButtonGroup className="mb-2 m-buttons-style">
-                                  <Button onClick={() => {}}>
+                                  <Button onClick={() => {
+                                    setSelectedId(user.id);
+                                    setShow(true)
+                                  }}>
                                     <FontAwesomeIcon icon={faTrash} />
                                   </Button>
                                   <Button

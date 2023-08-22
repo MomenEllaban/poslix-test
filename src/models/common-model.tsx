@@ -240,7 +240,7 @@ export type userDashboard = {
   name: string;
   username: string;
   password: string;
-  mobile: string;
+  contact_number: string;
   email: string;
 };
 export interface IRoles {

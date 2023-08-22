@@ -13,6 +13,7 @@ import { redirectToLogin } from '../../libs/loginlib';
 import { userDashboard } from '@models/common-model';
 import { Toastify } from 'src/libs/allToasts';
 import { validateEmail } from 'src/libs/toolsUtils';
+import { createNewData, updateData } from 'src/services/crud.api';
 const AddNewUser = (props: any) => {
   const { index } = props;
   const [formObj, setFormObj] = useState<userDashboard>({
@@ -20,7 +21,7 @@ const AddNewUser = (props: any) => {
     name: '',
     username: '',
     password: '',
-    mobile: '',
+    contact_number: '',
     email: '',
   });
   const [errorForm, setErrorForm] = useState({
@@ -31,27 +32,30 @@ const AddNewUser = (props: any) => {
     password: false,
   });
   async function insertUpdateUsers() {
-    const { success, data, msg, code } = await apiInsertCtr({
-      type: 'owner',
-      subType: 'addUpdatebusinessUsers',
-      data: formObj,
-    });
-
-    if (!success) {
-      Toastify('error', msg);
-      if (code == 100)
-        setErrorForm({ name: false, email: false, email2: false, email3: true, password: false });
-      return;
+    let res;
+    if(index != undefined && index > 0) {
+      res = await updateData('update-user', index, {...formObj, first_name: formObj.name, number: formObj.contact_number})
+    } else {
+      res = await createNewData('add-user', {...formObj, first_name: formObj.name, number: formObj.contact_number})
     }
-    Toastify('success', 'successfully done!');
-    if (formObj.isNew) props.users.push({ ...formObj, id: data });
-    props.setIsAddUser(false);
+    if (res.data.success || res.data.status === 201) {
+      Toastify('success', 'successfully done!');
+      if (formObj.isNew) props.users.push({ ...formObj, id: res.data.result });
+      props.setIsAddUser(false);
+      props.initData()
+    } else {
+      setErrorForm({ name: false, email: false, email2: false, email3: true, password: false });
+      Toastify('error', 'Somthing is Wrong!');
+    }
   }
   var errors = [];
   useEffect(() => {
     if (index != undefined && index > 0) {
       const _idn = props.users.findIndex((od: any) => od.id == index);
-      if (_idn > -1) setFormObj({ ...props.users[_idn], isNew: false });
+      if (_idn > -1)
+        setFormObj({ ...props.users[_idn], name: props.users[_idn].first_name +
+          (props.users[_idn]?.last_name ? ' ' + props.users[_idn]?.last_name : ''),
+          isNew: false });
       else {
         Toastify('error', 'Somthing is Wrong!, Try Later');
         props.setIsAddUser(false);
@@ -98,9 +102,9 @@ const AddNewUser = (props: any) => {
                         type="number"
                         className="form-control"
                         placeholder=""
-                        value={formObj.mobile}
+                        value={formObj.contact_number}
                         onChange={(e) => {
-                          setFormObj({ ...formObj, mobile: e.target.value });
+                          setFormObj({ ...formObj, contact_number: e.target.value });
                         }}
                       />
                     </div>
@@ -154,16 +158,16 @@ const AddNewUser = (props: any) => {
                   onClick={(e) => {
                     e.preventDefault();
                     errors = [];
-                    if (formObj.name.length == 0) errors.push('error');
-                    if (formObj.email.length == 0) errors.push('error');
-                    if (formObj.password.length == 0) errors.push('error');
+                    if (formObj.name?.length == 0) errors.push('error');
+                    if (formObj.email?.length == 0) errors.push('error');
+                    if (formObj.password?.length == 0) errors.push('error');
                     if (!validateEmail(formObj.email)) errors.push('error');
                     setErrorForm({
                       ...errorForm,
                       name: formObj.name.length == 0,
                       email: formObj.email.length == 0,
                       email2: !validateEmail(formObj.email),
-                      password: formObj.password.length == 0,
+                      password: formObj.password?.length == 0,
                     });
                     if (errors.length == 0) {
                       insertUpdateUsers();
