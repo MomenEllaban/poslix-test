@@ -95,7 +95,13 @@ export default function CartPanel({ shopId, lang, direction }) {
   };
 
   useEffect(() => {
-    if (!isProductModalOpen) setProductVariations([]);
+    if (!isProductModalOpen) {
+      setProductVariations([]);
+      if (product) {
+        setProduct(null);
+        setProductVariations(null);
+      }
+    }
   }, [isProductModalOpen]);
 
   return (
@@ -117,6 +123,11 @@ export default function CartPanel({ shopId, lang, direction }) {
         menuIsOpen={isMenuOpen}
         closeMenuOnSelect={false}
         onFocus={() => setIsMenuOpen(true)}
+        onBlur={() => {
+          setTimeout(() => {
+            setIsMenuOpen(false);
+          }, 200);
+        }}
         isSearchable
         placeholder="Search Product ..."
         cacheOptions
