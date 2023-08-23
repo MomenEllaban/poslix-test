@@ -13,7 +13,7 @@ import { useUser } from 'src/context/UserContext';
 import LoginView from 'src/modules/auth/_views/login-view';
 import RegisterView from 'src/modules/auth/_views/register-view';
 import api from 'src/utils/app-api';
-import { ELocalStorageKeys } from 'src/utils/app-contants';
+import { ELocalStorageKeys } from 'src/utils/app-constants';
 
 const initalInputState = {
   id: '',

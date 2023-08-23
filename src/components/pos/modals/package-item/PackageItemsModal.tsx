@@ -1,11 +1,11 @@
 import { IProduct, IVariation } from '@models/pos.types';
+import { Dispatch, SetStateAction } from 'react';
 import { Button, Modal } from 'react-bootstrap';
 import { MdAddShoppingCart } from 'react-icons/md';
 import { useUser } from 'src/context/UserContext';
 import { useAppDispatch } from 'src/hooks';
-import styles from './PackageItemsModal.module.scss';
-import { Dispatch, SetStateAction } from 'react';
 import { addToCart } from 'src/redux/slices/cart.slice';
+import styles from './PackageItemsModal.module.scss';
 
 const PackageItemsModal = ({
   product,
