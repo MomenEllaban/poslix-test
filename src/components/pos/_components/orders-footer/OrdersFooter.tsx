@@ -1,13 +1,11 @@
 import { useState } from 'react';
 import { Button } from 'react-bootstrap';
+import ConfirmationModal from 'src/components/modals/confirmation-modal/ConfirmationModal';
 import { useAppDispatch, useAppSelector } from 'src/hooks';
 import { Toastify } from 'src/libs/allToasts';
-import { clearCart } from 'src/redux/slices/cart.slice';
+import { clearCart, selectCartByLocation } from 'src/redux/slices/cart.slice';
 import HoldModal from '../../modals/HoldModal';
 import OrdersModal from '../../modals/hold-orders/HoldOrdersModal';
-import PaymentModal from '../../modals/PaymentModal';
-import ConfirmationModal from 'src/components/modals/confirmation-modal/ConfirmationModal';
-import { selectCartByLocation } from 'src/redux/slices/cart.slice';
 
 export const OrdersFooter = ({
   orderEditDetails,
@@ -16,7 +14,7 @@ export const OrdersFooter = ({
   shopId,
   selectedHold,
   lang,
-  tax,
+  // tax,
   __WithDiscountFeature__total,
   setDiscount,
   totalDiscount,
@@ -30,6 +28,7 @@ export const OrdersFooter = ({
 
   const [clearCartModal, setClearCartModal] = useState<boolean>(false);
   const [holdModal, setHoldModal] = useState<boolean>(false);
+  const [tax, setTax] = useState<number>(0);
 
   const [isShowModal, setIsShowModal] = useState<boolean>(false);
   const HoldModalHandler = (status: boolean) => {

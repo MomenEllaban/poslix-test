@@ -30,6 +30,8 @@ const PackageItemsModal = ({
       ...product,
       ...item,
       name: product.name + ' | ' + item.name,
+      product_id: product.id,
+      variation_id: item.id,
       sell_price: +item.price,
       cost_price: +item.cost,
     } as any;

@@ -65,9 +65,9 @@ interface IUpdateBrandPayload extends Partial<IBrand> {}
 interface ICreateTaxPayload extends Partial<ITax> {
   name: string;
   amount: number;
-  Etype: 'percentage' | 'fixed';
+  type: 'percentage' | 'fixed';
   is_primary: boolean | 0 | 1;
-  Etax_type: 'primary' | 'group' | 'excise' | 'service';
+  tax_type: 'primary' | 'group' | 'excise' | 'service';
 }
 
 interface IUpdateTaxPayload extends Partial<ITax> {}
@@ -76,9 +76,9 @@ interface IUpdatePaymentPayload extends Partial<IPayment> {}
 
 interface ICreatePurchasePayload extends Partial<IPurchase> {
   location_id: number;
-  Estatus: 'draft' | 'processing' | 'received' | 'partially_received' | 'cancelled';
-  Epayment_status: 'paid' | 'credit' | 'partially_paid' | 'due';
-  Epayment_type: 'cash' | 'card' | 'cheque' | 'bank';
+  status: 'draft' | 'processing' | 'received' | 'partially_received' | 'cancelled';
+  payment_status: 'paid' | 'credit' | 'partially_paid' | 'due';
+  payment_type: 'cash' | 'card' | 'cheque' | 'bank';
 }
 
 interface IUpdatePurchasePayload extends Partial<IPurchase> {}
@@ -171,7 +171,7 @@ const posSetvice = {
   deleteBrand: async (id: string) => api.delete(`/brands/${id}`).then((data) => data.data),
 
   /*******************/
-  getTaxes: async (location_id: string) =>
+  getTaxes: async (location_id: string | number) =>
     api.get<any, TServiceResponse<ITaxes>, any>(`/taxes/${location_id}`).then((data) => data.data),
   getTax: async (id: string) =>
     api
@@ -430,7 +430,7 @@ export const useGetBrand = (id: string, config?: SWRConfiguration) => {
   };
 };
 
-export const useTaxesList = (location_id: string, config?: SWRConfiguration) => {
+export const useTaxesList = (location_id: string | number, config?: SWRConfiguration) => {
   const { data, error, isLoading, mutate } = useSWR(
     config?.suspense ? null : `/taxes/${location_id}`,
     () => posSetvice.getTaxes(location_id),

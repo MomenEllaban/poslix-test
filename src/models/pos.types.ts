@@ -171,9 +171,9 @@ export interface ITax {
   for_tax_inclusive: number;
   for_tax_exclusive: number;
   is_inc_or_exc: string;
-  Etype: 'percentage' | 'fixed';
+  type: 'percentage' | 'fixed';
   is_primary: boolean | 0 | 1;
-  Etax_type: string;
+  tax_type: string;
   tax_group: ITaxGroup[];
 
   isNew?: number; // this is not existed but to ignore errors

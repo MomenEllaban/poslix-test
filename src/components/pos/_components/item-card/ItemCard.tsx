@@ -20,7 +20,7 @@ export const ItemCard = ({ product }: { product: IProduct }) => {
       setProductVariations(product.variations);
       setIsOpenDialog(true);
     } else {
-      dispatch(addToCart(product));
+      dispatch(addToCart({ ...product, product_id: product.id }));
     }
   };
 
