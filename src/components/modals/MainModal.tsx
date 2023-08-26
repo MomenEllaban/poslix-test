@@ -1,4 +1,4 @@
-import { IProduct, IVariation } from '@models/pos.types';
+'use client';
 import React, { Dispatch, Fragment, SetStateAction } from 'react';
 import { Modal } from 'react-bootstrap';
 

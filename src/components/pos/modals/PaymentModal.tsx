@@ -16,6 +16,7 @@ import { Toastify } from 'src/libs/allToasts';
 import { apiInsertCtr } from '../../../libs/dbUtils';
 import { IHold, IpaymentRow } from '../../../models/common-model';
 import { cartJobType } from '../../../recoil/atoms';
+
 const PaymentModal = (props: any) => {
   const { locationSettings } = useContext(UserContext);
   const { openDialog, statusDialog, holdObj, details, shopId, orderEditDetails, selectedHold } =

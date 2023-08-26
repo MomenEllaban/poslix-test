@@ -1,11 +1,14 @@
 import { useState } from 'react';
-import { Button } from 'react-bootstrap';
+import { Button, ButtonGroup } from 'react-bootstrap';
 import ConfirmationModal from 'src/components/modals/confirmation-modal/ConfirmationModal';
 import { useAppDispatch, useAppSelector } from 'src/hooks';
 import { Toastify } from 'src/libs/allToasts';
 import { clearCart, selectCartByLocation } from 'src/redux/slices/cart.slice';
 import HoldModal from '../../modals/HoldModal';
 import OrdersModal from '../../modals/hold-orders/HoldOrdersModal';
+import PaymentModal from '../../modals/PaymentModal';
+import MainModal from 'src/components/modals/MainModal';
+import PaymentCheckoutModal from '../../modals/payment-checkout/PaymentCheckoutModal';
 
 export const OrdersFooter = ({
   orderEditDetails,
@@ -22,13 +25,10 @@ export const OrdersFooter = ({
 }: any) => {
   const dispatch = useAppDispatch();
   const selectCartForLocation = selectCartByLocation(shopId);
-  const allCart = useAppSelector((state) => state.cart);
   const cart = useAppSelector(selectCartForLocation); // current location order
   // assumption of one order at a time / one cart
 
   const [clearCartModal, setClearCartModal] = useState<boolean>(false);
-  const [holdModal, setHoldModal] = useState<boolean>(false);
-  const [tax, setTax] = useState<number>(0);
 
   const [isShowModal, setIsShowModal] = useState<boolean>(false);
   const HoldModalHandler = (status: boolean) => {
@@ -49,12 +49,12 @@ export const OrdersFooter = ({
         selectedHold={selectedHold}
         shopId={shopId}
         orderEditDetails={orderEditDetails}
-        openDialog={paymentModalHandler}
+        openDialog={() => {}}
         statusDialog={paymentModalShow}
         holdObj={props.holdObj}
         details={props.details}
         // with discount feature
-        tax={tax}
+        tax={0}
         __WithDiscountFeature__total={__WithDiscountFeature__total}
         setDiscount={setDiscount}
         totalDiscount={totalDiscount}
@@ -71,7 +71,7 @@ export const OrdersFooter = ({
         <HoldModal shopId={shopId} lang={lang} />
         <OrdersModal shopId={shopId} lang={lang} />
       </div>
-      <div
+      <ButtonGroup
         className="btn-group footer-payment-btns d-flex flex-grow-1 mt-1"
         role="group"
         aria-label="Basic mixed styles example"
@@ -88,7 +88,7 @@ export const OrdersFooter = ({
           className="btn btn-primary fs-15 fs-sm-20">
           {orderEditDetails.isEdit ? lang.cartComponent.saveOrder : lang.cartComponent.checkout}
         </button>
-      </div>
+      </ButtonGroup>
       {/* MODALS */}
       <ConfirmationModal
         show={clearCartModal}
@@ -96,6 +96,7 @@ export const OrdersFooter = ({
         onClose={() => setClearCartModal(false)}
         message="Are you sure you want to clear cart?"
       />
+      <PaymentCheckoutModal shopId={shopId} show={paymentModalShow} setShow={setPaymentModalShow} />
     </>
   );
 };

@@ -1,3 +1,4 @@
+'use client';
 import { faCashRegister } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { ICustomer, ITax } from '@models/pos.types';
@@ -25,9 +26,9 @@ import {
   useProductsList,
   useTaxesList,
 } from 'src/services/pos.service';
+import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
 
 import 'remixicon/fonts/remixicon.css';
-import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
 
 const Home: NextPage = ({ shopId: _id }: any) => {
   const router = useRouter();

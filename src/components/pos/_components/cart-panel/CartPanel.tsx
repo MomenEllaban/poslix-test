@@ -85,7 +85,6 @@ export default function CartPanel({ shopId, lang, direction }) {
           isReturn: isOrderEdit,
         }}
         holdObj={{ orders: cart?.cartItems, quantity: 0, name: 'noset' }}
-        // with discount feature
         tax={tax}
         __WithDiscountFeature__total={__WithDiscountFeature__total}
         setDiscount={setDiscount}
