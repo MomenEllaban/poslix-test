@@ -42,7 +42,6 @@ export const authOptions: NextAuthOptions = {
         if (data.result) {
           const user = {
             ...data.result.user,
-            business: data.result.business,
             token: data.result.authorization.token,
             business: (data.result as any).business,
           };

@@ -12,6 +12,9 @@ export const InvoicePrint = forwardRef((props, ref) => {
     totalPaid,
     subTotal,
     totalAmount,
+    quantity = [],
+    orders = [],
+    totalDiscount,
     __WithDiscountFeature__total,
   } = props as any;
 
