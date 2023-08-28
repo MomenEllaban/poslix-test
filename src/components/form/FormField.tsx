@@ -1,13 +1,15 @@
-import React, { useId } from 'react';
+'use client';
+import React, { useId, useState } from 'react';
 import { Form, InputGroup, Spinner } from 'react-bootstrap';
 
 export interface FormFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
   name: string;
-  type: string;
-  placeholder: string;
+  type?: string;
+  placeholder?: string;
   register: any;
   errors: any;
+  textArea?: boolean;
   loading?: boolean;
   required?: boolean;
 }
@@ -15,16 +17,18 @@ export interface FormFieldProps extends React.InputHTMLAttributes<HTMLInputEleme
 const FormField: React.FC<FormFieldProps> = ({
   label,
   name,
-  type,
-  placeholder,
+  type = 'text',
+  placeholder = '',
   register,
   errors,
   loading = false,
   required = false,
+  textArea = false,
   ...props
 }) => {
-  const isInvalid = !!errors[name];
+  const isInvalid = !!errors?.[name];
   const formId = useId();
+  const [value, setValue] = useState(props.defaultValue ?? type === 'number' ? 0 : '');
 
   return (
     <Form.Group controlId={`form-field-${name}-${formId}`}>
@@ -41,6 +45,7 @@ const FormField: React.FC<FormFieldProps> = ({
           placeholder={placeholder}
           type={type}
           name={name}
+          as={textArea ? 'textarea' : 'input'}
           {...register(name)}
         />
       </InputGroup>

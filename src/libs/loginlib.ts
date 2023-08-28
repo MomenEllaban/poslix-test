@@ -3,7 +3,7 @@ import jwt_decode from 'jwt-decode';
 import moment from 'moment';
 import Router from 'next/router';
 import api from 'src/utils/app-api';
-import { ELocalStorageKeys } from 'src/utils/app-contants';
+import { ELocalStorageKeys } from 'src/utils/app-constants';
 import { ROUTES } from 'src/utils/app-routes';
 
 let accessToken = '';

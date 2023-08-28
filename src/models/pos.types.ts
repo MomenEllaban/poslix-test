@@ -171,9 +171,9 @@ export interface ITax {
   for_tax_inclusive: number;
   for_tax_exclusive: number;
   is_inc_or_exc: string;
-  Etype: 'percentage' | 'fixed';
+  type: 'percentage' | 'fixed';
   is_primary: boolean | 0 | 1;
-  Etax_type: string;
+  tax_type: string;
   tax_group: ITaxGroup[];
 
   isNew?: number; // this is not existed but to ignore errors
@@ -220,6 +220,11 @@ export interface ICurrency {
   exchange_rate: string;
   created_at?: any;
   updated_at?: any;
+}
+export interface ICurrency {
+  currency_name: string;
+  currency_code: string;
+  currency_symbol: string;
 }
 
 export interface IPurchase {
@@ -294,3 +299,50 @@ export interface IExpense {
   created_by: number;
   created_at: string;
 }
+
+export interface IReportData {
+  id: number;
+  contact_id: number;
+  user_name: string;
+  contact_name: string;
+  contact_mobile: string;
+  sub_total: number;
+  payed: number;
+  due: number;
+  discount: string;
+  tax: string;
+  date: string;
+  transaction_status: string;
+  payment_status: string;
+  payment_method: string;
+  type: string;
+}
+
+export interface IItemReportData {
+  order_id: number;
+  user_first_name: string;
+  user_last_name: any;
+  contact_first_name: string;
+  contact_last_name: string;
+  contact_mobile: string;
+  qty: any;
+  price: any;
+  cost: any;
+  tax: any;
+  date: string;
+  status: string;
+  type: string;
+  products: IProduct[];
+}
+export interface IReport<T> {
+  data: T[];
+
+  tax: number;
+  total: number;
+  cost?: number;
+  sub_total: number;
+  currency: ICurrency;
+}
+
+export type ISalesReport = IReport<IReportData>;
+export type IItemsReport = IReport<IItemReportData>;
