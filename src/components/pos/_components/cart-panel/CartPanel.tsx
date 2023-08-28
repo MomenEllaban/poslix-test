@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useAppSelector } from 'src/hooks';
+import { selectCartByLocation } from 'src/redux/slices/cart.slice';
+import { OrderCalcs } from '../../utils/OrderCalcs';
 import CustomerDataSelect from '../CustomerDataSelect';
 import CartTable from '../cart-table/CartTable';
 import { OrdersFooter } from '../orders-footer/OrdersFooter';
+import ProductSearch from '../product-search/ProductSearch';
 import styles from './CartPanel.module.scss';
-import { selectCartByLocation } from 'src/redux/slices/cart.slice';
-import { OrderCalcs } from '../../utils/OrderCalcs';
 
 interface ICustomerItem {
   value: string;
@@ -39,20 +40,14 @@ export default function CartPanel({ shopId, lang, direction }) {
   const selectCartForLocation = selectCartByLocation(shopId ?? 0);
   const cart = useAppSelector(selectCartForLocation);
 
-  const [isOrderEdit, setIsOrderEdit] = useState<number>(0);
-  const [customer, setCustomer] = useState<ICustomerItem>(initCustomer);
-  const [orderEditDetails, setOrderEditDetails] = useState<IOrderItem>(initOrder);
-  const [selectedHold, setSelectedHold] = useState<{ holdId: number }>({
-    holdId: -1,
-  });
+  const [tax, setTax] = useState<number>(0);
   const [taxRate, setTaxRate] = useState<number>(0);
   const [subTotal, setSubTotal] = useState<number>(0);
-
-  const [discount, setDiscount] = useState({
-    type: 'fixed',
-    amount: 0,
-  });
-  const [tax, setTax] = useState<number>(0);
+  const [isOrderEdit, setIsOrderEdit] = useState<number>(0);
+  const [customer, setCustomer] = useState<ICustomerItem>(initCustomer);
+  const [discount, setDiscount] = useState({ type: 'fixed', amount: 0 });
+  const [orderEditDetails, setOrderEditDetails] = useState<IOrderItem>(initOrder);
+  const [selectedHold, setSelectedHold] = useState<{ holdId: number }>({ holdId: -1 });
   const [__WithDiscountFeature__total, set__WithDiscountFeature__total] = useState<number>(0);
 
   return (
@@ -65,20 +60,17 @@ export default function CartPanel({ shopId, lang, direction }) {
         customer={customer}
       />
       <hr />
+      <ProductSearch shopId={shopId} />
+
+      <hr />
       <CartTable shopId={shopId} lang={lang} />
       <hr />
 
       <OrderCalcs
         shopId={shopId}
         orderEditDetails={orderEditDetails}
-        taxRate={taxRate}
-        subTotal={subTotal}
-        shippingRate={0}
         // with discount feature
-        tax={tax}
         __WithDiscountFeature__total={__WithDiscountFeature__total}
-        setDiscount={setDiscount}
-        totalDiscount={0}
         lang={lang}
       />
       <OrdersFooter
@@ -93,7 +85,6 @@ export default function CartPanel({ shopId, lang, direction }) {
           isReturn: isOrderEdit,
         }}
         holdObj={{ orders: cart?.cartItems, quantity: 0, name: 'noset' }}
-        // with discount feature
         tax={tax}
         __WithDiscountFeature__total={__WithDiscountFeature__total}
         setDiscount={setDiscount}

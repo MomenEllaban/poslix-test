@@ -28,7 +28,7 @@ export const ItemList = ({ lang, shopId }: any) => {
   const [productsItems, SetProductsItems] = useState<IProduct[]>([]);
 
   const { categoriesList, isLoading: isCategoriesLoading } = useCategoriesList(shopId);
-  const { brandsList, isLoading: isBrandsLoadding } = useBrandsList(shopId);
+  const { brandsList, isLoading: isBrandsLoading } = useBrandsList(shopId);
 
   const handleTabChange = (value: any) => {
     setSelectedTab(value);
@@ -44,13 +44,12 @@ export const ItemList = ({ lang, shopId }: any) => {
   const filteredProducts = useMemo(() => {
     if (selectedTab === 'category') {
       const _selectedCat = categoriesList.find((val) => val.id === selectedCat);
-    
-      
+
       if (_selectedCat) return _selectedCat.products || [];
       return categoriesList.map((item) => item.products).flat();
     } else {
       const _selectedBrand = brandsList.find((val) => val.id === selectedBrand);
-      
+
       if (_selectedBrand) return _selectedBrand.products || [];
       return brandsList.map((item) => item.products).flat();
     }
@@ -59,7 +58,6 @@ export const ItemList = ({ lang, shopId }: any) => {
   useEffect(() => {
     SetProductsItems(products);
     setIsLoading(false);
-
   }, [products]);
 
   useEffect(() => {
@@ -85,7 +83,7 @@ export const ItemList = ({ lang, shopId }: any) => {
           dataItems={{ cats: categoriesList, brands: brandsList }}
         />
 
-        {!filteredProducts?.length ? (
+        {isCategoriesLoading || isBrandsLoading ? (
           <ClipLoader color="48b7b9" loading={true} cssOverride={override} size="150px" />
         ) : (
           <div className="tab-content text-muted">
@@ -95,7 +93,26 @@ export const ItemList = ({ lang, shopId }: any) => {
               role="tabpanel"
               data-simplebar=""
               style={{ height: 'calc(100vh - 200px)' }}>
-              <div className="items-list">{filteredProducts.map(renderProductsFn)}</div>
+              <div className="items-list">
+                {filteredProducts?.length ? (
+                  filteredProducts?.map(renderProductsFn)
+                ) : (
+                  <p
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      textAlign: 'center',
+                      fontSize: '1.5rem',
+                      fontWeight: 'bold',
+                      color: '#48b7b9',
+                    }}>
+                    No products ...
+                  </p>
+                )}
+              </div>
               {/* end row */}
             </div>
           </div>

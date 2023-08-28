@@ -1,3 +1,4 @@
+'use client';
 import { faCashRegister } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { ICustomer, ITax } from '@models/pos.types';
@@ -7,13 +8,16 @@ import type { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { useRecoilState } from 'recoil';
-import 'remixicon/fonts/remixicon.css';
 import withAuth from 'src/HOCs/withAuth';
 import CartPanel from 'src/components/pos/_components/cart-panel/CartPanel';
+import { ItemList } from 'src/components/pos/_components/item-list/ItemList';
+import NavMenu from 'src/components/pos/parts/NavMenu';
+import { useProducts } from 'src/context/ProductContext';
 import { useUser } from 'src/context/UserContext';
 import { Toastify } from 'src/libs/allToasts';
 import { apiFetchCtr, apiInsertCtr } from 'src/libs/dbUtils';
 import PosLayout from 'src/modules/pos/_components/layout/pos.layout';
+import { cartJobType } from 'src/recoil/atoms';
 import { useGetBusinessLocation } from 'src/services/business.service';
 import {
   useBrandsList,
@@ -22,10 +26,9 @@ import {
   useProductsList,
   useTaxesList,
 } from 'src/services/pos.service';
-import { ItemList } from '../../../components/pos/_components/item-list/ItemList';
-import NavMenu from '../../../components/pos/parts/NavMenu';
-import { useProducts } from '../../../context/ProductContext';
-import { cartJobType } from '../../../recoil/atoms';
+import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
+
+import 'remixicon/fonts/remixicon.css';
 
 const Home: NextPage = ({ shopId: _id }: any) => {
   const router = useRouter();
@@ -61,8 +64,7 @@ const Home: NextPage = ({ shopId: _id }: any) => {
   });
 
   useCustomersList(shopId, {
-    onSuccess(data, key, config) {
-      console.log(data, 'in index');
+    onSuccess(data) {
       const _customers = data?.result?.map((el: ICustomer) => ({
         ...el,
         value: el.id,
@@ -72,28 +74,31 @@ const Home: NextPage = ({ shopId: _id }: any) => {
       setCustomers(_customers);
     },
   });
+
   useProductsList(shopId, {
-    onSuccess(data, key, config) {
+    onSuccess(data) {
       const _products = data?.result?.data;
       setProducts(_products);
     },
   });
 
   useCategoriesList(shopId, {
-    onSuccess(data, key, config) {
+    onSuccess(data) {
       const _cats = data?.result;
       setCats(_cats);
     },
   });
+
   useTaxesList(shopId, {
-    onSuccess(data, key, config) {
+    onSuccess(data) {
       const _taxes = data?.result?.taxes as ITax;
       setTaxes(_taxes);
       setTaxGroups(data?.result?.tax_group);
     },
   });
+
   useBrandsList(shopId, {
-    onSuccess(data, key, config) {
+    onSuccess(data) {
       const _brands = data?.result;
       setBrands(_brands);
     },
@@ -101,8 +106,7 @@ const Home: NextPage = ({ shopId: _id }: any) => {
 
   /** ********************************************************** */
   useEffect(() => {
-    const locs = JSON.parse(localStorage.getItem('cusLocs') ?? '[]');
-    // console.log(locs);
+    const locs = getLocalStorage<any[]>(ELocalStorageKeys.CUSTOEMR_LOCATIONS) ?? [];
 
     setCusLocs(locs);
     setLocations(locs?.[0]?.locations);
