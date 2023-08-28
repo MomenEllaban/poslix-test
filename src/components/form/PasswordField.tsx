@@ -1,7 +1,8 @@
-import React, { useId } from 'react';
-import { Form, InputGroup, Spinner } from 'react-bootstrap';
+import React, { useId, useState } from 'react';
+import { Button, Form, InputGroup, Spinner } from 'react-bootstrap';
+import { MdVisibility, MdVisibilityOff } from 'react-icons/md';
 
-export interface FormFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
+export interface PasswordFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
   name: string;
   type: string;
@@ -12,7 +13,7 @@ export interface FormFieldProps extends React.InputHTMLAttributes<HTMLInputEleme
   required?: boolean;
 }
 
-const FormField: React.FC<FormFieldProps> = ({
+const PasswordField: React.FC<PasswordFieldProps> = ({
   label,
   name,
   type,
@@ -23,8 +24,9 @@ const FormField: React.FC<FormFieldProps> = ({
   required = false,
   ...props
 }) => {
-  const isInvalid = !!errors[name];
   const formId = useId();
+  const isInvalid = !!errors[name];
+  const [showPass, setShowPass] = useState(false);
 
   return (
     <Form.Group controlId={`form-field-${name}-${formId}`}>
@@ -39,10 +41,19 @@ const FormField: React.FC<FormFieldProps> = ({
           autoComplete="off"
           isInvalid={isInvalid}
           placeholder={placeholder}
-          type={type}
+          type={showPass ? 'text' : type}
           name={name}
           {...register(name)}
         />
+        <Button
+          variant="outline-secondary"
+          className="d-flex align-items-center justify-content-center"
+          style={{
+            width: '3rem',
+          }}
+          onClick={() => setShowPass((p) => !p)}>
+          {showPass ? <MdVisibility /> : <MdVisibilityOff />}
+        </Button>
       </InputGroup>
       {isInvalid && <Form.Text className="text-danger">{errors[name]?.message}</Form.Text>}{' '}
       {loading && <Spinner animation="border" size="sm" />}
@@ -50,4 +61,4 @@ const FormField: React.FC<FormFieldProps> = ({
   );
 };
 
-export default FormField;
+export default PasswordField;

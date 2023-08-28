@@ -18,7 +18,6 @@ const MyBusinessesPage = () => {
   const { user } = useUser();
   const { businessList, isLoading, error, refetch } = useBusinessList({
     suspense: !user.username,
-    onSuccess(data, key, config) {},
   });
   const username = user?.username;
 

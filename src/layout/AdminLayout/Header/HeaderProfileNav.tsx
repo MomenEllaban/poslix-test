@@ -2,7 +2,9 @@ import { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 import { faUser } from '@fortawesome/free-regular-svg-icons';
 import { faGear, faPowerOff } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { signOut } from 'next-auth/react';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { PropsWithChildren } from 'react';
 import { Dropdown, Nav, NavItem } from 'react-bootstrap';
 import { ROUTES } from 'src/utils/app-routes';
@@ -23,6 +25,13 @@ const ProfileDropdownItem = (props: NavItemProps) => {
 };
 
 export default function HeaderProfileNav() {
+  const router = useRouter();
+  const handleLogout = () => {
+    signOut();
+    setTimeout(() => {
+      router.push(ROUTES.AUTH);
+    }, 300);
+  };
   return (
     <Nav>
       <Dropdown as={NavItem}>
@@ -49,11 +58,9 @@ export default function HeaderProfileNav() {
           </Link>
           <Dropdown.Divider />
 
-          <Link href={ROUTES.AUTH} passHref legacyBehavior>
-            <Dropdown.Item>
-              <ProfileDropdownItem icon={faPowerOff}>Logout</ProfileDropdownItem>
-            </Dropdown.Item>
-          </Link>
+          <Dropdown.Item onClick={handleLogout}>
+            <ProfileDropdownItem icon={faPowerOff}>Logout</ProfileDropdownItem>
+          </Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>
     </Nav>
