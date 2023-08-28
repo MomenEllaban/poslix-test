@@ -283,7 +283,7 @@ export default function PaymentCheckoutModal({ show, setShow, shopId }) {
           </div>
         }
       />
-      <DevTool control={control} /> set up the dev tool
+      {/* <DevTool control={control} /> set up the dev tool */}
     </div>
   );
 }
