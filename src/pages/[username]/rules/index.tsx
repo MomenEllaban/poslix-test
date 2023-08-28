@@ -6,6 +6,8 @@ import { useEffect, useState } from 'react';
 import { Button, ButtonGroup, Card, Spinner, Table } from 'react-bootstrap';
 import withAuth from 'src/HOCs/withAuth';
 import AddNewRole from 'src/components/dashboard/AddNewRole';
+import AlertDialog from 'src/components/utils/AlertDialog';
+import { Toastify } from 'src/libs/allToasts';
 import { deleteData, findAllData } from 'src/services/crud.api';
 
 const Roles = ({ username }: any) => {
@@ -16,15 +18,15 @@ const Roles = ({ username }: any) => {
   const [selectedId, setSelectedId] = useState(0);
   const [selectedRole, setSelectedRole] = useState(0);
   const [selectedStuff, setSelectedStuff] = useState('');
+  const [selectedName, setSelectedName] = useState('');
 
   async function initDataPage() {
-    const res = await findAllData('permissions');
-    // const { success, newdata } = await apiFetch({ fetch: 'getStuffsMyBusiness' });
+    const res = await findAllData('roles/get');
     for (const iterator in res.data.result) {
-      console.log(iterator, res.data.result[iterator]);
+      // console.log(iterator, res.data.result[iterator]);
       
     }
-    // setStuffs(res.data.result);
+    setStuffs(res.data.result);
     setIsLoading(false);
   }
 
@@ -36,28 +38,40 @@ const Roles = ({ username }: any) => {
         </div>
       );
     } else {
-      const _roles = roles
-        .replaceAll('_r', '_read')
-        .replaceAll('_e', '_edit')
-        .replaceAll('_d', '_delete')
-        .replaceAll('_i', '_insert')
-        .split(',');
+      // const _roles = roles
+      //   .replaceAll('_r', '_read')
+      //   .replaceAll('_e', '_edit')
+      //   .replaceAll('_d', '_delete')
+      //   .replaceAll('_i', '_insert')
+      //   .split(',');
 
-      return (
-        <div className="roles-parent">
-          {_roles.map((mp) => {
-            return mp.length > 0 && <div>{mp}</div>;
-          })}
-        </div>
-      );
+      // return (
+      //   <div className="roles-parent">
+      //     {_roles.map((mp) => {
+      //       return mp.length > 0 && <div>{mp}</div>;
+      //     })}
+      //   </div>
+      // );
     }
   }
   useEffect(() => {
     initDataPage();
   }, []);
-
+const [show, setShow] =  useState(false)
   return (
     <OwnerAdminLayout>
+      <AlertDialog
+          alertShow={show}
+          alertFun={(result: boolean, msg: string) => {
+            if (msg.length > 0) Toastify(result ? 'success' : 'error', msg);
+              initDataPage()
+              setSelectedId(-1)
+            setShow(false);
+          }}
+          id={selectedId}
+          url={"roles/delete"}>
+          Are you Sure You Want Delete This Role ?
+        </AlertDialog>
       <button
         className="mb-4 btn btn-primary p-3"
         style={{ width: '150px' }}
@@ -77,6 +91,8 @@ const Roles = ({ username }: any) => {
           index={selectedId}
           selectedRole={selectedRole}
           selectedStuff={selectedStuff}
+          selectedName={selectedName}
+          initPage={initDataPage}
         />
       )}
       {!isAddNew && (
@@ -98,23 +114,27 @@ const Roles = ({ username }: any) => {
                       </tr>
                     </thead>
                     <tbody>
-                      {stuffs?.map((user: any, i: number) => {
+                      {stuffs?.map((role: any, i: number) => {
                         return (
                           <tr>
                             <th scope="row">{i + 1}</th>
-                            <th>{user.name}</th>
-                            <td>{showPropryRoles_test(user.stuff)}</td>
+                            <th>{role.name}</th>
+                            <td>{showPropryRoles_test(role.permissions)}</td>
                             <td>
                               <ButtonGroup className="mb-2 m-buttons-style">
                                 <Button
-                                  onClick={async () => await deleteData('permissions', user.id)}>
+                                  onClick={() => {
+                                    setSelectedId(role.id);
+                                    setShow(true)
+                                    }}>
                                   <FontAwesomeIcon icon={faTrash} />
                                 </Button>
                                 <Button
                                   onClick={() => {
-                                    setSelectedRole(user.id);
-                                    setSelectedStuff(user.stuff);
-                                    setSelectedId(i);
+                                    setSelectedRole(role.id);
+                                    setSelectedStuff(role.permissions.map((perm) => {return perm.id}));
+                                    setSelectedName(role.name);
+                                    setSelectedId(role.id);
                                     setIsAddNew(true);
                                   }}>
                                   <FontAwesomeIcon icon={faEdit} />

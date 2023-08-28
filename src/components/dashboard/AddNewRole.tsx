@@ -18,7 +18,7 @@ import { redirectToLogin } from '../../libs/loginlib';
 import { userDashboard } from '@models/common-model';
 import Select, { StylesConfig } from 'react-select';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { createNewData, updateData } from 'src/services/crud.api';
+import { createNewData, findAllData, updateData } from 'src/services/crud.api';
 const AddNewRole = (props: any) => {
   const [formObj, setFormObj] = useState({ isNew: true, name: '', stuff: '' });
   const [errorForm, setErrorForm] = useState({ name: false, stuff: false });
@@ -120,30 +120,27 @@ const AddNewRole = (props: any) => {
     },
   ];
   async function insertUpdateUsers() {
-    console.log(roles);
-
     let res;
     if (selectedRole > -1)
-      res = await updateData('permissions', selectedRole, {
+      res = await updateData('roles/update', selectedRole, {
         name: formObj.name,
-        stuff: roles.sort().join(','),
+        permissions,
       });
     else
-      res = await createNewData('permissions', {
+      res = await createNewData('roles/store', {
         name: formObj.name,
-        stuff: roles.sort().join(','),
+        permissions,
       });
-
-    console.log('result ', res.data);
     props.setIsAddNew(false);
+    props.initPage()
   }
-  function handelChange(e: any, itemName: string, name: string, checked: boolean) {
-    var newRoles: any = roles;
-    const roleName = itemName + '/' + name;
-    if (e.target.checked) newRoles.push(roleName);
-    else newRoles.splice(newRoles.indexOf(roleName), 1);
-    setRoles(newRoles);
-    console.log(newRoles);
+  function handelChange(checked: boolean, value: string, name: string) {
+    console.log(checked, value, name);
+    const perms = [...permissions]
+    if(checked && perms.indexOf(value) < 0)
+      perms.push(value)
+    else perms.splice(perms.indexOf(value), 1)
+    setPermissions([...perms])
   }
   const showInnerRoles = (item: any, index: number) => {
     return item.stuffs.map((st: any, stIndex: number) => {
@@ -160,21 +157,48 @@ const AddNewRole = (props: any) => {
     });
   };
   var errors = [];
-  useEffect(() => {
-    if (props.index > -1) {
-      setSelectedRole(props.selectedRole);
-      setRoles(props.selectedStuff.split(','));
-      setFormObj({ ...props.stuffs[props.index], isNew: false });
-      var _userStuff = props.stuffs[props.index].stuff.toLowerCase();
-
-      pages2.map((pg, i) => {
-        pg.stuffs.map((st: any, stIndex: number) => {
-          if (_userStuff.includes(pg.value.toLowerCase() + '/' + st.value.toLowerCase()))
-            pages2[i].stuffs[stIndex].isChoose = true;
-        });
-      });
+  const [fields, setFields] = useState<any>([])
+  const [permissions, setPermissions] = useState([])
+  const initPageData = async () => {
+    const res = await findAllData('permissions');
+    const finalRes: any = [];
+    for (const key in res.data.result) {
+      const el = res.data.result[key]
+      const current: any = {title: key, roles: []};
+      for (const entry in el) {
+        if(el[entry].name.includes('GET') && !current.roles.some((role) => role.label === 'View'))
+          current.roles.push({value: el[entry].id, label: 'View',})
+        else if(el[entry].name.includes('POST') && !current.roles.some((role) => role.label === 'Create'))
+          current.roles.push({value: el[entry].id, label: 'Create',})
+        else if(el[entry].name.includes('PUT') && !current.roles.some((role) => role.label === 'Edit'))
+          current.roles.push({value: el[entry].id, label: 'Edit',})
+        else if(el[entry].name.includes('DELETE') && !current.roles.some((role) => role.label === 'Delete'))
+          current.roles.push({value: el[entry].id, label: 'Delete',})
+      }
+      finalRes.push(current)
     }
-    setPages(pages2);
+    console.log('finalRes', finalRes);
+    setFields(finalRes)
+  }
+  useEffect(() => {
+    initPageData()
+    if (props.index > -1) {
+      console.log(props.selectedRole);
+      
+      setSelectedRole(props.selectedRole);
+      setRoles(props.selectedStuff);
+      setPermissions(props.selectedStuff)
+      setFormObj({ ...props.stuffs[props.index], isNew: false, name: props.selectedName  });
+      // var _userStuff = props.stuffs[props.index].stuff.toLowerCase();
+
+      // pages2.map((pg, i) => {
+      //   pg.stuffs.map((st: any, stIndex: number) => {
+      //     if (_userStuff.includes(pg.value.toLowerCase() + '/' + st.value.toLowerCase()))
+      //       pages2[i].stuffs[stIndex].isChoose = true;
+      //   });
+      // });
+    }
+    // setPages(pages2);
   }, []);
 
   return (
@@ -183,7 +207,7 @@ const AddNewRole = (props: any) => {
         <div className="col-md-12">
           <Card>
             <Card.Header className="p-3 bg-white">
-              <h5>Add New Role</h5>
+              <h5>{props.index > -1 ? 'Edit' : 'Add New'} Role</h5>
             </Card.Header>
             <Card.Body>
               <form className="form-style">
@@ -214,7 +238,7 @@ const AddNewRole = (props: any) => {
                           Rules: <span className="text-danger">*</span>
                         </label>
                         <ul className="list-group">
-                          {pages.map((pg, i) => {
+                          {/* {pages.map((pg, i) => {
                             if (pg.value == 'split')
                               return (
                                 <>
@@ -232,6 +256,36 @@ const AddNewRole = (props: any) => {
                                   <span>{pg.label}</span>
                                   <div className="checkbox-rols">{showInnerRoles(pg, i)}</div>
                                 </li>
+                              </>
+                            );
+                          })} */}
+                          {fields.length > 0 && fields.map((pg, i) => {
+                            return (
+                              <>
+                                <li className="list-group-item bg-primary">
+                                  <span>
+                                    {pg.title}
+                                  </span>
+                                  <div className="checkbox-rols"></div>
+                                </li>
+                                <div className="flex">
+                                  {pg.roles.map((role) => {
+                                    return (
+                                      <li className="list-group-item">
+                                        <div className="checkbox-rols">
+                                          <div className="form-control">
+                                            <input className="form-check-input me-1" type="checkbox"
+                                              onClick={(e: any) => {
+                                                handelChange(e.target.checked, role.value, pg.title);
+                                              }}
+                                              defaultChecked={props.selectedStuff.indexOf(role.value) > -1} />
+                                            <label>{role.label}</label>
+                                          </div>
+                                        </div>
+                                      </li>
+                                    )
+                                  })}
+                                </div>
                               </>
                             );
                           })}

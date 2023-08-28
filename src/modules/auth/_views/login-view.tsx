@@ -41,8 +41,10 @@ export default function LoginView() {
     const res = await signIn('credentials', { redirect: false, ...data })
       .then(async (res) => {
         if (res.error) throw new Error(res.error);
-        const permissions = await findAllData('permissions')
-        localStorage.setItem('permissions', JSON.stringify(permissions.data.result))
+        // const permissions = await findAllData('permissions')
+        console.log(JSON.parse(localStorage.getItem('permissions')));
+        
+        // localStorage.setItem('permissions', JSON.stringify(permissions.data.result))
 
         Toastify('success', 'Login Success');
         router.push('/');
