@@ -4,10 +4,7 @@ export default Joi.object({
     'string.empty': 'First name is required',
     'any.required': 'First name is required',
   }),
-  last_name: Joi.string().required().messages({
-    'string.empty': 'Last name is required',
-    'any.required': 'Last name is required',
-  }),
+  last_name: Joi.string().optional().allow(''),
   number: Joi.string().required().messages({
     'string.empty': 'Phone number is required',
     'any.required': 'Phone number is required',

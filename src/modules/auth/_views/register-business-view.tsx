@@ -1,19 +1,18 @@
 import { joiResolver } from '@hookform/resolvers/joi';
 import { BusinessTypeData } from '@models/data';
-import { useSession } from 'next-auth/react';
+import { getSession, useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { Form } from 'react-bootstrap';
-import { default as BsImage } from 'react-bootstrap/Image';
 import { SubmitHandler, useForm } from 'react-hook-form';
+import 'react-phone-number-input/style.css';
 import FormField from 'src/components/form/FormField';
 import SelectField from 'src/components/form/SelectField';
 import { Toastify } from 'src/libs/allToasts';
-import { useBusinessTypesList, useCurrenciesList } from 'src/services/business.service';
-import { authApi } from 'src/utils/auth-api';
-import styles from './create-business.module.scss';
-import { createBusinessSchema } from './create-business.schema';
+import { createBusinessSchema } from 'src/modules/business/create-business/create-business.schema';
+import { useBusinessTypesList } from 'src/services/business.service';
+import api from 'src/utils/app-api';
 
 type Inputs = {
   name: string;
@@ -22,21 +21,11 @@ type Inputs = {
   business_type_id: string | number;
 };
 
-export default function CreateBusinessView() {
+export default function RegisterBusinessView() {
+  const [busniessTypesList, setBusniessTypesList] = useState(BusinessTypeData());
+
   const router = useRouter();
   const { data: session } = useSession();
-
-  const [isLoading, setLoading] = useState(false);
-  const [busniessTypesList, setBusniessTypesList] = useState(BusinessTypeData());
-  const [countries, setCountries] = useState<{ value: number; label: string }[]>([]);
-  const { currenciesList } = useCurrenciesList(null, {
-    onSuccess(data, key, config) {
-      const _countriesList = data.result.map((itm: any) => {
-        return { value: itm.id, label: itm.country };
-      });
-      setCountries(_countriesList);
-    },
-  });
   const {
     register,
     handleSubmit,
@@ -49,20 +38,38 @@ export default function CreateBusinessView() {
 
   useBusinessTypesList({
     onSuccess(data, key, config) {
-      const _businessTypesList = data.result.map((itm: any) => {
-        return { value: itm.id, label: itm.name };
-      });
+      const _businessTypesList = data.result.map((itm: any) => ({
+        value: itm.id,
+        label: itm.name,
+      }));
       setBusniessTypesList(_businessTypesList);
     },
   });
-  
+
+  const [isLoading, setLoading] = useState(false);
+
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     setLoading(true);
-    (await authApi(session))
-      .postForm('/business', data)
+    const _user = window.localStorage.getItem('uncompleted_user')
+      ? JSON.parse(window.localStorage.getItem('uncompleted_user'))
+      : null;
+    if (!_user) {
+      setLoading(false);
+      Toastify('error', 'error occurred, try agian');
+      router.reload();
+    }
+    api
+      .postForm('/business', data, {
+        headers: {
+          Authorization: `Bearer ${_user.token}`,
+        },
+      })
       .then((res) => {
         Toastify('success', 'Business created successfully');
-        router.push('/[username]/business', `/${session?.user?.username}/business`);
+        window.localStorage.removeItem('uncompleted_user');
+        setTimeout(() => {
+          router.reload();
+        }, 500);
       })
       .catch((err) => {
         Toastify('error', 'error occurred, try agian');
@@ -71,18 +78,10 @@ export default function CreateBusinessView() {
         setLoading(false);
       });
   };
-  const onError = (errors: any, e: any) => console.log(errors, e);
+  const onError = (errors: any, e: any) => console.error(errors, e);
 
   return (
-    <Form noValidate onSubmit={handleSubmit(onSubmit, onError)} className={styles.form}>
-      <div className={styles['form-image__container']}>
-        <BsImage
-          fluid
-          alt="createBusiness"
-          className={styles['form-image']}
-          src="https://static.vecteezy.com/system/resources/previews/012/024/324/original/a-person-using-a-smartphone-to-fill-out-a-registration-form-registration-register-fill-in-personal-data-use-the-application-vector.jpg"
-        />
-      </div>
+    <Form noValidate onSubmit={handleSubmit(onSubmit, onError)}>
       <div className="p-2 my-2 d-flex gap-3 flex-column">
         <FormField
           label="Business Name"
@@ -111,15 +110,7 @@ export default function CreateBusinessView() {
           required
           errors={errors}
         />
-        {/* <FormField
-          label="Decimal Points"
-          name="decimal"
-          type="number"
-          placeholder="Enter Mobile number"
-          register={register}
-          required
-          errors={errors}
-        /> */}
+
         <SelectField
           label="Business Type"
           name="business_type_id"
@@ -128,14 +119,7 @@ export default function CreateBusinessView() {
           errors={errors}
           required
         />
-        {/* <SelectField
-          label="Country"
-          name="country_id"
-          options={countries} // Pass the business types options
-          register={register}
-          errors={errors}
-          required
-        /> */}
+
         <button className="btn-login mt-auto" type="submit">
           {isLoading && (
             <Image
@@ -143,7 +127,7 @@ export default function CreateBusinessView() {
               width={25}
               height={25}
               className="login-loading"
-              src={'/images/loading.gif'}
+              src="/images/loading.gif"
             />
           )}
           Create business
@@ -151,4 +135,25 @@ export default function CreateBusinessView() {
       </div>
     </Form>
   );
+}
+
+export async function getServerSideProps(context) {
+  const session = await getSession({ req: context.req });
+
+  if (session) {
+    if (session.user.user_type === 'owner') {
+      return {
+        redirect: { destination: `/${session.user.username}/business`, permenant: false },
+        props: { session },
+      };
+    }
+    return {
+      redirect: { destination: '/shop', permenant: false },
+      props: { session },
+    };
+  }
+
+  return {
+    props: {},
+  };
 }

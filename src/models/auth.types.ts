@@ -1,5 +1,6 @@
 export interface ILogin {
   user: IUser;
+  business: number; //count of businesses
   authorization: {
     token: string;
     type: string;
@@ -24,6 +25,7 @@ export interface IUser {
   updated_at: any;
 
   token?: string;
+  business?: number;
 }
 
 export interface IUserBusiness {
