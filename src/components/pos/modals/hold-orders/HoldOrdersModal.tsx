@@ -12,10 +12,11 @@ import { apiFetchCtr } from '../../../../libs/dbUtils';
 import { IHold } from '../../../../models/common-model';
 import { cartJobType } from '../../../../recoil/atoms';
 import HoldTable from './HoldTable';
+import OrdersTable from './OrdersTable';
 
 export default function HoldOrdersModal({ shopId, lang }: any) {
   const dispatch = useAppDispatch();
-  const { locationSettings } = useUser();
+
   const [, setJobType] = useRecoilState(cartJobType);
 
   const [ordersList, setOrdersList] = useState([]);
@@ -28,11 +29,14 @@ export default function HoldOrdersModal({ shopId, lang }: any) {
   const [isShowOrdersModal, setIsShowOrdersModal] = useState<boolean>(false);
 
   const handleClose = () => setIsShowOrdersModal(false);
+
   const removeHoldItem = (item: any) => {
     const _holdItems = [...holdItems];
     const _newHoldItems = _holdItems.filter((hold) => hold.id !== item.id);
     setHoldItems(_newHoldItems);
     localStorage.setItem(`holdItems[${shopId}]`, JSON.stringify(_newHoldItems));
+
+    refetchHoldData();
   };
   const restoreHoldItem = (item: any) => {
     const _holdItem = holdItems.find((hold) => hold.id === item.id);
@@ -47,6 +51,11 @@ export default function HoldOrdersModal({ shopId, lang }: any) {
 
     removeHoldItem(item);
     handleClose();
+  };
+
+  const refetchHoldData = () => {
+    const holdItemsFromStorage = localStorage.getItem(`holdItems[${shopId}]`);
+    if (holdItemsFromStorage) setHoldItems(JSON.parse(holdItemsFromStorage).reverse());
   };
 
   async function getOrders(barCodeId = -1) {
@@ -93,11 +102,15 @@ export default function HoldOrdersModal({ shopId, lang }: any) {
 
     if (isShowOrdersModal) setJobType({ req: 6, val: '' });
 
-    const holdItemsFromStorage = localStorage.getItem(`holdItems[${shopId}]`);
-    if (holdItemsFromStorage) setHoldItems(JSON.parse(holdItemsFromStorage).reverse());
-
     getOrders();
   }, []);
+
+  useEffect(() => {
+    if (isShowOrdersModal) {
+      const holdItemsFromStorage = localStorage.getItem(`holdItems[${shopId}]`);
+      if (holdItemsFromStorage) setHoldItems(JSON.parse(holdItemsFromStorage).reverse());
+    }
+  }, [isShowOrdersModal]);
 
   return (
     <>
@@ -140,122 +153,7 @@ export default function HoldOrdersModal({ shopId, lang }: any) {
               />
             </Tab>
             <Tab eventKey="order" title={lang.cartComponent.orderModal.order}>
-              <div className="table-responsive mt-2">
-                {!isLoading && (
-                  <table className="table table-centered table-hover align-middle  mb-0">
-                    <thead className="text-muted table-light">
-                      <tr>
-                        <th
-                          scope="col"
-                          style={{
-                            borderRadius: '12px 0px 0px 10px',
-                          }}>
-                          #
-                        </th>
-                        <th scope="col">{lang.cartComponent.orderModal.customer}</th>
-                        <th scope="col">{lang.cartComponent.orderModal.mobile}</th>
-                        <th scope="col">{lang.cartComponent.orderModal.price}</th>
-                        <th
-                          scope="col"
-                          style={{
-                            borderRadius: '0px 10px 10px 0px',
-                          }}>
-                          {lang.cartComponent.orderModal.action}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredOrdersList.length > 0 &&
-                        filteredOrdersList.map((ord: any, i) => {
-                          return (
-                            <tr key={i}>
-                              <td>#{ord.id}</td>
-                              <td>({ord.name})</td>
-                              <td>({ord.mobile})</td>
-                              <td>
-                                {Number(ord.total_price).toFixed(
-                                  +locationSettings?.location_decimal_places
-                                )}{' '}
-                                <span style={{ fontSize: '10px' }}>
-                                  {locationSettings?.currency_code}
-                                </span>
-                              </td>
-                              <td>
-                                <a
-                                  href="#"
-                                  className="px-1 fs-16 text-info"
-                                  onClick={() => {
-                                    setJobType({
-                                      req: 3,
-                                      val: ord.id,
-                                    });
-                                    handleClose();
-                                  }}>
-                                  <i className="ri-edit-line" />
-                                </a>
-                                <a
-                                  href="#"
-                                  className="px-1 fs-16"
-                                  onClick={() => {
-                                    getOrders(ord.id);
-                                    setIsLoading(true);
-                                  }}>
-                                  <i className="ri-shopping-basket-2-line" />
-                                </a>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                    </tbody>
-                  </table>
-                )}
-                {!isLoadingDetails && (
-                  <table className="table table-centered table-hover align-middle  mb-0">
-                    <thead className="text-muted table-light">
-                      <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">Name</th>
-                        <th scope="col">Rate</th>
-                        <th scope="col">Qny</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredDisplayOrder.length > 0 &&
-                        filteredDisplayOrder.map((ord: any, i) => {
-                          return (
-                            <tr key={i}>
-                              <td>#{i + 1}</td>
-                              <td>({ord.name})</td>
-                              <td>
-                                $
-                                {Number(ord.price).toFixed(
-                                  locationSettings?.location_decimal_places
-                                )}
-                              </td>
-                              <td>{Number(ord.qty).toFixed(0)}</td>
-                            </tr>
-                          );
-                        })}
-                      <tr>
-                        <td></td>
-                        <td style={{ fontWeight: '800' }}>Total</td>
-                        <td style={{ fontWeight: '800' }}>$1500</td>
-                        <td></td>
-                      </tr>
-                    </tbody>
-                    <div className="row justify-content-center">
-                      <button
-                        className="btn btn-success fw-medium m-1"
-                        onClick={() => {
-                          setIsLoading(false);
-                          setIsLoadingDetails(true);
-                        }}>
-                        <i className="ri-arrow-left-fill me-1 align-middle" /> back
-                      </button>
-                    </div>
-                  </table>
-                )}
-              </div>
+              <OrdersTable lang={lang} shopId={shopId} />
             </Tab>
           </Tabs>
         </Modal.Body>

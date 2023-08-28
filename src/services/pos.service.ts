@@ -14,6 +14,8 @@ import {
   IPayment,
   IExpenseCategory,
   IExpense,
+  ISalesReport,
+  IItemsReport,
 } from '@models/pos.types';
 import api from 'src/utils/app-api';
 import useSWR, { type SWRConfiguration } from 'swr';
@@ -243,6 +245,21 @@ const posSetvice = {
   updateExpense: async (id: string, payload: IUpdateExpensePayload) =>
     api.put(`/expenses/${id}`, payload).then((data) => data.data),
   deleteExpense: async (id: string) => api.delete(`/expenses/${id}`).then((data) => data.data),
+
+  //*******************Sales Report***********************/
+  getSalesReport: async (location_id: string | number, order_id?: string | number) =>
+    api
+      .get<any, TServiceResponse<ISalesReport>, any>(
+        `/reports/sales/${location_id}` + (order_id ? `/${order_id}` : '')
+      )
+      .then((data) => data.data),
+
+  getItemsSalesReport: async (location_id: string | number, order_id?: string | number) =>
+    api
+      .get<any, TServiceResponse<IItemsReport>, any>(
+        `/reports/itesm-sales/${location_id}` + (order_id ? `/${order_id}` : '')
+      )
+      .then((data) => data.data),
 };
 
 export const useCategoriesList = (location_id: string, config?: SWRConfiguration) => {
@@ -583,6 +600,46 @@ export const useGetExpense = (id: string, config?: SWRConfiguration) => {
   );
   return {
     expense: data?.result ?? [],
+    isLoading,
+    error,
+    refetch: mutate,
+  };
+};
+
+export const useGetSalesReport = (
+  location_id: string | number,
+  order_id?: string | number,
+  config?: SWRConfiguration
+) => {
+  const { data, error, isLoading, mutate } = useSWR(
+    `/reports/sales/${location_id}` + (order_id ? `/${order_id}` : ''),
+    () => posSetvice.getSalesReport(location_id, order_id),
+    {
+      ...config,
+    }
+  );
+  return {
+    salesReport: (data?.result ?? { data: [] }) as ISalesReport,
+    isLoading,
+    error,
+    refetch: mutate,
+  };
+};
+
+export const useGetItemsSalesReport = (
+  location_id: string | number,
+  order_id?: string | number,
+  config?: SWRConfiguration
+) => {
+  const { data, error, isLoading, mutate } = useSWR(
+    `/reports/itesm-sales/${location_id}` + order_id ? `/${order_id}` : '',
+    () => posSetvice.getItemsSalesReport(location_id, order_id),
+    {
+      ...config,
+    }
+  );
+  return {
+    itemsSalesReport: data?.result ?? [],
     isLoading,
     error,
     refetch: mutate,

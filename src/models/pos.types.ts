@@ -221,6 +221,11 @@ export interface ICurrency {
   created_at?: any;
   updated_at?: any;
 }
+export interface ICurrency {
+  currency_name: string;
+  currency_code: string;
+  currency_symbol: string;
+}
 
 export interface IPurchase {
   id: number;
@@ -294,3 +299,50 @@ export interface IExpense {
   created_by: number;
   created_at: string;
 }
+
+export interface IReportData {
+  id: number;
+  contact_id: number;
+  user_name: string;
+  contact_name: string;
+  contact_mobile: string;
+  sub_total: number;
+  payed: number;
+  due: number;
+  discount: string;
+  tax: string;
+  date: string;
+  transaction_status: string;
+  payment_status: string;
+  payment_method: string;
+  type: string;
+}
+
+export interface IItemReportData {
+  order_id: number;
+  user_first_name: string;
+  user_last_name: any;
+  contact_first_name: string;
+  contact_last_name: string;
+  contact_mobile: string;
+  qty: any;
+  price: any;
+  cost: any;
+  tax: any;
+  date: string;
+  status: string;
+  type: string;
+  products: IProduct[];
+}
+export interface IReport<T> {
+  data: T[];
+
+  tax: number;
+  total: number;
+  cost?: number;
+  sub_total: number;
+  currency: ICurrency;
+}
+
+export type ISalesReport = IReport<IReportData>;
+export type IItemsReport = IReport<IItemReportData>;

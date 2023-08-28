@@ -261,7 +261,7 @@ export default function PaymentCheckoutModal({ show, setShow, shopId }) {
               alignItems: 'center',
               justifyContent: 'flex-end',
             }}>
-            {(totalAmount*100 - paidSum*100)>0 && (
+            {totalAmount * 100 - paidSum * 100 > 0 && (
               <span className="text-danger">
                 {Math.abs(totalAmount - paidSum)?.toFixed(
                   locationSettings?.location_decimal_places

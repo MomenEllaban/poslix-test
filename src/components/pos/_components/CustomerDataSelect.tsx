@@ -61,7 +61,7 @@ export default function CustomerDataSelect({
             isLoading={customers.length === 0}
             styles={selectStyle}
             isDisabled={isOrderEdit > 0 || (cart?.customer_id > 0 && cart.cartItems.length > 0)}
-            options={customers}
+            options={[{ value: '1', label: 'walk-in customer', isNew: false }, ...customers]}
             onChange={(choice: any) => {
               setCustomer({
                 ...choice,
