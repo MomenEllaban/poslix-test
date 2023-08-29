@@ -241,7 +241,8 @@ export type userDashboard = {
   name: string;
   username: string;
   password: string;
-  contact_number: string;
+  contact_number?: string;
+  mobile?: string;
   email: string;
 };
 export interface IRoles {
