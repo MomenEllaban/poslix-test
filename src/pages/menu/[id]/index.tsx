@@ -22,6 +22,7 @@ import {
   locationPermission,
   verifayTokens,
 } from '../../api/checkUtils';
+import NavMenu from 'src/components/pos/parts/NavMenu';
 
 const Home: NextPage = (props: any) => {
   const { shopId } = props;
