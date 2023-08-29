@@ -147,9 +147,10 @@ const AddNewRole = (props: any) => {
       return (
         <div
           className="form-control"
-          onClick={(e) => {
-            handelChange(e, item.value, st.value, st.isChoose);
-          }}>
+          // onClick={(e) => {
+          //   handelChange(e, item.value, st.value, st.isChoose);
+          // }}
+          >
           <input className="form-check-input me-1" type="checkbox" defaultChecked={st.isChoose} />
           <label>{st.label}</label>
         </div>
