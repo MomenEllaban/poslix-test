@@ -475,14 +475,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
                   res.status(200).json({
                     success: true,
                     msg: 'record is added!',
-                    userObject: {
-                      isNew: true,
-                      name: data.name,
-                      username: data.username,
-                      password: data.password,
-                      mobile: '',
-                      email: '',
-                    },
                   });
                   res.end();
                   con.end();
