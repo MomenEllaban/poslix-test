@@ -1,48 +1,72 @@
 import { IProduct } from '@models/pos.types';
-import classNames from 'classnames';
-import { useEffect, useState } from 'react';
+import { Dispatch, Fragment, SetStateAction, useEffect, useRef, useState } from 'react';
 import { MdAllInbox } from 'react-icons/md';
 import { useUser } from 'src/context/UserContext';
 import { useAppDispatch } from 'src/hooks';
-import { addToCart } from 'src/redux/slices/cart.slice';
-import PackageItemsModal from '../../modals/package-item/PackageItemsModal';
-import styles from './ItemCard.module.scss';
 
-export const ItemCard = ({ product }: { product: IProduct }) => {
+export const ResultItemRow = ({
+  product,
+  set,
+  setShow,
+  onClick,
+}: {
+  product: IProduct;
+  set: Dispatch<SetStateAction<IProduct>>;
+  setShow: Dispatch<SetStateAction<boolean>>;
+  onClick?: (product: IProduct) => void;
+}) => {
   const dispatch = useAppDispatch();
   const { locationSettings } = useUser();
-
+  const ref = useRef<HTMLParagraphElement>(null);
   const [isOpenDialog, setIsOpenDialog] = useState<boolean>(false);
   const [productVariations, setProductVariations] = useState<IProduct['variations']>([]);
 
   const handleAddToCart = () => {
-    if (product.type?.includes('variable')) {
-      setProductVariations(product.variations);
-      setIsOpenDialog(true);
-    } else {
-      dispatch(addToCart({ ...product, product_id: product.id }));
-    }
+    set(product);
+    setShow(true);
+    onClick && onClick(product);
   };
 
   useEffect(() => {
     if (!isOpenDialog) setProductVariations([]);
   }, [isOpenDialog]);
 
+  useEffect(() => {
+    ref?.current?.addEventListener('click', handleAddToCart);
+    return () => {
+      ref?.current?.removeEventListener('click', handleAddToCart);
+    };
+  }, [ref, handleAddToCart]);
+
   if (!product) return <div>No product defined</div>;
 
   return (
-    <>
-      <button
-        onClick={() => {
-          handleAddToCart();
-        }}
-        className={styles['item-card__container']}>
-        {product.type === 'variable' && (
-          <div className={styles['item-card__container--variable']}>
-            <MdAllInbox />
-          </div>
-        )}
+    <Fragment key={product.id + '-search-items'}>
+      <p ref={ref}>
+        <span>{product.name}</span>
 
+        {product.type?.includes('variable') ? (
+          <span
+            style={{
+              fontSize: '0.8rem',
+              color: '#999',
+            }}>
+            {' '}
+            | <MdAllInbox className="d-inline" />
+          </span>
+        ) : (
+          <span
+            style={{
+              fontSize: '0.8rem',
+              color: '#999',
+            }}>
+            {' '}
+            | {(+product.cost_price).toFixed(+locationSettings.location_decimal_places || 2)}{' '}
+            {locationSettings.currency_name}
+          </span>
+        )}
+      </p>
+      {/* 
         <div className={classNames('product-img')}>
           <div className="img-container">
             <img
@@ -71,13 +95,7 @@ export const ItemCard = ({ product }: { product: IProduct }) => {
             </div>
           )}
         </div>
-      </button>
-      <PackageItemsModal
-        product={product}
-        variations={productVariations ?? []}
-        show={isOpenDialog}
-        setShow={setIsOpenDialog}
-      />
-    </>
+      </button> */}
+    </Fragment>
   );
 };

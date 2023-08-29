@@ -6,7 +6,7 @@ interface SelectFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   name: string;
   options: { value: string | number; label: string }[];
   register: any;
-  errors: any;
+  errors?: any;
   loading?: boolean;
   required?: boolean;
 }
@@ -38,7 +38,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
           </option>
         ))}
       </Form.Select>
-      {isInvalid && <Form.Text className="text-danger">{errors[name]?.message}</Form.Text>}
+      {isInvalid && <Form.Text className="text-danger">{errors?.[name]?.message}</Form.Text>}
       {loading && <Spinner animation="border" size="sm" />}
     </Form.Group>
   );

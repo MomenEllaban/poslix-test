@@ -1317,11 +1317,10 @@ export const MenuOrderComponent = (props: any) => {
           {/*end table*/}
         </div>
         <OrderCalcs
-        shopId={shopId}
+          shopId={shopId}
+          __WithDiscountFeature__total={0}
+          lang={{}}
           orderEditDetails={orderEditDetails}
-          taxRate={taxRate}
-          subTotal={subTotal}
-          shippingRate={shippingRate}
         />
 
         <MenuOrdersFooter

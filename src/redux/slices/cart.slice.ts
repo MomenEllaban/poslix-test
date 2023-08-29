@@ -1,13 +1,28 @@
 import { IProduct } from '@models/pos.types';
 import { createSelector, createSlice, current } from '@reduxjs/toolkit';
 
-type ICartProduct = IProduct & { quantity: number };
+type ICartProduct = IProduct & {
+  quantity: number;
+  product_id: number;
+  variation_id?: number | null;
+};
 
 interface ICart {
   location_id: number;
+  customer_id?: number;
   cartItems: ICartProduct[];
   cartSellTotal: number;
   cartCostTotal: number;
+  cartDiscount?: number;
+  cartTax?: number;
+  cartTaxType?: 'fixed' | 'percentage';
+  cartDiscountType?: 'fixed' | 'percentage';
+  shipping?: number;
+  payment?: {
+    payment_id: number | string;
+    amount: number;
+    note: string;
+  }[];
 }
 
 const initialState: ICart[] = [];
@@ -23,6 +38,11 @@ const findOrCreateCart = (state: ICart[], location_id: string): ICart => {
       cartItems: [],
       cartSellTotal: 0,
       cartCostTotal: 0,
+      cartDiscount: 0,
+      cartTax: 0,
+      cartTaxType: 'fixed',
+      cartDiscountType: 'fixed',
+      shipping: 0,
     };
     state.push(newCart);
     return newCart;
@@ -36,6 +56,26 @@ const cartSlice = createSlice({
     setCart: (state, action) => {
       return action.payload;
     },
+    setCartCustomer: (state, action) => {
+      const { location_id, customer_id } = action.payload;
+      const cart = findOrCreateCart(state, location_id);
+      cart.customer_id = customer_id;
+      localStorage.setItem('cart', JSON.stringify(state));
+    },
+    setCartTax: (state, action) => {
+      const { location_id, tax, type } = action.payload;
+      const cart = findOrCreateCart(state, location_id);
+      cart.cartTax = +tax;
+      cart.cartTaxType = type;
+      localStorage.setItem('cart', JSON.stringify(state));
+    },
+    setCartDiscount: (state, action) => {
+      const { location_id, discount, type } = action.payload;
+      const cart = findOrCreateCart(state, location_id);
+      cart.cartDiscount = +discount;
+      cart.cartDiscountType = type;
+      localStorage.setItem('cart', JSON.stringify(state));
+    },
     addToCart: (state, action) => {
       const { id, location_id } = action.payload;
       console.log(current(state));
@@ -45,7 +85,7 @@ const cartSlice = createSlice({
       if (existingItem) {
         existingItem.quantity += 1;
       } else {
-        cart.cartItems.push({ ...action.payload, quantity: 1 });
+        cart.cartItems.push({ ...action.payload, product_id: id, quantity: 1 });
       }
       console.log(id, location_id, cart);
 
@@ -103,5 +143,13 @@ export const selectCartByLocation = (location_id: string | number) =>
         : null) as ICart
   );
 
-export const { addToCart, setCart, decreaseItemQuantity, clearCart, removeFromCart } =
-  cartSlice.actions;
+export const {
+  addToCart,
+  setCart,
+  setCartTax,
+  setCartCustomer,
+  setCartDiscount,
+  decreaseItemQuantity,
+  clearCart,
+  removeFromCart,
+} = cartSlice.actions;
