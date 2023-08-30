@@ -29,6 +29,7 @@ import {
 import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
 
 import 'remixicon/fonts/remixicon.css';
+import { OpenRegisterView } from 'src/modules/pos/_views/open-register.view';
 
 const Home: NextPage = ({ shopId: _id }: any) => {
   const router = useRouter();
@@ -163,17 +164,6 @@ const Home: NextPage = ({ shopId: _id }: any) => {
     setIsLoading(false);
   }
 
-  const handleBussinesChange = (e: any) => {
-    const idx = cusLocs.findIndex((el) => el.bus_id == e.target?.value);
-    const locs = cusLocs[idx].locations;
-    setLocations(locs);
-    setShopId(locs?.[0]?.loc_id);
-  };
-
-  const handelLocationChange = (e: any) => {
-    setShopId(e.target?.value);
-  };
-
   if (isLoading)
     return (
       <PosLayout>
@@ -192,7 +182,12 @@ const Home: NextPage = ({ shopId: _id }: any) => {
   if (isOpenRegister)
     return (
       <PosLayout>
-        <NavMenu shopId={shopId} lang={lang} setLang={setLang} />
+        <NavMenu
+          shopId={shopId}
+          lang={lang}
+          setLang={setLang}
+          setOpenRegister={setIsOpenRegister}
+        />
 
         <CartPanel shopId={shopId} lang={lang.pos} direction={lang == ar ? 'rtl' : ''} />
         {/* <OrdersComponent shopId={shopId} lang={lang.pos} direction={lang == ar ? 'rtl' : ''} /> */}
@@ -201,49 +196,7 @@ const Home: NextPage = ({ shopId: _id }: any) => {
     );
 
   return (
-    <PosLayout>
-      <div className="open-register">
-        <img className="logo" src="/images/logo1.png" />
-        <p>You have Open Register First!</p>
-
-        {/* mohamed elsayed reg */}
-        <div className="col-lg-4 mb-3">
-          <label>Bussnies</label>
-          <select className="form-select" onChange={handleBussinesChange}>
-            {cusLocs?.map((el) => (
-              <option key={el.bus_id} value={el.bus_id}>
-                {el.bus_name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="col-lg-4 mb-3">
-          <label>Location</label>
-          <select className="form-select" onChange={handelLocationChange}>
-            {locations?.map((el) => (
-              <option key={el.loc_id} value={el.loc_id}>
-                {el.loc_name}
-              </option>
-            ))}
-          </select>
-        </div>
-        {/* ------------------ */}
-
-        <input
-          type="number"
-          name="cemail"
-          className="form-control"
-          placeholder="Cash in hand..."
-          onChange={(e) => {
-            setCashHand(+e.target?.value);
-          }}
-        />
-        <button className="btn btn-primary p-3" onClick={() => openRegister()}>
-          <FontAwesomeIcon icon={faCashRegister} /> Open Register{' '}
-        </button>
-      </div>
-    </PosLayout>
+    <OpenRegisterView setShopId={setShopId} setCashHand={setCashHand} openRegister={openRegister} />
   );
 };
 

@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { Button, ButtonGroup } from 'react-bootstrap';
+import { ELocalStorageKeys } from 'src/utils/local-storage';
 
 export default function LocationRow({ location, locations, businessId }) {
   const router = useRouter();
@@ -20,6 +21,10 @@ export default function LocationRow({ location, locations, businessId }) {
               onClick={() => {
                 localStorage.setItem('businessId', businessId);
                 localStorage.setItem('locations', JSON.stringify(locations));
+                localStorage.setItem(
+                  ELocalStorageKeys.CUSTOEMR_LOCATIONS,
+                  JSON.stringify(locations)
+                );
               }}>
               <FontAwesomeIcon icon={faFolderOpen} />
             </Button>
