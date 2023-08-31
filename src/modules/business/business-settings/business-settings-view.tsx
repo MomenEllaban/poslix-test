@@ -1,7 +1,7 @@
 import { type IUserBusiness } from '@models/auth.types';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import { Card, Form, Tabs } from 'react-bootstrap';
+import { ButtonGroup, Card, Form, Table, Tabs } from 'react-bootstrap';
 import Tab from 'react-bootstrap/Tab';
 import { useForm } from 'react-hook-form';
 import FormField from 'src/components/form/FormField';
@@ -11,8 +11,17 @@ import businessService, { useCurrenciesList } from 'src/services/business.servic
 import { Toastify } from 'src/libs/allToasts';
 import { useSWRConfig } from 'swr';
 import SelectField from 'src/components/form/SelectField';
+import { createNewData, findAllData } from 'src/services/crud.api';
+import { Button } from '@mui/material';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowAltCircleLeft, faEdit } from '@fortawesome/free-solid-svg-icons';
+import Select from 'react-select';
 
 function LocationUpdateForm({ businessId, location }) {
+  const [showAddUser, setShowAddUser] = useState(false);
+  const [isEditedStuff, setIsEditedStuff] = useState(true);
+  const [selectedUserId, setSelectedUserId] = useState(0);
+  const [selectedRoles, setSelectedRoles] = useState<{ value: number; label: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const { mutate } = useSWRConfig();
   const [currenciesList, setCurrenciesList] = useState<{ value: number; label: string }[]>([]);
@@ -25,6 +34,25 @@ function LocationUpdateForm({ businessId, location }) {
       setCurrenciesList(_currenciesList);
     },
   });
+
+  const [users, setUsers] = useState<any>([])
+  const [roles, setRoles] = useState<any>([])
+  const initPageData = async () => {
+    const usersRes = await findAllData('users')
+    const newUsers = usersRes.data.result.map((user) => {
+      return {...user, label: user.first_name, value: user.id}
+    })
+    setUsers([...newUsers])
+    const rolesRes = await findAllData('roles/get')
+    const newRoles = rolesRes.data.result.map((role) => {
+      return {...role, label: role.name, value: role.id}
+    })
+    setRoles([...newRoles])
+  }
+
+  useEffect(() => {
+    initPageData()
+  }, [])
 
   const {
     register: locationRegister,
@@ -57,54 +85,192 @@ function LocationUpdateForm({ businessId, location }) {
         setLoading(false);
       });
   }
+
+  const asignRoleToUser = async () => {
+    console.log('hello', selectedUserId, selectedRoles, location);
+    const res = await createNewData('roles/assign', {user_id: selectedUserId, role_id: selectedRoles[0].value, location_id: location.location_id})
+    if(res.data.success) {
+      Toastify('success', 'Updated sucessfully');
+      setShowAddUser(false);
+    } else {
+      Toastify('error', 'Has Error ,try Again');
+    }
+  }
   const onLocationError = (errors: any, e: any) => console.error(errors, e);
   return (
-    <Form
-      key={`${location.location_id}-form--location`}
-      noValidate
-      onSubmit={handleLocationSubmit(onLocationSubmit, onLocationError)}
-      className={styles.form}>
-      <FormField
-        required
-        name="name"
-        type="text"
-        label="Location Name"
-        placeholder="Enter Location Name"
-        errors={locationErrors}
-        register={locationRegister}
-      />
-      <SelectField
-        label="Currency"
-        name="currency_id"
-        options={currenciesList}
-        register={locationRegister}
-        errors={locationErrors}
-        required
-        loading={currenciesLoading}
-      />
-      <FormField
-        required
-        name="decimal"
-        type="number"
-        label="Decimal Places"
-        placeholder="Enter Decimal Places"
-        errors={locationErrors}
-        register={locationRegister}
-      />
-
-      <button className="btn-login mt-auto" type="submit" disabled={loading}>
-        {!!loading && (
-          <Image
-            alt="loading"
-            width={25}
-            height={25}
-            className="login-loading"
-            src={'/images/loading.gif'}
+    <>
+      {!showAddUser &&  <>
+        <Form
+          key={`${location.location_id}-form--location`}
+          noValidate
+          onSubmit={handleLocationSubmit(onLocationSubmit, onLocationError)}
+          className={styles.form}>
+          <FormField
+            required
+            name="name"
+            type="text"
+            label="Location Name"
+            placeholder="Enter Location Name"
+            errors={locationErrors}
+            register={locationRegister}
           />
-        )}
-        Update Location Settings
-      </button>
-    </Form>
+          <SelectField
+            label="Currency"
+            name="currency_id"
+            options={currenciesList}
+            register={locationRegister}
+            errors={locationErrors}
+            required
+            loading={currenciesLoading}
+          />
+          <FormField
+            required
+            name="decimal"
+            type="number"
+            label="Decimal Places"
+            placeholder="Enter Decimal Places"
+            errors={locationErrors}
+            register={locationRegister}
+          />
+
+          <button className="btn-login mt-auto" type="submit" disabled={loading}>
+            {!!loading && (
+              <Image
+                alt="loading"
+                width={25}
+                height={25}
+                className="login-loading"
+                src={'/images/loading.gif'}
+              />
+            )}
+            Update Location Settings
+          </button>
+        </Form>
+        <div className="row">
+          <h4>User Stuff</h4>
+          <br />
+          <br />
+          <Table className="">
+            <thead className="thead-dark">
+              <tr>
+                <th style={{ width: '6%' }}>#</th>
+                <th>User Name</th>
+                <th>Roles</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.length > 0 && users.map((user, i) => {
+                return (
+                  <tr key={i}>
+                    <th scope="row"></th>
+                    <td>{user.first_name}</td>
+                    <td>
+                      {user.role ? user.role : 'No Permissions'}
+                    </td>
+                    <td>
+                      <ButtonGroup className="mb-2 m-buttons-style">
+                        <Button
+                          onClick={() => {
+                            // var _rows = pages;
+                            var isNew = user.roles ? false : true
+                            //   businessUsers.findIndex(
+                            //     (ee) =>
+                            //       ee.value == user.value && ee.locationId == shopId
+                            //   ) > -1;
+                            // var _stuf = (
+                            //   businessUsers.find(
+                            //     (ee) =>
+                            //       ee.value == user.value && ee.locationId == shopId
+                            //   )?.stuff_ids || ' '
+                            // ).split(',');
+                            // var _myStuffs = roles.filter((rl) => {
+                            //   return _stuf.includes(rl.value + '');
+                            // });
+                            user.roles ? setSelectedRoles(user.role) : null;
+                            // for (let ix = 0; ix < _rows.length; ix++) {
+                            //     _stuf = businessUsers.find((ee) => ee.value == user.value && ee.locationId == shopId)?.stuff || ' ';
+                            //     _rows[ix].isChoosed_r = (',' + _stuf).indexOf(',' + _rows[ix].label + '_r,') != -1 ? true : false
+                            //     _rows[ix].isChoosed_e = (',' + _stuf).indexOf(',' + _rows[ix].label + '_e,') != -1 ? true : false
+                            //     _rows[ix].isChoosed_d = (',' + _stuf).indexOf(',' + _rows[ix].label + '_d,') != -1 ? true : false
+                            //     _rows[ix].isChoosed_i = (',' + _stuf).indexOf(',' + _rows[ix].label + '_i,') != -1 ? true : false
+                            // }
+                            // setPages(_rows);
+                            setSelectedUserId(user.id);
+                            setIsEditedStuff(isNew);
+                            setShowAddUser(true);
+                          }}>
+                          <FontAwesomeIcon icon={faEdit} />
+                        </Button>
+                      </ButtonGroup>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </Table>
+        </div>
+      </>}
+      {showAddUser && (
+        <form className="user-stuff-form">
+          <button
+            className="mb-4 btn btn-primary p-3"
+            onClick={() => {
+              setShowAddUser(false);
+            }}>
+            <FontAwesomeIcon icon={faArrowAltCircleLeft} /> back{' '}
+          </button>
+          <div className="row">
+            <div className="col-md-6 col-lg-6 col-cm-6">
+              <div className="form-group2">
+                <h4>User Stuff Settings</h4>
+              </div>
+              {/* {JSON.stringify(pages)} */}
+              <div className="form-group">
+                <label>
+                  Selected User : <span className="text-danger">*</span>
+                </label>
+                <Select
+                  options={users}
+                  isDisabled={true}
+                  value={users.filter((f: any) => {
+                    return f.id == selectedUserId;
+                  })}
+                  onChange={(itm) => {
+                    setSelectedUserId(itm!.value);
+                    // var _rows = pages;
+                    // setPages(_rows);
+                    setShowAddUser(true);
+                  }}
+                />
+              </div>
+              <div className="form-group">
+                <label>
+                  User Roles: <span className="text-danger">*</span>
+                </label>
+                <Select
+                  options={roles}
+                  isMulti={false}
+                  value={selectedRoles}
+                  onChange={(itm: any) => setSelectedRoles([itm])}
+                />
+              </div>
+              <br />
+            </div>
+          </div>
+
+          <button
+            type="button"
+            className="btn m-btn btn-primary p-2 "
+            onClick={(e) => {
+              e.preventDefault();
+              asignRoleToUser();
+            }}>
+            Save
+          </button>
+        </form>
+      )}
+    </>
   );
 }
 
