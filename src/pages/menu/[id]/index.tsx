@@ -143,7 +143,11 @@ const Home: NextPage = (props: any) => {
           {!isLoading ? (
             isOpenRegister ? (
               <div className="pos-flex">
-                <NavMenu shopId={shopId} />
+                <NavMenu
+                  shopId={shopId}
+                  isOpenRegister={isOpenRegister}
+                  setOpenRegister={setIsOpenRegister}
+                />
                 {/* <MenuOrderComponent shopId={shopId} /> */}
                 {/* <ItemList /> */}
               </div>

@@ -2,21 +2,25 @@ import ar from 'ar.json';
 import en from 'en.json';
 import Link from 'next/link';
 import Router from 'next/router';
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import CloseRegister from '../modals/CloseRegister';
 import styles from './NavMenu.module.scss';
+import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
 
-const NavMenu: any = (props: any) => {
-  const { shopId, lang, setLang, setOpenRegister } = props;
+const NavMenu: any = ({ shopId, lang, setLang, isOpenRegister, setOpenRegister }: any) => {
   const [customerIsModal, setCustomerIsModal] = useState<boolean>(false);
   const customerModalHandler = (status: any) => {
     setCustomerIsModal(false);
   };
 
-  useEffect(() => {
-    const defaultLang = localStorage.getItem('lang') || 'en';
-    if (defaultLang == 'en') setLang(en);
-    else setLang(ar);
+  useLayoutEffect(() => {
+    const defaultLang = getLocalStorage(ELocalStorageKeys.LANGUAGE) || 'en';
+
+    if (defaultLang === 'en') {
+      setLang(en);
+    } else {
+      setLang(ar);
+    }
   }, []);
 
   return (
@@ -41,6 +45,13 @@ const NavMenu: any = (props: any) => {
             href={'#'}
             onClick={() => {
               setOpenRegister(false);
+              localStorage.setItem(
+                ELocalStorageKeys.POS_REGISTER_STATE,
+                JSON.stringify({
+                  hand_cash: 0,
+                  state: 'close',
+                })
+              );
 
               setCustomerIsModal(true);
             }}>
@@ -58,10 +69,10 @@ const NavMenu: any = (props: any) => {
             className="nav-link menu-link"
             onClick={() => {
               if (lang == en) {
-                localStorage.setItem('lang', 'ar');
+                localStorage.setItem(ELocalStorageKeys.LANGUAGE, 'ar');
                 setLang(ar);
               } else {
-                localStorage.setItem('lang', 'en');
+                localStorage.setItem(ELocalStorageKeys.LANGUAGE, 'en');
                 setLang(en);
               }
               Router.reload();

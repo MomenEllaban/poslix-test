@@ -1,12 +1,10 @@
 'use client';
-import { faCashRegister } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { ICustomer, ITax } from '@models/pos.types';
 import ar from 'ar.json';
 import en from 'en.json';
 import type { NextPage } from 'next';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { useRecoilState } from 'recoil';
 import withAuth from 'src/HOCs/withAuth';
 import CartPanel from 'src/components/pos/_components/cart-panel/CartPanel';
@@ -15,8 +13,9 @@ import NavMenu from 'src/components/pos/parts/NavMenu';
 import { useProducts } from 'src/context/ProductContext';
 import { useUser } from 'src/context/UserContext';
 import { Toastify } from 'src/libs/allToasts';
-import { apiFetchCtr, apiInsertCtr } from 'src/libs/dbUtils';
+import { apiFetchCtr } from 'src/libs/dbUtils';
 import PosLayout from 'src/modules/pos/_components/layout/pos.layout';
+import { OpenRegisterView } from 'src/modules/pos/_views/open-register.view';
 import { cartJobType } from 'src/recoil/atoms';
 import { useGetBusinessLocation } from 'src/services/business.service';
 import {
@@ -26,21 +25,22 @@ import {
   useProductsList,
   useTaxesList,
 } from 'src/services/pos.service';
+import api from 'src/utils/app-api';
 import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
 
 import 'remixicon/fonts/remixicon.css';
-import { OpenRegisterView } from 'src/modules/pos/_views/open-register.view';
-
+interface IRegister {
+  state: 'open' | 'close';
+  hand_cash: number;
+}
 const Home: NextPage = ({ shopId: _id }: any) => {
   const router = useRouter();
 
   const [lang, setLang] = useState(en);
   const [shopId, setShopId] = useState(_id);
-  const [cusLocs, setCusLocs] = useState([]);
   const [cashHand, setCashHand] = useState(0);
-  const [locations, setLocations] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [isOpenRegister, setIsOpenRegister] = useState(true);
+  const [isOpenRegister, setIsOpenRegister] = useState(false);
 
   const [jobType] = useRecoilState(cartJobType);
 
@@ -107,10 +107,6 @@ const Home: NextPage = ({ shopId: _id }: any) => {
 
   /** ********************************************************** */
   useEffect(() => {
-    const locs = getLocalStorage<any[]>(ELocalStorageKeys.CUSTOEMR_LOCATIONS) ?? [];
-
-    setCusLocs(locs);
-    setLocations(locs?.[0]?.locations);
     if (jobType.req == 101) setIsOpenRegister(false);
     else if (jobType.req == 102) initData();
   }, [jobType]);
@@ -147,22 +143,36 @@ const Home: NextPage = ({ shopId: _id }: any) => {
     }
   }
   async function openRegister() {
-    const { success } = await apiInsertCtr({
-      type: 'customer',
-      subType: 'opens',
-      cashHand,
-      shopId,
-    });
-    if (!success) {
-      alert('error..Try Again');
-      return;
-    }
-    localStorage.setItem('hand_in_cash', cashHand.toString());
-    router.replace(`/pos/${shopId}`);
-    // initData();
-    setIsOpenRegister(true);
-    setIsLoading(false);
+    setIsLoading(true);
+    await api
+      .post(`/registration/${shopId}/open`, { hand_cash: +cashHand })
+      .then(({ data }) => {
+        Toastify('success', data.result.message);
+        localStorage.setItem(
+          ELocalStorageKeys.POS_REGISTER_STATE,
+          JSON.stringify({
+            state: 'open',
+            hand_cash: +cashHand,
+          })
+        );
+        router.replace(`/pos/${shopId}`);
+      })
+      .catch(() => {
+        alert('error..Try Again');
+      })
+      .finally(() => {
+        setIsOpenRegister(true);
+        setIsLoading(false);
+      });
+
+    // // initData();
   }
+  useEffect(() => {
+    const registerObject = getLocalStorage<IRegister>(ELocalStorageKeys.POS_REGISTER_STATE);
+
+    setIsOpenRegister(registerObject?.state === 'open');
+    
+  }, []);
 
   if (isLoading)
     return (
@@ -186,6 +196,7 @@ const Home: NextPage = ({ shopId: _id }: any) => {
           shopId={shopId}
           lang={lang}
           setLang={setLang}
+          isOpenRegister={isOpenRegister}
           setOpenRegister={setIsOpenRegister}
         />
 

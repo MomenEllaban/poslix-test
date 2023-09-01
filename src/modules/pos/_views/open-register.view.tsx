@@ -11,7 +11,6 @@ export function OpenRegisterView({ setShopId, setCashHand, openRegister }) {
 
   const { isLoading } = useBusinessList({
     onSuccess: (data) => {
-      console.log(data.result);
       setCusLocs(data?.result.filter((el) => el.locations?.length > 0));
       setLocations(data?.result?.[0]?.locations);
     },
@@ -35,12 +34,17 @@ export function OpenRegisterView({ setShopId, setCashHand, openRegister }) {
 
   return (
     <PosLayout>
-      <div className="open-register">
+      <form
+        className="open-register"
+        onSubmit={(e) => {
+          e.preventDefault();
+          openRegister();
+        }}>
         <img className="logo" src="/images/logo1.png" />
         <p>You have Open Register First!</p>
-
+        {/*//! why */}
         {/* mohamed elsayed reg */}
-        <div className="col-lg-4 mb-3">
+        {/* <div className="col-lg-4 mb-3">
           <label>Bussnies</label>
 
           <select
@@ -65,8 +69,8 @@ export function OpenRegisterView({ setShopId, setCashHand, openRegister }) {
               </>
             )}
           </select>
-        </div>
-
+        </div> */}
+        {/* 
         <div className="col-lg-4 mb-3">
           <label>Location</label>
           <select
@@ -91,7 +95,7 @@ export function OpenRegisterView({ setShopId, setCashHand, openRegister }) {
               </>
             )}
           </select>
-        </div>
+        </div> */}
         {/* ------------------ */}
         <div className="col-lg-4 mb-3">
           <input
@@ -104,10 +108,10 @@ export function OpenRegisterView({ setShopId, setCashHand, openRegister }) {
             }}
           />
         </div>
-        <button className="btn btn-primary p-3" onClick={openRegister}>
+        <button className="btn btn-primary p-3" type="submit">
           <FontAwesomeIcon icon={faCashRegister} /> Open Register
         </button>
-      </div>
+      </form>
     </PosLayout>
   );
 }
