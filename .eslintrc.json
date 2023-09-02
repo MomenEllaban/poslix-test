@@ -1,0 +1,111 @@
+{
+  "env": {
+    "browser": true,
+    "es6": true,
+    "node": true
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "next",
+    "next/core-web-vitals",
+    "prettier"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "project": "./tsconfig.json",
+    "ecmaVersion": "latest",
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "overrides": [
+    {
+      "files": [
+        "*.ts",
+        "*.tsx"
+      ],
+      "extends": [
+        "plugin:@typescript-eslint/recommended",
+      ],
+      "plugins": [
+        "@typescript-eslint"
+      ],
+      "rules": {
+        "@typescript-eslint/semi": [
+          2,
+          "never"
+        ],
+        // Use semicolon as member delimiter for interfaces and type
+        "@typescript-eslint/member-delimiter-style": 2
+      }
+    }
+  ],
+  "plugins": [
+    "react",
+    "react-hooks",
+    "prettier"
+  ],
+  "rules": {
+    "no-console": "warn",
+    "react/no-unescaped-entities": "off",
+    "@next/next/no-page-custom-font": "off",
+    "react/jsx-key": "warn",
+    "react/prop-types": "off",
+    "react/display-name": "warn",
+    "react/no-children-prop": "warn",
+    "react/react-in-jsx-scope": "off",
+    "no-unused-vars": "warn",
+    "no-case-declarations": "warn",
+    "react-hooks/exhaustive-deps": [
+      "warn",
+      {
+        "additionalHooks": "(useRecoilCallback|useRecoilTransaction_UNSTABLE)"
+      }
+    ],
+    "react-hooks/rules-of-hooks": "error",
+    "react/function-component-definition": [
+      2,
+      {
+        "namedComponents": [
+          "function-declaration",
+          "arrow-function"
+        ]
+      }
+    ],
+    "jsx-a11y/anchor-is-valid": 0,
+    "jsx-a11y/label-has-associated-control": [
+      2,
+      {
+        "assert": "either"
+      }
+    ],
+    "prettier/prettier": [
+      "warn",
+      {
+        "endOfLine": "auto"
+      }
+    ],
+    // Since we do not use prop-types
+    "react/require-default-props": 0,
+    "semi": [
+      2,
+      "never"
+    ],
+    "@typescript-eslint/naming-convention": [
+      "error",
+      {
+        "selector": "variable",
+        "format": [
+          "camelCase",
+          "PascalCase",
+          "UPPER_CASE",
+          "_camelCase",
+          "_PascalCase",
+          "_UPPER_CASE"
+        ]
+      }
+    ]
+  }
+}
