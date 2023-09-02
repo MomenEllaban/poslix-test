@@ -164,7 +164,7 @@ const Purchases: NextPage = (props: any) => {
   useEffect(() => {
     const perms = JSON.parse(localStorage.getItem('permissions'));
     const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
-    perms.purchase.map((perm) =>
+    perms?.purchase.map((perm) =>
       perm.name.includes('POST')
         ? (getPermissions.hasInsert = true)
         : perm.name.includes('PUT')
