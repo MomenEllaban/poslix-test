@@ -376,7 +376,7 @@ export function SidebarNav(props: any): any {
         </SidebarNavItem>
       )}
       {permiss.hasAppStore && (
-        <SidebarNavItem icon={faCalendarDay} href={'/menu/' + shopId}>
+        <SidebarNavItem icon={faCalendarDay} href={'/digital/' + shopId}>
           <BsMenuButtonWideFill className="nav-icon ms-n3" />
           Digital Menu
           <small className="ms-auto"></small>
