@@ -219,9 +219,9 @@ thead.order-head tr {
 }
 
 .items-list-pos {
-  width: 12.5rem;
+  width: 30%;
   flex-shrink: 0;
-  margin: 0.5rem;
+  margin: 10px;
   background-color: #fff;
   border-radius: 20px;
   transition: all 0.1s ease-in;

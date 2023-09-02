@@ -15,7 +15,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import { useContext, useEffect, useState } from 'react';
 import { useRecoilState } from 'recoil';
 import { UserContext } from 'src/context/UserContext';
-import { useProducts } from '../../../context/ProductContext';
+import { ProductContext } from '../../../context/ProductContext';
 import { apiFetchCtr, apiInsertCtr } from '../../../libs/dbUtils';
 import { cartJobType } from '../../../recoil/atoms';
 import mStyle from '../../../styles/Customermodal.module.css';
@@ -25,7 +25,7 @@ const CloseRegister = (props: any) => {
   const [closeRegisterInfo, setCloseRegisterInfo] = useState({ cashInHand: 0, cheque: 0 });
   const [snakeTitle, setSnakeTitle] = useState('');
 
-  const { products, setProducts, customers, setCustomers } = useProducts();
+  const { products, setProducts, customers, setCustomers } = useContext(ProductContext);
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [cash, setCash] = useState(0);

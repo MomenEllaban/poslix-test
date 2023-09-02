@@ -7,7 +7,7 @@ import CloseRegister from '../modals/CloseRegister';
 import styles from './NavMenu.module.scss';
 
 const NavMenu: any = (props: any) => {
-  const { shopId, lang, setLang, setOpenRegister } = props;
+  const { shopId, lang, setLang } = props;
   const [customerIsModal, setCustomerIsModal] = useState<boolean>(false);
   const customerModalHandler = (status: any) => {
     setCustomerIsModal(false);
@@ -36,14 +36,7 @@ const NavMenu: any = (props: any) => {
             <i className="ri-dashboard-2-line"></i>
             <span data-key="t-dashboards">{lang.pos.navmenu.dashboard}</span>
           </Link>
-          <Link
-            className="nav-link menu-link"
-            href={'#'}
-            onClick={() => {
-              setOpenRegister(false);
-
-              setCustomerIsModal(true);
-            }}>
+          <Link className="nav-link menu-link" href={'#'} onClick={() => setCustomerIsModal(true)}>
             <i className="ri-stack-line"></i>
             <span data-key="t-dashboards">{lang.pos.navmenu.close}</span>
           </Link>

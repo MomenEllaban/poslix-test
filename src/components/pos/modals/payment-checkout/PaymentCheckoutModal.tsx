@@ -248,49 +248,6 @@ export default function PaymentCheckoutModal({ show, setShow, shopId }) {
                 </Col>
               </Row>
             </Form>
-            <Row className="p-1 mt-1 mb-1 rounded-2 bg-primary">
-              <Col xs={3} className="d-flex flex-column">
-                <p className="fw-semibold fs-6" style={{ height: '3rem' }}>
-                  Total Payable
-                </p>
-
-                <span className="fw-semibold fs-6">
-                  {totalAmount?.toFixed(locationSettings?.location_decimal_places) ?? ''}
-                </span>
-              </Col>
-
-              <Col xs={3}>
-                {' '}
-                <p className="fw-semibold fs-6" style={{ height: '3rem' }}>
-                  Total Paying
-                </p>
-                <span className="fw-semibold fs-6">
-                  {paidSum?.toFixed(locationSettings?.location_decimal_places) ?? ''}
-                </span>
-              </Col>
-              <Col xs={3}>
-                {' '}
-                <p className="fw-semibold fs-6" style={{ height: '3rem' }}>
-                  Change Return{' '}
-                </p>
-                <span className="fw-semibold fs-6">
-                  {Math.max(paidSum - totalAmount, 0)?.toFixed(
-                    locationSettings?.location_decimal_places
-                  ) ?? ''}
-                </span>
-              </Col>
-              <Col xs={3}>
-                {' '}
-                <p className="fw-semibold fs-6" style={{ height: '3rem' }}>
-                  Balance{' '}
-                </p>
-                <span className="fw-semibold fs-6">
-                  {Math.max(totalAmount - paidSum, 0)?.toFixed(
-                    locationSettings?.location_decimal_places
-                  ) ?? ''}
-                </span>
-              </Col>
-            </Row>
           </Container>
         }
         footer={
@@ -312,7 +269,6 @@ export default function PaymentCheckoutModal({ show, setShow, shopId }) {
                 {totalAmount - paidSum > 0 ? 'remaining' : 'exceeded'}
               </span>
             )}
-
             <Button
               type="submit"
               form="hook-form"
