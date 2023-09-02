@@ -1282,7 +1282,7 @@ td {
   box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
   display: flex;
   flex-direction: column;
-  height: 430px;
+  height: 330px;
   /* color: white !important; */
   padding: 7px;
   justify-content: flex-start;
@@ -1429,11 +1429,21 @@ td {
 }
 
 .digital-cart-small{
-  width: 100%;
-  display: block;
   position: absolute;
-  bottom: 0;
-  left: 0;
+  bottom: 0px;
+  height: 60px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  visibility: visible;
+  right: 0px;
+  left: 0px;
+  background-color: rgb(144, 144, 144);
+  transition: scale 0.1s ease-in-out 0s;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 10000000000000;
+display:none
 }
 
 // modal
@@ -1549,6 +1559,7 @@ td {
   .digital-cart-small{
     display: block;
   }
+
 }
 
 @media (max-width:1290px) {
