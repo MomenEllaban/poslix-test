@@ -4,6 +4,7 @@
     "navmenu": {
       "dashboard": "Dashboard",
       "close": "Close",
+      "open": "Open",
       "refresh": "Refresh",
       "logout": "Logout",
       "fullscreen": "Full Screen",

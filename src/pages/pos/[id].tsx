@@ -1,22 +1,16 @@
-'use client';
 import { ICustomer, ITax } from '@models/pos.types';
-import ar from 'ar.json';
-import en from 'en.json';
 import type { NextPage } from 'next';
-import { useRouter } from 'next/router';
-import { useEffect, useLayoutEffect, useState } from 'react';
-import { useRecoilState } from 'recoil';
+import { useCallback, useLayoutEffect, useState } from 'react';
+import 'remixicon/fonts/remixicon.css';
 import withAuth from 'src/HOCs/withAuth';
-import CartPanel from 'src/components/pos/_components/cart-panel/CartPanel';
-import { ItemList } from 'src/components/pos/_components/item-list/ItemList';
-import NavMenu from 'src/components/pos/parts/NavMenu';
 import { useProducts } from 'src/context/ProductContext';
 import { useUser } from 'src/context/UserContext';
-import { Toastify } from 'src/libs/allToasts';
-import { apiFetchCtr } from 'src/libs/dbUtils';
+import { useAppDispatch, useAppSelector } from 'src/hooks';
+import PosCart from 'src/modules/pos/PosCart';
+import PosLoader from 'src/modules/pos/_components/PosLoader';
 import PosLayout from 'src/modules/pos/_components/layout/pos.layout';
 import { OpenRegisterView } from 'src/modules/pos/_views/open-register.view';
-import { cartJobType } from 'src/recoil/atoms';
+import { selectPos, setPosRegister } from 'src/redux/slices/pos.slice';
 import { useGetBusinessLocation } from 'src/services/business.service';
 import {
   useBrandsList,
@@ -25,38 +19,22 @@ import {
   useProductsList,
   useTaxesList,
 } from 'src/services/pos.service';
-import api from 'src/utils/app-api';
 import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
 
-import 'remixicon/fonts/remixicon.css';
 interface IRegister {
   state: 'open' | 'close';
   hand_cash: number;
 }
+
 const Home: NextPage = ({ shopId: _id }: any) => {
-  const router = useRouter();
+  const pos = useAppSelector(selectPos);
+  const dispatch = useAppDispatch();
 
-  const [lang, setLang] = useState(en);
   const [shopId, setShopId] = useState(_id);
-  const [cashHand, setCashHand] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
-  const [isOpenRegister, setIsOpenRegister] = useState(false);
 
-  const [jobType] = useRecoilState(cartJobType);
-
-  const {
-    setCats,
-    setBrands,
-    setProducts,
-    setCustomers,
-    setTaxes,
-    setTaxGroups,
-    setVariations,
-    setPackageItems,
-  } = useProducts();
-
-  const { setLocationSettings, setTailoringSizes, setInvoicDetails, setTailoringExtras } =
-    useUser();
+  const { setLocationSettings } = useUser();
+  const { setCats, setBrands, setProducts, setCustomers, setTaxes, setTaxGroups } = useProducts();
 
   useGetBusinessLocation(shopId, {
     onSuccess(data) {
@@ -105,109 +83,55 @@ const Home: NextPage = ({ shopId: _id }: any) => {
     },
   });
 
-  /** ********************************************************** */
-  useEffect(() => {
-    if (jobType.req == 101) setIsOpenRegister(false);
-    else if (jobType.req == 102) initData();
-  }, [jobType]);
+  // async function initData() {
+  //   const { success, data } = await apiFetchCtr({
+  //     fetch: 'pos',
+  //     subType: 'getPosInit',
+  //     shopId,
+  //   });
+  //   if (!success) {
+  //     Toastify('error', 'error..Try Again');
+  //     return;
+  //   }
 
-  async function initData() {
-    const { success, data } = await apiFetchCtr({
-      fetch: 'pos',
-      subType: 'getPosInit',
-      shopId,
-    });
-    if (!success) {
-      Toastify('error', 'error..Try Again');
-      return;
-    }
+  //   setVariations(data.variations);
+  //   setPackageItems(data.packageItems);
+  //   setTailoringExtras(data.tailoring_extras);
 
-    setVariations(data.variations);
-    setPackageItems(data.packageItems);
-    setTailoringExtras(data.tailoring_extras);
+  //   setTailoringSizes(data.AllSizes);
+  //   if (data.invoiceDetails != null && data.invoiceDetails.length > 10)
+  //     setInvoicDetails(JSON.parse(data.invoiceDetails));
+  //   else {
+  //   }
+  //   const _locs = JSON.parse(localStorage.getItem('userlocs') || '[]');
+  //   if (_locs.toString().length > 10)
+  //     setLocationSettings(_locs[_locs.findIndex((loc: any) => loc?.value == shopId)] ?? {});
+  //   else Toastify('error', 'errorr location settings');
 
-    setTailoringSizes(data.AllSizes);
-    if (data.invoiceDetails != null && data.invoiceDetails.length > 10)
-      setInvoicDetails(JSON.parse(data.invoiceDetails));
-    else {
-    }
-    const _locs = JSON.parse(localStorage.getItem('userlocs') || '[]');
-    if (_locs.toString().length > 10)
-      setLocationSettings(_locs[_locs.findIndex((loc: any) => loc?.value == shopId)] ?? {});
-    else Toastify('error', 'errorr location settings');
+  //   setIsLoading(false);
+  //   if (data.cash.length > 0 && data.cash[0].status == 'open') {
+  //     setIsOpenRegister(true);
+  //     setIsLoading(false);
+  //   }
+  // }
 
-    setIsLoading(false);
-    if (data.cash.length > 0 && data.cash[0].status == 'open') {
-      setIsOpenRegister(true);
-      setIsLoading(false);
-    }
-  }
-  async function openRegister() {
-    setIsLoading(true);
-    await api
-      .post(`/registration/${shopId}/open`, { hand_cash: +cashHand })
-      .then(({ data }) => {
-        Toastify('success', data.result.message);
-        localStorage.setItem(
-          ELocalStorageKeys.POS_REGISTER_STATE,
-          JSON.stringify({
-            state: 'open',
-            hand_cash: +cashHand,
-          })
-        );
-        router.replace(`/pos/${shopId}`);
-      })
-      .catch(() => {
-        alert('error..Try Again');
-      })
-      .finally(() => {
-        setIsOpenRegister(true);
-        setIsLoading(false);
-      });
-
-    // // initData();
-  }
-  useEffect(() => {
+  useLayoutEffect(() => {
     const registerObject = getLocalStorage<IRegister>(ELocalStorageKeys.POS_REGISTER_STATE);
-
-    setIsOpenRegister(registerObject?.state === 'open');
-    
+    dispatch(setPosRegister(registerObject));
   }, []);
 
-  if (isLoading)
-    return (
-      <PosLayout>
-        <div className="pos-loading">
-          <div>
-            <div className="snippet" data-title="dot-flashing">
-              <div className="stage">
-                <div className="dot-flashing" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </PosLayout>
-    );
+  const StepRender = useCallback(() => {
+    if (isLoading) return <PosLoader />;
 
-  if (isOpenRegister)
-    return (
-      <PosLayout>
-        <NavMenu
-          shopId={shopId}
-          lang={lang}
-          setLang={setLang}
-          isOpenRegister={isOpenRegister}
-          setOpenRegister={setIsOpenRegister}
-        />
+    if (pos?.register?.state === 'open') return <PosCart shopId={shopId} />;
 
-        <CartPanel shopId={shopId} lang={lang.pos} direction={lang == ar ? 'rtl' : ''} />
-        {/* <OrdersComponent shopId={shopId} lang={lang.pos} direction={lang == ar ? 'rtl' : ''} /> */}
-        <ItemList shopId={shopId} lang={lang.pos.itemList} />
-      </PosLayout>
-    );
+    return <OpenRegisterView shopId={shopId} setShopId={setShopId} setIsLoading={setIsLoading} />;
+  }, [isLoading, pos, shopId, setIsLoading, dispatch]);
 
   return (
-    <OpenRegisterView setShopId={setShopId} setCashHand={setCashHand} openRegister={openRegister} />
+    <PosLayout>
+      <StepRender />
+    </PosLayout>
   );
 };
 

@@ -2,15 +2,35 @@ import ar from 'ar.json';
 import en from 'en.json';
 import Link from 'next/link';
 import Router from 'next/router';
-import { useEffect, useLayoutEffect, useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
+import { useAppDispatch, useAppSelector } from 'src/hooks';
+import { selectPos, setPosRegister } from 'src/redux/slices/pos.slice';
+import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
 import CloseRegister from '../modals/CloseRegister';
 import styles from './NavMenu.module.scss';
-import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
 
-const NavMenu: any = ({ shopId, lang, setLang, isOpenRegister, setOpenRegister }: any) => {
+const NavMenu: any = ({ shopId, lang, setLang }: any) => {
   const [customerIsModal, setCustomerIsModal] = useState<boolean>(false);
+  const pos = useAppSelector(selectPos);
+  const dispatch = useAppDispatch();
   const customerModalHandler = (status: any) => {
     setCustomerIsModal(false);
+  };
+
+  const handleSwitchRegister = () => {
+    // if open ==> close ... if close ==> open
+    if (pos.register.state === 'open') {
+      setCustomerIsModal(true);
+    } else {
+      dispatch(
+        setPosRegister({
+          state: null,
+          hand_cash: 0,
+        })
+      );
+      const _posRegisterState = JSON.stringify({ state: 'close', hand_cash: 0 });
+      // localStorage.setItem(ELocalStorageKeys.POS_REGISTER_STATE, _posRegisterState);
+    }
   };
 
   useLayoutEffect(() => {
@@ -40,24 +60,13 @@ const NavMenu: any = ({ shopId, lang, setLang, isOpenRegister, setOpenRegister }
             <i className="ri-dashboard-2-line"></i>
             <span data-key="t-dashboards">{lang.pos.navmenu.dashboard}</span>
           </Link>
-          <Link
-            className="nav-link menu-link"
-            href={'#'}
-            onClick={() => {
-              setOpenRegister(false);
-              localStorage.setItem(
-                ELocalStorageKeys.POS_REGISTER_STATE,
-                JSON.stringify({
-                  hand_cash: 0,
-                  state: 'close',
-                })
-              );
-
-              setCustomerIsModal(true);
-            }}>
+          <button className="nav-link menu-link d-flex" onClick={handleSwitchRegister}>
             <i className="ri-stack-line"></i>
-            <span data-key="t-dashboards">{lang.pos.navmenu.close}</span>
-          </Link>
+            <span data-key="t-dashboards">
+              {/* Open registeration will not appear */}
+              {lang.pos.navmenu.close}
+            </span>
+          </button>
           <Link className="nav-link menu-link" href={'#'} onClick={() => Router.reload()}>
             <i className="ri-refresh-line"></i>
             <span data-key="t-dashboards">{lang.pos.navmenu.refresh}</span>
