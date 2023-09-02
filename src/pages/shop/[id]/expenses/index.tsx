@@ -114,16 +114,53 @@ const Expenses: NextPage = (props: any) => {
       ),
     },
   ];
+
+  const [permissions, setPermissions] = useState<any>();
+  const [catPermissions, setCatPermissions] = useState<any>();
+  useEffect(() => {
+    const perms = JSON.parse(localStorage.getItem('permissions'));
+    const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
+    const getCatPermissions = {
+      hasCategories: false,
+      hasView: false,
+      hasInsert: false,
+      hasEdit: false,
+      hasDelete: false,
+    };
+    perms.inventory.map((perm) =>
+      perm.name.includes('inventory expense category all GET')
+        ? (getCatPermissions.hasCategories = true)
+        : perm.name.includes('inventory expense category show GET')
+        ? (getCatPermissions.hasView = true)
+        : perm.name.includes('inventory expense category update PUT')
+        ? (getCatPermissions.hasEdit = true)
+        : perm.name.includes('inventory expense category add POST')
+        ? (getCatPermissions.hasInsert = true)
+        : perm.name.includes('inventory expense category delete DELETE')
+        ? (getCatPermissions.hasDelete = true)
+        : perm.name.includes('inventory expenses add POST')
+        ? (getPermissions.hasInsert = true)
+        : perm.name.includes('inventory expenses update PUT')
+        ? (getPermissions.hasEdit = true)
+        : perm.name.includes('inventory expenses delete DELETE')
+        ? (getPermissions.hasDelete = true)
+        : null
+    );
+
+    setPermissions(getPermissions);
+    setCatPermissions(getCatPermissions);
+  }, []);
+
   async function initDataPage() {
     if (router.query.id) {
       setIsLoading(true);
       const res = await findAllData(`expenses/${router.query.id}`);
       if (res.data.success) {
-        catPermissions.hasInsert && res.data.result.cate.push({ id: 0, name: '', isNew: true });
         setExpensesList(res.data.result);
       }
       const catRes = await findAllData(`expenses-categories/${router.query.id}`);
       if (catRes.data.success) {
+        catPermissions.hasInsert && catRes.data.result.push({ id: 0, name: '', isNew: true });
         setCategories(catRes.data.result);
       }
       setIsLoading(false);
@@ -180,42 +217,6 @@ const Expenses: NextPage = (props: any) => {
     if (router.query.id) {
     }
   };
-
-  const [permissions, setPermissions] = useState<any>();
-  const [catPermissions, setCatPermissions] = useState<any>();
-  useEffect(() => {
-    const perms = JSON.parse(localStorage.getItem('permissions'));
-    const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
-    const getCatPermissions = {
-      hasCategories: false,
-      hasView: false,
-      hasInsert: false,
-      hasEdit: false,
-      hasDelete: false,
-    };
-    perms.expense.map((perm) =>
-      perm.name.includes('categories GET')
-        ? (getCatPermissions.hasCategories = true)
-        : perm.name.includes('category GET')
-        ? (getCatPermissions.hasView = true)
-        : perm.name.includes('category PUT')
-        ? (getCatPermissions.hasEdit = true)
-        : perm.name.includes('category POST')
-        ? (getCatPermissions.hasInsert = true)
-        : perm.name.includes('category DELETE')
-        ? (getCatPermissions.hasDelete = true)
-        : perm.name.includes('expense POST')
-        ? (getPermissions.hasInsert = true)
-        : perm.name.includes('expense PUT')
-        ? (getPermissions.hasEdit = true)
-        : perm.name.includes('expense DELETE')
-        ? (getPermissions.hasDelete = true)
-        : null
-    );
-
-    setPermissions(getPermissions);
-    setCatPermissions(getCatPermissions);
-  }, []);
 
   useEffect(() => {
     initDataPage();

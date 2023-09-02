@@ -216,6 +216,39 @@ export function SidebarNav(props: any): any {
     intData();
   }, [shopId]);
 
+  const [permissions, setPermissions] = useState<any>();
+  useEffect(() => {
+    const perms = JSON.parse(localStorage.getItem('permissions'));
+    const getPermissions = { hasPos: false, hasProducts: false, hasPurchases: false, hasTransfers: false, 
+      hasSuppliers: false, hasExpenses: false, hasPricingGroups: false, hasCustomers: false, hasSalesList: false,
+      hasQuotations: false, hasCategories: false };
+    perms.inventory.map((perm) =>
+      perm.name.includes('pos currencies GET')
+        ? (getPermissions.hasPos = true)
+        : perm.name.includes('inventory products GET')
+        ? (getPermissions.hasProducts = true)
+        : perm.name.includes('inventory purchases GET')
+        ? (getPermissions.hasPurchases = true)
+        : perm.name.includes('inventory transfers GET')
+        ? (getPermissions.hasTransfers = true)
+        : perm.name.includes('inventory expenses all GET')
+        ? (getPermissions.hasExpenses = true)
+        : perm.name.includes('getpricinggroup get GET')
+        ? (getPermissions.hasPricingGroups = true)
+        : perm.name.includes('customers all GET')
+        ? (getPermissions.hasCustomers = true)
+        : perm.name.includes('sales sales list show GET')
+        ? (getPermissions.hasSalesList = true)
+        : perm.name.includes('sales quotations list get GET')
+        ? (getPermissions.hasQuotations = true)
+        : perm.name.includes('settings categories all GET')
+        ? (getPermissions.hasCategories = true)
+        : null
+    );
+
+    setPermissions(getPermissions);
+  }, []);
+
   if (loading) return <div>loading</div>;
   return (
     <ul className="list-unstyled">
@@ -225,51 +258,50 @@ export function SidebarNav(props: any): any {
         <small className="ms-auto"></small>
       </SidebarNavItem>
 
-      {(permiss.hasProducts ||
-        permiss.hasPurchases ||
-        permiss.hasTransfer ||
-        permiss.hasSupplier ||
-        permiss.hasExpenses ||
-        permiss.hasTailoring) && (
+      {(permissions.hasProducts ||
+        permissions.hasPurchases ||
+        permissions.hasTransfer ||
+        // permissions.hasSupplier ||
+        permissions.hasExpenses) && (
         <SidebarNavGroup toggleIcon={MdOutlineLocalGroceryStore as any} toggleText="Inventory">
           <MdOutlineLocalGroceryStore className="nav-icon ms-n3" />
           <MdOutlineLocalGroceryStore />
-          {permiss.hasProducts && (
+          {permissions.hasProducts && (
             <SidebarNavItem href={'/shop/' + shopId + '/products'}>Products</SidebarNavItem>
           )}
-          {permiss.hasPurchases && (
+          {permissions.hasPurchases && (
             <SidebarNavItem href={'/shop/' + shopId + '/purchases'}>Purchases</SidebarNavItem>
           )}
-          {permiss.hasTransfer && (
+          {permissions.hasTransfer && (
             <SidebarNavItem href={'/shop/' + shopId + '/transfers'}>Transfers</SidebarNavItem>
           )}
-          {permiss.hasSupplier && (
+          {permissions.hasSupplier && (
             <SidebarNavItem href={'/shop/' + shopId + '/suppliers'}>Suppliers</SidebarNavItem>
           )}
-          {permiss.hasExpenses && (
+          {permissions.hasExpenses && (
             <SidebarNavItem href={'/shop/' + shopId + '/expenses'}>Expenses</SidebarNavItem>
           )}
-          {permiss.hasTailoring && btype == 'Kianvqyqndr' && (
+          {permissions.hasTailoring && btype == 'Kianvqyqndr' && (
             <SidebarNavItem href={'/shop/' + shopId + '/tailoring'}>Tailoring</SidebarNavItem>
           )}
         </SidebarNavGroup>
       )}
 
-      {permiss.hasCustomers && (
+      {permissions.hasCustomers && (
         <SidebarNavItem icon={faUser} href={'/shop/' + shopId + '/pricing'}>
           Pricing Groups
           <small className="ms-auto"></small>
         </SidebarNavItem>
       )}
 
-      {(permiss.hasSalesList || permiss.hasPurchases || permiss.hasCats) && (
+      {(permissions.hasSalesList || permissions.hasPurchases || permissions.hasCategories) && (
         <SidebarNavGroup toggleIcon="MdOutlineCrisisAlert" toggleText="Sales">
-          {permiss.hasQuotations && (
+          {permissions.hasQuotations && (
             <SidebarNavItem href={'/shop/' + shopId + '/quotations'} sub={true}>
               Quotations List
             </SidebarNavItem>
           )}
-          {permiss.hasSalesList && (
+          {permissions.hasSalesList && (
             <SidebarNavItem href={'/shop/' + shopId + '/sales'} sub={true}>
               {' '}
               Sales List

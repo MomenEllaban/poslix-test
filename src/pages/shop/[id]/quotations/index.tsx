@@ -32,6 +32,7 @@ import { UserContext } from 'src/context/UserContext';
 import { useReactToPrint } from 'react-to-print';
 import { Toastify } from 'src/libs/allToasts';
 import { ToastContainer } from 'react-toastify';
+import { findAllData } from 'src/services/crud.api';
 
 export default function SalesList(props: any) {
   const { shopId, rules } = props;
@@ -404,15 +405,11 @@ export default function SalesList(props: any) {
   }
   // init sales data
   async function initDataPage() {
-    const { success, newdata } = await apiFetchCtr({
-      fetch: 'transactions',
-      subType: 'getSales',
-      shopId,
-    });
-    if (success) {
-      setsales(newdata.data);
-      if (newdata.invoiceDetails != null && newdata.invoiceDetails.length > 10)
-        setInvoicDetails(JSON.parse(newdata.invoiceDetails));
+    const res = await findAllData('quotations-list')
+    if (res.data.success) {
+      setsales(res.data.result.quotationsList);
+      // if (res.data.result.invoiceDetails != null && res.data.result.invoiceDetails.length > 10)
+      //   setInvoicDetails(JSON.parse(res.data.result.invoiceDetails));
     }
   }
 
@@ -690,51 +687,4 @@ export default function SalesList(props: any) {
       </Dialog>
     </AdminLayout>
   );
-}
-export async function getServerSideProps(context: any) {
-  const parsedCookies = cookie.parse(context.req.headers.cookie || '[]');
-  var _isOk = true,
-    _rule = true;
-  //check page params
-  var shopId = context.query.id;
-  if (shopId == undefined) return { redirect: { permanent: false, destination: '/page403' } };
-
-  //check user permissions
-  var _userRules = {};
-  await verifayTokens(
-    { headers: { authorization: 'Bearer ' + parsedCookies.tokend } },
-    (repo: ITokenVerfy) => {
-      _isOk = repo.status;
-
-      if (_isOk) {
-        var _rules = keyValueRules(repo.data.rules || []);
-
-        if (
-          _rules[-2] != undefined &&
-          _rules[-2][0].stuff != undefined &&
-          _rules[-2][0].stuff == 'owner'
-        ) {
-          _rule = true;
-          _userRules = {
-            hasDelete: true,
-            hasEdit: true,
-            hasView: true,
-            hasInsert: true,
-          };
-        } else if (_rules[shopId] != undefined) {
-          var _stuf = '';
-          _rules[shopId].forEach((dd: any) => (_stuf += dd.stuff));
-          const { userRules, hasPermission } = hasPermissions(_stuf, 'sales');
-          _rule = hasPermission;
-          _userRules = userRules;
-        } else _rule = false;
-      }
-    }
-  );
-  if (!_isOk) return { redirect: { permanent: false, destination: '/user/auth' } };
-  if (!_rule) return { redirect: { permanent: false, destination: '/page403' } };
-  return {
-    props: { shopId: context.query.id, rules: _userRules },
-  };
-  //status ok
 }
