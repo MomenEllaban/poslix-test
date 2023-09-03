@@ -9,6 +9,7 @@ import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
 import CloseRegister from '../modals/CloseRegister';
 import styles from './NavMenu.module.scss';
 import { usePosContext } from 'src/modules/pos/_context/PosContext';
+import { ROUTES } from 'src/utils/app-routes';
 
 const NavMenu: any = ({ shopId }: any) => {
   const { lang, setLang } = usePosContext();
@@ -91,7 +92,7 @@ const NavMenu: any = ({ shopId }: any) => {
             }}>
             <i className="ri-global-fill" /> <span>{lang == ar ? 'EN' : 'العربية'}</span>
           </a>
-          <Link className="nav-link menu-link" href={'/user/login'}>
+          <Link className="nav-link menu-link" href={ROUTES.AUTH}>
             <i className="ri-logout-circle-line"></i>
             <span data-key="t-dashboards">{lang.pos.navmenu.logout}</span>
           </Link>

@@ -10,7 +10,7 @@ import styles from './CartPanel.module.scss';
 import { usePosContext } from 'src/modules/pos/_context/PosContext';
 
 interface ICustomerItem {
-  value: string;
+  value: string | number;
   label: string;
   isNew: boolean;
 }
@@ -47,7 +47,10 @@ export default function CartPanel({ shopId }) {
 
   const [subTotal, setSubTotal] = useState<number>(0);
   const [isOrderEdit, setIsOrderEdit] = useState<number>(0);
-  const [customer, setCustomer] = useState<ICustomerItem>(initCustomer);
+  const [customer, setCustomer] = useState<ICustomerItem>({
+    ...initCustomer,
+    value: cart?.customer_id ?? '1',
+  });
 
   const [orderEditDetails, setOrderEditDetails] = useState<IOrderItem>(initOrder);
 

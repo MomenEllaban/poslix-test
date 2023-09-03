@@ -29,7 +29,7 @@ export default function CustomerDataSelect({
     React.SetStateAction<{ value: string; label: string; isNew: boolean }>
   >;
   orderEditDetails: IOrderMiniDetails;
-  customer: { value: string; label: string; isNew: boolean };
+  customer: { value: string | number; label: string; isNew: boolean };
 }) {
   const dispatch = useAppDispatch();
   const { customers } = useProducts();
