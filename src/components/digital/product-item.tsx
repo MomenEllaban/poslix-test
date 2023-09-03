@@ -76,7 +76,7 @@ const modalHandler = (event) => {
             </div>
         </div>
         <div className="digital-product-button">
-            <Button variant="danger">Buy Now</Button>
+            <Button variant="">Buy Now</Button>
         </div>
     </div>
     </>

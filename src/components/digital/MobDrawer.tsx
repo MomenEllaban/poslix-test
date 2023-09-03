@@ -9,7 +9,11 @@ import Box from '@mui/material/Box';
 import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
 import SwipeableDrawer from '@mui/material/SwipeableDrawer';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import  CartItem  from "../../components/digital/CartItem"
 
+import { useDispatch,useSelector } from 'react-redux';
+import {addTodigitalCart ,incrementQuantity, decrementQuantity, removeItem} from '../../redux/slices/digitalCartSlice';
 const drawerBleeding = 56;
 
 const Root = styled('div')(({ theme }) => ({
@@ -32,16 +36,28 @@ const Puller = styled(Box)(({ theme }) => ({
   left: 'calc(50% - 15px)',
 }));
 
-function MobDrawer({toggleDrawer,setOpen,open}) {
+function MobDrawer({toggleDrawer,setOpen,open,setShowCart}) {
 
-//   const [open, setOpen] = React.useState(stateo);
-
-//   let toggleDrawer = (newOpen) => () => {
-//     setOpen(newOpen);
-//   };
-
+  const handleDrawer = (open) => {
+    console.log("first")
+    setShowCart((s)=>!s)
+    setOpen(!open);
+    toggleDrawer(!open)
+  };
   // This is used only for the example
-
+  const {digitalCart} = useSelector((state) => state.digitalCart)
+  console.log("first",digitalCart.digitalCart)
+  const dispatch = useDispatch()
+  const getTotal = () => {
+      let totalQuantity = 0
+      let totalPrice = 0
+      console.log(digitalCart);
+      digitalCart?.forEach(item => {
+        totalQuantity += item.quantity
+        totalPrice += item.price * item.quantity
+      })
+      return {totalPrice, totalQuantity}
+    }
   return (
     <Root>
       <CssBaseline />
@@ -78,19 +94,60 @@ function MobDrawer({toggleDrawer,setOpen,open}) {
           }}
         >
           <Puller />
-          <Typography sx={{ p: 2, color: 'text.secondary' }}>51 results</Typography>
-                 </StyledBox>
-                 <Button onClick={toggleDrawer(false)}>Close</Button>
-        <StyledBox
+            <div className='digital-cart-small-sm'>
+          <div className='d-flex h-100 align-items-center  '>
+            <ShoppingCartIcon/>
+            <p className='m-0'>
+            Total:00:00$ OMR
+           </p>
+            </div>
+          
+
+          <Button  className='mobDrawer_btn' onClick={()=>handleDrawer(open)}>Close Cart</Button>
+          </div>
+
+          
+        </StyledBox>
+           
+        {/* <StyledBox
           sx={{
             px: 2,
             pb: 2,
             height: '100%',
             overflow: 'auto',
           }}
-        >
-          <Skeleton variant="rectangular" height="100%" />
-        </StyledBox>
+        > */}
+             <div className="digital-cart-sm">
+            <div className="digital-cart-items-container py-3">
+                <h4>YOUR ORDER</h4>
+                <div className="digital-cart-items-list">
+                {digitalCart.length>=1?digitalCart.map((item) => (
+                
+           
+          <CartItem 
+          key={item.id}
+          id={item.id}
+          image={item.image}
+          name={item.name}
+          price={item.price} 
+          quantity={item.quantity}
+           />
+
+
+                 )):<p className="empty text-dark">Cart is empty</p>
+                 
+                 }
+
+                    
+                </div>
+            </div>
+            <div className="digital-cart-checkout">
+                <Button className="checkout_btn" variant="contained" color="error">Checkout {getTotal().totalPrice} OMR</Button>
+                <Button color="error">APPLY COUPON</Button>
+            </div>
+        </div>
+          {/* <Skeleton variant="rectangular" height="100%" /> */}
+        {/* </StyledBox> */}
       </SwipeableDrawer>
     </Root>
   );

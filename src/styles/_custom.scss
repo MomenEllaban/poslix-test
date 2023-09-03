@@ -1300,9 +1300,9 @@ td {
   background-position: 50%;
   cursor: pointer;
   -o-object-fit: cover;
-  object-fit: cover;
+  object-fit: contain;
   margin: 0% 0% 2%;
-  height: 120px;
+  height: 180px;
   border-radius: 4px 4px 3px 3px;
 }
 
@@ -1349,12 +1349,20 @@ td {
 
 .digital-product-button .btn {
   width: 100%;
+  background: #045c54 !important;
+  color: white;
 }
 
 .digital-cart {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+}
+.digital-cart-sm {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
 }
 
 .digital-cart-items-container h4 {
@@ -1404,7 +1412,16 @@ td {
   justify-content: space-between;
   padding: 7px;
 }
-
+.checkout_btn {
+background: #045C54;
+color: white;
+}
+.checkout_btn:hover {
+  -webkit-text-decoration: none;
+  text-decoration: none;
+  background-color: #045C54;
+  box-shadow: 0px 2px 4px -1px rgba(0,0,0,0.2), 0px 4px 5px 0px rgba(0,0,0,0.14), 0px 1px 10px 0px rgba(0,0,0,0.12);
+}
 .checkout-btn {
   padding: 5px 10px;
   border: none;
@@ -1443,7 +1460,23 @@ td {
   align-items: center;
   justify-content: space-between;
   z-index: 10000000000000;
-display:none
+  display:none
+}
+.digital-cart-small-sm{
+
+  height: 60px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  visibility: visible;
+  right: 0px;
+  left: 0px;
+  background-color: #045c54;
+  transition: scale 0.1s ease-in-out 0s;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 10000000000000;
+  // display:none
 }
 
 // modal
@@ -1465,8 +1498,14 @@ display:none
   row-gap: 15px;
   overflow-y: auto;
 }
+.modal_img{
+  display: flex;
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+}
 .modal_box .modal_img img {
-  object-fit: cover;
+  object-fit: contain;
   padding: 0!important;
   min-height: 100%;
   align-items: center;
@@ -1505,7 +1544,7 @@ display:none
   // padding: 6px 8px !important;
 }
 .order_btn button {
-  background-color: rgb(237, 7, 10) !important;
+  background-color: #045c54 !important;
   border-radius: 4px !important;
   color: white !important;
   padding: 6px 8px !important;
@@ -1520,6 +1559,14 @@ display:none
 }
 .filter_btn .btn{
   padding: 0.1rem 0.7rem !important;
+}
+.mobDrawer_btn{
+  padding: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    color: white;
+    transition: all 1s ease-in-out;
+    font-weight: bold;
 }
 @media only screen and (max-width: 1200px) {
   .digital-products-container .digital-cart {
@@ -1556,8 +1603,12 @@ display:none
     width: 100% !important;
   }
 
-  .digital-cart-small{
-    display: block;
+  .digital-cart-small,.digital-cart-small-sm{
+    display: flex;
+    justify-content: space-between;
+    align-content: center;
+     align-items: center;
+     padding-inline: 1.1rem;
   }
 
 }

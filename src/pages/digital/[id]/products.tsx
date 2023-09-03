@@ -4,20 +4,37 @@ import { Button as MButton } from '@mui/material';
 import ProductItem from 'src/components/digital/product-item';
 import DigitalCart from 'src/components/digital/digital-cart';
 import MobDrawer from 'src/components/digital/MobDrawer';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import {  createTheme } from '@mui/material/styles';
+
 const Products: NextPage = (props: any) => {
   const [type, setType] = useState('all');
-  const [moadlIsopen, setMoadlIsopen] = useState(false);
-    const value = { moadlIsopen, setMoadlIsopen };
-
-    const handleDrawer = () => () => {
-        setStateo(true);
-    };
+  const [showCart, setShowCart] = useState(true);
     const [open, setOpen] = React.useState(false);
   let toggleDrawer = (newOpen) => () => {
     setOpen(newOpen);
   };
+  const handleDrawer = (open) => {
+    console.log("first")
+    setOpen(!open);
+    toggleDrawer(!open)
+
+      setShowCart((s)=>!s)
+
+
+  
+  };
+  const customTheme = createTheme({
+    transitions: {
+      easing: {
+        // This is the most common easing curve.
+        easeInOut: 'cubic-bezier(5, 3, 6, 5)',
+        
+      },
+    },
+  });
   const matches = useMediaQuery('(max-width:800px)');
 
   const products = [
@@ -384,9 +401,21 @@ const Products: NextPage = (props: any) => {
           </div>
         </div>
         <DigitalCart />
-        <div className="digital-cart-small"><Button onClick={toggleDrawer(true)}>open</Button></div>
+        <div className="digital-cart-small" theme={customTheme} style={{ display: showCart ? 'flex' : 'none',transition: "all 1.5s ease-in-out" }}>
+          <div className='d-flex h-100 align-items-center '>
+          <ShoppingCartIcon/>
+            <p className='m-0'>
+            Total:00:00$ OMR
+           </p>
+
+        
+          </div>
+          <Button className='mobDrawer_btn' onClick={()=>handleDrawer(open)}>View Cart</Button>
+
+          </div>
+          
         { matches?
-<MobDrawer  toggleDrawer={toggleDrawer} setOpen={setOpen} open={open}/>
+          <MobDrawer toggleDrawer={toggleDrawer} setOpen={setOpen} open={open} setShowCart={setShowCart} />
 :null
         }
       </div>
