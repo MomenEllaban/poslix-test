@@ -5,7 +5,6 @@ import InputGroup from 'react-bootstrap/InputGroup';
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
 import { useRecoilState } from 'recoil';
-import { useUser } from 'src/context/UserContext';
 import { useAppDispatch } from 'src/hooks';
 import { setCart } from 'src/redux/slices/cart.slice';
 import { apiFetchCtr } from '../../../../libs/dbUtils';

@@ -82,31 +82,6 @@ const Home: NextPage = ({ shopId: _id }: any) => {
     },
   });
 
-  // async function initData() {
-  //   const { success, data } = await apiFetchCtr({
-  //     fetch: 'pos',
-  //     subType: 'getPosInit',
-  //     shopId,
-  //   });
-  //   if (!success) {
-  //     Toastify('error', 'error..Try Again');
-  //     return;
-  //   }
-
-  //   setVariations(data.variations);
-  //   setPackageItems(data.packageItems);
-  //   setTailoringExtras(data.tailoring_extras);
-
-  //   setTailoringSizes(data.AllSizes);
-  //   if (data.invoiceDetails != null && data.invoiceDetails.length > 10)
-  //     setInvoicDetails(JSON.parse(data.invoiceDetails));
-  //   else {
-  //   }
-  //   const _locs = JSON.parse(localStorage.getItem('userlocs') || '[]');
-  //   if (_locs.toString().length > 10)
-  //     setLocationSettings(_locs[_locs.findIndex((loc: any) => loc?.value == shopId)] ?? {});
-  //   else Toastify('error', 'errorr location settings');
-
   //   setIsLoading(false);
   //   if (data.cash.length > 0 && data.cash[0].status == 'open') {
   //     setIsOpenRegister(true);

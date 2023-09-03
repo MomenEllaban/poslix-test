@@ -37,21 +37,20 @@ const initOrder = {
 
 //! models need the full data to be refactored from static to dynamic
 
-export default function CartPanel({ shopId, direction }) {
-  const { lang: _lang } = usePosContext();
+export default function CartPanel({ shopId }) {
+  const { lang: _lang, isRtl } = usePosContext();
+  const direction = isRtl ? 'rtl' : 'ltr';
   const lang = _lang?.pos;
 
   const selectCartForLocation = selectCartByLocation(shopId ?? 0);
   const cart = useAppSelector(selectCartForLocation);
 
-  const [tax, setTax] = useState<number>(0);
-  const [taxRate, setTaxRate] = useState<number>(0);
   const [subTotal, setSubTotal] = useState<number>(0);
   const [isOrderEdit, setIsOrderEdit] = useState<number>(0);
   const [customer, setCustomer] = useState<ICustomerItem>(initCustomer);
-  const [discount, setDiscount] = useState({ type: 'fixed', amount: 0 });
+
   const [orderEditDetails, setOrderEditDetails] = useState<IOrderItem>(initOrder);
-  const [selectedHold, setSelectedHold] = useState<{ holdId: number }>({ holdId: -1 });
+
   const [__WithDiscountFeature__total, set__WithDiscountFeature__total] = useState<number>(0);
 
   return (
@@ -78,21 +77,14 @@ export default function CartPanel({ shopId, direction }) {
         lang={lang}
       />
       <OrdersFooter
-        selectedHold={selectedHold}
         orderEditDetails={orderEditDetails}
         shopId={shopId}
         details={{
-          taxRate,
           customerId: customer?.value,
           totalAmount: cart?.cartSellTotal,
           subTotal,
           isReturn: isOrderEdit,
         }}
-        holdObj={{ orders: cart?.cartItems, quantity: 0, name: 'noset' }}
-        tax={tax}
-        __WithDiscountFeature__total={__WithDiscountFeature__total}
-        setDiscount={setDiscount}
-        totalDiscount={0}
         lang={lang}
       />
     </div>

@@ -13,8 +13,6 @@ export default function OrdersTable({ lang, shopId }) {
 
   const { isLoading, salesReport } = useGetSalesReport(shopId, null, {});
 
-  console.log(salesReport, 'salesReport');
-
   const handleOrderInfo = (order_id: string | number) => {
     setOrderId(order_id);
     setIsOrderDetails(true);

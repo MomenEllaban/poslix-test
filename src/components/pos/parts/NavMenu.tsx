@@ -11,7 +11,7 @@ import styles from './NavMenu.module.scss';
 import { usePosContext } from 'src/modules/pos/_context/PosContext';
 
 const NavMenu: any = ({ shopId }: any) => {
-  const { lang, setLang, isRtl } = usePosContext();
+  const { lang, setLang } = usePosContext();
 
   const [customerIsModal, setCustomerIsModal] = useState<boolean>(false);
   const pos = useAppSelector(selectPos);
