@@ -10,6 +10,7 @@ import { ItemCard } from '../item-card/ItemCard';
 import { TabPanel } from '../tab-panel/TabPanel';
 import styles from './ItemList.module.scss';
 import { useBrandsList, useCategoriesList } from 'src/services/pos.service';
+import { usePosContext } from 'src/modules/pos/_context/PosContext';
 
 const override: CSSProperties = {
   display: 'block',
@@ -17,7 +18,10 @@ const override: CSSProperties = {
   borderColor: '48b7b9',
 };
 
-export const ItemList = ({ lang, shopId }: any) => {
+export const ItemList = ({ shopId }: any) => {
+  const { lang: _lang } = usePosContext();
+  const lang = _lang?.pos.itemList;
+
   const [jobType] = useRecoilState(cartJobType);
   const { products } = useProducts();
 

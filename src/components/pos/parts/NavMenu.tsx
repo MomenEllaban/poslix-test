@@ -8,8 +8,11 @@ import { selectPos, setPosRegister } from 'src/redux/slices/pos.slice';
 import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
 import CloseRegister from '../modals/CloseRegister';
 import styles from './NavMenu.module.scss';
+import { usePosContext } from 'src/modules/pos/_context/PosContext';
 
-const NavMenu: any = ({ shopId, lang, setLang }: any) => {
+const NavMenu: any = ({ shopId }: any) => {
+  const { lang, setLang, isRtl } = usePosContext();
+
   const [customerIsModal, setCustomerIsModal] = useState<boolean>(false);
   const pos = useAppSelector(selectPos);
   const dispatch = useAppDispatch();

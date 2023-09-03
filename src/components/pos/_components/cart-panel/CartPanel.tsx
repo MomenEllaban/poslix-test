@@ -7,6 +7,7 @@ import CartTable from '../cart-table/CartTable';
 import { OrdersFooter } from '../orders-footer/OrdersFooter';
 import ProductSearch from '../product-search/ProductSearch';
 import styles from './CartPanel.module.scss';
+import { usePosContext } from 'src/modules/pos/_context/PosContext';
 
 interface ICustomerItem {
   value: string;
@@ -36,7 +37,10 @@ const initOrder = {
 
 //! models need the full data to be refactored from static to dynamic
 
-export default function CartPanel({ shopId, lang, direction }) {
+export default function CartPanel({ shopId, direction }) {
+  const { lang: _lang } = usePosContext();
+  const lang = _lang?.pos;
+
   const selectCartForLocation = selectCartByLocation(shopId ?? 0);
   const cart = useAppSelector(selectCartForLocation);
 
@@ -63,7 +67,7 @@ export default function CartPanel({ shopId, lang, direction }) {
       <ProductSearch shopId={shopId} />
 
       <hr />
-      <CartTable shopId={shopId} lang={lang} />
+      <CartTable shopId={shopId} />
       <hr />
 
       <OrderCalcs

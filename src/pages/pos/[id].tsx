@@ -27,14 +27,13 @@ interface IRegister {
 }
 
 const Home: NextPage = ({ shopId: _id }: any) => {
+  const { setCats, setBrands, setProducts, setCustomers, setTaxes, setTaxGroups } = useProducts();
+  const { setLocationSettings } = useUser();
   const pos = useAppSelector(selectPos);
   const dispatch = useAppDispatch();
 
   const [shopId, setShopId] = useState(_id);
   const [isLoading, setIsLoading] = useState(false);
-
-  const { setLocationSettings } = useUser();
-  const { setCats, setBrands, setProducts, setCustomers, setTaxes, setTaxGroups } = useProducts();
 
   useGetBusinessLocation(shopId, {
     onSuccess(data) {
@@ -115,11 +114,6 @@ const Home: NextPage = ({ shopId: _id }: any) => {
   //   }
   // }
 
-  useLayoutEffect(() => {
-    const registerObject = getLocalStorage<IRegister>(ELocalStorageKeys.POS_REGISTER_STATE);
-    dispatch(setPosRegister(registerObject));
-  }, []);
-
   const StepRender = useCallback(() => {
     if (isLoading) return <PosLoader />;
 
@@ -128,6 +122,10 @@ const Home: NextPage = ({ shopId: _id }: any) => {
     return <OpenRegisterView shopId={shopId} setShopId={setShopId} setIsLoading={setIsLoading} />;
   }, [isLoading, pos, shopId, setIsLoading, dispatch]);
 
+  useLayoutEffect(() => {
+    const registerObject = getLocalStorage<IRegister>(ELocalStorageKeys.POS_REGISTER_STATE);
+    dispatch(setPosRegister(registerObject));
+  }, []);
   return (
     <PosLayout>
       <StepRender />

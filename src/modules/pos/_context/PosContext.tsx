@@ -3,7 +3,7 @@ import ar from 'ar.json';
 import en from 'en.json';
 
 interface IPosContextProps {
-  lang: any;
+  lang: typeof en | typeof ar;
   setLang: React.Dispatch<React.SetStateAction<any>>;
   isRtl?: boolean;
 

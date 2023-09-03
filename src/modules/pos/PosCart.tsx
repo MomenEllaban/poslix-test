@@ -4,15 +4,15 @@ import NavMenu from 'src/components/pos/parts/NavMenu';
 import { usePosContext } from './_context/PosContext';
 
 export default function PosCart({ shopId }) {
-  const { lang, setLang, isRtl } = usePosContext();
+  const { isRtl } = usePosContext();
 
   return (
     <>
-      <NavMenu shopId={shopId} lang={lang} setLang={setLang} />
+      <NavMenu shopId={shopId} />
 
-      <CartPanel shopId={shopId} lang={lang.pos} direction={isRtl ? 'rtl' : ''} />
+      <CartPanel shopId={shopId} direction={isRtl ? 'rtl' : ''} />
       {/* <OrdersComponent shopId={shopId} lang={lang.pos} direction={lang == ar ? 'rtl' : ''} /> */}
-      <ItemList shopId={shopId} lang={lang.pos.itemList} />
+      <ItemList shopId={shopId} />
     </>
   );
 }
