@@ -8,7 +8,9 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import {  createTheme } from '@mui/material/styles';
-
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import Box from '@mui/material/Box';
 const Products: NextPage = (props: any) => {
   const [type, setType] = useState('all');
   const [showCart, setShowCart] = useState(true);
@@ -35,8 +37,12 @@ const Products: NextPage = (props: any) => {
       },
     },
   });
-  const matches = useMediaQuery('(max-width:800px)');
+  const matches = useMediaQuery('(max-width:850px)');
+  const [value, setValue] = React.useState(0);
 
+  const handleChange = (event, newValue) => {
+    setValue(newValue);
+  };
   const products = [
     {
       id: 0,
@@ -341,6 +347,26 @@ const Products: NextPage = (props: any) => {
       </div>
       <div className="digital-products-container">
         <div className="digital-products">
+          <div className="margin:0 auto w-100 justify-content-center">
+          <Box  sx={{ maxWidth: { xs: '100%', sm: 500,md:600,lg:700 }, bgcolor: 'background.paper' }}>
+      <Tabs
+        value={value}
+        onChange={handleChange}
+        variant="scrollable"
+        scrollButtons="auto"
+        aria-label="scrollable auto tabs example"
+      >
+        <Tab label="Item One" value="1" />
+        <Tab label="Item Two"  value="2" />
+        <Tab label="Item Three"  value="3" />
+        <Tab label="Item Four"  value="4" />
+        <Tab label="Item Five" value="5" />
+        <Tab label="Item Six"  value="6"/>
+        <Tab label="Item Seven"  value="7" />
+      </Tabs>
+    </Box>
+          </div>
+
           <div className="digital-product-filtre">
             <div className=" filter-wrapper flex flex-row flex-wrap justify-center">
               <div className="filter_btn   	">
@@ -401,18 +427,22 @@ const Products: NextPage = (props: any) => {
           </div>
         </div>
         <DigitalCart />
-        <div className="digital-cart-small" theme={customTheme} style={{ display: showCart ? 'flex' : 'none',transition: "all 1.5s ease-in-out" }}>
-          <div className='d-flex h-100 align-items-center '>
-          <ShoppingCartIcon/>
-            <p className='m-0'>
-            Total:00:00$ OMR
-           </p>
+        {matches?
+ <div className="digital-cart-small" theme={customTheme} style={{ display: showCart ? 'flex' : 'none',transition: "all 1.5s ease-in-out" }}>
+ <div className='d-flex h-100 align-items-center '>
+ <ShoppingCartIcon/>
+   <p className='m-0'>
+   Total:00:00$ OMR
+  </p>
 
-        
-          </div>
-          <Button className='mobDrawer_btn' onClick={()=>handleDrawer(open)}>View Cart</Button>
 
-          </div>
+ </div>
+ <Button className='mobDrawer_btn' onClick={()=>handleDrawer(open)}>View Cart</Button>
+
+ </div>:null
+
+        }
+       
           
         { matches?
           <MobDrawer toggleDrawer={toggleDrawer} setOpen={setOpen} open={open} setShowCart={setShowCart} />
