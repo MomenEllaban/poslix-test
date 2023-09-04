@@ -7,7 +7,7 @@ type ICartProduct = IProduct & {
   variation_id?: number | null;
 };
 
-interface ICart {
+export interface ICart {
   location_id: number;
   customer_id?: number;
   cartItems: ICartProduct[];

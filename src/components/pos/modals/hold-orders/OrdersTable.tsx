@@ -1,10 +1,26 @@
 import classNames from 'classnames';
 import { useState } from 'react';
 import { Button, Table } from 'react-bootstrap';
-import { MdAutorenew, MdInfoOutline, MdKeyboardArrowLeft } from 'react-icons/md';
+import { MdAutorenew, MdInfoOutline } from 'react-icons/md';
 import { useUser } from 'src/context/UserContext';
 import { useGetSalesReport } from 'src/services/pos.service';
 import OrderInfoTable from './OrderInfoTable';
+import { ICart } from 'src/redux/slices/cart.slice';
+import { IReportData } from '@models/pos.types';
+
+const orderToCartMapping = (order: IReportData, location_id: number): ICart => {
+  return {
+    customer_id: order.contact_id,
+    cartCostTotal: +(order?.sub_total ?? 0),
+    cartSellTotal: +(order?.sub_total ?? 0),
+    cartTax: +(order?.tax ?? 0),
+    cartDiscount: +(order?.discount ?? 0),
+    location_id,
+    cartItems: [] as any[],
+
+    ...order,
+  };
+};
 
 export default function OrdersTable({ lang, shopId }) {
   const { locationSettings } = useUser();
@@ -21,8 +37,8 @@ export default function OrdersTable({ lang, shopId }) {
   const renderItems = () => {
     if (!salesReport?.data?.length) return <></>;
 
-    return salesReport?.data.map((item) => (
-      <tr key={item.id + 'some-random-text'}>
+    return salesReport?.data.map((item, idx) => (
+      <tr key={item.id + '-table-' + idx}>
         <td>#{item.id}</td>
         <td>{item.user_name}</td>
         <td>{item.contact_mobile || '--- --- ---'}</td>
@@ -32,7 +48,11 @@ export default function OrdersTable({ lang, shopId }) {
         </td>
         <td>
           <span className="d-flex flex-row gap-3">
-            <Button variant="outline-info" disabled onClick={() => {}}>
+            <Button
+              variant="outline-info"
+              onClick={() => {
+                console.log(item);
+              }}>
               <MdAutorenew />
             </Button>
             <Button variant="outline-info" onClick={() => handleOrderInfo(item.id)}>

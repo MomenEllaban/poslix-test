@@ -257,7 +257,7 @@ const posSetvice = {
   getItemsSalesReport: async (location_id: string | number, order_id?: string | number) =>
     api
       .get<any, TServiceResponse<IItemsReport>, any>(
-        `/reports/itesm-sales/${location_id}` + (order_id ? `/${order_id}` : '')
+        `/reports/item-sales/${location_id}` + (order_id ? `/${order_id}` : '')
       )
       .then((data) => data.data),
 };
@@ -632,7 +632,7 @@ export const useGetItemsSalesReport = (
   config?: SWRConfiguration
 ) => {
   const { data, error, isLoading, mutate } = useSWR(
-    `/reports/itesm-sales/${location_id}` + order_id ? `/${order_id}` : '',
+    `/reports/item-sales/${location_id}` + (order_id ? `/${order_id}` : ''),
     () => posSetvice.getItemsSalesReport(location_id, order_id),
     {
       ...config,
