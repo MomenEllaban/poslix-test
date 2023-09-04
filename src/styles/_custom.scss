@@ -1455,6 +1455,7 @@ color: white;
   right: 0px;
   left: 0px;
   background-color: rgb(144, 144, 144);
+  color: white;
   transition: scale 0.1s ease-in-out 0s;
   display: flex;
   align-items: center;
@@ -1553,13 +1554,13 @@ color: white;
 .filter-wrapper{
   gap:1rem
 }
-.filter_btn{
-  border-radius: 4rem;
-  background: gray;
-}
-.filter_btn .btn{
-  padding: 0.1rem 0.7rem !important;
-}
+// .filter_btn{
+//   border-radius: 4rem;
+//   background: gray;
+// }
+// .filter_btn .btn{
+//   padding: 0.1rem 0.7rem !important;
+// }
 .mobDrawer_btn{
   padding: 10px;
     background: rgba(0, 0, 0, 0.3);
@@ -1567,6 +1568,9 @@ color: white;
     color: white;
     transition: all 1s ease-in-out;
     font-weight: bold;
+}
+.digital-products .filter_btn{
+  text-transform: none !important;
 }
 @media only screen and (max-width: 1200px) {
   .digital-products-container .digital-cart {

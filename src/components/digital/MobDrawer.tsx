@@ -95,10 +95,10 @@ function MobDrawer({toggleDrawer,setOpen,open,setShowCart}) {
         >
           <Puller />
             <div className='digital-cart-small-sm'>
-          <div className='d-flex h-100 align-items-center  '>
+          <div className='text-white d-flex h-100 align-items-center  '>
             <ShoppingCartIcon/>
             <p className='m-0'>
-            Total:00:00$ OMR
+            Total:{getTotal().totalPrice} OMR
            </p>
             </div>
           

@@ -11,6 +11,8 @@ import {  createTheme } from '@mui/material/styles';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
+import {useSelector } from 'react-redux';
+import {addTodigitalCart ,incrementQuantity, decrementQuantity, removeItem} from '../../redux/slices/digitalCartSlice';
 const Products: NextPage = (props: any) => {
   const [type, setType] = useState('all');
   const [showCart, setShowCart] = useState(true);
@@ -24,10 +26,18 @@ const Products: NextPage = (props: any) => {
     toggleDrawer(!open)
 
       setShowCart((s)=>!s)
-
-
-  
   };
+  const {digitalCart} = useSelector((state) => state.digitalCart)
+  const getTotal = () => {
+      let totalQuantity = 0
+      let totalPrice = 0
+      console.log(digitalCart);
+      digitalCart?.forEach(item => {
+        totalQuantity += item.quantity
+        totalPrice += item.price * item.quantity
+      })
+      return {totalPrice, totalQuantity}
+    }
   const customTheme = createTheme({
     transitions: {
       easing: {
@@ -350,72 +360,24 @@ const Products: NextPage = (props: any) => {
           <div className="margin:0 auto w-100 justify-content-center d-flex">
           <Box  sx={{ maxWidth: { xs: '100%', sm: 500,md:600,lg:700 }, bgcolor: 'background.paper' }}>
       <Tabs
-        value={value}
-        onChange={handleChange}
-        variant="scrollable"
-        scrollButtons="auto"
-        aria-label="scrollable auto tabs example"
+                value={value}
+                onChange={handleChange}
+                variant="scrollable"
+                scrollButtons="auto"
+                aria-label="digital-products-filter"
+                sx={{ textTransform: 'none' }}
       >
-        <Tab label="Item One" value="1" />
-        <Tab label="Item Two"  value="2" />
-        <Tab label="Item Three"  value="3" />
-        <Tab label="Item Four"  value="4" />
-        <Tab label="Item Five" value="5" />
-        <Tab label="Item Six"  value="6"/>
-        <Tab label="Item Seven"  value="7" />
+        <Tab className='filter_btn' label="all" value="1" onClick={(e) => {setType(e.target.innerText)}} /> 
+        <Tab className='filter_btn' label="Chicken" value="2" onClick={(e) => {setType(e.target.innerText)}} /> 
+        <Tab className='filter_btn' label="ozy" value="3" onClick={(e) => {setType(e.target.innerText)}} /> 
+        <Tab className='filter_btn' label="cozy" value="4" onClick={(e) => {setType(e.target.innerText)}} /> 
+        <Tab className='filter_btn' label="Pasta" value="5" onClick={(e) => {setType(e.target.innerText)}} /> 
+     
       </Tabs>
     </Box>
           </div>
 
-          <div className="digital-product-filtre">
-            <div className=" filter-wrapper flex flex-row flex-wrap justify-center">
-              <div className="filter_btn   	">
-                <button
-                  className="btn "
-                  onClick={(e) => {
-                    setType(e.target.innerHTML);
-                  }}>
-                  all
-                </button>
-              </div>
-              <div className="filter_btn  ">
-                <button
-                  className="btn  "
-                  onClick={(e) => {
-                    setType(e.target.innerHTML);
-                  }}>
-                  Chicken
-                </button>
-              </div>
-              <div className="filter_btn ">
-                <button
-                  className="btn  "
-                  onClick={(e) => {
-                    setType(e.target.innerHTML);
-                  }}>
-                  ozy
-                </button>
-              </div>
-              <div className="filter_btn ">
-                <button
-                  className="btn "
-                  onClick={(e) => {
-                    setType(e.target.innerHTML);
-                  }}>
-                  cozy
-                </button>
-              </div>
-              <div className="filter_btn ">
-                <button
-                  className="btn "
-                  onClick={(e) => {
-                    setType(e.target.innerHTML);
-                  }}>
-                  Pasta
-                </button>
-              </div>
-            </div>
-          </div>
+      
           <div className="digital-product-list">
             {type === 'all'
               ? products.map((product, ind) => <ProductItem product={product} key={ind} />)
@@ -428,11 +390,12 @@ const Products: NextPage = (props: any) => {
         </div>
         <DigitalCart />
         {matches?
- <div className="digital-cart-small" theme={customTheme} style={{ display: showCart ? 'flex' : 'none',transition: "all 1.5s ease-in-out" }}>
+          <div className="digital-cart-small" theme={customTheme}
+            style={{ display: showCart ? 'flex' : 'none', transition: "all 1.5s ease-in-out" ,background: getTotal().totalPrice ? '#045c54' : '#909090',}}>
  <div className='d-flex h-100 align-items-center '>
  <ShoppingCartIcon/>
    <p className='m-0'>
-   Total:00:00$ OMR
+   Total:{getTotal().totalPrice} OMR
   </p>
 
 
