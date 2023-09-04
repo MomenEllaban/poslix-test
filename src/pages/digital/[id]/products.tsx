@@ -347,7 +347,7 @@ const Products: NextPage = (props: any) => {
       </div>
       <div className="digital-products-container">
         <div className="digital-products">
-          <div className="margin:0 auto w-100 justify-content-center">
+          <div className="margin:0 auto w-100 justify-content-center d-flex">
           <Box  sx={{ maxWidth: { xs: '100%', sm: 500,md:600,lg:700 }, bgcolor: 'background.paper' }}>
       <Tabs
         value={value}
