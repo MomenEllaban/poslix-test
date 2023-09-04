@@ -35,34 +35,27 @@ const initOrder = {
   orderId: 0,
 };
 
-//! models need the full data to be refactored from static to dynamic
-
 export default function CartPanel({ shopId }) {
   const { lang: _lang, isRtl } = usePosContext();
-  const direction = isRtl ? 'rtl' : 'ltr';
-  const lang = _lang?.pos;
 
   const selectCartForLocation = selectCartByLocation(shopId ?? 0);
   const cart = useAppSelector(selectCartForLocation);
 
-  const [subTotal, setSubTotal] = useState<number>(0);
-  const [isOrderEdit, setIsOrderEdit] = useState<number>(0);
   const [customer, setCustomer] = useState<ICustomerItem>({
     ...initCustomer,
     value: cart?.customer_id ?? '1',
   });
 
-  const [orderEditDetails, setOrderEditDetails] = useState<IOrderItem>(initOrder);
-
-  const [__WithDiscountFeature__total, set__WithDiscountFeature__total] = useState<number>(0);
+  const direction = isRtl ? 'rtl' : 'ltr';
+  const lang = _lang?.pos;
 
   return (
     <div className={styles['cart__container']} style={{ direction }}>
       <CustomerDataSelect
         shopId={shopId}
-        isOrderEdit={isOrderEdit}
+        isOrderEdit={0}
         setCustomer={setCustomer}
-        orderEditDetails={orderEditDetails}
+        orderEditDetails={initOrder}
         customer={customer}
       />
       <hr />
@@ -74,20 +67,15 @@ export default function CartPanel({ shopId }) {
 
       <OrderCalcs
         shopId={shopId}
-        orderEditDetails={orderEditDetails}
+        orderEditDetails={initOrder}
         // with discount feature
-        __WithDiscountFeature__total={__WithDiscountFeature__total}
+        __WithDiscountFeature__total={0}
         lang={lang}
       />
       <OrdersFooter
-        orderEditDetails={orderEditDetails}
+        orderEditDetails={initOrder}
         shopId={shopId}
-        details={{
-          customerId: customer?.value,
-          totalAmount: cart?.cartSellTotal,
-          subTotal,
-          isReturn: isOrderEdit,
-        }}
+        details={{ customerId: customer?.value, totalAmount: cart?.cartSellTotal, isReturn: 0 }}
         lang={lang}
       />
     </div>

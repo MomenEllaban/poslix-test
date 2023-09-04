@@ -38,7 +38,7 @@ export default function CustomerDataSelect({
 
   const [showType, setShowType] = useState(String);
   const [customerIsModal, setCustomerIsModal] = useState<boolean>(false);
-  const currentCustomer = customers.find((c) => c.value === cart?.customer_id);
+  const currentCustomer = customers?.find((c) => c.value === cart?.customer_id) ?? [];
 
   const customerModalHandler = (status: any) => setCustomerIsModal(false);
 

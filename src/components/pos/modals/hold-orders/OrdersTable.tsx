@@ -1,16 +1,39 @@
+import { IReportData } from '@models/pos.types';
 import classNames from 'classnames';
+import Fuse from 'fuse.js';
 import { useState } from 'react';
 import { Button, Table } from 'react-bootstrap';
-import { MdAutorenew, MdInfoOutline, MdKeyboardArrowLeft } from 'react-icons/md';
+import { MdAutorenew, MdInfoOutline } from 'react-icons/md';
+import { FixedSizeList } from 'react-window';
+import InfiniteLoader from 'react-window-infinite-loader';
 import { useUser } from 'src/context/UserContext';
+import { ICart } from 'src/redux/slices/cart.slice';
 import { useGetSalesReport } from 'src/services/pos.service';
 import OrderInfoTable from './OrderInfoTable';
+import { motion } from 'framer-motion';
 
-export default function OrdersTable({ lang, shopId }) {
+const orderToCartMapping = (order: IReportData, location_id: number): ICart => {
+  return {
+    customer_id: order.contact_id,
+    cartCostTotal: +(order?.sub_total ?? 0),
+    cartSellTotal: +(order?.sub_total ?? 0),
+    cartTax: +(order?.tax ?? 0),
+    cartDiscount: +(order?.discount ?? 0),
+    location_id,
+    cartItems: [] as any[],
+
+    ...order,
+  };
+};
+
+export default function OrdersTable({ lang, shopId, searchQuery = '' }) {
   const { locationSettings } = useUser();
   const [isOrderDetails, setIsOrderDetails] = useState<boolean>(false);
   const [orderId, setOrderId] = useState<string | number>('');
+  const [page, setPage] = useState<number>(0);
+  const [visibleItems, setvisibleItems] = useState<number>(10);
 
+  // this listing all orders once
   const { isLoading, salesReport } = useGetSalesReport(shopId, null, {});
 
   const handleOrderInfo = (order_id: string | number) => {
@@ -21,27 +44,51 @@ export default function OrdersTable({ lang, shopId }) {
   const renderItems = () => {
     if (!salesReport?.data?.length) return <></>;
 
-    return salesReport?.data.map((item) => (
-      <tr key={item.id + 'some-random-text'}>
-        <td>#{item.id}</td>
-        <td>{item.user_name}</td>
-        <td>{item.contact_mobile || '--- --- ---'}</td>
-        <td>
-          {Number(item.sub_total).toFixed(+locationSettings?.location_decimal_places)}{' '}
-          <span style={{ fontSize: '10px' }}>{locationSettings?.currency_code}</span>
-        </td>
-        <td>
-          <span className="d-flex flex-row gap-3">
-            <Button variant="outline-info" disabled onClick={() => {}}>
-              <MdAutorenew />
-            </Button>
-            <Button variant="outline-info" onClick={() => handleOrderInfo(item.id)}>
-              <MdInfoOutline />
-            </Button>
-          </span>
-        </td>
-      </tr>
-    ));
+    let orderlistPaginated = salesReport?.data;
+    const fuse = new Fuse(orderlistPaginated, {
+      threshold: 0.0,
+      ignoreLocation: true,
+      keys: ['id', 'contact_name'],
+    });
+    const result = fuse.search(searchQuery);
+    console.log(result);
+    if (searchQuery) orderlistPaginated = result.map((r) => r.item);
+
+    return orderlistPaginated?.slice(0, visibleItems).map((item, idx) => {
+      return (
+        <motion.tr
+          key={item.id + '-table-' + idx}
+          onViewportEnter={() => {
+            console.log('enter', idx, visibleItems);
+            if (idx === visibleItems - 3) {
+              setvisibleItems((p) => p + 10);
+              console.log('first');
+            }
+          }}>
+          <td>#{item.id}</td>
+          <td>{item.contact_name?.trim() || '--- --- ---'}</td>
+          <td>{item.contact_mobile?.trim() || '--- --- ---'}</td>
+          <td>
+            {Number(item.sub_total).toFixed(+locationSettings?.location_decimal_places)}{' '}
+            <span style={{ fontSize: '10px' }}>{locationSettings?.currency_code}</span>
+          </td>
+          <td>
+            <span className="d-flex flex-row gap-3">
+              <Button
+                variant="outline-info"
+                onClick={() => {
+                  console.log(item);
+                }}>
+                <MdAutorenew />
+              </Button>
+              <Button variant="outline-info" onClick={() => handleOrderInfo(item.id)}>
+                <MdInfoOutline />
+              </Button>
+            </span>
+          </td>
+        </motion.tr>
+      );
+    });
   };
 
   return (
@@ -57,7 +104,7 @@ export default function OrdersTable({ lang, shopId }) {
           className={classNames({
             'd-none': isOrderDetails,
           })}>
-          <thead className="text-muted table-light">
+          <thead className="text-muted table-light fixed-header">
             <tr>
               <th
                 scope="col"
@@ -78,7 +125,12 @@ export default function OrdersTable({ lang, shopId }) {
               </th>
             </tr>
           </thead>
-          <tbody>{renderItems()}</tbody>
+          <tbody
+            style={{
+              maxHeight: '50vh',
+            }}>
+            {renderItems()}
+          </tbody>
 
           {!isLoading && (
             <table className="table table-centered table-hover align-middle  mb-0">

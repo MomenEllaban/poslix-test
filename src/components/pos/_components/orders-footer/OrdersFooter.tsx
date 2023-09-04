@@ -24,8 +24,6 @@ export const OrdersFooter = ({ orderEditDetails, details, shopId, lang }) => {
   };
   const [paymentModalShow, setPaymentModalShow] = useState<boolean>(false);
 
-  const [isShowHoldOrdersModal, setIsShowHoldOrdersModal] = useState<boolean>(false);
-
   const handleCartClear = () => {
     dispatch(clearCart({ location_id: shopId }));
     setClearCartModal(false);

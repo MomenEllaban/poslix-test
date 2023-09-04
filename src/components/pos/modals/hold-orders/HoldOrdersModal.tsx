@@ -15,6 +15,7 @@ import OrdersTable from './OrdersTable';
 
 export default function HoldOrdersModal({ shopId, lang }: any) {
   const dispatch = useAppDispatch();
+  const [searchQuery, setSearchQuery] = useState('');
 
   const [, setJobType] = useRecoilState(cartJobType);
 
@@ -77,6 +78,7 @@ export default function HoldOrdersModal({ shopId, lang }: any) {
 
   const handleFiltered = (e) => {
     const query = e.target.value;
+    setSearchQuery(query);
     if (query.length > 0) {
       setFilteredOrdersList(
         ordersList.filter(
@@ -152,7 +154,7 @@ export default function HoldOrdersModal({ shopId, lang }: any) {
               />
             </Tab>
             <Tab eventKey="order" title={lang.cartComponent.orderModal.order}>
-              <OrdersTable lang={lang} shopId={shopId} />
+              <OrdersTable lang={lang} shopId={shopId} searchQuery={searchQuery} />
             </Tab>
           </Tabs>
         </Modal.Body>
