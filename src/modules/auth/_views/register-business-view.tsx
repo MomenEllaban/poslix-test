@@ -45,7 +45,6 @@ export default function RegisterBusinessView() {
       setBusniessTypesList(_businessTypesList);
     },
   });
-
   const [isLoading, setLoading] = useState(false);
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {

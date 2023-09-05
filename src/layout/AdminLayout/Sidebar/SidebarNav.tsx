@@ -129,6 +129,7 @@ const SidebarNavGroup = (props: SidebarNavGroupProps) => {
 };
 export function SidebarNav(props: any): any {
   const { shopId } = props;
+  console.log(shopId,"SidebarNav")
   const [loading, setLoading] = useState(true);
   const [btype, setBtype] = useState('');
 
@@ -215,7 +216,7 @@ export function SidebarNav(props: any): any {
   useEffect(() => {
     intData();
   }, [shopId]);
-
+console.log(shopId)
   if (loading) return <div>loading</div>;
   return (
     <ul className="list-unstyled">
@@ -364,6 +365,11 @@ export function SidebarNav(props: any): any {
           {permiss.hasTaxes && (
             <SidebarNavItem href={'/shop/' + shopId + '/payment'} sub={true}>
               Payment Methods
+            </SidebarNavItem>
+          )}
+          { (
+            <SidebarNavItem href={'/shop/' + shopId + '/Printsetting'} sub={true}>
+              Print setting
             </SidebarNavItem>
           )}
         </SidebarNavGroup>
