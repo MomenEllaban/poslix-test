@@ -40,7 +40,7 @@ import {
 import storage from '../../../../../firebaseConfig';
 import NotifiModal from '../../../../components/utils/NotifiModal';
 import { apiDeleteCtr, apiFetchCtr, apiInsertCtr, apiUpdateCtr } from '../../../../libs/dbUtils';
-import { findAllData, updateData } from 'src/services/crud.api';
+import { createNewData, findAllData, updateData } from 'src/services/crud.api';
 import withAuth from 'src/HOCs/withAuth';
 
 const Product: NextPage = (props: any) => {
@@ -224,10 +224,9 @@ const Product: NextPage = (props: any) => {
 
   async function initDataPage(url) {
     if (url?.length == 2) setIsEdit(true);
-
     if (url?.length == 2) {
-      console.log('edit');
-      const res = await findAllData(`products/${router.query.slug[1]}/show`);
+      console.log('edit', url[1]);
+      const res = await findAllData(`products/${url[1]}/show`);
       console.log(res);
       setSelectedProducts(res.data.result.product);
       // setSelectedFabrics(newdata.selectedFabrics);
@@ -270,19 +269,18 @@ const Product: NextPage = (props: any) => {
       });
     } else {
       console.log('add');
-      // setProducts(newdata.products);
-      // setUnits(newdata.units);
-      // setBrands(newdata.brands);
-      // setCats(newdata.categories);
       // setAllFabrics(newdata.allFabrics);
       // seTtailoring([{ value: null, label: 'Defualt' }, ...newdata.tailorings]);
-      // setTaxGroup([
-      //   { value: null, label: 'Defualt Tax' },
-      //   { value: -1, label: 'Never Tax' },
-      //   ...newdata.taxes,
-      // ]);
     }
-
+    const resCategories = await findAllData(`categories/${router.query.id}`);
+    const resBrands = await findAllData(`brands/${router.query.id}`);
+    const resUnits = await findAllData(`units`);
+    const resTaxes = await findAllData(`taxes/${router.query.id}`);
+    // setProducts(newdata.products);
+    setUnits(resUnits.data.result.units.map(unit => {return {...unit, label: unit.name, value: unit.id}}));
+    setBrands(resBrands.data.result.map(brand => {return {...brand, label: brand.name, value: brand.id}}));
+    setCats(resCategories.data.result.map(cat => {return {...cat, label: cat.name, value: cat.id}}));
+    setTaxGroup(resTaxes.data.result.taxes.map(tax => {return {...tax, label: tax.name, value: tax.id}}));
     // if (iType != 'Kianvqyqndr')
     //   setProducTypes(producTypes.filter((p) => p.value != 'tailoring_package'));
 
@@ -311,18 +309,45 @@ const Product: NextPage = (props: any) => {
   }
 
   async function insertProduct(url: string) {
-    const { success, msg, code } = await apiInsertCtr({
-      type: 'products',
-      subType: 'insertProducts',
-      shopId,
-      data: { fdata: formObjRef.current, img: url, selectedProducts, selectedFabrics },
-    });
-    if (success) {
+    console.log(formObjRef.current);
+    
+    const res = await createNewData('products', {
+      name: formObjRef.current.name,
+      category_id: formObjRef.current.category_id,
+      location_id: router.query.id,
+      type: formObjRef.current.type,
+      is_service: formObjRef.current.is_service,
+      is_fabric: formObjRef.current.is_fabric,
+      subproductname: formObjRef.current.productName2,
+      unit_id: formObjRef.current.unit_id,
+      brand_id: formObjRef.current.brand,
+      sku: formObjRef.current.sku,
+      barcode_type: formObjRef.current.barcode_type,
+      sell_price: formObjRef.current.sell_price,
+      cost_price: formObjRef.current.cost_price,
+      sell_over_stock: formObjRef.current.isSellOverStock,
+      never_tax: 0,
+      is_fifo: formObjRef.current.isFifo,
+      variations: formObjRef.current === 'single' ? []
+        : formObjRef.current.variations.map(va => {
+          return {
+            name: va.name,
+            sku: va.sku,
+            cost: va.cost,
+            price: va.price,
+            sell_over_stock: formObjRef.current.isSellOverStock,
+            is_selling_multi_price: 0,
+            is_service: formObjRef.current.is_service,
+          }
+        })
+      // img: url,
+    })
+    if (res.data.success) {
       Toastify('success', 'Product Successfuly Created..');
-      router.push('/shop/' + shopId + '/products');
+      router.push('/shop/' + router.query.id + '/products');
     } else {
-      Toastify('error', msg);
-      if (code == 100) setErrorForm({ ...errorForm, skuExist: true });
+      Toastify('error', "Error");
+      // if (code == 100) setErrorForm({ ...errorForm, skuExist: true });
       setIsSaving(false);
     }
   }
@@ -368,7 +393,7 @@ const Product: NextPage = (props: any) => {
   }
 
   useEffect(() => {
-    initDataPage(router.query.slug);
+    if(router.isReady) initDataPage(router.query.slug);
   }, [router.asPath]);
 
   const imageChange = (e: any) => {
@@ -542,7 +567,7 @@ const Product: NextPage = (props: any) => {
         </NotifiModal>
         <div className="row">
           <div className="mb-4">
-            <Link className="btn btn-primary p-3" href={'/shop/' + shopId + '/products'}>
+            <Link className="btn btn-primary p-3" href={'/shop/' + router.query.id + '/products'}>
               Back To List
             </Link>
           </div>

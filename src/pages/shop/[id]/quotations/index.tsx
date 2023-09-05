@@ -35,7 +35,7 @@ import { ToastContainer } from 'react-toastify';
 import { findAllData } from 'src/services/crud.api';
 
 export default function SalesList(props: any) {
-  const { shopId, rules } = props;
+  const { rules } = props;
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
     // @ts-ignore
     value: 0,
@@ -52,6 +52,7 @@ export default function SalesList(props: any) {
   };
   const [sales, setsales] = useState<any>([]);
   const router = useRouter();
+  const shopId = router.query.id
   const [selectId, setSelectId] = useState(0);
   const [selectRow, setSelectRow] = useState<any>({});
   const [lines, setLines] = useState<any>([]);

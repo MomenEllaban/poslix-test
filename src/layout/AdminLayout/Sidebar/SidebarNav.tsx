@@ -260,29 +260,27 @@ export function SidebarNav(props: any): any {
 
       {(permissions.hasProducts ||
         permissions.hasPurchases ||
-        permissions.hasTransfer ||
+        permissions.hasTransfers ||
         // permissions.hasSupplier ||
         permissions.hasExpenses) && (
-        <SidebarNavGroup toggleIcon={MdOutlineLocalGroceryStore as any} toggleText="Inventory">
-          <MdOutlineLocalGroceryStore className="nav-icon ms-n3" />
-          <MdOutlineLocalGroceryStore />
+        <SidebarNavGroup toggleIcon="MdOutlineLocalGroceryStore" toggleText="Inventory">
           {permissions.hasProducts && (
-            <SidebarNavItem href={'/shop/' + shopId + '/products'}>Products</SidebarNavItem>
+            <SidebarNavItem href={'/shop/' + shopId + '/products'} sub={true}>Products</SidebarNavItem>
           )}
           {permissions.hasPurchases && (
-            <SidebarNavItem href={'/shop/' + shopId + '/purchases'}>Purchases</SidebarNavItem>
+            <SidebarNavItem href={'/shop/' + shopId + '/purchases'} sub={true}>Purchases</SidebarNavItem>
           )}
-          {permissions.hasTransfer && (
-            <SidebarNavItem href={'/shop/' + shopId + '/transfers'}>Transfers</SidebarNavItem>
+          {permissions.hasTransfers && (
+            <SidebarNavItem href={'/shop/' + shopId + '/transfers'} sub={true}>Transfers</SidebarNavItem>
           )}
           {permissions.hasSupplier && (
-            <SidebarNavItem href={'/shop/' + shopId + '/suppliers'}>Suppliers</SidebarNavItem>
+            <SidebarNavItem href={'/shop/' + shopId + '/suppliers'} sub={true}>Suppliers</SidebarNavItem>
           )}
           {permissions.hasExpenses && (
-            <SidebarNavItem href={'/shop/' + shopId + '/expenses'}>Expenses</SidebarNavItem>
+            <SidebarNavItem href={'/shop/' + shopId + '/expenses'} sub={true}>Expenses</SidebarNavItem>
           )}
           {permissions.hasTailoring && btype == 'Kianvqyqndr' && (
-            <SidebarNavItem href={'/shop/' + shopId + '/tailoring'}>Tailoring</SidebarNavItem>
+            <SidebarNavItem href={'/shop/' + shopId + '/tailoring'} sub={true}>Tailoring</SidebarNavItem>
           )}
         </SidebarNavGroup>
       )}
@@ -296,17 +294,17 @@ export function SidebarNav(props: any): any {
 
       {(permissions.hasSalesList || permissions.hasPurchases || permissions.hasCategories) && (
         <SidebarNavGroup toggleIcon="MdOutlineCrisisAlert" toggleText="Sales">
-          {permissions.hasQuotations && (
+          {/* {permissions.hasQuotations && ( */}
             <SidebarNavItem href={'/shop/' + shopId + '/quotations'} sub={true}>
               Quotations List
             </SidebarNavItem>
-          )}
-          {permissions.hasSalesList && (
+          {/* )} */}
+          {/* {permissions.hasSalesList && ( */}
             <SidebarNavItem href={'/shop/' + shopId + '/sales'} sub={true}>
               {' '}
               Sales List
             </SidebarNavItem>
-          )}
+          {/* )} */}
 
           {permiss.hasOrders && btype == 'Kianvqyqndr' && (
             <>
