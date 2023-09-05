@@ -43,8 +43,8 @@ const DigitalCart = (props: any) => {
                 </div>
             </div>
             <div className="digital-cart-checkout">
-                <Button variant="contained" color="error">Checkout {getTotal().totalPrice} OMR</Button>
-                <Button color="error">APPLY COUPON</Button>
+                <Button className="checkout_btn" variant="contained" color="error">Checkout {getTotal().totalPrice} OMR</Button>
+                <Button >APPLY COUPON</Button>
             </div>
         </div>
     )
