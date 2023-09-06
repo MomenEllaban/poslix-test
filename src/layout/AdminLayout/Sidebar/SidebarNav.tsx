@@ -25,6 +25,7 @@ import {
 import { TbReportSearch } from 'react-icons/tb';
 import { findAllData } from 'src/services/crud.api';
 import styles from './sideBarNav.module.css';
+import { Money } from '@mui/icons-material';
 
 type SidebarNavItemProps = {
   href: string;
@@ -285,8 +286,9 @@ export function SidebarNav(props: any): any {
         </SidebarNavGroup>
       )}
 
-      {permissions.hasCustomers && (
+      {permiss.hasCustomers && (
         <SidebarNavItem icon={faUser} href={'/shop/' + shopId + '/pricing'}>
+          <Money className="nav-icon ms-n3" />
           Pricing Groups
           <small className="ms-auto"></small>
         </SidebarNavItem>

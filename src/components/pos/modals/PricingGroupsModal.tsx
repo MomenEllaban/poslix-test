@@ -9,16 +9,20 @@ import Box from '@mui/material/Box';
 import SnakeAlert from '../utils/SnakeAlert';
 import mStyle from '../../../styles/Customermodal.module.css';
 import { Toastify } from 'src/libs/allToasts';
+import { createNewData, updateData } from 'src/services/crud.api';
+import { useRouter } from 'next/router';
 
 const PricingModal = (props: any) => {
   const { openDialog, statusDialog, userdata, showType, shopId, pricingGroups, setPricingGroups } =
     props;
   const pricingTemplate = { id: 0, name: '' };
   const [pricingName, setPricingName] = useState(pricingTemplate);
+  const [pricingGroup, setPricingGroup] = useState({name: '', price: null});
   const { customers, setCustomers } = useContext(ProductContext);
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const handleClose = () => {
+    setPricingGroup({name: '', price: null})
     setOpen(false);
     openDialog(false);
   };
@@ -31,53 +35,25 @@ const PricingModal = (props: any) => {
       setPricingName(userdata);
   }, [statusDialog]);
 
-  async function insertpricingName() {
-    const { success, msg, code, newdata } = await apiInsertCtr({
-      type: 'customer',
-      subType: 'addCustomer',
-      shopId,
-      data: pricingName,
-    });
-    if (success) {
-      setCustomers([...customers, newdata]);
-      handleClose();
-      Toastify('success', 'Successfully Created');
-    } else if (code == 100) Toastify('error', msg);
-    else Toastify('error', 'Has Error, Try Again...');
-  }
-  async function getPricingName(theId: any) {
-    setIsLoading(true);
-    setPricingName(pricingTemplate);
-    var result = await apiFetchCtr({ fetch: 'customer', subType: 'getpricingName', theId, shopId });
-    if (result.success) {
-      console.log(result?.newdata[0]);
-      const selCustomer = result?.newdata[0];
-      setPricingName({
-        ...pricingName,
-        id: theId,
-        name: selCustomer.name,
-      });
-      setIsLoading(false);
-      console.log(result.newdata[0].mobile);
-    } else {
-      Toastify('error', 'has error, Try Again...');
+  useEffect(() => {
+    if(showType === 'edit') setPricingGroup({name: userdata.name, price: userdata.price})
+  }, [userdata])
+
+  const router = useRouter()
+  const handleSubmit = async () => {
+    if(pricingGroup.name.length === 0 || pricingGroup.price <= 0) {
+      Toastify("error", "Please enter all the fields.");
+      return
+    }
+    let res;
+    if(showType === 'edit') 
+      res = await updateData('update-pricing', userdata.id, {...pricingGroup})
+    else 
+      res = await createNewData('pricing-group', {...pricingGroup, location_id: router.query.id})
+    if(res.data.success) {
+      handleClose()
     }
   }
-  // async function editpricingName() {
-  //     var result = await apiUpdateCtr({ type: 'customer', subType: "editpricingName", shopId, data: pricingName })
-  //     if (result.success) {
-  //         const cinx = customers.findIndex(customer => customer.value === pricingName.id);
-  //         if (cinx > -1) {
-  //             const upCustomer = [...customers];
-  //             upCustomer[cinx] = { ...upCustomer[cinx], value: pricingName.id, label: pricingName.firstName + " " + pricingName.lastName + " | " + pricingName.mobile, mobile: result.newdata.mobile };
-  //             setCustomers(upCustomer);
-  //         }
-  //         handleClose();
-  //         Toastify("success", "Successfully Edited")
-
-  //     } else
-  //         Toastify("error", "has error, Try Again...");
-  // }
   return (
     <>
       <Dialog open={open} className="poslix-modal" onClose={handleClose} maxWidth={'xl'}>
@@ -94,16 +70,27 @@ const PricingModal = (props: any) => {
               <div className="modal-content">
                 <div className="modal-body">
                   <fieldset disabled={showType == 'show' ? true : false}>
-                    <div className="row">
+                    <div className="">
                       <div className="col-lg-4 mb-3" style={{ minWidth: '400px' }}>
                         <label>Name:</label>
                         <input
                           type="text"
                           name="cname"
                           className="form-control"
-                          placeholder="First Name"
-                          value={pricingName.name}
-                          onChange={(e) => setPricingName({ ...pricingName, name: e.target.value })}
+                          placeholder="Enter Name"
+                          value={pricingGroup.name}
+                          onChange={(e) => setPricingGroup({ ...pricingGroup, name: e.target.value })}
+                        />
+                      </div>
+                      <div className="col-lg-4 mb-3" style={{ minWidth: '400px' }}>
+                        <label>Price:</label>
+                        <input
+                          type="number"
+                          name="cname"
+                          className="form-control"
+                          placeholder="Enter Price"
+                          value={pricingGroup.price}
+                          onChange={(e) => setPricingGroup({ ...pricingGroup, price: +e.target.value })}
                         />
                       </div>
                     </div>
@@ -117,27 +104,7 @@ const PricingModal = (props: any) => {
                     <button
                       type="button"
                       className="btn btn-primary"
-                      onClick={() => {
-                        if (showType == 'edit') {
-                          const newPricingGroups = pricingGroups.map((pg) => {
-                            return pg.id === pricingName.id
-                              ? { id: pg.id, name: pricingName.name }
-                              : pg;
-                          });
-                          setPricingGroups([...newPricingGroups]);
-                          // editpricingName();
-                        } else {
-                          setPricingGroups([
-                            ...pricingGroups,
-                            {
-                              id: pricingGroups[pricingGroups.length - 1].id + 1,
-                              name: pricingName.name,
-                            },
-                          ]);
-                          insertpricingName();
-                        }
-                        handleClose();
-                      }}>
+                      onClick={handleSubmit}>
                       {showType} Pricing Group
                     </button>
                   )}
