@@ -22,8 +22,8 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 const label = { inputProps: { 'aria-label': 'printer status' } };
 const customerTemplate = {
   id: 0,
-  first_name: '',
-  last_name: '',
+  printer_ame: '',
+  printer_ip: '',
   mobile: '',
   city: '',
   state: '',
@@ -40,7 +40,6 @@ const PrinterModal = (props: any) => {
   const [isLoading, setIsLoading] = useState(false);
   const [countryList, setCountryList] = useState<any[]>([]);
 
-  const [customerInfo, setCustomerInfo] = useState(customerTemplate);
   const { customers, setCustomers } = useProducts();
 
   const { mutate } = useSWRConfig();
@@ -71,7 +70,7 @@ const PrinterModal = (props: any) => {
           upCustomer[cinx] = {
             ...upCustomer[cinx],
             value: res.id,
-            label: res.first_name + ' ' + res.last_name + ' | ' + res.mobile,
+            label: res.printer_ame + ' ' + res.printer_ip + ' | ' + res.mobile,
           };
           setCustomers(upCustomer);
         }
@@ -116,34 +115,12 @@ const PrinterModal = (props: any) => {
     openDialog(false);
   };
 
-  async function getCustomerInfo(theId: any) {
-    setIsLoading(true);
-    setCustomerInfo(customerTemplate);
 
-    api
-      .get('/customers/' + theId + '/show')
-      .then((res) => {
-        const selCustomer = res?.data?.result?.profile;
-
-        Object.entries(selCustomer).forEach(([key, value]) => {
-          if (!value) value = '';
-          setValue(key, value);
-        });
-      })
-      .catch(() => {
-        Toastify('error', 'has error, Try Again...');
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-  }
 
   useEffect(() => {
     if (!statusDialog) return;
-    setCustomerInfo(customerTemplate);
     setOpen(statusDialog);
-    if (userdata !== undefined && showType != 'add' && statusDialog)
-      getCustomerInfo(userdata.value);
+
   }, [statusDialog]);
 
   useEffect(() => {
@@ -180,16 +157,16 @@ const PrinterModal = (props: any) => {
               <FormField
                 required
                 type="text"
-                name="first_name"
+                name="printer_ame"
                 label="Printer Name"
                 placeholder="Printer Name"
                 errors={errors}
                 register={register}
               />
               <FormField
-                type="text"
                 required
-                name="last_name"
+                type="text"
+                name="printer_ip"
                 label="Printer IP"
                 placeholder="Printer IP"
                 errors={errors}
