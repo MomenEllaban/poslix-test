@@ -130,6 +130,7 @@ const SidebarNavGroup = (props: SidebarNavGroupProps) => {
 };
 export function SidebarNav(props: any): any {
   const { shopId } = props;
+  console.log(shopId,"SidebarNav")
   const [loading, setLoading] = useState(true);
   const [btype, setBtype] = useState('');
 
@@ -398,6 +399,11 @@ export function SidebarNav(props: any): any {
               Payment Methods
             </SidebarNavItem>
           )}
+          { (
+            <SidebarNavItem href={'/shop/' + shopId + '/Printsetting'} sub={true}>
+              Print setting
+            </SidebarNavItem>
+          )}
         </SidebarNavGroup>
       )}
       {permiss.hasPOS && (
@@ -408,7 +414,7 @@ export function SidebarNav(props: any): any {
         </SidebarNavItem>
       )}
       {permiss.hasAppStore && (
-        <SidebarNavItem icon={faCalendarDay} href={'/menu/' + shopId}>
+        <SidebarNavItem icon={faCalendarDay} href={'/digital/' + shopId}>
           <BsMenuButtonWideFill className="nav-icon ms-n3" />
           Digital Menu
           <small className="ms-auto"></small>

@@ -23,9 +23,7 @@ import {
 const OrdersTable = (props: any) => {
   const { shopId, rules } = props;
   const myLoader = (img: any) => img.src;
-  const [locationSettings, setLocationSettings] = useState<
-    ILocationSettings & { value: number; label: string }
-  >({
+  const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
     value: 0,
     label: '',
     location_decimal_places: 0,

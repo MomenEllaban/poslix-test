@@ -30,7 +30,7 @@ function LocationUpdateForm({ businessId, location }) {
       const _currenciesList = data.result.map((itm: any) => {
         return { value: itm.id, label: `${itm.country} (${itm.code})` };
       });
-
+console.log(currenciesList);
       setCurrenciesList(_currenciesList);
     },
   });
