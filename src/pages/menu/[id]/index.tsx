@@ -8,11 +8,10 @@ import Script from 'next/script';
 import { useContext, useEffect, useState } from 'react';
 import { useRecoilState } from 'recoil';
 import 'remixicon/fonts/remixicon.css';
-import { MenuOrderComponent } from 'src/components/pos/MenuCartComponent';
+import NavMenu from 'src/components/pos/parts/NavMenu';
 import { UserContext } from 'src/context/UserContext';
 import { Toastify } from 'src/libs/allToasts';
 import { apiFetchCtr, apiInsertCtr } from 'src/libs/dbUtils';
-import { ItemList } from '../../../components/pos/_components/item-list/ItemList';
 import { ProductContext } from '../../../context/ProductContext';
 import { cartJobType } from '../../../recoil/atoms';
 import {
@@ -142,7 +141,11 @@ const Home: NextPage = (props: any) => {
           {!isLoading ? (
             isOpenRegister ? (
               <div className="pos-flex">
-                <NavMenu shopId={shopId} />
+                <NavMenu
+                  shopId={shopId}
+                  isOpenRegister={isOpenRegister}
+                  setOpenRegister={setIsOpenRegister}
+                />
                 {/* <MenuOrderComponent shopId={shopId} /> */}
                 {/* <ItemList /> */}
               </div>

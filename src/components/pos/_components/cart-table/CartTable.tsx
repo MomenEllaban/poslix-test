@@ -11,8 +11,12 @@ import {
 import styles from './CartTable.module.scss';
 import { MdDeleteForever } from 'react-icons/md';
 import { BsDashLg, BsPlusLg } from 'react-icons/bs';
+import { usePosContext } from 'src/modules/pos/_context/PosContext';
 
-export default function CartTable({ lang, shopId }) {
+export default function CartTable({ shopId }) {
+  const { lang: _lang } = usePosContext();
+  const lang = _lang?.pos;
+
   const selectCartForLocation = selectCartByLocation(shopId);
   const cart = useAppSelector(selectCartForLocation);
 
