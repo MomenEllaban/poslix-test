@@ -15,17 +15,18 @@ import DialogTitle from '@mui/material/DialogTitle';
 import { useContext, useEffect, useState } from 'react';
 import { useRecoilState } from 'recoil';
 import { UserContext } from 'src/context/UserContext';
-import { ProductContext } from '../../../context/ProductContext';
-import { apiFetchCtr, apiInsertCtr } from '../../../libs/dbUtils';
+import api from 'src/utils/app-api';
+import { useProducts } from '../../../context/ProductContext';
+import { apiInsertCtr } from '../../../libs/dbUtils';
 import { cartJobType } from '../../../recoil/atoms';
 import mStyle from '../../../styles/Customermodal.module.css';
 import SnakeAlert from '../utils/SnakeAlert';
 
-const CloseRegister = (props: any) => {
+const CloseRegister = ({ openDialog, statusDialog, shopId }: any) => {
   const [closeRegisterInfo, setCloseRegisterInfo] = useState({ cashInHand: 0, cheque: 0 });
   const [snakeTitle, setSnakeTitle] = useState('');
 
-  const { products, setProducts, customers, setCustomers } = useContext(ProductContext);
+  const { products, setProducts, customers, setCustomers } = useProducts();
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [cash, setCash] = useState(0);
@@ -35,7 +36,7 @@ const CloseRegister = (props: any) => {
   const [note, setNote] = useState('');
   const [openSnakeBar, setOpenSnakeBar] = useState(false);
   const [, setJobType] = useRecoilState(cartJobType);
-  const { openDialog, statusDialog, shopId } = props;
+
   const { locationSettings } = useContext(UserContext);
 
   const handleClose = () => {
@@ -51,39 +52,41 @@ const CloseRegister = (props: any) => {
   }, [statusDialog]);
 
   async function closeRegister() {
-    // return
-    var result = await apiInsertCtr({
-      type: 'transactions',
-      subType: 'close',
-      shopId,
-      data: { cash, card, bankm, cheque, note, hand: closeRegisterInfo.cashInHand },
-    });
-    if (result.success) {
-      handleClose();
-      setJobType({ req: 101, val: 'closeRegister' });
-    } else {
-      alert('has error, Try Again...');
-    }
+    api
+      .post(`registration/${shopId}/close`, {
+        hand_cash: cash,
+        cart: card,
+        bank: bankm,
+        cheque,
+        note,
+      })
+      .then((res) => {
+        handleClose();
+        setJobType({ req: 101, val: 'closeRegister' });
+      })
+      .catch(() => {
+        alert('has error, Try Again...');
+      });
   }
   async function getcustomer() {
     setIsLoading(true);
-
-    var { success, newdata } = await apiFetchCtr({
-      subType: 'getclose',
-      fetch: 'transactions',
-      shopId,
-    });
-    if (!success) {
-      alert('error in fetch..');
-      return;
-    }
-    newdata.map((dd: any) => {
-      if (dd.payment_type == 'cash') setCash(+dd.price);
-      if (dd.payment_type == 'card') setCard(+dd.price);
-      if (dd.payment_type == 'bank') setBank(+dd.price);
-      if (dd.payment_type == 'cheque') setCheque(+dd.price);
-    });
-    setIsLoading(false);
+    api
+      .get(`reports/latest-register/${shopId}`)
+      .then((res) => res.data)
+      .then(({ result }) =>
+        result.data.data.map((item: any) => {
+          setCash(+item.cash);
+          setCard(+item.cart);
+          setBank(+item.bank);
+          setCheque(+item.cheque);
+        })
+      )
+      .catch(() => {
+        alert('error in fetch..');
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   }
   const makeShowSnake = (val: any) => {
     setOpenSnakeBar(val);

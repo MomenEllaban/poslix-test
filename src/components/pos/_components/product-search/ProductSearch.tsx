@@ -12,7 +12,7 @@ export default function ProductSearch({ shopId }) {
 
   const [product, setProduct] = useState<IProduct>(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState<boolean>(false);
-  const [productVariations, setProductVariations] = useState<IProduct['variations']>([]);
+  const [productVariations, setProductVariations] = useState<IProduct['variations'] | null>([]);
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
 
   const handleProductSearch = async (inputValue: string) => {
@@ -22,21 +22,17 @@ export default function ProductSearch({ shopId }) {
     const options = result.map((item: IProduct) => ({
       ...item,
       value: item.id,
-      label: (
-        <ResultItemRow
-          product={item}
-          set={setProduct}
-          onClick={handleAddToCart}
-          setShow={setIsProductModalOpen}
-        />
-      ),
+      label: <ResultItemRow product={item} />,
     }));
     return options;
   };
 
   const handleAddToCart = (product: IProduct) => {
+    console.log(product);
     if (product.type?.includes('variable')) {
+      setProduct(product);
       setProductVariations(product.variations);
+      setIsProductModalOpen(true);
     } else {
       dispatch(addToCart(product));
     }
@@ -54,24 +50,27 @@ export default function ProductSearch({ shopId }) {
   return (
     <Fragment>
       <AsyncSelect
+        isSearchable
+        cacheOptions
+        defaultOptions
+        openMenuOnClick
+        blurInputOnSelect
+        closeMenuOnSelect={false}
         components={{
           DropdownIndicator: () => null,
           IndicatorSeparator: () => null,
         }}
-        openMenuOnClick={true}
         menuIsOpen={isMenuOpen}
-        closeMenuOnSelect={false}
+        onChange={handleAddToCart}
         onFocus={() => setIsMenuOpen(true)}
         onBlur={() => {
           setTimeout(() => {
             setIsMenuOpen(false);
           }, 200);
         }}
-        isSearchable
         placeholder="Search Product ..."
-        cacheOptions
-        defaultOptions
         loadOptions={handleProductSearch}
+        value={null}
       />
       <PackageItemsModal
         show={isProductModalOpen}

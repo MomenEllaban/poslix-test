@@ -50,7 +50,8 @@ import { cartJobType } from 'src/recoil/atoms';
 import { useRecoilState } from 'recoil';
 import { ToastContainer } from 'react-toastify';
 import { Toastify } from 'src/libs/allToasts';
-const AddPurchase: NextPage = (props: any) => {
+import { createNewData, findAllData } from 'src/services/crud.api';
+const AddQuotations: NextPage = (props: any) => {
   const { shopId, editId } = props;
 
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
@@ -134,7 +135,7 @@ const AddPurchase: NextPage = (props: any) => {
   const [selectProducts, setSelectProducts] = useState<IpurchaseProductItem[]>([]);
   const [allVariations, setAllVariations] = useState([]);
   const [total_qty, setTotal_qty] = useState(0);
-  const [expends, setExpends] = useState<{ label: ''; value: 0 }[]>([]);
+  const [expends, setExpenses] = useState<{ label: ''; value: 0 }[]>([]);
   const [selectedExpends, setSelectedExpends] = useState<IPurchaseExpndes[]>([]);
   const [selectedExpendsEdit, setSelectedExpendsEdit] = useState<IPurchaseExpndes[]>([]);
   const [selectedTaxes, setSelectedTaxes] = useState<IPurchaseExpndes[]>([]);
@@ -265,125 +266,134 @@ const AddPurchase: NextPage = (props: any) => {
 
   async function initDataPage(id = '0') {
     if (id != '0') setIsEdit(true);
-    const { success, newdata } = await apiFetchCtr({
-      fetch: 'transactions',
-      subType: 'initPurchase',
-      shopId,
-      id,
-    });
-    if (!success) {
-      Toastify('error', 'error in loading..');
-      return;
-    }
-    setProducts(newdata.products);
-    setSuppliers([...newdata.suppliers, { label: 'Walk-in Supplier', value: 1 }]);
-    setCurrencies(newdata.currencies);
-    setExpends(newdata.expenses);
-    setAllVariations(newdata.allVariations);
-    if (newdata.purchase.length > 0) {
-      if (newdata.selected_lines.length > 0) {
-        var _rows: any = [],
-          cop = 0;
-        newdata.selected_lines.map((sp: any) => {
-          cop++;
-          _rows.push({
-            id:
-              +Number(sp.product_id) +
-              Math.floor(Math.random() * 7990) +
-              cop +
-              Math.floor(Math.random() * 1200),
-            product_id: sp.product_id,
-            variation_id: sp.variation_id,
-            name: sp.name,
-            quantity: Number(sp.quantity).toFixed(locationSettings?.location_decimal_places),
-            price: Number(sp.price).toFixed(locationSettings?.location_decimal_places),
-            cost: Number(sp.cost).toFixed(locationSettings?.location_decimal_places),
-            lineTotal: (parseFloat(sp.cost) * parseFloat(sp.quantity)).toFixed(
-              locationSettings?.location_decimal_places
-            ),
-            taxAmount: 0,
-            costType: sp.cost_type,
-            trans_id: sp.trans_id,
-          });
-        });
-        setSelectProducts([..._rows]);
+    if(router.isReady) {
+      const res = await findAllData(`products/${router.query.id}?all_data=1`)
+      const resPurchases = await findAllData(`purchase/${router.query.id}`)
+      const resExpenses = await findAllData(`expenses/${router.query.id}`)
+      const resCustomers = await findAllData(`customers/${router.query.id}`)
+      const resCurrencies = await findAllData(`currencies`)
+      if (res.data.success) {
+        setProducts(res.data.result.map(prod => {
+          return {...prod, label: prod.name, value: prod.id}
+        }));
+        setSuppliers(resCustomers.data.result.map(customer => {
+          return {...customer, label: customer.first_name + ' ' + customer.last_name, value: customer.id}
+        }));
+        setCurrencies(resCurrencies.data.result.map(curr => {
+          return {...curr, label: curr.currency, value: curr.id}
+        }));
+        setExpenses(resExpenses.data.result);
+        setAllVariations(res.data.result.allVariations);
+        if (res.data.result.length > 0) {
+          if (res.data.result?.selected_lines?.length > 0) {
+            var _rows: any = [],
+              cop = 0;
+            res.data.result.selected_lines.map((sp: any) => {
+              cop++;
+              _rows.push({
+                id:
+                  +Number(sp.product_id) +
+                  Math.floor(Math.random() * 7990) +
+                  cop +
+                  Math.floor(Math.random() * 1200),
+                product_id: sp.product_id,
+                variation_id: sp.variation_id,
+                name: sp.name,
+                quantity: Number(sp.quantity).toFixed(locationSettings?.location_decimal_places),
+                price: Number(sp.price).toFixed(locationSettings?.location_decimal_places),
+                cost: Number(sp.cost).toFixed(locationSettings?.location_decimal_places),
+                lineTotal: (parseFloat(sp.cost) * parseFloat(sp.quantity)).toFixed(
+                  locationSettings?.location_decimal_places
+                ),
+                taxAmount: 0,
+                costType: sp.cost_type,
+                trans_id: sp.trans_id,
+              });
+            });
+            setSelectProducts([..._rows]);
+          } else {
+            //error!
+          }
+          // setSelectedExpendsEdit(res.data.result?.selected_expnses);
+          // let _sumTotalExp = 0;
+        //   res.data.result?.selected_expnses?.map(
+        //     (mp: any) => (_sumTotalExp += parseFloat((mp.enterd_value * mp.currency_rate).toString()))
+        //   );
+        //   const itm = res.data.result.purchase[0];
+        //   let paymentType = '',
+        //     amount = 0,
+        //     pay_id = 0;
+        //   if (res.data.result.selected_payment.length > 0) {
+        //     paymentType = res.data.result.selected_payment[0].payment_type;
+        //     amount = res.data.result.selected_payment[0].amount;
+        //     pay_id = res.data.result.selected_payment[0].id;
+        //   }
+        //   let _taxes = JSON.parse(itm.taxes);
+        //   setSelectedTaxes(_taxes);
+        //   // itm.currency_id
+        //   const pidex = res.data.result.currencies.findIndex((ps: any) => ps.value == itm.currency_id);
+        //   console.log('currcny ', pidex);
+    
+        //   let crate = 0,
+        //     cCode = '';
+        //   if (pidex > -1) {
+        //     crate = res.data.result.currencies[pidex].exchange_rate;
+        //     cCode = res.data.result.currencies[pidex].code;
+        //   }
+    
+        //   setFormObj({
+        //     ...formObj,
+        //     id: Number(id),
+        //     supplier_id: itm.contact_id,
+        //     currency_id: itm.currency_id,
+        //     currency_rate: crate,
+        //     currency_symbol: '',
+        //     currency_code: cCode,
+        //     total_price: itm.total_price,
+        //     ref_no: itm.invoice_no,
+        //     date: new Date(),
+        //     taxs: 0,
+        //     subTotal_price: 0,
+        //     total_tax: itm.total_taxes,
+        //     total_expense: _sumTotalExp,
+        //     discount_type: 'fixed',
+        //     discount_amount: 0,
+        //     purchaseStatus: itm.status,
+        //     paymentStatus: itm.payment_status,
+        //     paid_amount: Number(amount),
+        //     total_discount: 0,
+        //     paymentType: paymentType,
+        //     paymentDate: new Date(),
+        //     payment_id: pay_id,
+        //   });
+        }
+        setLoading(false);
       } else {
-        //error!
+        Toastify('error', 'error in loading..');
+        return;
       }
-      setSelectedExpendsEdit(newdata.selected_expnses);
-      let _sumTotalExp = 0;
-      newdata.selected_expnses.map(
-        (mp: any) => (_sumTotalExp += parseFloat((mp.enterd_value * mp.currency_rate).toString()))
-      );
-      const itm = newdata.purchase[0];
-      let paymentType = '',
-        amount = 0,
-        pay_id = 0;
-      if (newdata.selected_payment.length > 0) {
-        paymentType = newdata.selected_payment[0].payment_type;
-        amount = newdata.selected_payment[0].amount;
-        pay_id = newdata.selected_payment[0].id;
-      }
-      let _taxes = JSON.parse(itm.taxes);
-      setSelectedTaxes(_taxes);
-      // itm.currency_id
-      const pidex = newdata.currencies.findIndex((ps: any) => ps.value == itm.currency_id);
-      console.log('currcny ', pidex);
-
-      let crate = 0,
-        cCode = '';
-      if (pidex > -1) {
-        crate = newdata.currencies[pidex].exchange_rate;
-        cCode = newdata.currencies[pidex].code;
-      }
-
-      setFormObj({
-        ...formObj,
-        id: Number(id),
-        supplier_id: itm.contact_id,
-        currency_id: itm.currency_id,
-        currency_rate: crate,
-        currency_symbol: '',
-        currency_code: cCode,
-        total_price: itm.total_price,
-        ref_no: itm.invoice_no,
-        date: new Date(),
-        taxs: 0,
-        subTotal_price: 0,
-        total_tax: itm.total_taxes,
-        total_expense: _sumTotalExp,
-        discount_type: 'fixed',
-        discount_amount: 0,
-        purchaseStatus: itm.status,
-        paymentStatus: itm.payment_status,
-        paid_amount: Number(amount),
-        total_discount: 0,
-        paymentType: paymentType,
-        paymentDate: new Date(),
-        payment_id: pay_id,
-      });
     }
-    setLoading(false);
   }
 
   async function insertPurchase() {
-    const { success } = await apiInsertCtr({
-      type: 'transactions',
-      subType: 'addPurchase',
-      shopId,
-      data: {
-        totalOrder: formObjRef.current,
-        lines: selectProducts,
-        expenses: selectedExpends,
-        taxes: selectedTaxes,
-      },
-    });
-    if (!success) {
+    console.log(formObj);
+    const quotationData = {
+      customer_id: formObj.supplier_id,
+      status: "active",
+      location_id: router.query.id,
+      quotationsLines: selectProducts.map(prod => {
+        return {product_id: prod.id, qty: prod.quantity, price_group: 77}
+      })
+    }
+      console.log(quotationData);
+      
+    const res = await createNewData('quotations-list', quotationData)
+    if (!res.data.success) {
       alert('Has Error ,try Again');
       return;
     }
     Toastify('success', 'Purchase Successfully Created..');
-    router.push('/shop/' + shopId + '/purchases');
+    router.push('/shop/' + router.query.id + '/quotations');
   }
   async function editPurchase() {
     const { success } = await apiUpdateCtr({
@@ -662,6 +672,8 @@ const AddPurchase: NextPage = (props: any) => {
   }, [jobType]);
   //product add / update
   const addToProductQuotations = (e: any) => {
+    console.log('test');
+    
     if (e.type == 'variable') {
       setSelectedProductForVariation({
         product_id: e.product_id,
@@ -671,13 +683,13 @@ const AddPurchase: NextPage = (props: any) => {
       setIsOpenVariationDialog(true);
       return;
     }
-    const found = selectProducts.some((el) => el.product_id === e.value);
+    const found = selectProducts.some((el) => el.id === e.id);
     console.log(e);
     if (!found) {
       setSelectProducts([
         ...selectProducts,
         {
-          id: e.product_id,
+          id: e.id,
           product_id: e.product_id,
           variation_id: 0,
           name: e.name,
@@ -1001,6 +1013,8 @@ const AddPurchase: NextPage = (props: any) => {
                       return f.value == formObj.currency_id;
                     })}
                     onChange={(itm) => {
+                      console.log(itm);
+                      
                       setFormObj({
                         ...formObj,
                         currency_code: itm!.code,
@@ -1313,49 +1327,4 @@ const AddPurchase: NextPage = (props: any) => {
     </>
   );
 };
-export default AddPurchase;
-export async function getServerSideProps(context: any) {
-  const parsedCookies = cookie.parse(context.req.headers.cookie || '[]');
-  var _isOk = true,
-    _hasPer = true;
-  //check page params
-  var shopId = context.query.id;
-  var _addOrEdit = context.query.slug[0];
-  var _EditId = context.query.slug[1];
-  console.log('context.query ', _EditId, context.query);
-
-  if (shopId == undefined) _isOk = false;
-  if (_addOrEdit != 'add' && _addOrEdit != 'edit') _isOk = false;
-
-  if (!_isOk) return { redirect: { permanent: false, destination: '/page403' } };
-
-  //check user permissions
-  await verifayTokens(
-    { headers: { authorization: 'Bearer ' + parsedCookies.tokend } },
-    (repo: ITokenVerfy) => {
-      _isOk = repo.status;
-      if (_isOk) {
-        var _rules = keyValueRules(repo.data.rules || []);
-        if (
-          _rules[-2] != undefined &&
-          _rules[-2][0].stuff != undefined &&
-          _rules[-2][0].stuff == 'owner'
-        ) {
-          _hasPer = true;
-        } else if (_rules[shopId] != undefined) {
-          var _stuf = '';
-          _rules[shopId].forEach((dd: any) => (_stuf += dd.stuff));
-          _addOrEdit = getRealWord(_addOrEdit);
-          const { hasPermission } = hasPermissions(_stuf, 'products', _addOrEdit);
-          _hasPer = hasPermission;
-        } else _hasPer = false;
-      }
-    }
-  );
-  if (!_isOk) return { redirect: { permanent: false, destination: '/user/auth' } };
-  if (!_hasPer) return { redirect: { permanent: false, destination: '/page403' } };
-  return {
-    props: { shopId, editId: _addOrEdit == 'edit' ? _EditId : 0 },
-  };
-  //status ok
-}
+export default AddQuotations;

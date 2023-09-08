@@ -27,98 +27,98 @@ const AddNewRole = (props: any) => {
   const [pages, setPages] = useState<
     { value: string; label: string; stuffs: object[]; icon?: IconProp }[]
   >([]);
-  const pages2 = [
-    { value: 'split', label: 'Sales List', stuffs: [], icon: faChartPie },
-    {
-      value: 'sales',
-      label: 'Sales',
-      stuffs: [
-        { label: 'View', value: 'view', isChoose: false },
-        { label: 'Edit', value: 'edit' },
-        { label: 'Delete', value: 'delete' },
-        { label: 'Insert', value: 'insert' },
-      ],
-    },
-    {
-      value: 'quotations',
-      label: 'Quotations',
-      stuffs: [
-        { label: 'View', value: 'view', isChoose: false },
-        { label: 'Edit', value: 'edit' },
-        { label: 'Delete', value: 'delete' },
-        { label: 'Insert', value: 'insert' },
-      ],
-    },
-    { value: 'split', label: 'setup', stuffs: [], icon: faLayerGroup },
-    {
-      value: 'products',
-      label: 'Products',
-      stuffs: [
-        { label: 'View', value: 'view', isChoose: false },
-        { label: 'Edit', value: 'edit' },
-        { label: 'Delete', value: 'delete' },
-        { label: 'Insert', value: 'insert' },
-      ],
-    },
-    {
-      value: 'purchases',
-      label: 'Purchases',
-      stuffs: [
-        { label: 'View', value: 'view' },
-        { label: 'Edit', value: 'edit' },
-        { label: 'Delete', value: 'delete' },
-        { label: 'Insert', value: 'insert' },
-      ],
-    },
-    {
-      value: 'category',
-      label: 'Category & Brands',
-      stuffs: [
-        { label: 'View', value: 'view' },
-        { label: 'Edit', value: 'edit' },
-        { label: 'Delete', value: 'delete' },
-        { label: 'Insert', value: 'insert' },
-      ],
-    },
-    { value: 'split', label: 'Settings', stuffs: [], icon: faGear },
-    {
-      value: 'taxes',
-      label: 'Taxes',
-      stuffs: [
-        { label: 'View', value: 'view' },
-        { label: 'Insert & Edit', value: 'insert' },
-        { label: 'Delete', value: 'delete' },
-      ],
-    },
-    {
-      value: 'discounts',
-      label: 'Discount',
-      stuffs: [
-        { label: 'View', value: 'view' },
-        { label: 'Edit', value: 'edit' },
-        { label: 'Delete', value: 'delete' },
-        { label: 'Insert', value: 'insert' },
-      ],
-    },
-    {
-      value: 'expanses',
-      label: 'Expenses',
-      stuffs: [
-        { label: 'View', value: 'view' },
-        { label: 'Insert & Edit', value: 'insert' },
-        { label: 'Delete', value: 'delete' },
-      ],
-    },
-    { value: 'split', label: 'POS Screen', stuffs: [], icon: faDesktop },
-    {
-      value: 'POS',
-      label: 'POS',
-      stuffs: [
-        { label: 'Orders', value: 'orders' },
-        { label: 'payment', value: 'payment' },
-      ],
-    },
-  ];
+  // const pages2 = [
+  //   { value: 'split', label: 'Sales List', stuffs: [], icon: faChartPie },
+  //   {
+  //     value: 'sales',
+  //     label: 'Sales',
+  //     stuffs: [
+  //       { label: 'View', value: 'view', isChoose: false },
+  //       { label: 'Edit', value: 'edit' },
+  //       { label: 'Delete', value: 'delete' },
+  //       { label: 'Insert', value: 'insert' },
+  //     ],
+  //   },
+  //   {
+  //     value: 'quotations',
+  //     label: 'Quotations',
+  //     stuffs: [
+  //       { label: 'View', value: 'view', isChoose: false },
+  //       { label: 'Edit', value: 'edit' },
+  //       { label: 'Delete', value: 'delete' },
+  //       { label: 'Insert', value: 'insert' },
+  //     ],
+  //   },
+  //   { value: 'split', label: 'setup', stuffs: [], icon: faLayerGroup },
+  //   {
+  //     value: 'products',
+  //     label: 'Products',
+  //     stuffs: [
+  //       { label: 'View', value: 'view', isChoose: false },
+  //       { label: 'Edit', value: 'edit' },
+  //       { label: 'Delete', value: 'delete' },
+  //       { label: 'Insert', value: 'insert' },
+  //     ],
+  //   },
+  //   {
+  //     value: 'purchases',
+  //     label: 'Purchases',
+  //     stuffs: [
+  //       { label: 'View', value: 'view' },
+  //       { label: 'Edit', value: 'edit' },
+  //       { label: 'Delete', value: 'delete' },
+  //       { label: 'Insert', value: 'insert' },
+  //     ],
+  //   },
+  //   {
+  //     value: 'category',
+  //     label: 'Category & Brands',
+  //     stuffs: [
+  //       { label: 'View', value: 'view' },
+  //       { label: 'Edit', value: 'edit' },
+  //       { label: 'Delete', value: 'delete' },
+  //       { label: 'Insert', value: 'insert' },
+  //     ],
+  //   },
+  //   { value: 'split', label: 'Settings', stuffs: [], icon: faGear },
+  //   {
+  //     value: 'taxes',
+  //     label: 'Taxes',
+  //     stuffs: [
+  //       { label: 'View', value: 'view' },
+  //       { label: 'Insert & Edit', value: 'insert' },
+  //       { label: 'Delete', value: 'delete' },
+  //     ],
+  //   },
+  //   {
+  //     value: 'discounts',
+  //     label: 'Discount',
+  //     stuffs: [
+  //       { label: 'View', value: 'view' },
+  //       { label: 'Edit', value: 'edit' },
+  //       { label: 'Delete', value: 'delete' },
+  //       { label: 'Insert', value: 'insert' },
+  //     ],
+  //   },
+  //   {
+  //     value: 'expanses',
+  //     label: 'Expenses',
+  //     stuffs: [
+  //       { label: 'View', value: 'view' },
+  //       { label: 'Insert & Edit', value: 'insert' },
+  //       { label: 'Delete', value: 'delete' },
+  //     ],
+  //   },
+  //   { value: 'split', label: 'POS Screen', stuffs: [], icon: faDesktop },
+  //   {
+  //     value: 'POS',
+  //     label: 'POS',
+  //     stuffs: [
+  //       { label: 'Orders', value: 'orders' },
+  //       { label: 'payment', value: 'payment' },
+  //     ],
+  //   },
+  // ];
   async function insertUpdateUsers() {
     let res;
     if (selectedRole > -1)
@@ -165,7 +165,7 @@ const AddNewRole = (props: any) => {
     const finalRes: any = [];
     for (const key in res.data.result) {
       const el = res.data.result[key]
-      const current: any = {title: key, roles: []};
+      const current: any = {title: key.toUpperCase(), roles: []};
       for (const entry in el) {
         if(el[entry].name.includes('GET') && !current.roles.some((role) => role.label === 'View'))
           current.roles.push({value: el[entry].id, label: 'View',})
@@ -180,6 +180,32 @@ const AddNewRole = (props: any) => {
     }
     console.log('finalRes', finalRes);
     setFields(finalRes)
+    const finalRes2: any = [];
+
+for (const key in res.data.result) {
+  const el = res.data.result[key];
+  const current: any = { title: key.toUpperCase(), roles: [] };
+
+  for (const entry in el) {
+    const nameParts = el[entry].name.split(' ');
+    const roleName = nameParts[0];
+    const method = nameParts[nameParts.length - 1];
+
+    if (roleName === key) {
+      const role = current.roles.find((r) => r.label === method);
+
+      if (role) {
+        role.value.push(el[entry].id);
+      } else {
+        current.roles.push({ label: method, value: [el[entry].id] });
+      }
+    }
+  }
+
+  finalRes2.push(current);
+  console.log(finalRes2);
+  
+}
   }
   useEffect(() => {
     initPageData()

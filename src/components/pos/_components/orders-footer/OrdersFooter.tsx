@@ -5,24 +5,12 @@ import { useAppDispatch, useAppSelector } from 'src/hooks';
 import { Toastify } from 'src/libs/allToasts';
 import { clearCart, selectCartByLocation } from 'src/redux/slices/cart.slice';
 import HoldModal from '../../modals/HoldModal';
-import OrdersModal from '../../modals/hold-orders/HoldOrdersModal';
-import PaymentModal from '../../modals/PaymentModal';
-import MainModal from 'src/components/modals/MainModal';
+import HoldOrdersModal from '../../modals/hold-orders/HoldOrdersModal';
 import PaymentCheckoutModal from '../../modals/payment-checkout/PaymentCheckoutModal';
+import styles from './OrdersFooter.module.scss';
+import classNames from 'classnames';
 
-export const OrdersFooter = ({
-  orderEditDetails,
-  details,
-  holdObj,
-  shopId,
-  selectedHold,
-  lang,
-  // tax,
-  __WithDiscountFeature__total,
-  setDiscount,
-  totalDiscount,
-  ...props
-}: any) => {
+export const OrdersFooter = ({ orderEditDetails, details, shopId, lang }) => {
   const dispatch = useAppDispatch();
   const selectCartForLocation = selectCartByLocation(shopId);
   const cart = useAppSelector(selectCartForLocation); // current location order
@@ -35,8 +23,6 @@ export const OrdersFooter = ({
     setIsShowModal(status);
   };
   const [paymentModalShow, setPaymentModalShow] = useState<boolean>(false);
-
-  const [isShowOrdersModal, setIsShowOrdersModal] = useState<boolean>(false);
 
   const handleCartClear = () => {
     dispatch(clearCart({ location_id: shopId }));
@@ -60,7 +46,7 @@ export const OrdersFooter = ({
         totalDiscount={totalDiscount}
       /> */}
 
-      <div className="footer-up-flex gap-1">
+      <div className={classNames(styles['footer-up-flex'], 'gap-1')}>
         <Button
           disabled={!cart?.cartItems?.length}
           onClick={() => setClearCartModal(true)}
@@ -69,7 +55,7 @@ export const OrdersFooter = ({
           {lang.cartComponent.delete}
         </Button>
         <HoldModal shopId={shopId} lang={lang} />
-        <OrdersModal shopId={shopId} lang={lang} />
+        <HoldOrdersModal shopId={shopId} lang={lang} />
       </div>
       <ButtonGroup
         className="btn-group footer-payment-btns d-flex flex-grow-1 mt-1"

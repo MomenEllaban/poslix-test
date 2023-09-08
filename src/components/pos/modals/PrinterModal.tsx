@@ -5,20 +5,26 @@ import { useEffect, useState } from 'react';
 import { Button, Form, Modal } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import FormField from 'src/components/form/FormField';
+import SelectField from 'src/components/form/SelectField';
 import { Toastify } from 'src/libs/allToasts';
 import { addCustomerSchema } from 'src/modules/pos/_schema/add-customer.schema';
 import api from 'src/utils/app-api';
 import { useSWRConfig } from 'swr';
 import { useProducts } from '../../../context/ProductContext';
 import { apiUpdateCtr } from '../../../libs/dbUtils';
-import { useRouter } from 'next/router';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
+import Switch from '@mui/material/Switch';
+import FormControlLabel from '@mui/material/FormControlLabel';
 
+const label = { inputProps: { 'aria-label': 'printer status' } };
 const customerTemplate = {
   id: 0,
-  first_name: '',
-  last_name: '',
+  printer_ame: '',
+  printer_ip: '',
   mobile: '',
-  pricing_group: null,
   city: '',
   state: '',
   country: '',
@@ -27,16 +33,15 @@ const customerTemplate = {
   address_line_2: '',
 };
 
-const CustomerModal = (props: any) => {
+const PrinterModal = (props: any) => {
   const { openDialog, statusDialog, userdata, showType, shopId } = props;
   const [open, setOpen] = useState(false);
   const [moreInfo, setMoreInfo] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [countryList, setCountryList] = useState<any[]>([]);
 
-  const [customerInfo, setCustomerInfo] = useState(customerTemplate);
   const { customers, setCustomers } = useProducts();
-  const router = useRouter()
+
   const { mutate } = useSWRConfig();
   const {
     register,
@@ -58,14 +63,14 @@ const CustomerModal = (props: any) => {
       .put('/customers/' + userdata.value, data)
       .then((res) => res.data.result)
       .then((res) => {
-        mutate('/customers/' + router.query.id);
+        mutate('/customers/' + shopId);
         const cinx = customers.findIndex((customer) => customer.value === res.id);
         if (cinx > -1) {
           const upCustomer = [...customers];
           upCustomer[cinx] = {
             ...upCustomer[cinx],
             value: res.id,
-            label: res.first_name + ' ' + res.last_name + ' | ' + res.mobile,
+            label: res.printer_ame + ' ' + res.printer_ip + ' | ' + res.mobile,
           };
           setCustomers(upCustomer);
         }
@@ -78,12 +83,11 @@ const CustomerModal = (props: any) => {
   };
 
   const handleAddCustomer = (data: any) => {
-    delete data.pricing_group
     api
-      .post('/customers/' + router.query.id, data)
+      .post('/customers/' + shopId, data)
       .then((res) => res.data.result)
       .then((res) => {
-        mutate('/customers/' + router.query.id);
+        mutate('/customers/' + shopId);
         setCustomers([...customers, res]);
         Toastify('success', 'Successfully Created');
         handleClose();
@@ -111,34 +115,12 @@ const CustomerModal = (props: any) => {
     openDialog(false);
   };
 
-  async function getCustomerInfo(theId: any) {
-    setIsLoading(true);
-    setCustomerInfo(customerTemplate);
 
-    api
-      .get('/customers/' + theId + '/show')
-      .then((res) => {
-        const selCustomer = res?.data?.result?.profile;
-
-        Object.entries(selCustomer).forEach(([key, value]) => {
-          if (!value) value = '';
-          setValue(key, value);
-        });
-      })
-      .catch(() => {
-        Toastify('error', 'has error, Try Again...');
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-  }
 
   useEffect(() => {
     if (!statusDialog) return;
-    setCustomerInfo(customerTemplate);
     setOpen(statusDialog);
-    if (userdata !== undefined && showType != 'add' && statusDialog)
-      getCustomerInfo(userdata.value);
+
   }, [statusDialog]);
 
   useEffect(() => {
@@ -175,21 +157,22 @@ const CustomerModal = (props: any) => {
               <FormField
                 required
                 type="text"
-                name="first_name"
-                label="First Name"
-                placeholder="First Name"
+                name="printer_ame"
+                label="Printer Name"
+                placeholder="Printer Name"
                 errors={errors}
                 register={register}
               />
               <FormField
+                required
                 type="text"
-                name="last_name"
-                label="Last Name"
-                placeholder="Last Name"
+                name="printer_ip"
+                label="Printer IP"
+                placeholder="Printer IP"
                 errors={errors}
                 register={register}
               />
-              <FormField
+              {/* <FormField
                 required
                 type="text"
                 name="mobile"
@@ -197,104 +180,31 @@ const CustomerModal = (props: any) => {
                 placeholder="Enter customer mobile number"
                 errors={errors}
                 register={register}
+              /> */}
+              <SelectField
+              label="Printer Type"
+              name="PrinterType"
+              options={[{value: "Resit",label:"Resit"},{value: "A4",label:"A4"}]} // Pass the business types options
+              register={register}
+              errors={errors}
+              required
+              
               />
-              <FormField
-                type="number"
-                name="pricing_group"
-                label="Pricing Group"
-                placeholder="Enter customer pricing group"
-                errors={errors}
-                register={register}
+              <SelectField
+              label="connection method"
+              name="connectionMethod"
+              options={[{value: "Method1",label:"Method1"},{value: "Method2",label:"Method2"}]} // Pass the business types options
+              register={register}
+              errors={errors}
+              required
+              
               />
+                    <FormControlLabel control={<Switch {...label} defaultChecked />} label="printer status" />
+
+         
+             
             </fieldset>
-            <div className="d-flex flex-row mb-3">
-              <Button
-                variant="primary"
-                className="ms-auto"
-                onClick={() => {
-                  setMoreInfo(!moreInfo);
-                }}>
-                {moreInfo ? 'Less ' : 'More '} Information{' '}
-                <i className={`ri-arrow-${moreInfo ? 'up' : 'down'}-s-line ps-1`} />
-              </Button>
-            </div>
-
-            {moreInfo ? (
-              <div className="row">
-                <div className="col-lg-6 mb-3">
-                  <FormField
-                    type="text"
-                    name="address_line_1"
-                    label="Address line 1"
-                    placeholder="Enter Address line 1"
-                    errors={errors}
-                    register={register}
-                  />
-                </div>
-
-                <div className="col-lg-6 mb-3">
-                  <FormField
-                    type="text"
-                    name="address_line_2"
-                    label="Address line 2"
-                    placeholder="Enter Address line 2"
-                    errors={errors}
-                    register={register}
-                  />
-                </div>
-
-                <div className="col-lg-3 mb-3">
-                  <FormField
-                    type="text"
-                    name="country"
-                    label="Country"
-                    placeholder="Enter Country"
-                    errors={errors}
-                    register={register}
-                  />
-                </div>
-                <div className="col-lg-3 mb-3">
-                  <FormField
-                    type="text"
-                    name="state"
-                    label="State"
-                    placeholder="Enter State"
-                    errors={errors}
-                    register={register}
-                  />
-                </div>
-                <div className="col-lg-3 mb-3">
-                  <FormField
-                    type="text"
-                    name="city"
-                    label="City"
-                    placeholder="Enter City"
-                    errors={errors}
-                    register={register}
-                  />
-                </div>
-
-                <div className="col-lg-3 mb-3">
-                  <FormField
-                    type="text"
-                    name="zip_code"
-                    label="Zip Code"
-                    placeholder="Enter Zip Code"
-                    errors={errors}
-                    register={register}
-                  />
-                </div>
-                <hr />
-                <FormField
-                  type="text"
-                  name="shipping_address"
-                  label="Shipping Address"
-                  placeholder="Enter Shipping Address"
-                  errors={errors}
-                  register={register}
-                />
-              </div>
-            ) : null}
+           
           </Modal.Body>
           <Modal.Footer>
             <a className="btn btn-link link-success fw-medium" onClick={() => handleClose()}>
@@ -302,7 +212,7 @@ const CustomerModal = (props: any) => {
             </a>{' '}
             {showType != 'show' && (
               <Button type="submit" className="text-capitalize" onClick={() => {}}>
-                {showType} Customer
+                {showType} Printer
               </Button>
             )}
           </Modal.Footer>
@@ -312,4 +222,4 @@ const CustomerModal = (props: any) => {
   );
 };
 
-export default CustomerModal;
+export default PrinterModal;

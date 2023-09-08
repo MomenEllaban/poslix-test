@@ -15,7 +15,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faSearch } from '@fortawesome/free-solid-svg-icons';
 import { debounce } from '@mui/material';
 import { ITransferItem } from '@models/common-model';
-// const [locations, setLocations] = useState<{ value: number, label: string }[]>([])
+import { createNewData, findAllData, updateData } from 'src/services/crud.api';
+import { useRouter } from 'next/router';
 
 const Transfermodal = (props: any) => {
   const { openDialog, statusDialog, userdata, showType, shopId } = props;
@@ -36,22 +37,17 @@ const Transfermodal = (props: any) => {
     id: 0,
     date: '',
     refNo: 0,
-    status: '',
-    loctionFrom: 0,
-    loctionTo: 0,
+    status: 'Draft',
+    locationFrom: 0,
+    locationTo: 0,
     charges: 0,
     notes: '',
-    product: {
-      id: 0,
-      name: '',
-      qty: 0,
-      sell: 0,
-      totalPrice: 0,
-    },
+    products: [],
   });
 
   const { customers, setCustomers } = useContext(ProductContext);
   const [open, setOpen] = useState(false);
+  const router = useRouter()
   // JSON.parse(localStorage.getItem('locations') || '[]')
   const [locations, setLocations] = useState<{ value: number; label: string }[]>([]);
 
@@ -59,7 +55,7 @@ const Transfermodal = (props: any) => {
   const [openSnakeBar, setOpenSnakeBar] = useState(false);
   const handleClose = () => {
     setOpen(false);
-    openDialog(transferInfo);
+    // openDialog(transferInfo);
   };
   useEffect(() => {
     if (!statusDialog) return;
@@ -69,12 +65,14 @@ const Transfermodal = (props: any) => {
     }
     // getCustomerInfo(userdata.value);
     var _locs = JSON.parse(localStorage.getItem('locations') || '[]');
-    setLocations(_locs);
+    setLocations(_locs.map((loc) => {
+      return {...loc, label: loc.location_name, value: loc.location_id}
+    }));
   }, [statusDialog]);
 
   useEffect(() => {
     initDataPage();
-  }, []);
+  }, [router.asPath]);
 
   // async function insertCustomerInfo() {
   //   const { success, msg, code, newdata } = await apiInsertCtr({
@@ -158,25 +156,23 @@ const Transfermodal = (props: any) => {
   };
 
   async function initDataPage() {
-    const { success, data } = await apiFetchCtr({
-      fetch: 'products',
-      subType: 'getProducts',
-      shopId,
-    });
-    if (!success) {
-      Toastify('error', 'Somthing wrong!!, try agian');
-      return;
+    if(router.isReady) {
+      transferInfo.locationFrom = Number(router.query.id)
+      transferInfo.locationTo = Number(router.query.id)
+      const res = await findAllData(`products/${router.query.id}?all_data=1`)
+      if (!res.data.success) {
+        Toastify('error', 'Somthing wrong!!, try agian');
+        return;
+      }
+      var products = res.data.result.map((ele) => {
+        const subtotal = ele.sell_price * 1;
+        return { id: ele.id, name: ele.name, subtotal: subtotal, unitPrice: ele.sell_price, qty: 1 };
+      });
+
+      setProducts(products);
+      setFilteredProducts(products);
+      setIsLoading(false);
     }
-
-    // console.log(data.products);
-    var products = data.products.map((ele) => {
-      const subtotal = ele.sell_price * 1;
-      return { id: ele.id, name: ele.name, subtotal: subtotal, unitPrice: ele.sell_price, qty: 1 };
-    });
-
-    setProducts(products);
-    setFilteredProducts(products);
-    setIsLoading(false);
   }
 
   const handelChangeQty = (event: React.ChangeEvent<HTMLInputElement>, id: number) => {
@@ -186,16 +182,16 @@ const Transfermodal = (props: any) => {
     prods[idx].qty = +value;
     prods[idx].subtotal = +value * prods[idx].unitPrice;
     setProducts(prods);
-    if (id == transferInfo.product.id) {
+    if (transferInfo.products.some((prod) => prod.id === id)) {
+      const newProducts =  transferInfo.products.map((prod) => {
+        if(prod.id === id) {
+          console.log({...prod, qty: +value});
+          return {...prod, qty: +value}
+        } else return {...prod}
+      })
       setTransferInfo({
         ...transferInfo,
-        product: {
-          id: prods[idx].id,
-          name: prods[idx].name,
-          qty: prods[idx].qty,
-          sell: prods[idx].unitPrice,
-          totalPrice: prods[idx].subtotal,
-        },
+        products: [...newProducts]
       });
     }
   };
@@ -318,15 +314,38 @@ const Transfermodal = (props: any) => {
     const idx = products.findIndex((e) => e.id == ele);
     setTransferInfo({
       ...transferInfo,
-      product: {
-        id: products[idx].id,
-        name: products[idx].name,
-        qty: products[idx].qty,
-        sell: products[idx].unitPrice,
-        totalPrice: products[idx].subtotal,
-      },
+      products: [
+        ...transferInfo.products,
+        {
+          id: products[idx].id,
+          name: products[idx].name,
+          qty: products[idx].qty,
+          sell: products[idx].unitPrice,
+          totalPrice: products[idx].subtotal
+        }
+      ],
     });
   };
+
+  const handleTransfer = async () => {
+    const data = {location_id: transferInfo.locationTo,
+      transferred_location_id: transferInfo.locationFrom,
+      ref_no: transferInfo.refNo,
+      status: transferInfo.status,
+      notes: transferInfo.notes,
+      cart: transferInfo.products.map(prod => {
+        return {product_id: prod.id, qty: prod.qty, cost: prod.sell, price: prod.totalPrice, note: ''}
+      }),
+    }
+    let res;
+    console.log(data);
+    if(showType === 'add') {
+      res = await createNewData('transfer', data)
+    } else {
+      // res = await updateData('transfer', )
+    }
+    if(res.data.success) setOpen(false);
+  }
   return (
     <>
       <Dialog open={open} className="poslix-modal" onClose={handleClose} maxWidth={'xl'}>
@@ -404,7 +423,7 @@ const Transfermodal = (props: any) => {
                           onChange={(e) =>
                             setTransferInfo({
                               ...transferInfo,
-                              loctionFrom: +e.target.value,
+                              locationFrom: +e.target.value,
                             })
                           }>
                           {locations.map((el, i) => {
@@ -423,7 +442,7 @@ const Transfermodal = (props: any) => {
                           onChange={(e) =>
                             setTransferInfo({
                               ...transferInfo,
-                              loctionTo: +e.target.value,
+                              locationTo: +e.target.value,
                             })
                           }>
                           {locations.map((el, i) => {
@@ -461,13 +480,16 @@ const Transfermodal = (props: any) => {
                           checkboxSelection
                           hideFooter
                           disableSelectionOnClick
-                          rows={searchTerm.length > 0 ? filteredProducts : []}
+                          // rows={searchTerm.length > 0 ? filteredProducts : []}
+                          rows={filteredProducts}
                           columns={columns}
                           // pageSize={10}
                           // rowsPerPageOptions={[10]}
 
                           onSelectionModelChange={(ids: GridSelectionModel) => {
+                            console.log(ids);
                             let lastId = [...ids].pop();
+                            
                             onRowsSelectionHandler(lastId);
                             // console.log('idddddddddd', ids);
                           }}
@@ -523,7 +545,7 @@ const Transfermodal = (props: any) => {
                       //   if (showType == "edit") editCustomerInfo();
                       //   else insertCustomerInfo();
                       // }}
-                      onClick={handleClose}>
+                      onClick={handleTransfer}>
                       {showType} Transfer
                     </button>
                   )}

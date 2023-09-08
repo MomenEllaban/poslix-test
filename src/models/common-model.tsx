@@ -379,15 +379,24 @@ export interface ITransferItem {
   date: string;
   refNo: number;
   status: string;
-  loctionFrom: number;
-  loctionTo: number;
-  product: {
+  loctionFrom?: number;
+  locationFrom?: number;
+  loctionTo?: number;
+  locationTo?: number;
+  product?: {
     id: number;
     name: string;
     qty: number;
     sell: number;
     totalPrice: number;
   };
+  products: Array<{
+    id: number;
+    name: string;
+    qty: number;
+    sell: number;
+    totalPrice: number;
+  }>;
   charges: number;
   notes: string;
 }

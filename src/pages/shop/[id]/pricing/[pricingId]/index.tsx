@@ -10,7 +10,7 @@ import { faPenToSquare } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { ROUTES } from 'src/utils/app-routes';
 const PricingGroup = (props: any) => {
-  const { shopId, rules } = props;
+  const { shopId, initData } = props;
   const [isLoading, setIsLoading] = useState(true);
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
     // @ts-ignore
@@ -56,7 +56,7 @@ const PricingGroup = (props: any) => {
       renderCell: ({ row }: Partial<GridRowParams>) => (
         <>
           <ButtonGroup className="mb-2 m-buttons-style">
-            {rules.hasEdit && (
+            {permissions.hasEdit && (
               <Button
                 onClick={(event) => {
                   // router.push('/shop/' + shopId + '/customers/edit/' + row.id)
@@ -82,8 +82,27 @@ const PricingGroup = (props: any) => {
 
     setIsLoading(false);
   }
+  const [locations, setLocations] = useState<{ value: number; label: string }[]>([]);
+  const [permissions, setPermissions] = useState<any>();
   useEffect(() => {
-    var _locs = JSON.parse(localStorage.getItem('locations') || '[]');
+    const perms = JSON.parse(localStorage.getItem('permissions'));
+    const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
+    perms.pos.map((perm) =>
+      perm.name.includes('getpricinggroup get GET')
+        ? (getPermissions.hasView = true)
+        : perm.name.includes('pricinggroup add POST')
+        ? (getPermissions.hasInsert = true)
+        : perm.name.includes('pricinggroup update PUT')
+        ? (getPermissions.hasEdit = true)
+        : perm.name.includes('pricinggroup delete DELETE')
+        ? (getPermissions.hasDelete = true)
+        : null
+    );
+
+    setPermissions(getPermissions);
+
+    const _locs = JSON.parse(localStorage.getItem('locations') || '[]');
+    setLocations(_locs);
     if (_locs.toString().length > 10)
       setLocationSettings(
         _locs[
@@ -133,42 +152,3 @@ const PricingGroup = (props: any) => {
 };
 
 export default PricingGroup;
-export async function getServerSideProps(context: any) {
-  const parsedCookies = cookie.parse(context.req.headers.cookie || '[]');
-  var _isOk = true,
-    _rule = true;
-  var customerId = context.query.customerId;
-  var shopId = context.query.id;
-  if (shopId == undefined) return { redirect: { permanent: false, destination: '/page403' } };
-  var _userRules = {};
-  await verifayTokens(
-    { headers: { authorization: 'Bearer ' + parsedCookies.tokend } },
-    (repo: ITokenVerfy) => {
-      _isOk = repo.status;
-      if (_isOk) {
-        var _rules = keyValueRules(repo.data.rules || []);
-        if (
-          _rules[-2] != undefined &&
-          _rules[-2][0].stuff != undefined &&
-          _rules[-2][0].stuff == 'owner'
-        ) {
-          _rule = true;
-          _userRules = { hasDelete: true, hasEdit: true, hasView: true, hasInsert: true };
-        } else if (_rules[shopId] != undefined) {
-          var _stuf = '';
-          _rules[shopId].forEach((dd: any) => (_stuf += dd.stuff));
-          const { userRules, hasPermission } = hasPermissions(_stuf, 'customers');
-          _rule = hasPermission;
-          _userRules = userRules;
-        } else _rule = false;
-      }
-    }
-  );
-  if (!_isOk) return { redirect: { permanent: false, destination: ROUTES.AUTH } };
-  if (!_rule) return { redirect: { permanent: false, destination: '/page403' } };
-
-  //status ok
-  return {
-    props: { shopId, rules: _userRules },
-  };
-}

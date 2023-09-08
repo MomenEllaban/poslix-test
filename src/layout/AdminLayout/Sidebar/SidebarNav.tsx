@@ -25,6 +25,7 @@ import {
 import { TbReportSearch } from 'react-icons/tb';
 import { findAllData } from 'src/services/crud.api';
 import styles from './sideBarNav.module.css';
+import { Money } from '@mui/icons-material';
 
 type SidebarNavItemProps = {
   href: string;
@@ -129,6 +130,7 @@ const SidebarNavGroup = (props: SidebarNavGroupProps) => {
 };
 export function SidebarNav(props: any): any {
   const { shopId } = props;
+  console.log(shopId,"SidebarNav")
   const [loading, setLoading] = useState(true);
   const [btype, setBtype] = useState('');
 
@@ -216,6 +218,39 @@ export function SidebarNav(props: any): any {
     intData();
   }, [shopId]);
 
+  const [permissions, setPermissions] = useState<any>();
+  useEffect(() => {
+    const perms = JSON.parse(localStorage.getItem('permissions'));
+    const getPermissions = { hasPos: false, hasProducts: false, hasPurchases: false, hasTransfers: false, 
+      hasSuppliers: false, hasExpenses: false, hasPricingGroups: false, hasCustomers: false, hasSalesList: false,
+      hasQuotations: false, hasCategories: false };
+    perms.inventory.map((perm) =>
+      perm.name.includes('pos currencies GET')
+        ? (getPermissions.hasPos = true)
+        : perm.name.includes('inventory products GET')
+        ? (getPermissions.hasProducts = true)
+        : perm.name.includes('inventory purchases GET')
+        ? (getPermissions.hasPurchases = true)
+        : perm.name.includes('inventory transfers GET')
+        ? (getPermissions.hasTransfers = true)
+        : perm.name.includes('inventory expenses all GET')
+        ? (getPermissions.hasExpenses = true)
+        : perm.name.includes('getpricinggroup get GET')
+        ? (getPermissions.hasPricingGroups = true)
+        : perm.name.includes('customers all GET')
+        ? (getPermissions.hasCustomers = true)
+        : perm.name.includes('sales sales list show GET')
+        ? (getPermissions.hasSalesList = true)
+        : perm.name.includes('sales quotations list get GET')
+        ? (getPermissions.hasQuotations = true)
+        : perm.name.includes('settings categories all GET')
+        ? (getPermissions.hasCategories = true)
+        : null
+    );
+
+    setPermissions(getPermissions);
+  }, []);
+
   if (loading) return <div>loading</div>;
   return (
     <ul className="list-unstyled">
@@ -225,56 +260,54 @@ export function SidebarNav(props: any): any {
         <small className="ms-auto"></small>
       </SidebarNavItem>
 
-      {(permiss.hasProducts ||
-        permiss.hasPurchases ||
-        permiss.hasTransfer ||
-        permiss.hasSupplier ||
-        permiss.hasExpenses ||
-        permiss.hasTailoring) && (
-        <SidebarNavGroup toggleIcon={MdOutlineLocalGroceryStore as any} toggleText="Inventory">
-          <MdOutlineLocalGroceryStore className="nav-icon ms-n3" />
-          <MdOutlineLocalGroceryStore />
-          {permiss.hasProducts && (
-            <SidebarNavItem href={'/shop/' + shopId + '/products'}>Products</SidebarNavItem>
+      {(permissions.hasProducts ||
+        permissions.hasPurchases ||
+        permissions.hasTransfers ||
+        // permissions.hasSupplier ||
+        permissions.hasExpenses) && (
+        <SidebarNavGroup toggleIcon="MdOutlineLocalGroceryStore" toggleText="Inventory">
+          {permissions.hasProducts && (
+            <SidebarNavItem href={'/shop/' + shopId + '/products'} sub={true}>Products</SidebarNavItem>
           )}
-          {permiss.hasPurchases && (
-            <SidebarNavItem href={'/shop/' + shopId + '/purchases'}>Purchases</SidebarNavItem>
+          {permissions.hasPurchases && (
+            <SidebarNavItem href={'/shop/' + shopId + '/purchases'} sub={true}>Purchases</SidebarNavItem>
           )}
-          {permiss.hasTransfer && (
-            <SidebarNavItem href={'/shop/' + shopId + '/transfers'}>Transfers</SidebarNavItem>
+          {permissions.hasTransfers && (
+            <SidebarNavItem href={'/shop/' + shopId + '/transfers'} sub={true}>Transfers</SidebarNavItem>
           )}
-          {permiss.hasSupplier && (
-            <SidebarNavItem href={'/shop/' + shopId + '/suppliers'}>Suppliers</SidebarNavItem>
+          {permissions.hasSupplier && (
+            <SidebarNavItem href={'/shop/' + shopId + '/suppliers'} sub={true}>Suppliers</SidebarNavItem>
           )}
-          {permiss.hasExpenses && (
-            <SidebarNavItem href={'/shop/' + shopId + '/expenses'}>Expenses</SidebarNavItem>
+          {permissions.hasExpenses && (
+            <SidebarNavItem href={'/shop/' + shopId + '/expenses'} sub={true}>Expenses</SidebarNavItem>
           )}
-          {permiss.hasTailoring && btype == 'Kianvqyqndr' && (
-            <SidebarNavItem href={'/shop/' + shopId + '/tailoring'}>Tailoring</SidebarNavItem>
+          {permissions.hasTailoring && btype == 'Kianvqyqndr' && (
+            <SidebarNavItem href={'/shop/' + shopId + '/tailoring'} sub={true}>Tailoring</SidebarNavItem>
           )}
         </SidebarNavGroup>
       )}
 
       {permiss.hasCustomers && (
         <SidebarNavItem icon={faUser} href={'/shop/' + shopId + '/pricing'}>
+          <Money className="nav-icon ms-n3" />
           Pricing Groups
           <small className="ms-auto"></small>
         </SidebarNavItem>
       )}
 
-      {(permiss.hasSalesList || permiss.hasPurchases || permiss.hasCats) && (
+      {(permissions.hasSalesList || permissions.hasPurchases || permissions.hasCategories) && (
         <SidebarNavGroup toggleIcon="MdOutlineCrisisAlert" toggleText="Sales">
-          {permiss.hasQuotations && (
+          {/* {permissions.hasQuotations && ( */}
             <SidebarNavItem href={'/shop/' + shopId + '/quotations'} sub={true}>
               Quotations List
             </SidebarNavItem>
-          )}
-          {permiss.hasSalesList && (
+          {/* )} */}
+          {/* {permissions.hasSalesList && ( */}
             <SidebarNavItem href={'/shop/' + shopId + '/sales'} sub={true}>
               {' '}
               Sales List
             </SidebarNavItem>
-          )}
+          {/* )} */}
 
           {permiss.hasOrders && btype == 'Kianvqyqndr' && (
             <>
@@ -366,6 +399,11 @@ export function SidebarNav(props: any): any {
               Payment Methods
             </SidebarNavItem>
           )}
+          { (
+            <SidebarNavItem href={'/shop/' + shopId + '/Printsetting'} sub={true}>
+              Print setting
+            </SidebarNavItem>
+          )}
         </SidebarNavGroup>
       )}
       {permiss.hasPOS && (
@@ -376,7 +414,7 @@ export function SidebarNav(props: any): any {
         </SidebarNavItem>
       )}
       {permiss.hasAppStore && (
-        <SidebarNavItem icon={faCalendarDay} href={'/menu/' + shopId}>
+        <SidebarNavItem icon={faCalendarDay} href={'/digital/' + shopId}>
           <BsMenuButtonWideFill className="nav-icon ms-n3" />
           Digital Menu
           <small className="ms-auto"></small>

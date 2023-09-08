@@ -1,12 +1,16 @@
 export enum ELocalStorageKeys {
   TOKEN = 'userinfo',
   TOKEN_COOKIE = 'tokend',
+
+  LANGUAGE = 'lang',
   USER = 'userdata',
   USER_NAME = 'username',
   USER_LOCATIONS = 'userlocs',
   CUSTOEMR_LOCATIONS = 'cusLocs',
   FULL_NAME = 'userfullname',
   LEVELS = 'levels',
+
+  POS_REGISTER_STATE = 'posRegister',
 }
 
 export function getLocalStorage<T>(key: ELocalStorageKeys): T | null {
@@ -20,6 +24,11 @@ export function getLocalStorage<T>(key: ELocalStorageKeys): T | null {
     return null;
   }
 
-  const val = JSON.parse(_val) as T;
-  return val;
+  try {
+    const val = JSON.parse(_val) as T;
+    return val;
+  } catch {
+    if (typeof _val === 'string') return _val as any;
+  }
+  return null;
 }

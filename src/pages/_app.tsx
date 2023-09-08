@@ -3,7 +3,6 @@ import { SessionProvider } from 'next-auth/react';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import NextNProgress from 'nextjs-progressbar';
-import { SSRProvider } from 'react-bootstrap';
 import { Provider } from 'react-redux';
 import { ToastContainer } from 'react-toastify';
 import { RecoilRoot } from 'recoil';
@@ -34,23 +33,22 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Poslix App</title>
       </Head>
-      <SSRProvider>
-        <Provider store={store}>
-          <UserProvider>
-            <RecoilRoot>
-              <ProductProvider>
-                <DarkModeProvider>
-                  <NextNProgress />
-                  <SWRConfig value={swrConfigObject}>
-                    <Component {...pageProps} />
-                  </SWRConfig>
-                  <ToastContainer />
-                </DarkModeProvider>
-              </ProductProvider>
-            </RecoilRoot>
-          </UserProvider>
-        </Provider>
-      </SSRProvider>
+
+      <Provider store={store}>
+        <UserProvider>
+          <RecoilRoot>
+            <ProductProvider>
+              <DarkModeProvider>
+                <NextNProgress />
+                <SWRConfig value={swrConfigObject}>
+                  <Component {...pageProps} />
+                </SWRConfig>
+                <ToastContainer />
+              </DarkModeProvider>
+            </ProductProvider>
+          </RecoilRoot>
+        </UserProvider>
+      </Provider>
     </SessionProvider>
   );
 }

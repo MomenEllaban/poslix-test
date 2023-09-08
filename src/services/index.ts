@@ -3,7 +3,6 @@ import { ICurrency } from '@models/business.types';
 import { type ICustomResponse } from '@models/global.types';
 import { type AxiosResponse } from 'axios';
 import { getSession } from 'next-auth/react';
-import api from 'src/utils/app-api';
 import { authApi } from 'src/utils/auth-api';
 import useSWR, { type SWRConfiguration } from 'swr';
 

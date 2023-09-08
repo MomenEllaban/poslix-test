@@ -5,7 +5,6 @@ import InputGroup from 'react-bootstrap/InputGroup';
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
 import { useRecoilState } from 'recoil';
-import { useUser } from 'src/context/UserContext';
 import { useAppDispatch } from 'src/hooks';
 import { setCart } from 'src/redux/slices/cart.slice';
 import { apiFetchCtr } from '../../../../libs/dbUtils';
@@ -16,6 +15,7 @@ import OrdersTable from './OrdersTable';
 
 export default function HoldOrdersModal({ shopId, lang }: any) {
   const dispatch = useAppDispatch();
+  const [searchQuery, setSearchQuery] = useState('');
 
   const [, setJobType] = useRecoilState(cartJobType);
 
@@ -78,6 +78,7 @@ export default function HoldOrdersModal({ shopId, lang }: any) {
 
   const handleFiltered = (e) => {
     const query = e.target.value;
+    setSearchQuery(query);
     if (query.length > 0) {
       setFilteredOrdersList(
         ordersList.filter(
@@ -153,7 +154,7 @@ export default function HoldOrdersModal({ shopId, lang }: any) {
               />
             </Tab>
             <Tab eventKey="order" title={lang.cartComponent.orderModal.order}>
-              <OrdersTable lang={lang} shopId={shopId} />
+              <OrdersTable lang={lang} shopId={shopId} searchQuery={searchQuery} />
             </Tab>
           </Tabs>
         </Modal.Body>

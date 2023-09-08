@@ -13,6 +13,7 @@ import { ProductContext } from 'src/context/ProductContext';
 import { Toastify } from 'src/libs/allToasts';
 import { apiFetchCtr } from 'src/libs/dbUtils';
 import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/checkUtils';
+import { findAllData } from 'src/services/crud.api';
 
 const PricingGroups = (props) => {
   const { shopId, rules } = props;
@@ -27,14 +28,9 @@ const PricingGroups = (props) => {
     currency_symbol: '',
   });
   const router = useRouter();
-  const [customersList, setCustomers] = useState<{ id: number; name: string; mobile: string }[]>(
+  const [pricingGroups, setPricingGroups] = useState<{ id: number; name: string; mobile: string }[]>(
     []
   );
-  const [pricingGroups, setPricingGroups] = useState<{ id: number; name: string }[]>([
-    { id: 1, name: 'Pricing Group 1' },
-    { id: 2, name: 'Pricing Group 2' },
-    { id: 3, name: 'Pricing Group 3' },
-  ]);
 
   const [show, setShow] = useState(false);
   const [selectId, setSelectId] = useState(0);
@@ -44,6 +40,7 @@ const PricingGroups = (props) => {
   const [currentPricingGroup, setCurrentPricingGroup] = useState<{
     id: string;
     name: string;
+    price: number;
   }>();
   const { customers } = useContext(ProductContext);
 
@@ -56,6 +53,7 @@ const PricingGroups = (props) => {
   const columns: GridColDef[] = [
     { field: 'id', headerName: '#', minWidth: 50 },
     { field: 'name', headerName: 'Name', flex: 1 },
+    { field: 'price', headerName: 'Price', flex: 1 },
     {
       field: 'action',
       headerName: 'Action ',
@@ -65,7 +63,7 @@ const PricingGroups = (props) => {
       renderCell: ({ row }: Partial<GridRowParams>) => (
         <>
           <ButtonGroup className="mb-2 m-buttons-style">
-            {rules.hasEdit && (
+            {permissions.hasEdit && (
               <Button
                 onClick={(event) => {
                   // router.push('/shop/' + shopId + '/customers/edit/' + row.id)
@@ -73,6 +71,7 @@ const PricingGroups = (props) => {
                   setCurrentPricingGroup({
                     id: row.id,
                     name: row.name,
+                    price: row.price
                   });
                   setShowType('edit');
                   setAddPricingModal(true);
@@ -80,7 +79,7 @@ const PricingGroups = (props) => {
                 <FontAwesomeIcon icon={faPenToSquare} />
               </Button>
             )}
-            {rules.hasDelete && (
+            {permissions.hasDelete && (
               <Button
                 onClick={(event) => {
                   event.stopPropagation();
@@ -96,33 +95,49 @@ const PricingGroups = (props) => {
                 <FontAwesomeIcon icon={faTrash} />
               </Button>
             )}
-            <Button
+            {/* <Button
               onClick={() => {
                 router.push('/shop/' + shopId + '/pricing/' + row.id);
               }}>
               <FontAwesomeIcon icon={faEye} />
-            </Button>
+            </Button> */}
           </ButtonGroup>
         </>
       ),
     },
   ];
   async function initDataPage() {
-    const { success, newdata } = await apiFetchCtr({
-      fetch: 'customer',
-      subType: 'getCustomerlist',
-      shopId,
-    });
-    if (!success) {
-      Toastify('error', 'Somthing wrong!!, try agian');
-      return;
+    if(router.isReady) {
+      const res = await findAllData(`pricing-group/${router.query.id}`)
+      if (!res.data.success) {
+        Toastify('error', 'Somthing wrong!!, try agian');
+        return;
+      }
+      setPricingGroups(res.data.result.pricingGroup);
+      setIsLoading(false);
     }
-    setCustomers(newdata);
-    setIsLoading(false);
   }
-
+  const [locations, setLocations] = useState<{ value: number; label: string }[]>([]);
+  const [permissions, setPermissions] = useState<any>();
   useEffect(() => {
-    var _locs = JSON.parse(localStorage.getItem('userlocs') || '[]');
+    const perms = JSON.parse(localStorage.getItem('permissions'));
+    const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
+    perms.pos.map((perm) =>
+      perm.name.includes('getpricinggroup get GET')
+        ? (getPermissions.hasView = true)
+        : perm.name.includes('pricinggroup add POST')
+        ? (getPermissions.hasInsert = true)
+        : perm.name.includes('pricinggroup update PUT')
+        ? (getPermissions.hasEdit = true)
+        : perm.name.includes('pricinggroup delete DELETE')
+        ? (getPermissions.hasDelete = true)
+        : null
+    );
+
+    setPermissions(getPermissions);
+
+    const _locs = JSON.parse(localStorage.getItem('locations') || '[]');
+    setLocations(_locs);
     if (_locs.toString().length > 10)
       setLocationSettings(
         _locs[
@@ -137,11 +152,11 @@ const PricingGroups = (props) => {
 
   const handleDeleteFuc = (result: boolean, msg: string, section: string) => {
     if (result) {
-      const _data = [...customersList];
+      const _data = [...pricingGroups];
       const idx = _data.findIndex((itm: any) => itm.id == selectId);
       if (idx != -1) {
         _data.splice(idx, 1);
-        setCustomers(_data);
+        setPricingGroups(_data);
       }
     }
     if (msg.length > 0) Toastify(result ? 'success' : 'error', msg);
@@ -163,7 +178,7 @@ const PricingGroups = (props) => {
         </AlertDialog>
         {/* start */}
         {/* router.push('/shop/' + shopId + '/customers/add') */}
-        {!isLoading && rules.hasInsert && (
+        {!isLoading && permissions.hasInsert && (
           <div className="mb-2">
             <button
               className="btn btn-primary p-3"
@@ -210,48 +225,8 @@ const PricingGroups = (props) => {
         customers={customers}
         statusDialog={addPricingModal}
         openDialog={pricingModalHandler}
-        pricingGroups={pricingGroups}
-        setPricingGroups={setPricingGroups}
       />
     </>
   );
 };
 export default PricingGroups;
-export async function getServerSideProps(context: any) {
-  const parsedCookies = cookie.parse(context.req.headers.cookie || '[]');
-  var _isOk = true,
-    _rule = true;
-  var shopId = context.query.id;
-  if (shopId == undefined) return { redirect: { permanent: false, destination: '/page403' } };
-  var _userRules = {};
-  await verifayTokens(
-    { headers: { authorization: 'Bearer ' + parsedCookies.tokend } },
-    (repo: ITokenVerfy) => {
-      _isOk = repo.status;
-      if (_isOk) {
-        var _rules = keyValueRules(repo.data.rules || []);
-        if (
-          _rules[-2] != undefined &&
-          _rules[-2][0].stuff != undefined &&
-          _rules[-2][0].stuff == 'owner'
-        ) {
-          _rule = true;
-          _userRules = { hasDelete: true, hasEdit: true, hasView: true, hasInsert: true };
-        } else if (_rules[shopId] != undefined) {
-          var _stuf = '';
-          _rules[shopId].forEach((dd: any) => (_stuf += dd.stuff));
-          const { userRules, hasPermission } = hasPermissions(_stuf, 'customers');
-          _rule = hasPermission;
-          _userRules = userRules;
-        } else _rule = false;
-      }
-    }
-  );
-  if (!_isOk) return { redirect: { permanent: false, destination: '/user/auth' } };
-  if (!_rule) return { redirect: { permanent: false, destination: '/page403' } };
-
-  //status ok
-  return {
-    props: { shopId, rules: _userRules },
-  };
-}
