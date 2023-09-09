@@ -80,14 +80,14 @@ const Transfer: NextPage = (props: any) => {
   useEffect(() => {
     const perms = JSON.parse(localStorage.getItem('permissions'));
     const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
-    perms.inventory.map((perm) =>
-        perm.name.includes('inventory transfers GET')
+    perms.inventory.transfers.map((perm) =>
+        perm.name.includes('transfers/show')
         ? (getPermissions.hasView = true)
-        : perm.name.includes('inventory transfers POST')
+        : perm.name.includes('transfers/add')
         ? (getPermissions.hasInsert = true)
-        : perm.name.includes('inventory transfers PUT')
+        : perm.name.includes('transfers/update')
         ? (getPermissions.hasEdit = true)
-        : perm.name.includes('inventory transfers DELETE')
+        : perm.name.includes('transfers/delete')
         ? (getPermissions.hasDelete = true)
         : null
     );
