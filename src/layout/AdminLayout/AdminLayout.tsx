@@ -1,13 +1,13 @@
-import React, { useContext, useCallback, useEffect, useState } from "react";
-import { useResizeDetector } from "react-resize-detector";
-import Head from "next/head";
-import Sidebar, { SidebarOverlay } from "@layout/AdminLayout/Sidebar/Sidebar";
-import Header from "@layout/AdminLayout/Header/Header";
-import Footer from "@layout/AdminLayout/Footer/Footer";
-import Breadcrumb from "@layout/AdminLayout/Breadcrumb/Breadcrumb";
-import { UserContext } from "src/context/UserContext";
-import Script from "next/script";
-import { darkModeContext } from "../../context/DarkModeContext";
+import Breadcrumb from '@layout/AdminLayout/Breadcrumb/Breadcrumb';
+import Footer from '@layout/AdminLayout/Footer/Footer';
+import Header from '@layout/AdminLayout/Header/Header';
+import Sidebar from '@layout/AdminLayout/Sidebar/Sidebar';
+import Script from 'next/script';
+import { useCallback, useContext, useEffect, useState } from 'react';
+import { useResizeDetector } from 'react-resize-detector';
+import { UserContext } from 'src/context/UserContext';
+import { darkModeContext } from '../../context/DarkModeContext';
+import SidebarOverlay from './Sidebar/SidebarOverlay';
 
 export default function AdminLayout({ children, shopId }: any) {
   /*MOHAMMED MAHER */
@@ -27,7 +27,7 @@ export default function AdminLayout({ children, shopId }: any) {
   const toggleIsShowSidebarMd = () => {
     const newValue = !isShowSidebarMd;
 
-    localStorage.setItem("isShowSidebarMd", newValue ? "true" : "false");
+    localStorage.setItem('isShowSidebarMd', newValue ? 'true' : 'false');
 
     setIsShowSidebarMd(newValue);
   };
@@ -45,15 +45,15 @@ export default function AdminLayout({ children, shopId }: any) {
 
   // On first time load only
   useEffect(() => {
-    if (localStorage.getItem("isShowSidebarMd")) {
-      setIsShowSidebarMd(localStorage.getItem("isShowSidebarMd") === "true");
+    if (localStorage.getItem('isShowSidebarMd')) {
+      setIsShowSidebarMd(localStorage.getItem('isShowSidebarMd') === 'true');
     }
   }, [setIsShowSidebarMd]);
 
   useEffect(() => {
     const _locs = JSON.parse(localStorage.getItem('locations') || '[]');
-    var script = document.createElement("script");
-    script.src = "https://poslix2-uee0.onrender.com/index.js";
+    var script = document.createElement('script');
+    script.src = 'https://poslix2-uee0.onrender.com/index.js';
     document.head.appendChild(script);
     if (_locs.toString().length > 10)
       setLocationSettings(
@@ -67,40 +67,23 @@ export default function AdminLayout({ children, shopId }: any) {
 
   return (
     <>
-     
       <div ref={ref} className="position-absolute w-100" />
 
-      <Sidebar
-        shopId={shopId}
-        isOwner={false}
-        isShow={isShowSidebar}
-        isShowMd={isShowSidebarMd}
-      />
+      <Sidebar shopId={shopId} isOwner={false} isShow={isShowSidebar} isShowMd={isShowSidebarMd} />
 
       <div
         className={`wrapper d-flex flex-column min-vh-100 ${
-          darkMode ? "dark-mode-body" : "light-mode-body"
-        }`}
-      >
-        <Header
-          toggleSidebar={toggleIsShowSidebar}
-          toggleSidebarMd={toggleIsShowSidebarMd}
-        />
+          darkMode ? 'dark-mode-body' : 'light-mode-body'
+        }`}>
+        <Header toggleSidebar={toggleIsShowSidebar} toggleSidebarMd={toggleIsShowSidebarMd} />
         <Breadcrumb shopId={shopId} />
-        <div
-          className={`body body-container ${
-            darkMode ? "dark-mode-body" : "light-mode-body"
-          }`}
-        >
+        <div className={`body body-container ${darkMode ? 'dark-mode-body' : 'light-mode-body'}`}>
           {children}
         </div>
         <Footer />
       </div>
 
-      <SidebarOverlay
-        isShowSidebar={isShowSidebar}
-        toggleSidebar={toggleIsShowSidebar}
-      />
+      <SidebarOverlay isShowSidebar={isShowSidebar} toggleSidebar={toggleIsShowSidebar} />
       <Script src="https://unpkg.com/scrollreveal@4.0.0/dist/scrollreveal.min.js"></Script>
       <Script src="https://bootstrap-js.onrender.com/index.js" async />
     </>
