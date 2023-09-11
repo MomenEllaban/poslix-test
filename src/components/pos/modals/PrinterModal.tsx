@@ -7,74 +7,28 @@ import { useForm } from 'react-hook-form';
 import FormField from 'src/components/form/FormField';
 import SelectField from 'src/components/form/SelectField';
 import { Toastify } from 'src/libs/allToasts';
-import { addCustomerSchema } from 'src/modules/pos/_schema/add-customer.schema';
+// import { addprinterSchema } from 'src/modules/pos/_schema/add-printer.schema';
 import api from 'src/utils/app-api';
-import { useSWRConfig } from 'swr';
-import { useProducts } from '../../../context/ProductContext';
-import { apiUpdateCtr } from '../../../libs/dbUtils';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import Select from '@mui/material/Select';
-import Switch from '@mui/material/Switch';
-import FormControlLabel from '@mui/material/FormControlLabel';
+
 
 const label = { inputProps: { 'aria-label': 'printer status' } };
-const customerTemplate = {
-  id: 0,
-  printer_ame: '',
-  printer_ip: '',
-  mobile: '',
-  city: '',
-  state: '',
-  country: '',
-  zip_code: '',
-  address_line_1: '',
-  address_line_2: '',
-};
-
 const PrinterModal = (props: any) => {
-  const { openDialog, statusDialog, userdata, showType, shopId } = props;
+  const { openDialog, statusDialog, userdata, showType, shopId,id,printersList } = props;
   const [open, setOpen] = useState(false);
-  const [moreInfo, setMoreInfo] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [countryList, setCountryList] = useState<any[]>([]);
-
-  const { customers, setCustomers } = useProducts();
-
-  const { mutate } = useSWRConfig();
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-    setValue,
-
-    clearErrors,
-  } = useForm({
+  const {register,handleSubmit,formState: { errors },reset,setValue,clearErrors,} = useForm({
     mode: 'onTouched',
     reValidateMode: 'onBlur',
-    resolver: joiResolver(addCustomerSchema),
+    // resolver: joiResolver(addprinterSchema),
     // defaultValues: initState,
   });
-
-  const handleEditCustomer = (data: any) => {
+console.log(showType,"showType");
+  const handleEditprinter = (data: any) => {
+    // userdata==id
     api
-      .put('/customers/' + userdata.value, data)
+      .put('/print-settings/' + userdata.value,{},{params:{...data,location_id:140}} )
       .then((res) => res.data.result)
       .then((res) => {
-        mutate('/customers/' + shopId);
-        const cinx = customers.findIndex((customer) => customer.value === res.id);
-        if (cinx > -1) {
-          const upCustomer = [...customers];
-          upCustomer[cinx] = {
-            ...upCustomer[cinx],
-            value: res.id,
-            label: res.printer_ame + ' ' + res.printer_ip + ' | ' + res.mobile,
-          };
-          setCustomers(upCustomer);
-        }
-
         Toastify('success', 'Successfully Update');
         handleClose();
       })
@@ -82,13 +36,11 @@ const PrinterModal = (props: any) => {
       .finally(() => setIsLoading(false));
   };
 
-  const handleAddCustomer = (data: any) => {
-    api
-      .post('/customers/' + shopId, data)
+  const handleAddprinter = (data: any) => {
+    console.log(shopId)
+    api.post('/print-settings/', {...data,location_id:140})
       .then((res) => res.data.result)
       .then((res) => {
-        mutate('/customers/' + shopId);
-        setCustomers([...customers, res]);
         Toastify('success', 'Successfully Created');
         handleClose();
       })
@@ -103,9 +55,9 @@ const PrinterModal = (props: any) => {
   const onSubmit = async (data: any) => {
     setIsLoading(true);
     if (showType === 'edit') {
-      handleEditCustomer(data);
+      handleEditprinter(data);
     } else {
-      handleAddCustomer(data);
+      handleAddprinter(data);
     }
   };
   const onError = (errors: any, e: any) => console.log(errors, e);
@@ -126,16 +78,33 @@ const PrinterModal = (props: any) => {
   useEffect(() => {
     if (!open) {
       reset();
-      setMoreInfo(false);
       clearErrors();
     }
   }, [open]);
+  // to set value in the form if showType is edit and to empty them if add 
+  useEffect(() => {
+  const selprinter = printersList
+  selprinter.forEach(function(item, index) {
+    for (let [key, value] of Object.entries(item)) {
+      if (showType == "edit") {
+          setValue(key, value);
+
+      } else {
+        value = '';
+        setValue(key, value);
+      }
+      console.log(key, value);
+    }
+  });
+   console.log(id,"slected id",selprinter,showType);
+  },[open])
+  
 
   if (isLoading)
     return (
       <Modal show={open} onHide={handleClose}>
         <Modal.Header className="poslix-modal-title text-primary text-capitalize" closeButton>
-          {showType + ' customer'}
+          {showType + ' printer'}
         </Modal.Header>
         <Modal.Body>
           <Box sx={{ display: 'flex', justifyContent: 'center', margin: '20px' }}>
@@ -144,47 +113,37 @@ const PrinterModal = (props: any) => {
         </Modal.Body>
       </Modal>
     );
-
   return (
     <Modal show={open} onHide={handleClose}>
       <Modal.Header className="poslix-modal-title text-primary text-capitalize" closeButton>
-        {showType + ' customer'}
+        {showType + ' printer'}
       </Modal.Header>
       <Modal.Body>
         <Form noValidate onSubmit={handleSubmit(onSubmit, onError)}>
           <Modal.Body>
-            <fieldset disabled={showType === 'show'}>
+            <fieldset >
               <FormField
                 required
                 type="text"
-                name="printer_ame"
+                name="name"
                 label="Printer Name"
                 placeholder="Printer Name"
                 errors={errors}
                 register={register}
               />
               <FormField
-                required
                 type="text"
-                name="printer_ip"
+                name="ip"
                 label="Printer IP"
+                required
                 placeholder="Printer IP"
                 errors={errors}
                 register={register}
               />
-              {/* <FormField
-                required
-                type="text"
-                name="mobile"
-                label="Mobile"
-                placeholder="Enter customer mobile number"
-                errors={errors}
-                register={register}
-              /> */}
               <SelectField
-              label="Printer Type"
-              name="PrinterType"
-              options={[{value: "Resit",label:"Resit"},{value: "A4",label:"A4"}]} // Pass the business types options
+              label="print type"
+              name="print_type"
+              options={[{value: "receipt",label:"receipt"},{value: "A4",label:"A4"}]} // Pass the business types options
               register={register}
               errors={errors}
               required
@@ -192,14 +151,23 @@ const PrinterModal = (props: any) => {
               />
               <SelectField
               label="connection method"
-              name="connectionMethod"
+              name="connection"
               options={[{value: "Method1",label:"Method1"},{value: "Method2",label:"Method2"}]} // Pass the business types options
               register={register}
               errors={errors}
               required
               
               />
-                    <FormControlLabel control={<Switch {...label} defaultChecked />} label="printer status" />
+              <SelectField
+              label="printer status"
+              name="status"
+              options={[{value: "1",label:"on"},{value: "0",label:"off"}]} // Pass the business types options
+              register={register}
+              errors={errors}
+              required
+              
+              />
+          {/* <Switch {...label} defaultChecked label="printer status" name="status" />   */}
 
          
              

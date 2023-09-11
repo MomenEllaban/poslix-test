@@ -12,7 +12,7 @@ import {
 } from '@mui/x-data-grid';
 import type { NextPage } from 'next';
 import { useRouter } from 'next/router';
-import { useContext, useEffect, useState } from 'react';
+import {  useEffect, useState } from 'react';
 import { Button, ButtonGroup } from 'react-bootstrap';
 import Spinner from 'react-bootstrap/Spinner';
 import { ToastContainer } from 'react-toastify';
@@ -23,56 +23,51 @@ import { findAllData } from 'src/services/crud.api';
 import PrinterModal from '../../../../components/pos/modals/PrinterModal';
 import { ProductContext } from '../../../../context/ProductContext';
 
-const Customers: NextPage = (props: any) => {
+const Printers: NextPage = (props: any) => {
   const { shopId, rules } = props;
-  const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
-    // @ts-ignore
-    value: 0,
-    label: '',
-    currency_decimal_places: 0,
-    currency_code: '',
-    currency_id: 0,
-    currency_rate: 1,
-    currency_symbol: '',
-  });
+
+  const [locationSettings, setLocationSettings] = useState<ILocationSettings>({});
   const router = useRouter();
-  const [customersList, setCustomers] = useState<{ id: number; name: string; mobile: string }[]>(
+ 
+  
+  const [printersList, setPrinters] = useState<{ id: number; name: string; ip: string; print_type: string;status:string,connection:string }[]>(
     []
   );
-
-  const [roles, setRoles] = useState([]);
   const [show, setShow] = useState(false);
   const [selectId, setSelectId] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-
   const [showType, setShowType] = useState(String);
-  const [customer, setCustomer] = useState<{
+  const [printer, setPrinter] = useState<{
     value: string;
     label: string;
     isNew: boolean;
-  }>({ value: '1', label: 'walk-in customer', isNew: false });
-  const { customers } = useContext(ProductContext);
-
-  const [customerIsModal, setCustomerIsModal] = useState<boolean>(false);
-  const customerModalHandler = (status: any) => {
-    setCustomerIsModal(false);
+  }>({ value: '1', label: 'walk-in printer', isNew: false });
+  const [printerIsModal, setPrinterIsModal] = useState<boolean>(false);
+  async function initDataPage() {
+    if (router.query.id) {
+      const res = await findAllData(`print-settings/${router.query.id}`);
+      console.log(res,"res");
+      if (res.data.status !== 200) {
+        Toastify('error', 'Somthing wrong!!, try agian');
+        return;
+      }
+      console.log(res.data.result,"object");
+      setPrinters([res.data.result]);
+    }
+    setIsLoading(false);
+  }
+  const printerModalHandler = (status: any) => {
+    setPrinterIsModal(false);
     initDataPage();
   };
-
+console.log(router.query.id,printersList);
   const columns: GridColDef[] = [
     { field: 'id', headerName: '#', minWidth: 50 },
-    {
-      field: 'name',headerName: 'Printer Name',flex: 1,
-      renderCell: ({ row }) => (
-        <p>
-          {row.first_name} {row.last_name}
-        </p>
-      ),
-    },
-    { field: 'mobile', headerName: 'IP', flex: 1 },
-    { field: 'printer-status', headerName: 'printer-status', flex: 1 },
-    { field: 'PrinterType', headerName: 'PrinterType', flex: 1 },
-    { field: 'connectionmethod', headerName: 'connectionmethod', flex: 1 },
+    {field: 'name',headerName: 'Printer Name',flex: 1,},
+    { field: 'ip', headerName: 'IP', flex: 1 },
+    { field: 'status', headerName: 'printer status', flex: 1 },
+    { field: 'print_type', headerName: 'Printer Type', flex: 1 },
+    { field: 'connection', headerName: 'connection method', flex: 1 },
     {field: 'action',headerName: 'Action ',
       sortable: false,
       disableExport: true,
@@ -84,13 +79,14 @@ const Customers: NextPage = (props: any) => {
               <Button
                 onClick={(event) => {
                   event.stopPropagation();
-                  setCustomer({
+                  setPrinter({
                     value: row.id,
-                    label: row.first_name + ' ' + row.last_name,
+                    label: row.name,
                     isNew: false,
                   });
+                  setSelectId(row.id);
                   setShowType('edit');
-                  setCustomerIsModal(true);
+                  setPrinterIsModal(true);
                 }}>
                 <FontAwesomeIcon icon={faPenToSquare} />
               </Button>
@@ -105,12 +101,7 @@ const Customers: NextPage = (props: any) => {
                 <FontAwesomeIcon icon={faTrash} />
               </Button>
             
-            <Button
-              onClick={() => {
-                router.push('/shop/' + shopId + '/customers/' + row.id);
-              }}>
-              <FontAwesomeIcon icon={faEye} />
-            </Button>
+        
           </ButtonGroup>
         </>
       ),
@@ -124,31 +115,9 @@ const Customers: NextPage = (props: any) => {
       </GridToolbarContainer>
     );
   }
-  async function initDataPage() {
-    if (router.query.id) {
-      const res = await findAllData(`customers/${router.query.id}`);
-      if (res.data.status !== 200) {
-        Toastify('error', 'Somthing wrong!!, try agian');
-        return;
-      }
-      setCustomers(res.data.result);
-    }
-    setIsLoading(false);
-  }
+
 
   useEffect(() => {
-    // const roles = JSON.parse(localStorage.getItem('roles') || '[]');
-    // setRoles(roles.stuff)
-//     const _locs = JSON.parse(localStorage.getItem('locations') || '[]');
-//     if (_locs.toString().length > 10)
-//       setLocationSettings(
-//         _locs[
-//           _locs.findIndex((loc: any) => {
-//             return loc.value == shopId;
-//           })
-//         ]
-//       );
-//     else alert('errorr location settings');
     initDataPage();
   }, [router.asPath]);
 
@@ -167,7 +136,7 @@ const Customers: NextPage = (props: any) => {
           alertFun={handleDeleteFuc}
           shopId={shopId}
           id={selectId}
-          url={'customers'}>
+          url={'printers'}>
           Are you Sure You Want Delete This printer ?
         </AlertDialog>
         {!isLoading && (
@@ -176,7 +145,7 @@ const Customers: NextPage = (props: any) => {
               className="btn btn-primary p-3"
               onClick={() => {
                 setShowType('add');
-                setCustomerIsModal(true);
+                setPrinterIsModal(true);
               }}>
               <FontAwesomeIcon icon={faPlus} /> Add New printer{' '}
             </button>
@@ -196,7 +165,7 @@ const Customers: NextPage = (props: any) => {
                     border: 'none',
                   },
                 }}
-                rows={customersList}
+                rows={printersList}
                 columns={columns}
                 pageSize={10}
                 rowsPerPageOptions={[10]}
@@ -213,13 +182,15 @@ const Customers: NextPage = (props: any) => {
       </AdminLayout>
       <PrinterModal
         shopId={shopId}
+        printersList={printersList}
+        id={selectId}
         showType={showType}
-        userdata={customer}
-        customers={customers}
-        statusDialog={customerIsModal}
-        openDialog={customerModalHandler}
+        userdata={printer}
+        printers={printersList}
+        statusDialog={printerIsModal}
+        openDialog={printerModalHandler}
       />
     </>
   );
 };
-export default withAuth(Customers);
+export default withAuth(Printers);
