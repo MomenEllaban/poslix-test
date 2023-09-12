@@ -1,36 +1,36 @@
-import React, { useContext, useState, useEffect } from 'react';
+import { AdminLayout } from '@layout';
+import { ILocationSettings } from '@models/common-model';
+import { KeyboardArrowLeft, KeyboardArrowRight } from '@mui/icons-material';
+import { Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from '@mui/material';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
 import {
   DataGrid,
   GridColDef,
   GridRowParams,
+  GridToolbarColumnsButton,
   GridToolbarContainer,
   GridToolbarExport,
-  GridToolbarColumnsButton,
   GridToolbarQuickFilter,
 } from '@mui/x-data-grid';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
-import { AdminLayout } from '@layout';
-
-import { IconButton } from '@mui/material';
-import { KeyboardArrowLeft, KeyboardArrowRight } from '@mui/icons-material';
-import { Button, ButtonGroup } from 'react-bootstrap';
 import { useRouter } from 'next/router';
-import AlertDialog from 'src/components/utils/AlertDialog';
-import { apiFetch, apiFetchCtr } from 'src/libs/dbUtils';
-import { Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
-import { ILocationSettings, ITokenVerfy } from '@models/common-model';
-import * as cookie from 'cookie';
-import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/checkUtils';
-import { UserContext } from 'src/context/UserContext';
+import React, { useContext, useEffect, useState } from 'react';
+import { Button } from 'react-bootstrap';
 import { useReactToPrint } from 'react-to-print';
+import withAuth from 'src/HOCs/withAuth';
 import DatePicker from 'src/components/filters/Date';
+import AlertDialog from 'src/components/utils/AlertDialog';
+import { UserContext } from 'src/context/UserContext';
+import { apiFetch, apiFetchCtr } from 'src/libs/dbUtils';
 
 const pageSizeOptions = [10, 20, 50, 100];
-export default function SalesReport(props: any) {
-  const { shopId, rules } = props;
+
+function SalesReport() {
+  const router = useRouter();
+  const shopId = router.query.id;
+
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
     // @ts-ignore
     value: 0,
@@ -49,7 +49,7 @@ export default function SalesReport(props: any) {
   const [filteredSales, setFilteredSales] = useState<any>([]);
   const [customersOptions, setCustomersOptions] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState('');
-  const router = useRouter();
+
   const [selectId, setSelectId] = useState(0);
   const [selectRow, setSelectRow] = useState<any>({});
   const [lines, setLines] = useState<any>([]);
@@ -600,49 +600,5 @@ export default function SalesReport(props: any) {
     </AdminLayout>
   );
 }
-export async function getServerSideProps(context: any) {
-  const parsedCookies = cookie.parse(context.req.headers.cookie || '[]');
-  var _isOk = true,
-    _rule = true;
-  //check page params
-  var shopId = context.query.id;
-  if (shopId == undefined) return { redirect: { permanent: false, destination: '/page403' } };
 
-  //check user permissions
-  var _userRules = {};
-  await verifayTokens(
-    { headers: { authorization: 'Bearer ' + parsedCookies.tokend } },
-    (repo: ITokenVerfy) => {
-      _isOk = repo.status;
-
-      if (_isOk) {
-        var _rules = keyValueRules(repo.data.rules || []);
-        if (
-          _rules[-2] != undefined &&
-          _rules[-2][0].stuff != undefined &&
-          _rules[-2][0].stuff == 'owner'
-        ) {
-          _rule = true;
-          _userRules = {
-            hasDelete: true,
-            hasEdit: true,
-            hasView: true,
-            hasInsert: true,
-          };
-        } else if (_rules[shopId] != undefined) {
-          var _stuf = '';
-          _rules[shopId].forEach((dd: any) => (_stuf += dd.stuff));
-          const { userRules, hasPermission } = hasPermissions(_stuf, 'sales');
-          _rule = hasPermission;
-          _userRules = userRules;
-        } else _rule = false;
-      }
-    }
-  );
-  if (!_isOk) return { redirect: { permanent: false, destination: '/user/auth' } };
-  if (!_rule) return { redirect: { permanent: false, destination: '/page403' } };
-  return {
-    props: { shopId: context.query.id, rules: _userRules },
-  };
-  //status ok
-}
+export default withAuth(SalesReport);

@@ -4,6 +4,7 @@ import classNames from 'classnames';
 import { useEffect, useState } from 'react';
 import { Button } from 'react-bootstrap';
 import { useDarkMode } from '../../../context/DarkModeContext';
+import OwnerSidebarNav from './OwnerSidebarNav';
 import { SidebarNav } from './SidebarNav';
 
 interface ISidebarProps {
@@ -48,8 +49,7 @@ export default function Sidebar({ isShow, isShowMd, isOwner, shopId }: ISidebarP
       </div>
 
       <div className="sidebar-nav flex-fill">
-        {/* {isOwner ? <OwnerSidebarNav /> : <SidebarNav shopId={shopId} />} */}
-        <SidebarNav shopId={shopId} />
+        {isOwner ? <OwnerSidebarNav /> : <SidebarNav shopId={shopId} />}
       </div>
 
       <Button
