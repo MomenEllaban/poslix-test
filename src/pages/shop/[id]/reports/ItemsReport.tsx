@@ -1,5 +1,6 @@
 import { AdminLayout } from '@layout';
 import { ILocationSettings } from '@models/common-model';
+import { IItemSalesReport } from '@models/reports.types';
 import { Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
@@ -21,6 +22,7 @@ import DatePicker from 'src/components/filters/Date';
 import AlertDialog from 'src/components/utils/AlertDialog';
 import { UserContext } from 'src/context/UserContext';
 import { apiFetch, apiFetchCtr } from 'src/libs/dbUtils';
+import api from 'src/utils/app-api';
 
 function ItemsReport() {
   const router = useRouter();
@@ -40,7 +42,7 @@ function ItemsReport() {
   const handleClose = () => {
     setAnchorEl(null);
   };
-  const [sales, setsales] = useState<any>([]);
+  const [sales, setSales] = useState<any>([]);
 
   const [selectId, setSelectId] = useState(0);
   const [selectRow, setSelectRow] = useState<any>({});
@@ -124,22 +126,51 @@ function ItemsReport() {
   };
 
   //table columns
-  const columns: GridColDef[] = [
-    { field: 'Product', headerName: 'Product', flex: 1 },
-    { field: 'SKU', headerName: 'SKU', flex: 1 },
-    { field: 'Category', headerName: 'Category', flex: 1 },
-    { field: 'Brand', headerName: 'Brand', flex: 1 },
-    { field: 'Description', headerName: 'Description', flex: 1 },
-    { field: 'Purchase Date', headerName: 'Purchase Date', flex: 1 },
-    { field: 'Purchase', headerName: 'Purchase', flex: 1 },
-    { field: 'Supplier', headerName: 'Supplier', flex: 1 },
-    { field: 'Purchase Price', headerName: 'Purchase Price', flex: 1 },
-    { field: 'Sale Date', headerName: 'Sale Date', flex: 1 },
-    { field: 'Sale', headerName: 'Sale', flex: 1 },
-    { field: 'Customer', headerName: 'Customer', flex: 1 },
-    { field: 'Quantity', headerName: 'Quantity', flex: 1 },
-    { field: 'Selling price', headerName: 'Selling price', flex: 1 },
-    { field: 'Subtotal', headerName: 'Subtotal', flex: 1 },
+  const columns: GridColDef<IItemSalesReport>[] = [
+    {
+      field: 'order_id',
+      headerName: '#',
+      maxWidth: 72,
+      renderCell: ({ row }) => row.order_id,
+    },
+    {
+      field: 'user_name',
+      headerName: 'User',
+      renderCell: ({ row }) => `${row.user_first_name} ${row.user_last_name ?? ''}`,
+    },
+    {
+      field: 'price',
+      headerName: 'Price',
+      renderCell: ({ row }) =>
+        (+row.price).toFixed(locationSettings?.location_decimal_places) +
+        ' ' +
+        locationSettings?.currency_code,
+    },
+    // { field: 'Product', headerName: 'Product', flex: 1 },
+    // { field: 'SKU', headerName: 'SKU', flex: 1 },
+    // { field: 'Category', headerName: 'Category', flex: 1 },
+    // { field: 'Brand', headerName: 'Brand', flex: 1 },
+    // { field: 'Description', headerName: 'Description', flex: 1 },
+    {
+      field: 'Purchase Date',
+      headerName: 'Purchase Date',
+
+      renderCell: ({ row }) => row.date.split('T')[0],
+    },
+    // { field: 'Purchase', headerName: 'Purchase', flex: 1 },
+    // { field: 'Supplier', headerName: 'Supplier', flex: 1 },
+    // { field: 'Purchase Price', headerName: 'Purchase Price', flex: 1 },
+    // { field: 'Sale Date', headerName: 'Sale Date', flex: 1 },
+    // { field: 'Sale', headerName: 'Sale', flex: 1 },
+    // { field: 'Customer', headerName: 'Customer', flex: 1 },
+    {
+      field: 'Quantity',
+      headerName: 'Quantity',
+
+      renderCell: ({ row }) => +(row.qty ?? 0),
+    },
+    // { field: 'Selling price', headerName: 'Selling price', flex: 1 },
+    // { field: 'Subtotal', headerName: 'Subtotal', flex: 1 },
   ];
 
   const componentRef = React.useRef(null);
@@ -261,15 +292,10 @@ function ItemsReport() {
         ]
       );
 
-    const { success, data } = await apiFetchCtr({
-      fetch: 'reports',
-      subType: 'getItemsReport',
-      shopId,
+    api.get(`reports/item-sales/${shopId}`, { params: { all_data: 1 } }).then(({ data }) => {
+      console.log(data.result);
+      setSales(data.result.data);
     });
-    if (success) {
-      setsales(data.sales);
-      setDetails(data.sums[0]);
-    }
   }
 
   async function getItems(id: number) {
@@ -287,6 +313,7 @@ function ItemsReport() {
   }
 
   useEffect(() => {
+    if (!shopId) return;
     var _locs = JSON.parse(localStorage.getItem('locations') || '[]');
     if (_locs.toString().length > 10)
       setLocationSettings(
@@ -298,7 +325,7 @@ function ItemsReport() {
       );
     else alert('errorr location settings');
     initDataPage();
-  }, []);
+  }, [shopId]);
 
   function CustomToolbar() {
     return (
@@ -474,6 +501,7 @@ function ItemsReport() {
           columns={columns}
           pageSize={30}
           rowsPerPageOptions={[10]}
+          getRowId={(row) => row.order_id}
           components={{ Toolbar: CustomToolbar }}
         />
       </div>

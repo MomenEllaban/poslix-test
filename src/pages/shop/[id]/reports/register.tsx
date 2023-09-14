@@ -21,7 +21,7 @@ import api from 'src/utils/app-api';
 function SalesReport() {
   const router = useRouter();
   const shopId = router.query.id;
-  console.log(router.query.id);
+
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
     // @ts-ignore
     value: 0,
@@ -37,21 +37,25 @@ function SalesReport() {
     setAnchorEl(null);
   };
   const [sales, setSales] = useState<IOpenCloseReport[]>([]);
+  const [show, setShow] = useState(false);
 
   const [selectId, setSelectId] = useState(0);
   const [selectRow, setSelectRow] = useState<any>({});
   const [lines, setLines] = useState<any>([]);
-  const [show, setShow] = useState(false);
   const [isLoadItems, setIsLoadItems] = useState(false);
   const [showViewPopUp, setShowViewPopUp] = useState(false);
   const [handleSearchTxt, setHandleSearchTxt] = useState('');
-  const [details, setDetails] = useState({ subTotal: 1, tax: 0, cost: 0 });
+  const [details, setDetails] = useState({ subTotal: 1, tax: 0, cost: 0, total: 1 });
   const { setInvoicDetails, invoicDetails } = useContext(UserContext);
 
   const columns: GridColDef<IOpenCloseReport>[] = [
     { field: 'id', headerName: '#', maxWidth: 72 },
-    { field: 'name', headerName: 'Cashier', maxWidth: 100 ,      renderCell: ({ row }: Partial<GridRowParams>) => row.status,
-  },
+    {
+      field: 'name',
+      headerName: 'Cashier',
+      maxWidth: 100,
+      renderCell: ({ row }: Partial<GridRowParams>) => row.status,
+    },
     {
       field: 'status',
       headerName: 'Type',
@@ -211,7 +215,9 @@ function SalesReport() {
       );
     api.get(`reports/register/${shopId}`, { params: { all_data: 1 } }).then(({ data }) => {
       console.log(data.result);
-      setSales(data.result.data as IOpenCloseReport[]);
+      const { data: ocReports, ...details } = data.result ?? { data: [], details: {} };
+      setSales(ocReports as IOpenCloseReport[]);
+      setDetails(details);
     });
   }
 
@@ -272,15 +278,15 @@ function SalesReport() {
         <div className="deatils_box">
           <div>
             <span>SubTotal: </span>
-            {Number(details.subTotal).toFixed(3)} {locationSettings?.currency_code}
+            {Number(details.subTotal ?? 0).toFixed(3)} {locationSettings?.currency_code}
           </div>
           <div>
             <span>Tax: </span>
-            {Number(details.tax).toFixed(3)} {locationSettings?.currency_code}
+            {Number(details.tax ?? 0).toFixed(3)} {locationSettings?.currency_code}
           </div>
           <div>
             <span>Total: </span>
-            {Number(Number(details.subTotal) + Number(details.tax)).toFixed(3)}{' '}
+            {Number(Number(details.total ?? 0) + Number(details.tax ?? 0)).toFixed(3)}{' '}
             {locationSettings?.currency_code}
           </div>
         </div>
