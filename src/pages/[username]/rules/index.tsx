@@ -22,6 +22,8 @@ const Roles = ({ username }: any) => {
 
   async function initDataPage() {
     const res = await findAllData('roles/get');
+    console.log('roles page', res.data.result);
+    
     setStuffs(res.data.result);
     setIsLoading(false);
   }

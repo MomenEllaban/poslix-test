@@ -142,71 +142,35 @@ const AddNewRole = (props: any) => {
     else perms.splice(perms.indexOf(value), 1)
     setPermissions([...perms])
   }
-  const showInnerRoles = (item: any, index: number) => {
-    return item.stuffs.map((st: any, stIndex: number) => {
-      return (
-        <div
-          className="form-control"
-          // onClick={(e) => {
-          //   handelChange(e, item.value, st.value, st.isChoose);
-          // }}
-          >
-          <input className="form-check-input me-1" type="checkbox" defaultChecked={st.isChoose} />
-          <label>{st.label}</label>
-        </div>
-      );
-    });
-  };
+
   var errors = [];
   const [fields, setFields] = useState<any>([])
   const [permissions, setPermissions] = useState([])
   const initPageData = async () => {
     const res = await findAllData('permissions');
-    const finalRes: any = [];
-    for (const key in res.data.result) {
-      const el = res.data.result[key]
-      const current: any = {title: key.toUpperCase(), roles: []};
-      for (const entry in el) {
-        if(el[entry].name.includes('GET') && !current.roles.some((role) => role.label === 'View'))
-          current.roles.push({value: el[entry].id, label: 'View',})
-        else if(el[entry].name.includes('POST') && !current.roles.some((role) => role.label === 'Create'))
-          current.roles.push({value: el[entry].id, label: 'Create',})
-        else if(el[entry].name.includes('PUT') && !current.roles.some((role) => role.label === 'Edit'))
-          current.roles.push({value: el[entry].id, label: 'Edit',})
-        else if(el[entry].name.includes('DELETE') && !current.roles.some((role) => role.label === 'Delete'))
-          current.roles.push({value: el[entry].id, label: 'Delete',})
-      }
-      finalRes.push(current)
-    }
-    console.log('finalRes', finalRes);
+    console.log('role slug page', res.data.result);
+    let finalRes: any = {}
+    Object.keys(res.data.result).forEach(field => {
+      let currentField: any = []
+      Object.keys(res.data.result[field]).forEach(role => {
+        if(role === 'reports')
+          finalRes = {...finalRes, reports: {...res.data.result[field][role]}}
+        else if(Array.isArray(res.data.result[field][role])){
+          if(currentField.length > 0) {
+            finalRes = {...finalRes, [field]: {...finalRes[field], others: [...currentField]}}
+            console.log('currentField',currentField, finalRes);
+            
+          }
+          finalRes = {...finalRes, [field]: {...finalRes[field], [role]: [...res.data.result[field][role]]}}
+        }
+        else currentField.push({...res.data.result[field][role]})
+      })
+    })
+    console.log(finalRes);
+    
     setFields(finalRes)
-    const finalRes2: any = [];
-
-for (const key in res.data.result) {
-  const el = res.data.result[key];
-  const current: any = { title: key.toUpperCase(), roles: [] };
-
-  for (const entry in el) {
-    const nameParts = el[entry].name.split(' ');
-    const roleName = nameParts[0];
-    const method = nameParts[nameParts.length - 1];
-
-    if (roleName === key) {
-      const role = current.roles.find((r) => r.label === method);
-
-      if (role) {
-        role.value.push(el[entry].id);
-      } else {
-        current.roles.push({ label: method, value: [el[entry].id] });
-      }
-    }
   }
 
-  finalRes2.push(current);
-  console.log(finalRes2);
-  
-}
-  }
   useEffect(() => {
     initPageData()
     if (props.index > -1) {
@@ -216,16 +180,7 @@ for (const key in res.data.result) {
       setRoles(props.selectedStuff);
       setPermissions(props.selectedStuff)
       setFormObj({ ...props.stuffs[props.index], isNew: false, name: props.selectedName  });
-      // var _userStuff = props.stuffs[props.index].stuff.toLowerCase();
-
-      // pages2.map((pg, i) => {
-      //   pg.stuffs.map((st: any, stIndex: number) => {
-      //     if (_userStuff.includes(pg.value.toLowerCase() + '/' + st.value.toLowerCase()))
-      //       pages2[i].stuffs[stIndex].isChoose = true;
-      //   });
-      // });
     }
-    // setPages(pages2);
   }, []);
 
   return (
@@ -238,7 +193,6 @@ for (const key in res.data.result) {
             </Card.Header>
             <Card.Body>
               <form className="form-style">
-                {/* {JSON.stringify(formObj)} */}
                 <div className="col-md-12">
                   <div className="col-md-6">
                     <div>
@@ -259,62 +213,42 @@ for (const key in res.data.result) {
                   </div>
                   <div className="row">
                     <form className="user-stuff-form">
-                      <div className="col-md-6 col-lg-6 col-cm-6">
-                        {/* {JSON.stringify(pages)} */}
+                      <div className="col-sm-6 col-md-8 col-lg-6 col-cm-6">
                         <label>
                           Rules: <span className="text-danger">*</span>
                         </label>
                         <ul className="list-group">
-                          {/* {pages.map((pg, i) => {
-                            if (pg.value == 'split')
-                              return (
-                                <>
-                                  <li className="list-group-item bg-primary">
-                                    <span>
-                                      <FontAwesomeIcon icon={pg.icon!} size="1x" /> {pg.label}
-                                    </span>
-                                    <div className="checkbox-rols"></div>
-                                  </li>
-                                </>
-                              );
-                            return (
-                              <>
-                                <li className="list-group-item">
-                                  <span>{pg.label}</span>
-                                  <div className="checkbox-rols">{showInnerRoles(pg, i)}</div>
-                                </li>
-                              </>
-                            );
-                          })} */}
-                          {fields.length > 0 && fields.map((pg, i) => {
-                            return (
-                              <>
-                                <li className="list-group-item bg-primary">
-                                  <span>
-                                    {pg.title}
-                                  </span>
-                                  <div className="checkbox-rols"></div>
-                                </li>
-                                <div className="flex">
-                                  {pg.roles.map((role) => {
-                                    return (
-                                      <li className="list-group-item">
-                                        <div className="checkbox-rols">
-                                          <div className="form-control">
-                                            <input className="form-check-input me-1" type="checkbox"
-                                              onClick={(e: any) => {
-                                                handelChange(e.target.checked, role.value, pg.title);
-                                              }}
-                                              defaultChecked={props.selectedStuff.indexOf(role.value) > -1} />
-                                            <label>{role.label}</label>
-                                          </div>
-                                        </div>
-                                      </li>
-                                    )
-                                  })}
-                                </div>
-                              </>
-                            );
+                          {Object.keys(fields).map(key => {
+                            return <>
+                              <li className="list-group-item bg-primary">
+                                <span>
+                                  <FontAwesomeIcon icon={'pg.icon!'} size="1x" /> {key.charAt(0).toUpperCase() + key.slice(1)}
+                                </span>
+                                <div className="checkbox-rols"></div>
+                              </li>
+                              {Object.keys(fields[key]).map(field => {
+                                return <>
+                                    <li className="list-group-item">
+                                      {field !== 'others' && <span>{field.charAt(0).toUpperCase() + field.slice(1)}</span>}
+                                      <div className="checkbox-rols flex-wrap">
+                                        {fields[key][field].map(role => {
+                                          return <>
+                                            <div className="form-control" style={{ width: 'fit-content' }}>
+                                              <input className="form-check-input me-1" type="checkbox"
+                                                onClick={(e: any) => {
+                                                  handelChange(e.target.checked, role.id, role);
+                                                }}
+                                                defaultChecked={props.selectedStuff.indexOf(role.id) > -1} />
+                                              <label>{role.name}</label>
+                                            </div>
+                                          </>
+                                        })}
+                                      </div>
+                                    </li>
+                                  </>
+                                }
+                              )}
+                            </>
                           })}
                         </ul>
                       </div>

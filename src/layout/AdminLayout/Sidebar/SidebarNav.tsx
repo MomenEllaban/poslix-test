@@ -230,7 +230,7 @@ export function SidebarNav(props: any): any {
     perms.inventory.transfers.map((perm) => perm.name === 'transfers/view' ? getPermissions.hasTransfers = true : null)
     perms.inventory.expenses.map((perm) => perm.name === 'expenses/view' ? getPermissions.hasExpenses = true : null)
     perms.customers.map((perm) => perm.name === 'customers/view' ? getPermissions.hasCustomers = true : null)
-    perms.pos[0].name.includes('pos/currencies') ? getPermissions.hasPos = true : null
+    perms.pos[0].name.includes('open/register') ? getPermissions.hasPos = true : null
     perms.settings.categories.map((perm) => perm.name === 'categories/view' ? getPermissions.hasCategories = true : null)
     perms.settings.brands.map((perm) => perm.name === 'brands/view' ? getPermissions.hasBrands = true : null)
     perms.settings.taxes.map((perm) => perm.name === 'taxes/view' ? getPermissions.hasTaxes = true : null)
