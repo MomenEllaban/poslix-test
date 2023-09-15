@@ -1,5 +1,4 @@
 import { AdminLayout } from '@layout';
-import { ILocationSettings } from '@models/common-model';
 import { IItemSalesReport } from '@models/reports.types';
 import { Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import FormControl from '@mui/material/FormControl';
@@ -14,13 +13,13 @@ import {
   GridToolbarQuickFilter,
 } from '@mui/x-data-grid';
 import { useRouter } from 'next/router';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from 'react-bootstrap';
 import { useReactToPrint } from 'react-to-print';
 import withAuth from 'src/HOCs/withAuth';
 import DatePicker from 'src/components/filters/Date';
 import AlertDialog from 'src/components/utils/AlertDialog';
-import { UserContext } from 'src/context/UserContext';
+import { useUser } from 'src/context/UserContext';
 import { apiFetch, apiFetchCtr } from 'src/libs/dbUtils';
 import api from 'src/utils/app-api';
 
@@ -28,22 +27,10 @@ function ItemsReport() {
   const router = useRouter();
   const shopId = router.query.id;
 
-  const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
-    // @ts-ignore
-    value: 0,
-    label: '',
-    currency_decimal_places: 0,
-    currency_code: '',
-    currency_id: 0,
-    currency_rate: 1,
-    currency_symbol: '',
-  });
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-  const [sales, setSales] = useState<any>([]);
+  const { locationSettings, invoicDetails } = useUser();
 
+  const [sales, setSales] = useState<any>([]);
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [selectId, setSelectId] = useState(0);
   const [selectRow, setSelectRow] = useState<any>({});
   const [lines, setLines] = useState<any>([]);
@@ -52,8 +39,6 @@ function ItemsReport() {
   const [showViewPopUp, setShowViewPopUp] = useState(false);
   const [handleSearchTxt, setHandleSearchTxt] = useState('');
   const [details, setDetails] = useState({ subTotal: 1, tax: 0, cost: 0 });
-  const { setInvoicDetails, invoicDetails } = useContext(UserContext);
-
   const [filteredSales, setFilteredSales] = useState<any>([]);
   const [selectedRange, setSelectedRange] = useState(null);
   const [strSelectedDate, setStrSelectedDate] = useState([]);
@@ -117,6 +102,7 @@ function ItemsReport() {
   const handleChangeCustomer = (event: SelectChangeEvent<string>) => {
     setSelectedCustomer(event.target.value);
   };
+  const handleClose = () => setAnchorEl(null);
 
   const resetFilters = () => {
     // setFilteredSales(sales);
@@ -139,6 +125,12 @@ function ItemsReport() {
       renderCell: ({ row }) => `${row.user_first_name} ${row.user_last_name ?? ''}`,
     },
     {
+      field: ' contact_name',
+      headerName: 'Contact',
+      flex: 1,
+      renderCell: ({ row }) => `${row.contact_first_name} ${row.contact_last_name}`,
+    },
+    {
       field: 'price',
       headerName: 'Price',
       renderCell: ({ row }) =>
@@ -154,8 +146,16 @@ function ItemsReport() {
     {
       field: 'Purchase Date',
       headerName: 'Purchase Date',
-
-      renderCell: ({ row }) => row.date.split('T')[0],
+      width: 180,
+      renderCell: ({ row }) =>
+        `${new Date(row.date).toLocaleDateString()} ${new Date(row.date).toLocaleTimeString()}`,
+    },
+    {
+      field: 'status',
+      headerName: 'Status',
+      renderCell: ({ row }) => (
+        <span className="text-black border px-3 rounded rounded-1">{row.status}</span>
+      ),
     },
     // { field: 'Purchase', headerName: 'Purchase', flex: 1 },
     // { field: 'Supplier', headerName: 'Supplier', flex: 1 },
@@ -282,20 +282,16 @@ function ItemsReport() {
   }
   // init sales data
   async function initDataPage() {
-    var _locs = JSON.parse(localStorage.getItem('locations') || '[]');
-    if (_locs.toString().length > 10)
-      setLocationSettings(
-        _locs[
-          _locs.findIndex((loc: any) => {
-            return loc.value == shopId;
-          })
-        ]
-      );
-
-    api.get(`reports/item-sales/${shopId}`, { params: { all_data: 1 } }).then(({ data }) => {
-      console.log(data.result);
-      setSales(data.result.data);
-    });
+    setIsLoadItems(true);
+    api
+      .get(`reports/item-sales/${shopId}`, { params: { all_data: 1 } })
+      .then(({ data }) => {
+        console.log(data.result);
+        setSales(data.result.data);
+      })
+      .finally(() => {
+        setIsLoadItems(false);
+      });
   }
 
   async function getItems(id: number) {
@@ -314,16 +310,7 @@ function ItemsReport() {
 
   useEffect(() => {
     if (!shopId) return;
-    var _locs = JSON.parse(localStorage.getItem('locations') || '[]');
-    if (_locs.toString().length > 10)
-      setLocationSettings(
-        _locs[
-          _locs.findIndex((loc: any) => {
-            return loc.value == shopId;
-          })
-        ]
-      );
-    else alert('errorr location settings');
+
     initDataPage();
   }, [shopId]);
 

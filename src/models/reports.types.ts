@@ -1,5 +1,28 @@
 import { ICurrency, IProduct } from './pos.types';
 
+export enum EStatus {
+  Close = 'close',
+  Open = 'open',
+}
+export enum EType {
+  Purchase = 'purchase',
+}
+export enum EPaymentStatus {
+  Due = 'due',
+  Paid = 'paid',
+  PartiallyPaid = 'partially_paid',
+}
+export enum EPaymentMethod {
+  Bank = 'bank',
+  Card = 'card',
+  Cash = 'cash',
+}
+
+export enum ETransactionStatus {
+  PartiallyReceived = 'partially_received',
+  Received = 'received',
+}
+
 export interface IOpenCloseResult {
   total_hand_cash: number;
   total_cash: number;
@@ -24,11 +47,7 @@ export interface IOpenCloseReport {
   status: EStatus;
 }
 
-export enum EStatus {
-  Close = 'close',
-  Open = 'open',
-}
-
+/*********************************/
 export interface IItemSalesResult {
   cost: number;
   sub_total: number;
@@ -49,8 +68,62 @@ export interface IItemSalesReport {
   price: number | string;
   cost: number | string;
   tax: number | string;
-  date: Date;
-  status: string;
+  date: string;
+  status: EStatus;
   type: string;
   products: Array<IProduct | null>;
+}
+
+/*********************************/
+export interface ISalesResult {
+  sub_total: number;
+  tax: number;
+  total: number;
+  currency: ICurrency;
+  data: ISalesReport[];
+}
+
+export interface ISalesReport {
+  id: number;
+  contact_id: null;
+  user_name: string;
+  contact_name: string;
+  contact_mobile: null;
+  sub_total: number;
+  payed: number;
+  due: number;
+  discount: string;
+  tax: string;
+  date: Date;
+  transaction_status: string;
+  payment_status: string;
+  payment_method: string;
+  type: string;
+}
+
+/*********************************/
+export interface IPurchaseResult {
+  sub_total: number;
+  tax: number;
+  total: number;
+  currency: ICurrency;
+  data: IPurchaseReport[];
+}
+
+export interface IPurchaseReport {
+  id: number;
+  contact_id: number;
+  user_name: string;
+  contact_name: string;
+  contact_mobile: string;
+  sub_total: number;
+  payed: number;
+  due: number;
+  discount: string;
+  tax: string;
+  date: Date;
+  transaction_status: string;
+  payment_status: string;
+  payment_method: string;
+  type: string;
 }
