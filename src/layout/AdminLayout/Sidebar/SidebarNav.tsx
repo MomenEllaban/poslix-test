@@ -103,43 +103,19 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
       hasAppearance: false,
     };
 
-    perms.inventory.products.map((perm) =>
-      perm.name === 'products/view' ? (getPermissions.hasProducts = true) : null
-    );
-    perms.inventory.purchases.map((perm) =>
-      perm.name === 'purchases/view' ? (getPermissions.hasPurchases = true) : null
-    );
-    perms.inventory.transfers.map((perm) =>
-      perm.name === 'transfers/view' ? (getPermissions.hasTransfers = true) : null
-    );
-    perms.inventory.expenses.map((perm) =>
-      perm.name === 'expenses/view' ? (getPermissions.hasExpenses = true) : null
-    );
-    perms.customers.map((perm) =>
-      perm.name === 'customers/view' ? (getPermissions.hasCustomers = true) : null
-    );
-    perms.pos[0].name.includes('pos/currencies') ? (getPermissions.hasPos = true) : null;
-    perms.settings.categories.map((perm) =>
-      perm.name === 'categories/view' ? (getPermissions.hasCategories = true) : null
-    );
-    perms.settings.brands.map((perm) =>
-      perm.name === 'brands/view' ? (getPermissions.hasBrands = true) : null
-    );
-    perms.settings.taxes.map((perm) =>
-      perm.name === 'taxes/view' ? (getPermissions.hasTaxes = true) : null
-    );
-    perms.settings.appearance.map((perm) =>
-      perm.name === 'appearance/view' ? (getPermissions.hasAppearance = true) : null
-    );
-    perms.pos.pricinggroup.map((perm) =>
-      perm.name === 'pricinggroup/view' ? (getPermissions.hasPricingGroups = true) : null
-    );
-    perms.sales['sales-list'].map((perm) =>
-      perm.name === 'sales-list/view' ? (getPermissions.hasSalesList = true) : null
-    );
-    perms.sales['quotations-list'].map((perm) =>
-      perm.name === 'quotations-list/view' ? (getPermissions.hasQuotations = true) : null
-    );
+    perms.inventory.products.map((perm) => perm.name === 'products/view' ? getPermissions.hasProducts = true : null)
+    perms.inventory.purchases.map((perm) => perm.name === 'purchases/view' ? getPermissions.hasPurchases = true : null)
+    perms.inventory.transfers.map((perm) => perm.name === 'transfers/view' ? getPermissions.hasTransfers = true : null)
+    perms.inventory.expenses.map((perm) => perm.name === 'expenses/view' ? getPermissions.hasExpenses = true : null)
+    perms.customers.map((perm) => perm.name === 'customers/view' ? getPermissions.hasCustomers = true : null)
+    perms.pos[0].name.includes('open/register') ? getPermissions.hasPos = true : null
+    perms.settings.categories.map((perm) => perm.name === 'categories/view' ? getPermissions.hasCategories = true : null)
+    perms.settings.brands.map((perm) => perm.name === 'brands/view' ? getPermissions.hasBrands = true : null)
+    perms.settings.taxes.map((perm) => perm.name === 'taxes/view' ? getPermissions.hasTaxes = true : null)
+    perms.settings.appearance.map((perm) => perm.name === 'appearance/view' ? getPermissions.hasAppearance = true : null)
+    perms.pos.pricinggroup.map((perm) => perm.name === 'pricinggroup/view' ? getPermissions.hasPricingGroups = true : null)
+    perms.sales['sales-list'].map((perm) => perm.name === 'sales-list/view' ? getPermissions.hasSalesList = true : null)
+    perms.sales['quotations-list'].map((perm) => perm.name === 'quotations-list/view' ? getPermissions.hasQuotations = true : null)
 
     setPermissions(getPermissions);
   }, []);

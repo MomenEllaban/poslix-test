@@ -30,7 +30,7 @@ export default function AlertDialog(props: any) {
                 centered
             >
                 <Modal.Header closeButton>
-                    <Modal.Title className='text-primary'>POSLIX SYSTEM</Modal.Title>
+                    <Modal.Title className='text-primary'>POSLIX SYSTEM the id is  {id} </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     {props.children}

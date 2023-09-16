@@ -21,9 +21,13 @@ import { apiInsertCtr } from '../../../libs/dbUtils';
 import { cartJobType } from '../../../recoil/atoms';
 import mStyle from '../../../styles/Customermodal.module.css';
 import SnakeAlert from '../utils/SnakeAlert';
+import { createNewData, findAllData } from 'src/services/crud.api';
+import { Toastify } from 'src/libs/allToasts';
+import { useAppDispatch } from 'src/hooks';
+import { setPosRegister } from 'src/redux/slices/pos.slice';
+import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
 
 const CloseRegister = ({ openDialog, statusDialog, shopId }: any) => {
-  const [closeRegisterInfo, setCloseRegisterInfo] = useState({ cashInHand: 0, cheque: 0 });
   const [snakeTitle, setSnakeTitle] = useState('');
 
   const { products, setProducts, customers, setCustomers } = useProducts();
@@ -31,13 +35,14 @@ const CloseRegister = ({ openDialog, statusDialog, shopId }: any) => {
   const [isLoading, setIsLoading] = useState(false);
   const [cash, setCash] = useState(0);
   const [card, setCard] = useState(0);
-  const [bankm, setBank] = useState(0);
+  const [bank, setBank] = useState(0);
   const [cheque, setCheque] = useState(0);
   const [note, setNote] = useState('');
   const [openSnakeBar, setOpenSnakeBar] = useState(false);
   const [, setJobType] = useRecoilState(cartJobType);
 
   const { locationSettings } = useContext(UserContext);
+  const dispatch = useAppDispatch();
 
   const handleClose = () => {
     setOpen(false);
@@ -46,48 +51,29 @@ const CloseRegister = ({ openDialog, statusDialog, shopId }: any) => {
   useEffect(() => {
     if (!statusDialog) return;
     setOpen(statusDialog);
-    var cash = localStorage.getItem('hand_in_cash');
-    setCloseRegisterInfo({ ...closeRegisterInfo, cashInHand: cash ? +cash : 0 });
-    getcustomer();
+    getCloseData()
   }, [statusDialog]);
 
-  async function closeRegister() {
-    api
-      .post(`registration/${shopId}/close`, {
-        hand_cash: cash,
-        cart: card,
-        bank: bankm,
-        cheque,
-        note,
-      })
-      .then((res) => {
-        handleClose();
-        setJobType({ req: 101, val: 'closeRegister' });
-      })
-      .catch(() => {
-        alert('has error, Try Again...');
-      });
+  const closeRegisterReq = async () => {
+    const res = await createNewData(`registration/${shopId}/close`, {note})
+    if(res.data.success) {
+      handleClose();
+      setJobType({ req: 101, val: 'closeRegister' });
+      Toastify('success', 'successfully done');
+      const registerObject = getLocalStorage<{hand_cash: number; state: string}>(ELocalStorageKeys.POS_REGISTER_STATE);
+      dispatch(setPosRegister({...registerObject, state: 'close'}));
+    } else Toastify('error', 'Something went wrong!');
   }
-  async function getcustomer() {
-    setIsLoading(true);
-    api
-      .get(`reports/latest-register/${shopId}`)
-      .then((res) => res.data)
-      .then(({ result }) =>
-        result.data.data.map((item: any) => {
-          setCash(+item.cash);
-          setCard(+item.cart);
-          setBank(+item.bank);
-          setCheque(+item.cheque);
-        })
-      )
-      .catch(() => {
-        alert('error in fetch..');
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+
+  const getCloseData = async () => {
+    const res = await findAllData(`registration/${shopId}/close`)
+    setCash(res.data.result.cash);
+    setCard(res.data.result.card);
+    setBank(res.data.result.bank);
+    setCheque(res.data.result.cheque);
+    setIsLoading(false)
   }
+
   const makeShowSnake = (val: any) => {
     setOpenSnakeBar(val);
   };
@@ -123,19 +109,7 @@ const CloseRegister = ({ openDialog, statusDialog, shopId }: any) => {
                         </div>
                         <p className="close-item-title">Card Payment</p>
                         <p className="close-item-title">
-                          {Number(card).toFixed(3)} {locationSettings?.currency_code}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="close-item">
-                      <div className="close-item-inner">
-                        <div className="close-item-inner-icon">
-                          <FontAwesomeIcon icon={faMoneyBillWave} />
-                        </div>
-                        <p className="close-item-title">Cash in hand</p>
-                        <p className="close-item-title">
-                          {Number(closeRegisterInfo.cashInHand).toFixed(3)}{' '}
-                          {locationSettings?.currency_code}
+                          {card} {locationSettings?.currency_code}
                         </p>
                       </div>
                     </div>
@@ -146,7 +120,7 @@ const CloseRegister = ({ openDialog, statusDialog, shopId }: any) => {
                         </div>
                         <p className="close-item-title">Bank Payment</p>
                         <p className="close-item-title">
-                          {Number(bankm).toFixed(3)} {locationSettings?.currency_code}
+                          {Number(bank).toFixed(3)} {locationSettings?.currency_code}
                         </p>
                       </div>
                     </div>
@@ -181,7 +155,7 @@ const CloseRegister = ({ openDialog, statusDialog, shopId }: any) => {
                         <div className="report-name">Total Sales</div>
                       </div>
                       <div className="report-items-value">
-                        {Number(cash + cheque + card + bankm).toFixed(3)}{' '}
+                        {(cash + cheque + card + bank).toFixed(3)}{' '}
                         {locationSettings?.currency_code}
                       </div>
                     </div>
@@ -205,7 +179,7 @@ const CloseRegister = ({ openDialog, statusDialog, shopId }: any) => {
                     type="button"
                     className="btn btn-primary"
                     onClick={() => {
-                      closeRegister();
+                      closeRegisterReq();
                     }}>
                     Close Register
                   </button>

@@ -6,6 +6,7 @@ import Modal from '@mui/material/Modal';
 import { useDispatch,useSelector } from 'react-redux';
 import CartModal from "./CartModal"
 import {addTodigitalCart ,incrementQuantity, decrementQuantity, removeItem} from '../../redux/slices/digitalCartSlice';
+import { useAppDispatch, useAppSelector } from "src/hooks";
 
 const style = {
   position: 'absolute' as 'absolute',
@@ -26,8 +27,8 @@ const ProductItem = ({product}) => {
     const handleOpen = () => {setOpen(true)};
     const handleClose = () => {setOpen(false) ;setMoadlIsopen(false)};
 
-    const dispatch = useDispatch()
-    const cart = useSelector((state) => state.cart)
+    const dispatch = useAppDispatch()
+    const cart = useAppSelector((state) => state.cart)
     useEffect(() => {
       
     
