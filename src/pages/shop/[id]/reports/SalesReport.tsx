@@ -1,4 +1,5 @@
 import { AdminLayout } from '@layout';
+import { ISalesReport } from '@models/reports.types';
 import { KeyboardArrowLeft, KeyboardArrowRight } from '@mui/icons-material';
 import { Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from '@mui/material';
 import FormControl from '@mui/material/FormControl';
@@ -15,7 +16,7 @@ import {
   GridToolbarQuickFilter,
 } from '@mui/x-data-grid';
 import { useRouter } from 'next/router';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from 'react-bootstrap';
 import { useReactToPrint } from 'react-to-print';
 import withAuth from 'src/HOCs/withAuth';
@@ -30,6 +31,7 @@ const pageSizeOptions = [10, 20, 50, 100];
 function SalesReport() {
   const router = useRouter();
   const shopId = router.query.id;
+  const componentRef = useRef(null);
   const { locationSettings, invoicDetails } = useUser();
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -38,17 +40,24 @@ function SalesReport() {
   };
   const [sales, setSales] = useState<any>([]);
   const [filteredSales, setFilteredSales] = useState<any>([]);
-  const [customersOptions, setCustomersOptions] = useState([]);
+  const [customersOptions, setCustomersOptions] = useState<string[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState('');
-
+  const [selectedRange, setSelectedRange] = useState(null);
+  const [strSelectedDate, setStrSelectedDate] = useState([]);
+  const [selectedDateVlaue, setSelectedDateValue] = useState('');
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(pageSizeOptions[0]);
   const [selectId, setSelectId] = useState(0);
   const [selectRow, setSelectRow] = useState<any>({});
   const [lines, setLines] = useState<any>([]);
   const [show, setShow] = useState(false);
-  const [isLoadItems, setIsLoadItems] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [showViewPopUp, setShowViewPopUp] = useState(false);
-  const [handleSearchTxt, setHandleSearchTxt] = useState('');
-  const [details, setDetails] = useState({ subTotal: 1, tax: 0, cost: 0 });
+  const [details, setDetails] = useState<{ subTotal: number; total: number; tax: number }>({
+    subTotal: 1,
+    tax: 0,
+    total: 0,
+  });
 
   //table columns
   const columns: GridColDef[] = useMemo(
@@ -66,7 +75,7 @@ function SalesReport() {
         headerName: 'Sold To',
         flex: 1,
 
-        renderCell: ({ row }) => row.contact_name.trim() || '---',
+        renderCell: ({ row }) => row.contact_name.trim() || 'walk-in-customer',
       },
       {
         field: 'tax',
@@ -81,16 +90,15 @@ function SalesReport() {
         headerName: 'Total',
         maxWidth: 72,
         renderCell: ({ row }: Partial<GridRowParams>) =>
-          `${(+row.sub_total + +row.tax).toFixed(locationSettings?.location_decimal_places)} ${
-            locationSettings.currency_name
-          }`,
+          `${(+row.sub_total + +row.tax).toFixed(
+            locationSettings?.location_decimal_places
+          )} ${locationSettings?.currency_name}`,
       },
       { field: 'notes', headerName: 'Note', flex: 1, disableColumnMenu: true },
     ],
     [locationSettings]
   );
 
-  const componentRef = React.useRef(null);
   class ComponentToPrint extends React.PureComponent {
     render() {
       if (!selectRow) return;
@@ -193,59 +201,25 @@ function SalesReport() {
     });
     setCustomersOptions(customers);
   }, [sales]);
-  async function viewTransaction() {
-    setShowViewPopUp(true);
-    var result = await apiFetch({
-      fetch: 'getSellLinesByTransactionId',
-      data: { id: selectId },
-    });
-    const { success, newdata } = result;
-    if (success) {
-      setLines(newdata.sellLines);
-    }
-  }
 
   // init sales data
   async function initDataPage() {
-    setIsLoadItems(true);
+    setIsLoading(true);
     api
       .get(`reports/sales/${shopId}`, { params: { all_data: 1 } })
       .then(({ data }) => {
         console.log(data.result);
         setSales(data.result.data);
         setFilteredSales(data.result.data);
+        setDetails({
+          subTotal: data.result.sub_total,
+          total: data.result.total,
+          tax: data.result.tax,
+        });
       })
       .finally(() => {
-        setIsLoadItems(false);
+        setIsLoading(false);
       });
-  }
-  // // init sales data
-  // async function initDataPage() {
-  //   setIsLoadItems(true);
-  //   const { success, data } = await apiFetchCtr({
-  //     fetch: 'reports',
-  //     subType: 'getSalesReport',
-  //     shopId,
-  //   });
-  //   if (success) {
-  //     setSales(data.sales);
-  //     setFilteredSales(data.sales);
-  //     setDetails(data.sums[0]);
-  //   }
-  // }
-
-  async function getItems(id: number) {
-    setIsLoadItems(true);
-    const { success, newdata } = await apiFetchCtr({
-      fetch: 'transactions',
-      subType: 'getSaleItems',
-      shopId,
-      id,
-    });
-    if (success) {
-      setLines(newdata);
-      setIsLoadItems(false);
-    }
   }
 
   useEffect(() => {
@@ -257,26 +231,12 @@ function SalesReport() {
   const handlePrint = useReactToPrint({
     content: () => componentRef.current,
   });
-  const onRowsSelectionHandler = (selectedRowsData: any) => {
-    setSelectRow(selectedRowsData);
-    setSelectId(selectedRowsData.id);
-    getItems(selectedRowsData.id);
-    setShowViewPopUp(true);
-  };
-  const handleSearch = (e: any) => {
-    setHandleSearchTxt(e.target.value);
-  };
-  const [selectedRange, setSelectedRange] = useState(null);
-  const [strSelectedDate, setStrSelectedDate] = useState([]);
-  const [selectedDateVlaue, setSelectedDateValue] = useState('');
-  const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(pageSizeOptions[0]);
 
   useEffect(() => {
     let localFilteredSales = [];
     if (strSelectedDate.length === 2) {
-      const filteredList = sales.filter((sale) => {
-        const dateCreated = sale.created_at.split(' ')[0];
+      const filteredList = sales.filter((sale: ISalesReport) => {
+        const dateCreated = sale.date.split(' ')[0];
         return (
           new Date(dateCreated).getDate() >= new Date(strSelectedDate[0]).getDate() &&
           new Date(dateCreated).getMonth() >= new Date(strSelectedDate[0]).getMonth() &&
@@ -289,8 +249,8 @@ function SalesReport() {
       setSelectedDateValue(`${strSelectedDate[0]} - ${strSelectedDate[1]}`);
       localFilteredSales = filteredList;
     } else if (strSelectedDate.length === 1) {
-      const filteredList = sales.filter((sale) => {
-        const dateCreated = sale.created_at.split(' ')[0];
+      const filteredList = sales.filter((sale: ISalesReport) => {
+        const dateCreated = sale.date.split(' ')[0];
         return (
           new Date(dateCreated).getDate() === new Date(strSelectedDate[0]).getDate() &&
           new Date(dateCreated).getMonth() === new Date(strSelectedDate[0]).getMonth() &&
@@ -302,9 +262,10 @@ function SalesReport() {
     } else {
       localFilteredSales = sales;
     }
+
     if (selectedCustomer) {
-      localFilteredSales = localFilteredSales.filter(
-        (sale) => sale.customer_name === selectedCustomer
+      localFilteredSales = localFilteredSales.filter((sale) =>
+        selectedCustomer.trim().localeCompare(sale.customer_name?.trim())
       );
     }
     //Eslam 19
@@ -320,7 +281,7 @@ function SalesReport() {
     setDetails({
       subTotal: totalPrice,
       tax: taxAmount,
-      cost: totalPriceAndTax,
+      total: totalPriceAndTax,
     });
     setFilteredSales(localFilteredSales);
   }, [strSelectedDate, selectedCustomer]);
@@ -331,7 +292,7 @@ function SalesReport() {
 
   const resetFilters = () => {
     setFilteredSales(sales);
-    setSelectedCustomer('');
+    setSelectedCustomer(null);
     setSelectedRange(null);
     setStrSelectedDate([]);
     setPage(0);
@@ -374,8 +335,10 @@ function SalesReport() {
             label="Customer"
             onChange={handleChangeCustomer}>
             {customersOptions.map((customer) => (
-              <MenuItem key={customer} value={customer}>
-                {customer}
+              <MenuItem
+                key={customer?.trim() || 'walk-in-customer'}
+                value={customer?.trim() || 'walk-in-customer'}>
+                {customer?.trim() || 'walk-in-customer'}
               </MenuItem>
             ))}
           </Select>
@@ -402,20 +365,23 @@ function SalesReport() {
         <div className="deatils_box">
           <div>
             <span>SubTotal: </span>
-            {Number(details.subTotal).toFixed(3)} {locationSettings?.currency_code}
+            {details.subTotal.toFixed(locationSettings?.location_decimal_places)}{' '}
+            {locationSettings?.currency_code}
           </div>
           <div>
             <span>Tax: </span>
-            {Number(details.tax).toFixed(3)} {locationSettings?.currency_code}
+            {details.tax.toFixed(locationSettings?.location_decimal_places)}{' '}
+            {locationSettings?.currency_code}
           </div>
           <div>
             <span>Total: </span>
-            {Number(Number(details.subTotal) + Number(details.tax)).toFixed(3)}{' '}
+            {details.total.toFixed(locationSettings?.location_decimal_places)}{' '}
             {locationSettings?.currency_code}
           </div>
         </div>
 
         <DataGrid
+          loading={isLoading}
           className="datagrid-style"
           sx={{
             '.MuiDataGrid-columnSeparator': {
@@ -554,7 +520,7 @@ function SalesReport() {
                 <Button>Print Invoice</Button>
               </div>
             </div>
-            {lines && !isLoadItems ? (
+            {lines && !isLoading ? (
               <div className="row">
                 <div className="invoice-items-container">
                   <div className="header-titles">
