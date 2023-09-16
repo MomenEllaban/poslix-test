@@ -7,9 +7,10 @@ import CartTable from '../cart-table/CartTable';
 import { OrdersFooter } from '../orders-footer/OrdersFooter';
 import ProductSearch from '../product-search/ProductSearch';
 import styles from './CartPanel.module.scss';
+import { usePosContext } from 'src/modules/pos/_context/PosContext';
 
 interface ICustomerItem {
-  value: string;
+  value: string | number;
   label: string;
   isNew: boolean;
 }
@@ -34,61 +35,47 @@ const initOrder = {
   orderId: 0,
 };
 
-//! models need the full data to be refactored from static to dynamic
+export default function CartPanel({ shopId }) {
+  const { lang: _lang, isRtl } = usePosContext();
 
-export default function CartPanel({ shopId, lang, direction }) {
   const selectCartForLocation = selectCartByLocation(shopId ?? 0);
   const cart = useAppSelector(selectCartForLocation);
 
-  const [tax, setTax] = useState<number>(0);
-  const [taxRate, setTaxRate] = useState<number>(0);
-  const [subTotal, setSubTotal] = useState<number>(0);
-  const [isOrderEdit, setIsOrderEdit] = useState<number>(0);
-  const [customer, setCustomer] = useState<ICustomerItem>(initCustomer);
-  const [discount, setDiscount] = useState({ type: 'fixed', amount: 0 });
-  const [orderEditDetails, setOrderEditDetails] = useState<IOrderItem>(initOrder);
-  const [selectedHold, setSelectedHold] = useState<{ holdId: number }>({ holdId: -1 });
-  const [__WithDiscountFeature__total, set__WithDiscountFeature__total] = useState<number>(0);
+  const [customer, setCustomer] = useState<ICustomerItem>({
+    ...initCustomer,
+    value: cart?.customer_id ?? '1',
+  });
+
+  const direction = isRtl ? 'rtl' : 'ltr';
+  const lang = _lang?.pos;
 
   return (
     <div className={styles['cart__container']} style={{ direction }}>
       <CustomerDataSelect
         shopId={shopId}
-        isOrderEdit={isOrderEdit}
+        isOrderEdit={0}
         setCustomer={setCustomer}
-        orderEditDetails={orderEditDetails}
+        orderEditDetails={initOrder}
         customer={customer}
       />
       <hr />
       <ProductSearch shopId={shopId} />
 
       <hr />
-      <CartTable shopId={shopId} lang={lang} />
+      <CartTable shopId={shopId} />
       <hr />
 
       <OrderCalcs
         shopId={shopId}
-        orderEditDetails={orderEditDetails}
+        orderEditDetails={initOrder}
         // with discount feature
-        __WithDiscountFeature__total={__WithDiscountFeature__total}
+        __WithDiscountFeature__total={0}
         lang={lang}
       />
       <OrdersFooter
-        selectedHold={selectedHold}
-        orderEditDetails={orderEditDetails}
+        orderEditDetails={initOrder}
         shopId={shopId}
-        details={{
-          taxRate,
-          customerId: customer?.value,
-          totalAmount: cart?.cartSellTotal,
-          subTotal,
-          isReturn: isOrderEdit,
-        }}
-        holdObj={{ orders: cart?.cartItems, quantity: 0, name: 'noset' }}
-        tax={tax}
-        __WithDiscountFeature__total={__WithDiscountFeature__total}
-        setDiscount={setDiscount}
-        totalDiscount={0}
+        details={{ customerId: customer?.value, totalAmount: cart?.cartSellTotal, isReturn: 0 }}
         lang={lang}
       />
     </div>

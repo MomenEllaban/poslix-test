@@ -1,5 +1,6 @@
 import { AdminLayout } from '@layout';
-import { ILocationSettings, ITokenVerfy } from '@models/common-model';
+import { ILocationSettings } from '@models/common-model';
+import { IOpenCloseReport } from '@models/reports.types';
 import {
   DataGrid,
   GridColDef,
@@ -9,46 +10,56 @@ import {
   GridToolbarExport,
   GridToolbarQuickFilter,
 } from '@mui/x-data-grid';
-import * as cookie from 'cookie';
 import { useRouter } from 'next/router';
 import React, { useContext, useEffect, useState } from 'react';
+import withAuth from 'src/HOCs/withAuth';
 import AlertDialog from 'src/components/utils/AlertDialog';
-import { UserContext } from 'src/context/UserContext';
+import { UserContext, useUser } from 'src/context/UserContext';
 import { apiFetchCtr } from 'src/libs/dbUtils';
-import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/checkUtils';
+import api from 'src/utils/app-api';
 
-export default function SalesReport(props: any) {
-  const { shopId, rules } = props;
-  const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
-    // @ts-ignore
-    value: 0,
-    label: '',
-    currency_decimal_places: 0,
-    currency_code: '',
-    currency_id: 0,
-    currency_rate: 1,
-    currency_symbol: '',
-  });
+function SalesReport() {
+  const router = useRouter();
+  const shopId = router.query.id;
+  const { locationSettings, setLocationSettings, invoicDetails } = useUser();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const handleClose = () => {
     setAnchorEl(null);
   };
-  const [sales, setsales] = useState<any>([]);
-  const router = useRouter();
+  const [sales, setSales] = useState<IOpenCloseReport[]>([]);
+
+  const [show, setShow] = useState(false);
+
   const [selectId, setSelectId] = useState(0);
   const [selectRow, setSelectRow] = useState<any>({});
   const [lines, setLines] = useState<any>([]);
-  const [show, setShow] = useState(false);
   const [isLoadItems, setIsLoadItems] = useState(false);
   const [showViewPopUp, setShowViewPopUp] = useState(false);
   const [handleSearchTxt, setHandleSearchTxt] = useState('');
-  const [details, setDetails] = useState({ subTotal: 1, tax: 0, cost: 0 });
-  const { setInvoicDetails, invoicDetails } = useContext(UserContext);
-  //Eslam 19
-  //table columns
-  const columns: GridColDef[] = [
+  const [details, setDetails] = useState<{
+    total_hand_cash: number;
+    total_cash: number;
+    total_cheque: number;
+    total_bank: number;
+    total_cart: number;
+    total: number;
+  }>({
+    total_hand_cash: 0,
+    total_cash: 0,
+    total_cheque: 0,
+    total_bank: 0,
+    total_cart: 0,
+    total: 0,
+  });
+
+  const columns: GridColDef<IOpenCloseReport>[] = [
     { field: 'id', headerName: '#', maxWidth: 72 },
-    { field: 'name', headerName: 'Cashier', maxWidth: 100 },
+    {
+      field: 'name',
+      headerName: 'Cashier',
+      maxWidth: 100,
+      renderCell: ({ row }: Partial<GridRowParams>) => row.status,
+    },
     {
       field: 'status',
       headerName: 'Type',
@@ -61,43 +72,49 @@ export default function SalesReport(props: any) {
       headerName: 'hand cash',
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) =>
-        Number(row.closing_amount).toFixed(locationSettings?.location_decimal_places),
+        +Number(row.hand_cash).toFixed(locationSettings?.location_decimal_places),
     },
     {
       field: 'total_card_slips',
       headerName: 'Card',
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) =>
-        Number(row.total_card_slips).toFixed(locationSettings?.location_decimal_places),
+        +Number(row.cart).toFixed(locationSettings?.location_decimal_places),
     },
     {
       field: 'total_cash',
       headerName: 'Cash',
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) =>
-        Number(row.total_cash).toFixed(locationSettings?.location_decimal_places),
+        +Number(row.cash).toFixed(locationSettings?.location_decimal_places),
     },
     {
       field: 'total_cheques',
       headerName: 'Cheques',
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) =>
-        Number(row.total_cheques).toFixed(locationSettings?.location_decimal_places),
+        +Number(row.cheque).toFixed(locationSettings?.location_decimal_places),
     },
     {
       field: 'total_bank',
       headerName: 'Bank',
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) =>
-        Number(row.total_bank).toFixed(locationSettings?.location_decimal_places),
+        +Number(row.bank).toFixed(locationSettings?.location_decimal_places),
     },
     {
-      field: 'created_at',
+      field: 'date',
       headerName: 'Date',
       flex: 1,
-      renderCell: ({ row }: Partial<GridRowParams>) => row.created_at.split('T')[0],
+      renderCell: ({ row }: Partial<GridRowParams>) => `${new Date(row.date).toLocaleDateString()}`,
     },
-    { field: 'closing_note', headerName: 'Note', flex: 1, disableColumnMenu: true },
+    {
+      field: 'closing_note',
+      headerName: 'Note',
+      flex: 1,
+      disableColumnMenu: true,
+      renderCell: ({ row }) => row.note?.trim() || '---',
+    },
   ];
 
   const componentRef = React.useRef(null);
@@ -196,20 +213,14 @@ export default function SalesReport(props: any) {
     }
   }
   async function initDataPage() {
-    var _locs = JSON.parse(localStorage.getItem('locations') || '[]');
-    if (_locs.toString().length > 10)
-      setLocationSettings(
-        _locs[
-          _locs.findIndex((loc: any) => {
-            return loc.value == shopId;
-          })
-        ]
-      );
+    if (!shopId) return;
 
-    const { success, data } = await apiFetchCtr({ fetch: 'reports', subType: 'getOpens', shopId });
-    if (success) {
-      setsales(data.users);
-    }
+    api.get(`reports/register/${shopId}`, { params: { all_data: 1 } }).then(({ data }) => {
+      console.log(data.result);
+      const { data: ocReports, ...details } = data.result ?? { data: [], details: {} };
+      setSales(ocReports as IOpenCloseReport[]);
+      setDetails((data) => ({ ...data, ...details }));
+    });
   }
 
   async function getItems(id: number) {
@@ -227,18 +238,8 @@ export default function SalesReport(props: any) {
   }
 
   useEffect(() => {
-    var _locs = JSON.parse(localStorage.getItem('locations') || '[]');
-    if (_locs.toString().length > 10)
-      setLocationSettings(
-        _locs[
-          _locs.findIndex((loc: any) => {
-            return loc.value == shopId;
-          })
-        ]
-      );
-    else alert('errorr location settings');
     initDataPage();
-  }, []);
+  }, [router.query.id]);
 
   function CustomToolbar() {
     return (
@@ -268,16 +269,18 @@ export default function SalesReport(props: any) {
         <h5> Report Open Register</h5>
         <div className="deatils_box">
           <div>
-            <span>SubTotal: </span>
-            {Number(details.subTotal).toFixed(3)} {locationSettings?.currency_code}
-          </div>
-          <div>
-            <span>Tax: </span>
-            {Number(details.tax).toFixed(3)} {locationSettings?.currency_code}
-          </div>
-          <div>
             <span>Total: </span>
-            {Number(Number(details.subTotal) + Number(details.tax)).toFixed(3)}{' '}
+            {details.total?.toFixed(locationSettings?.location_decimal_places)}{' '}
+            {locationSettings?.currency_code}
+          </div>
+          <div>
+            <span>Total Bank: </span>
+            {details.total_bank?.toFixed(locationSettings?.location_decimal_places)}{' '}
+            {locationSettings?.currency_code}
+          </div>
+          <div>
+            <span>Total Card: </span>
+            {details.total_cart?.toFixed(locationSettings?.location_decimal_places)}{' '}
             {locationSettings?.currency_code}
           </div>
         </div>
@@ -301,45 +304,5 @@ export default function SalesReport(props: any) {
     </AdminLayout>
   );
 }
-export async function getServerSideProps(context: any) {
-  const parsedCookies = cookie.parse(context.req.headers.cookie || '[]');
-  var _isOk = true,
-    _rule = true;
-  //check page params
-  var shopId = context.query.id;
-  if (shopId == undefined) return { redirect: { permanent: false, destination: '/page403' } };
 
-  //check user permissions
-  var _userRules = {};
-  await verifayTokens(
-    { headers: { authorization: 'Bearer ' + parsedCookies.tokend } },
-    (repo: ITokenVerfy) => {
-      _isOk = repo.status;
-
-      if (_isOk) {
-        var _rules = keyValueRules(repo.data.rules || []);
-
-        if (
-          _rules[-2] != undefined &&
-          _rules[-2][0].stuff != undefined &&
-          _rules[-2][0].stuff == 'owner'
-        ) {
-          _rule = true;
-          _userRules = { hasDelete: true, hasEdit: true, hasView: true, hasInsert: true };
-        } else if (_rules[shopId] != undefined) {
-          var _stuf = '';
-          _rules[shopId].forEach((dd: any) => (_stuf += dd.stuff));
-          const { userRules, hasPermission } = hasPermissions(_stuf, 'sales');
-          _rule = hasPermission;
-          _userRules = userRules;
-        } else _rule = false;
-      }
-    }
-  );
-  if (!_isOk) return { redirect: { permanent: false, destination: '/user/auth' } };
-  if (!_rule) return { redirect: { permanent: false, destination: '/page403' } };
-  return {
-    props: { shopId: context.query.id, rules: _userRules },
-  };
-  //status ok
-}
+export default withAuth(SalesReport);

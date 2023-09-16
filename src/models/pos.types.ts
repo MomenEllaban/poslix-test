@@ -277,8 +277,8 @@ export interface IStock {
   qty_sold: string;
   sold_at: string;
   created_by: number;
-  created_at: string;
-  updated_at?: any;
+  created_at?: Date;
+  updated_at?: Date;
 }
 
 export interface IExpenseCategory {

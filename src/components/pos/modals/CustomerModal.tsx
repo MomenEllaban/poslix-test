@@ -11,12 +11,14 @@ import api from 'src/utils/app-api';
 import { useSWRConfig } from 'swr';
 import { useProducts } from '../../../context/ProductContext';
 import { apiUpdateCtr } from '../../../libs/dbUtils';
+import { useRouter } from 'next/router';
 
 const customerTemplate = {
   id: 0,
   first_name: '',
   last_name: '',
   mobile: '',
+  pricing_group: null,
   city: '',
   state: '',
   country: '',
@@ -34,7 +36,7 @@ const CustomerModal = (props: any) => {
 
   const [customerInfo, setCustomerInfo] = useState(customerTemplate);
   const { customers, setCustomers } = useProducts();
-
+  const router = useRouter()
   const { mutate } = useSWRConfig();
   const {
     register,
@@ -56,7 +58,7 @@ const CustomerModal = (props: any) => {
       .put('/customers/' + userdata.value, data)
       .then((res) => res.data.result)
       .then((res) => {
-        mutate('/customers/' + shopId);
+        mutate('/customers/' + router.query.id);
         const cinx = customers.findIndex((customer) => customer.value === res.id);
         if (cinx > -1) {
           const upCustomer = [...customers];
@@ -76,11 +78,12 @@ const CustomerModal = (props: any) => {
   };
 
   const handleAddCustomer = (data: any) => {
+    delete data.pricing_group
     api
-      .post('/customers/' + shopId, data)
+      .post('/customers/' + router.query.id, data)
       .then((res) => res.data.result)
       .then((res) => {
-        mutate('/customers/' + shopId);
+        mutate('/customers/' + router.query.id);
         setCustomers([...customers, res]);
         Toastify('success', 'Successfully Created');
         handleClose();
@@ -192,6 +195,14 @@ const CustomerModal = (props: any) => {
                 name="mobile"
                 label="Mobile"
                 placeholder="Enter customer mobile number"
+                errors={errors}
+                register={register}
+              />
+              <FormField
+                type="number"
+                name="pricing_group"
+                label="Pricing Group"
+                placeholder="Enter customer pricing group"
                 errors={errors}
                 register={register}
               />

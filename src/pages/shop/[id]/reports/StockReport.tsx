@@ -1,53 +1,39 @@
-import React, { useContext, useState, useEffect } from 'react';
-import {
-  DataGrid,
-  GridColDef,
-  GridRowParams,
-  GridToolbarContainer,
-  GridToolbarExport,
-  GridToolbarColumnsButton,
-  GridToolbar,
-  GridToolbarFilterButton,
-  GridToolbarQuickFilter,
-} from '@mui/x-data-grid';
 import { AdminLayout } from '@layout';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faPenToSquare, faPlus, faEye } from '@fortawesome/free-solid-svg-icons';
+import { ILocationSettings } from '@models/common-model';
+import { IStockReport } from '@models/reports.types';
+import { Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import { Button, ButtonGroup } from 'react-bootstrap';
+import {
+  DataGrid,
+  GridColDef,
+  GridToolbarColumnsButton,
+  GridToolbarContainer,
+  GridToolbarExport,
+  GridToolbarQuickFilter,
+} from '@mui/x-data-grid';
+import { nanoid } from '@reduxjs/toolkit';
 import { useRouter } from 'next/router';
-import AlertDialog from 'src/components/utils/AlertDialog';
-import { apiFetch, apiFetchCtr } from 'src/libs/dbUtils';
-import { Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
-import { ILocationSettings, ITokenVerfy } from '@models/common-model';
-import * as cookie from 'cookie';
-import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/checkUtils';
-import { UserContext } from 'src/context/UserContext';
+import React, { useContext, useEffect, useState } from 'react';
+import { Button } from 'react-bootstrap';
 import { useReactToPrint } from 'react-to-print';
-import DatePicker from 'src/components/filters/Date';
+import withAuth from 'src/HOCs/withAuth';
+import AlertDialog from 'src/components/utils/AlertDialog';
+import { UserContext, useUser } from 'src/context/UserContext';
+import { apiFetch, apiFetchCtr } from 'src/libs/dbUtils';
+import api from 'src/utils/app-api';
 
-// Eslam 20
-export default function StockReport(props: any) {
-  const { shopId, rules } = props;
-  const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
-    // @ts-ignore
-    value: 0,
-    label: '',
-    currency_decimal_places: 0,
-    currency_code: '',
-    currency_id: 0,
-    currency_rate: 1,
-    currency_symbol: '',
-  });
+function StockReport() {
+  const router = useRouter();
+  const shopId = router.query.id;
+
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const handleClose = () => {
     setAnchorEl(null);
   };
-  const [sales, setsales] = useState<any>([]);
-  const router = useRouter();
+  const [sales, setSales] = useState<any>([]);
+
   const [selectId, setSelectId] = useState(0);
   const [selectRow, setSelectRow] = useState<any>({});
   const [lines, setLines] = useState<any>([]);
@@ -56,7 +42,7 @@ export default function StockReport(props: any) {
   const [showViewPopUp, setShowViewPopUp] = useState(false);
   const [handleSearchTxt, setHandleSearchTxt] = useState('');
   const [details, setDetails] = useState({ subTotal: 1, tax: 0, cost: 0 });
-  const { setInvoicDetails, invoicDetails } = useContext(UserContext);
+  const { setInvoicDetails, invoicDetails, locationSettings } = useUser();
 
   const [filteredSales, setFilteredSales] = useState<any>([]);
   const [selectedRange, setSelectedRange] = useState(null);
@@ -67,8 +53,8 @@ export default function StockReport(props: any) {
 
   useEffect(() => {
     let localFilteredSales = [];
-    if (strSelectedDate.length === 2) {
-      const filteredList = sales.filter((sale) => {
+    if (strSelectedDate?.length === 2) {
+      const filteredList = sales?.filter((sale) => {
         const dateCreated = sale.created_at.split(' ')[0];
         return (
           new Date(dateCreated).getDate() >= new Date(strSelectedDate[0]).getDate() &&
@@ -81,7 +67,7 @@ export default function StockReport(props: any) {
       });
       setSelectedDateValue(`${strSelectedDate[0]} - ${strSelectedDate[1]}`);
       localFilteredSales = filteredList;
-    } else if (strSelectedDate.length === 1) {
+    } else if (strSelectedDate?.length === 1) {
       const filteredList = sales.filter((sale) => {
         const dateCreated = sale.created_at.split(' ')[0];
         return (
@@ -130,26 +116,39 @@ export default function StockReport(props: any) {
   };
 
   //table columns
-  const columns: GridColDef[] = [
-    { field: 'SKU', headerName: 'SKU', flex: 1 },
-    { field: 'Product', headerName: 'Product', flex: 1 },
-    { field: 'Location', headerName: 'Location', flex: 1 },
-    { field: 'Unit Price', headerName: 'Unit Price', flex: 1 },
-    { field: 'Current Stock', headerName: 'Current Stock', flex: 1 },
+  const columns: GridColDef<IStockReport>[] = [
+    { field: 'sku', headerName: 'SKU', width: 80 },
+    { field: 'brand_name', headerName: 'Brand Name' },
+    { field: 'product_name', headerName: 'Product', flex: 1 },
+    { field: 'location_name', headerName: 'Location', flex: 1, minWidth: 120 },
+    { field: 'unit_name', headerName: 'Unit Price', flex: 1 },
     {
-      field: 'Current Stock Value (By purchase price)',
-      headerName: 'Current Stock Value (By purchase price)',
+      field: 'sub_category',
+      headerName: 'Sub Category',
       flex: 1,
+      renderCell: ({ row }) => row.sub_category?.trim() || '---',
     },
     {
-      field: 'Current Stock Value (By sale price)',
-      headerName: 'Current Stock Value (By sale price)',
-      flex: 1,
+      field: 'cost_price',
+      headerName: 'Cost Price',
+      renderCell: ({ row }) =>
+        `${(+row.cost_price).toFixed(locationSettings.location_decimal_places)} ${
+          locationSettings.currency_name
+        }`,
     },
-    { field: 'Potential profit', headerName: 'Potential profit', flex: 1 },
-    { field: 'Total Unit sold', headerName: 'Total Unit sold', flex: 1 },
-    { field: 'Total Unit transfered', headerName: 'Total Unit transfered', flex: 1 },
-    { field: 'Total Unit Adjusted', headerName: 'Total Unit Adjusted', flex: 1 },
+    {
+      field: 'sell_price',
+      headerName: 'Sell Price',
+      renderCell: ({ row }) =>
+        `${(+row.sell_price).toFixed(locationSettings.location_decimal_places)} ${
+          locationSettings.currency_name
+        }`,
+    },
+    {
+      field: 'sold_qty',
+      headerName: 'Sold Qty',
+      renderCell: ({ row }) => (+row.sold_qty).toFixed(0),
+    },
   ];
 
   const componentRef = React.useRef(null);
@@ -259,28 +258,38 @@ export default function StockReport(props: any) {
       setLines(newdata.sellLines);
     }
   }
+
   // init sales data
   async function initDataPage() {
-    var _locs = JSON.parse(localStorage.getItem('locations') || '[]');
-    if (_locs.toString().length > 10)
-      setLocationSettings(
-        _locs[
-          _locs.findIndex((loc: any) => {
-            return loc.value == shopId;
-          })
-        ]
-      );
-
-    const { success, data } = await apiFetchCtr({
-      fetch: 'reports',
-      subType: 'getItemsReport',
-      shopId,
-    });
-    if (success) {
-      setsales(data.sales);
-      setDetails(data.sums[0]);
-    }
+    setIsLoadItems(true);
+    api
+      .get(`reports/itemStock/${shopId}`, { params: { all_data: 1 } })
+      .then(({ data }) => {
+        console.table(data.result);
+        setSales(
+          data.result.map((item) => ({
+            id: nanoid(5),
+            ...item,
+          }))
+        );
+      })
+      .finally(() => {
+        setIsLoadItems(false);
+      });
   }
+
+  // init sales data
+  // async function initDataPage() {
+  //   const { success, data } = await apiFetchCtr({
+  //     fetch: 'reports',
+  //     subType: 'getItemsReport',
+  //     shopId,
+  //   });
+  //   if (success) {
+  //     setSales(data.sales);
+  //     setDetails(data.sums[0]);
+  //   }
+  // }
 
   async function getItems(id: number) {
     setIsLoadItems(true);
@@ -297,18 +306,10 @@ export default function StockReport(props: any) {
   }
 
   useEffect(() => {
-    var _locs = JSON.parse(localStorage.getItem('locations') || '[]');
-    if (_locs.toString().length > 10)
-      setLocationSettings(
-        _locs[
-          _locs.findIndex((loc: any) => {
-            return loc.value == shopId;
-          })
-        ]
-      );
-    else alert('errorr location settings');
+    if (!shopId) return;
+
     initDataPage();
-  }, []);
+  }, [shopId]);
 
   function CustomToolbar() {
     return (
@@ -555,50 +556,5 @@ export default function StockReport(props: any) {
     </AdminLayout>
   );
 }
-export async function getServerSideProps(context: any) {
-  const parsedCookies = cookie.parse(context.req.headers.cookie || '[]');
-  var _isOk = true,
-    _rule = true;
-  //check page params
-  var shopId = context.query.id;
-  if (shopId == undefined) return { redirect: { permanent: false, destination: '/page403' } };
 
-  //check user permissions
-  var _userRules = {};
-  await verifayTokens(
-    { headers: { authorization: 'Bearer ' + parsedCookies.tokend } },
-    (repo: ITokenVerfy) => {
-      _isOk = repo.status;
-
-      if (_isOk) {
-        var _rules = keyValueRules(repo.data.rules || []);
-
-        if (
-          _rules[-2] != undefined &&
-          _rules[-2][0].stuff != undefined &&
-          _rules[-2][0].stuff == 'owner'
-        ) {
-          _rule = true;
-          _userRules = {
-            hasDelete: true,
-            hasEdit: true,
-            hasView: true,
-            hasInsert: true,
-          };
-        } else if (_rules[shopId] != undefined) {
-          var _stuf = '';
-          _rules[shopId].forEach((dd: any) => (_stuf += dd.stuff));
-          const { userRules, hasPermission } = hasPermissions(_stuf, 'sales');
-          _rule = hasPermission;
-          _userRules = userRules;
-        } else _rule = false;
-      }
-    }
-  );
-  if (!_isOk) return { redirect: { permanent: false, destination: '/user/auth' } };
-  if (!_rule) return { redirect: { permanent: false, destination: '/page403' } };
-  return {
-    props: { shopId: context.query.id, rules: _userRules },
-  };
-  //status ok
-}
+export default withAuth(StockReport);

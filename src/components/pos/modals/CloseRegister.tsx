@@ -15,28 +15,34 @@ import DialogTitle from '@mui/material/DialogTitle';
 import { useContext, useEffect, useState } from 'react';
 import { useRecoilState } from 'recoil';
 import { UserContext } from 'src/context/UserContext';
-import { ProductContext } from '../../../context/ProductContext';
-import { apiFetchCtr, apiInsertCtr } from '../../../libs/dbUtils';
+import api from 'src/utils/app-api';
+import { useProducts } from '../../../context/ProductContext';
+import { apiInsertCtr } from '../../../libs/dbUtils';
 import { cartJobType } from '../../../recoil/atoms';
 import mStyle from '../../../styles/Customermodal.module.css';
 import SnakeAlert from '../utils/SnakeAlert';
+import { createNewData, findAllData } from 'src/services/crud.api';
+import { Toastify } from 'src/libs/allToasts';
+import { useAppDispatch } from 'src/hooks';
+import { setPosRegister } from 'src/redux/slices/pos.slice';
+import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
 
-const CloseRegister = (props: any) => {
-  const [closeRegisterInfo, setCloseRegisterInfo] = useState({ cashInHand: 0, cheque: 0 });
+const CloseRegister = ({ openDialog, statusDialog, shopId }: any) => {
   const [snakeTitle, setSnakeTitle] = useState('');
 
-  const { products, setProducts, customers, setCustomers } = useContext(ProductContext);
+  const { products, setProducts, customers, setCustomers } = useProducts();
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [cash, setCash] = useState(0);
   const [card, setCard] = useState(0);
-  const [bankm, setBank] = useState(0);
+  const [bank, setBank] = useState(0);
   const [cheque, setCheque] = useState(0);
   const [note, setNote] = useState('');
   const [openSnakeBar, setOpenSnakeBar] = useState(false);
   const [, setJobType] = useRecoilState(cartJobType);
-  const { openDialog, statusDialog, shopId } = props;
+
   const { locationSettings } = useContext(UserContext);
+  const dispatch = useAppDispatch();
 
   const handleClose = () => {
     setOpen(false);
@@ -45,46 +51,29 @@ const CloseRegister = (props: any) => {
   useEffect(() => {
     if (!statusDialog) return;
     setOpen(statusDialog);
-    var cash = localStorage.getItem('hand_in_cash');
-    setCloseRegisterInfo({ ...closeRegisterInfo, cashInHand: cash ? +cash : 0 });
-    getcustomer();
+    getCloseData()
   }, [statusDialog]);
 
-  async function closeRegister() {
-    // return
-    var result = await apiInsertCtr({
-      type: 'transactions',
-      subType: 'close',
-      shopId,
-      data: { cash, card, bankm, cheque, note, hand: closeRegisterInfo.cashInHand },
-    });
-    if (result.success) {
+  const closeRegisterReq = async () => {
+    const res = await createNewData(`registration/${shopId}/close`, {note})
+    if(res.data.success) {
       handleClose();
       setJobType({ req: 101, val: 'closeRegister' });
-    } else {
-      alert('has error, Try Again...');
-    }
+      Toastify('success', 'successfully done');
+      const registerObject = getLocalStorage<{hand_cash: number; state: string}>(ELocalStorageKeys.POS_REGISTER_STATE);
+      dispatch(setPosRegister({...registerObject, state: 'close'}));
+    } else Toastify('error', 'Something went wrong!');
   }
-  async function getcustomer() {
-    setIsLoading(true);
 
-    var { success, newdata } = await apiFetchCtr({
-      subType: 'getclose',
-      fetch: 'transactions',
-      shopId,
-    });
-    if (!success) {
-      alert('error in fetch..');
-      return;
-    }
-    newdata.map((dd: any) => {
-      if (dd.payment_type == 'cash') setCash(+dd.price);
-      if (dd.payment_type == 'card') setCard(+dd.price);
-      if (dd.payment_type == 'bank') setBank(+dd.price);
-      if (dd.payment_type == 'cheque') setCheque(+dd.price);
-    });
-    setIsLoading(false);
+  const getCloseData = async () => {
+    const res = await findAllData(`registration/${shopId}/close`)
+    setCash(res.data.result.cash);
+    setCard(res.data.result.card);
+    setBank(res.data.result.bank);
+    setCheque(res.data.result.cheque);
+    setIsLoading(false)
   }
+
   const makeShowSnake = (val: any) => {
     setOpenSnakeBar(val);
   };
@@ -120,19 +109,7 @@ const CloseRegister = (props: any) => {
                         </div>
                         <p className="close-item-title">Card Payment</p>
                         <p className="close-item-title">
-                          {Number(card).toFixed(3)} {locationSettings?.currency_code}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="close-item">
-                      <div className="close-item-inner">
-                        <div className="close-item-inner-icon">
-                          <FontAwesomeIcon icon={faMoneyBillWave} />
-                        </div>
-                        <p className="close-item-title">Cash in hand</p>
-                        <p className="close-item-title">
-                          {Number(closeRegisterInfo.cashInHand).toFixed(3)}{' '}
-                          {locationSettings?.currency_code}
+                          {card} {locationSettings?.currency_code}
                         </p>
                       </div>
                     </div>
@@ -143,7 +120,7 @@ const CloseRegister = (props: any) => {
                         </div>
                         <p className="close-item-title">Bank Payment</p>
                         <p className="close-item-title">
-                          {Number(bankm).toFixed(3)} {locationSettings?.currency_code}
+                          {Number(bank).toFixed(3)} {locationSettings?.currency_code}
                         </p>
                       </div>
                     </div>
@@ -178,7 +155,7 @@ const CloseRegister = (props: any) => {
                         <div className="report-name">Total Sales</div>
                       </div>
                       <div className="report-items-value">
-                        {Number(cash + cheque + card + bankm).toFixed(3)}{' '}
+                        {(cash + cheque + card + bank).toFixed(3)}{' '}
                         {locationSettings?.currency_code}
                       </div>
                     </div>
@@ -202,7 +179,7 @@ const CloseRegister = (props: any) => {
                     type="button"
                     className="btn btn-primary"
                     onClick={() => {
-                      closeRegister();
+                      closeRegisterReq();
                     }}>
                     Close Register
                   </button>

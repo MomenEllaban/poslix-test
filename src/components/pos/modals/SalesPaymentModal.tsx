@@ -15,6 +15,7 @@ import { ProductContext } from 'src/context/ProductContext';
 import { UserContext } from 'src/context/UserContext';
 import { Toastify } from 'src/libs/allToasts';
 import { ToastContainer } from 'react-toastify';
+import { updateData } from 'src/services/crud.api';
 
 const SalesPaymentModal = (props: any) => {
   const { locationSettings } = useContext(UserContext);
@@ -44,6 +45,7 @@ const SalesPaymentModal = (props: any) => {
     st: false,
     msg: '',
   });
+  const [paymentData, setPaymentData] = useState<any>({})
   const [, setJobType] = useRecoilState(cartJobType);
   const [paymentRows, setPaymentRows] = useState<IpaymentRow[]>([
     { amount: 0, method: 'cash', notes: '' },
@@ -65,6 +67,7 @@ const SalesPaymentModal = (props: any) => {
   const [holdItems, setHoldItems] = useState<IHold[]>([]);
 
   useEffect(() => {
+    setPaymentData({amount: userData.due, payment_type: 'cash'})
     setHasError({ st: false, msg: '' });
     let _mustPay = +Math.abs(
       __WithDiscountFeature__total + details?.totalAmount - details?.subTotal
@@ -141,34 +144,16 @@ const SalesPaymentModal = (props: any) => {
     completeHandele(paymentRows[0], userData);
     setPaymentModalShow(false);
     // remove comment to call the api
-    // canPay ? insertPayment() : Toastify("error", "Wrong Amount!!");
+    canPay ? insertPayment() : Toastify("error", "Wrong Amount!!");
   };
 
   async function insertPayment() {
-    var result = await apiInsertCtr({
-      type: 'transactions',
-      subType: 'newPosSale',
-      data: {
-        items: holdObj,
-        details: {
-          isReturn: userData.id,
-          totalAmount: +userData.total_price,
-        },
-        paymentRows,
-        orderEditDetails: {
-          total_price: +userData.amount + +paymentRows[0].amount,
-          isEdit: true,
-          orderId: userData.id,
-        },
-        orderNote,
-      },
-      shopId,
-    });
-    if (result.success) {
+    const res = await updateData('sales/complete-payment', userData.id, paymentData)
+    if (res.data.success) {
       Toastify('success', 'successfully done');
       setPaymentModalShow(false);
       setPaymentModalData({});
-      setJobType({ req: 2, val: orderNote, val2: result.newdata });
+      setJobType({ req: 2, val: orderNote, val2: res.data.result });
       handlePrint();
       if (
         holdItems.length > 0 &&
@@ -198,7 +183,7 @@ const SalesPaymentModal = (props: any) => {
                   paddingInline: '16px',
                   paddingTop: '6px',
                 }}>
-                <p>Customer: {userData?.customer_name}</p>
+                <p>Customer: {userData?.contact_name}</p>
               </div>
               <div
                 style={{
@@ -217,7 +202,7 @@ const SalesPaymentModal = (props: any) => {
                   paddingInline: '16px',
                   paddingTop: '6px',
                 }}>
-                <p>Total Amount: {userData.total_price}</p>
+                <p>Total Amount: {userData.sub_total}</p>
                 <p>Payment Note: {userData.note ? userData.note : '...'}</p>
               </div>
             </div>
@@ -245,8 +230,11 @@ const SalesPaymentModal = (props: any) => {
                         className="form-control"
                         type="number"
                         name="amount"
-                        onChange={(evnt) => paymentRowChange(0, evnt)}
-                        value={paymentRow.amount ? paymentRow.amount : userData.totalDue}
+                        onChange={(e) => {
+                          paymentRowChange(0, e)
+                          setPaymentData({...paymentData, amount: +e.target.value})
+                        }}
+                        value={paymentData.amount ? paymentData.amount : userData.totalDue}
                       />
                     </div>
 
@@ -257,7 +245,11 @@ const SalesPaymentModal = (props: any) => {
                       <Select
                         styles={selectStyle}
                         options={paymentMethods}
-                        onChange={(evnt: any) => paymentRowChange(i, evnt)}
+                        onChange={(e: any) => {
+                          paymentRowChange(i, e)
+                          setPaymentData({...paymentData, payment_type: e.value})
+                          
+                        }}
                         value={paymentMethods.find((f) => {
                           return f.value == paymentRow.method;
                         })}

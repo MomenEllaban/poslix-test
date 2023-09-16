@@ -23,7 +23,7 @@ import AlertDialog from 'src/components/utils/AlertDialog';
 import { apiFetch, apiFetchCtr } from 'src/libs/dbUtils';
 import { Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import { ILocationSettings, IpaymentRow } from '@models/common-model';
-import { UserContext } from 'src/context/UserContext';
+import { UserContext, useUser } from 'src/context/UserContext';
 import { useReactToPrint } from 'react-to-print';
 import { Toastify } from 'src/libs/allToasts';
 import { ToastContainer } from 'react-toastify';
@@ -31,19 +31,16 @@ import { convertDateStringToDateAndTime } from '../../models/data';
 import SalesPaymentModal from '../pos/modals/SalesPaymentModal';
 import { cartJobType } from 'src/recoil/atoms';
 import { useRecoilState } from 'recoil';
+import { findAllData } from 'src/services/crud.api';
+import { useAppDispatch } from 'src/hooks';
+import { addMultipleToCart, addToCart } from 'src/redux/slices/cart.slice';
 
 export default function SalesListTable(props: any) {
   const { shopId, rules, salesList } = props;
-  const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
-    // @ts-ignore
-    value: 0,
-    label: '',
-    currency_decimal_places: 0,
-    currency_code: '',
-    currency_id: 0,
-    currency_rate: 1,
-    currency_symbol: '',
-  });
+  const dispatch = useAppDispatch();
+  const {locationSettings,setLocationSettings }=useUser()
+
+ 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const handleClose = () => {
     setAnchorEl(null);
@@ -54,9 +51,11 @@ export default function SalesListTable(props: any) {
   const [selectRow, setSelectRow] = useState<any>({});
   const [, setJobType] = useRecoilState(cartJobType);
   const [lines, setLines] = useState<any>([]);
+  
   const [show, setShow] = useState(false);
   const [edit, setEdit] = useState(false);
   const [isLoadItems, setIsLoadItems] = useState(false);
+  
   const [showViewPopUp, setShowViewPopUp] = useState(false);
   const [handleSearchTxt, setHandleSearchTxt] = useState('');
   const { setInvoicDetails, invoicDetails } = useContext(UserContext);
@@ -96,13 +95,13 @@ export default function SalesListTable(props: any) {
       field: 'status',
       headerName: 'Status',
       renderCell: ({ row }: Partial<GridRowParams>) => {
-        if (Number(+row.sub_total - +row.payed) === 0) {
+        if (row.payment_status === 'paid') {
           return (
             <>
               <div className="sty_Paid">Paid</div>
             </>
           );
-        } else if (Number(+row.sub_total - +row.payed) === Number(row.sub_total)) {
+        } else if (row.payment_status === 'not paid') {
           return (
             <>
               <div className="sty_n_Paid">Not Paid</div>
@@ -128,14 +127,16 @@ export default function SalesListTable(props: any) {
         <>
           <ButtonGroup className="mb-2 m-buttons-style">
             <Button
-              onClick={() => {
+              onClick={async () => {
                 // setEdit(true);
                 // onRowsSelectionHandler(row);
                 setJobType({
                   req: 3,
                   val: row.id,
                 });
-                router.push('/pos/' + shopId);
+                const res = await findAllData(`sales/${row.id}`)
+                dispatch(addMultipleToCart({ location_id: router.query.id, products: res.data.result.products }));
+                router.push('/pos/' + router.query.id);
               }}>
               <FontAwesomeIcon icon={faPenToSquare} />
             </Button>
@@ -157,18 +158,18 @@ export default function SalesListTable(props: any) {
             </Button>
             <Button
               className={`${
-                Number(+row.total_price - +row.amount) > 0
+                Number(+row.due) > 0
                   ? 'opacity-100 pe-auto'
                   : 'opacity-50 pe-none'
               }`}
               onClick={() => {
-                if (Number(+row.total_price - +row.amount) > 0) {
+                if (Number(+row.due) > 0) {
                   setPaymentModalShow(true);
                   setPaymentModalData({
                     ...row,
                     totalDue:
-                      Number(+row.total_price - +row.amount) > 0
-                        ? Number(+row.total_price - +row.amount).toFixed(
+                      Number(+row.due) > 0
+                        ? Number(+row.due).toFixed(
                             locationSettings?.location_decimal_places
                           )
                         : 0,
@@ -239,7 +240,7 @@ export default function SalesListTable(props: any) {
                   {invoicDetails.isMultiLang && invoicDetails.txtAmount2}
                 </th>
               </tr>
-              {lines &&
+              {lines.length > 0 &&
                 lines.map((line: any, index: number) => {
                   return (
                     <tr key={index}>
@@ -366,7 +367,7 @@ export default function SalesListTable(props: any) {
                 </th>
               </tr>
             </thead>
-            {lines &&
+            {lines.length > 0 &&
               lines.map((line: any, index: number) => {
                 return (
                   <tr key={index}>
@@ -413,7 +414,7 @@ export default function SalesListTable(props: any) {
                   {invoicDetails.txtAmount}<br />{invoicDetails.isMultiLang && invoicDetails.txtAmount2}
                 </th>
               </tr>
-              {lines && lines.map((line: any, index: number) => {
+              {lines.length > 0 && lines.map((line: any, index: number) => {
                 return (
                   <tr key={index}>
                     <td>{Number(line.qty)}</td>
@@ -504,7 +505,7 @@ export default function SalesListTable(props: any) {
                   {invoicDetails.isMultiLang && invoicDetails.txtAmount2}
                 </th>
               </tr>
-              {lines &&
+              {lines.length > 0 &&
                 lines.map((line: any, index: number) => {
                   return (
                     <tr key={index}>
@@ -595,14 +596,9 @@ export default function SalesListTable(props: any) {
 
   async function getItems(id: number) {
     setIsLoadItems(true);
-    const { success, newdata } = await apiFetchCtr({
-      fetch: 'transactions',
-      subType: 'getSaleItems',
-      shopId,
-      id,
-    });
-    if (success) {
-      setLines(newdata);
+    const res = await findAllData(`sales/${id}`)
+    if (res.data.success) {
+      setLines(res.data.result);
       setIsLoadItems(false);
     }
   }
@@ -618,7 +614,6 @@ export default function SalesListTable(props: any) {
         ]
       );
     else alert('errorr location settings');
-    console.log(locationSettings);
 
     initDataPage();
   }, [router.asPath]);
@@ -698,9 +693,7 @@ export default function SalesListTable(props: any) {
         alertFun={handleDeleteFuc}
         shopId={shopId}
         id={selectId}
-        type="transactions"
-        subType="deleteSale"
-        products={sales}>
+        url={'sales'}>
         Are you Sure You Want Delete This Item ?
       </AlertDialog>
       {
@@ -720,7 +713,7 @@ export default function SalesListTable(props: any) {
       }
       <div className="page-content-style card">
         <h5>Salse List</h5>
-        <DataGrid
+        {salesList.data && <DataGrid
           className="datagrid-style"
           sx={{
             '.MuiDataGrid-columnSeparator': {
@@ -730,7 +723,7 @@ export default function SalesListTable(props: any) {
               border: 'none',
             },
           }}
-          rows={salesList}
+          rows={salesList.data}
           columns={columns}
           initialState={{
             columns: { columnVisibilityModel: { mobile: false } },
@@ -738,7 +731,7 @@ export default function SalesListTable(props: any) {
           pageSize={10}
           rowsPerPageOptions={[10]}
           components={{ Toolbar: CustomToolbar }}
-        />
+        />}
       </div>
       {/* FOR VIEW ELEMENT */}
       <Dialog open={showViewPopUp} fullWidth={true} className="poslix-modal" onClose={handleClose}>
@@ -761,18 +754,18 @@ export default function SalesListTable(props: any) {
                       <input
                         type="text"
                         className="form-control"
-                        value={convertDateStringToDateAndTime(selectRow.created_at)}
+                        value={convertDateStringToDateAndTime(selectRow.date)}
                       />
                     ) : (
-                      <p>{convertDateStringToDateAndTime(selectRow.created_at)}</p>
+                      <p>{convertDateStringToDateAndTime(selectRow.date)}</p>
                     )}
                   </div>
                   <div className="top-detials-item pe-2">
                     <p>Added By :</p>
                     {edit ? (
-                      <input type="text" className="form-control" value={selectRow.added_by} />
+                      <input type="text" className="form-control" value={selectRow.user_name} />
                     ) : (
-                      <p>{selectRow.added_by}</p>
+                      <p>{selectRow.user_name}</p>
                     )}
                   </div>
                 </div>
@@ -783,13 +776,13 @@ export default function SalesListTable(props: any) {
                       <input
                         type="text"
                         className="form-control"
-                        value={Number(selectRow.total_price).toFixed(
+                        value={Number(selectRow.sub_total).toFixed(
                           locationSettings?.location_decimal_places
                         )}
                       />
                     ) : (
                       <p>
-                        {Number(selectRow.total_price).toFixed(
+                        {Number(selectRow.sub_total).toFixed(
                           locationSettings?.location_decimal_places
                         )}
                       </p>
@@ -831,7 +824,7 @@ export default function SalesListTable(props: any) {
                 </div>
               )}
             </div>
-            {lines && !isLoadItems ? (
+            {lines.length > 0 && !isLoadItems ? (
               <div className="row">
                 <div className="invoice-items-container">
                   <div className="header-titles">
@@ -840,7 +833,7 @@ export default function SalesListTable(props: any) {
                     <div>Amount</div>
                     {edit && <div></div>}
                   </div>
-                  {lines.map((line: any, index: number) => {
+                  {lines.length > 0 && lines?.map((line: any, index: number) => {
                     return (
                       <div className="header-items under_items" key={index}>
                         <div>{line.name}</div>
@@ -888,7 +881,7 @@ export default function SalesListTable(props: any) {
                 </div>
               </div>
             ) : (
-              <div>laoding...</div>
+              <div>loading...</div>
             )}
           </div>
         </DialogContent>

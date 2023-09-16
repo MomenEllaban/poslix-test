@@ -4,6 +4,7 @@
     "navmenu": {
       "dashboard": "لوحة التحكم",
       "close": "إغلاق",
+      "open": "فتح",
       "refresh": "إعادة تحميل",
       "logout": "تسجيل خروج",
       "fullscreen": "ملء الشاشة",

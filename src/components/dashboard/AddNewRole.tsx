@@ -25,100 +25,100 @@ const AddNewRole = (props: any) => {
   const [roles, setRoles] = useState([]);
   const [selectedRole, setSelectedRole] = useState(-1);
   const [pages, setPages] = useState<
-    { value: string; label: string; stuffs: object[]; icon?: IconProp }[]
+    { value: string; label: string; stuffs: object[]; icon?: IconProp   }[]
   >([]);
-  const pages2 = [
-    { value: 'split', label: 'Sales List', stuffs: [], icon: faChartPie },
-    {
-      value: 'sales',
-      label: 'Sales',
-      stuffs: [
-        { label: 'View', value: 'view', isChoose: false },
-        { label: 'Edit', value: 'edit' },
-        { label: 'Delete', value: 'delete' },
-        { label: 'Insert', value: 'insert' },
-      ],
-    },
-    {
-      value: 'quotations',
-      label: 'Quotations',
-      stuffs: [
-        { label: 'View', value: 'view', isChoose: false },
-        { label: 'Edit', value: 'edit' },
-        { label: 'Delete', value: 'delete' },
-        { label: 'Insert', value: 'insert' },
-      ],
-    },
-    { value: 'split', label: 'setup', stuffs: [], icon: faLayerGroup },
-    {
-      value: 'products',
-      label: 'Products',
-      stuffs: [
-        { label: 'View', value: 'view', isChoose: false },
-        { label: 'Edit', value: 'edit' },
-        { label: 'Delete', value: 'delete' },
-        { label: 'Insert', value: 'insert' },
-      ],
-    },
-    {
-      value: 'purchases',
-      label: 'Purchases',
-      stuffs: [
-        { label: 'View', value: 'view' },
-        { label: 'Edit', value: 'edit' },
-        { label: 'Delete', value: 'delete' },
-        { label: 'Insert', value: 'insert' },
-      ],
-    },
-    {
-      value: 'category',
-      label: 'Category & Brands',
-      stuffs: [
-        { label: 'View', value: 'view' },
-        { label: 'Edit', value: 'edit' },
-        { label: 'Delete', value: 'delete' },
-        { label: 'Insert', value: 'insert' },
-      ],
-    },
-    { value: 'split', label: 'Settings', stuffs: [], icon: faGear },
-    {
-      value: 'taxes',
-      label: 'Taxes',
-      stuffs: [
-        { label: 'View', value: 'view' },
-        { label: 'Insert & Edit', value: 'insert' },
-        { label: 'Delete', value: 'delete' },
-      ],
-    },
-    {
-      value: 'discounts',
-      label: 'Discount',
-      stuffs: [
-        { label: 'View', value: 'view' },
-        { label: 'Edit', value: 'edit' },
-        { label: 'Delete', value: 'delete' },
-        { label: 'Insert', value: 'insert' },
-      ],
-    },
-    {
-      value: 'expanses',
-      label: 'Expenses',
-      stuffs: [
-        { label: 'View', value: 'view' },
-        { label: 'Insert & Edit', value: 'insert' },
-        { label: 'Delete', value: 'delete' },
-      ],
-    },
-    { value: 'split', label: 'POS Screen', stuffs: [], icon: faDesktop },
-    {
-      value: 'POS',
-      label: 'POS',
-      stuffs: [
-        { label: 'Orders', value: 'orders' },
-        { label: 'payment', value: 'payment' },
-      ],
-    },
-  ];
+  // const pages2 = [
+  //   { value: 'split', label: 'Sales List', stuffs: [], icon: faChartPie },
+  //   {
+  //     value: 'sales',
+  //     label: 'Sales',
+  //     stuffs: [
+  //       { label: 'View', value: 'view', isChoose: false },
+  //       { label: 'Edit', value: 'edit' },
+  //       { label: 'Delete', value: 'delete' },
+  //       { label: 'Insert', value: 'insert' },
+  //     ],
+  //   },
+  //   {
+  //     value: 'quotations',
+  //     label: 'Quotations',
+  //     stuffs: [
+  //       { label: 'View', value: 'view', isChoose: false },
+  //       { label: 'Edit', value: 'edit' },
+  //       { label: 'Delete', value: 'delete' },
+  //       { label: 'Insert', value: 'insert' },
+  //     ],
+  //   },
+  //   { value: 'split', label: 'setup', stuffs: [], icon: faLayerGroup },
+  //   {
+  //     value: 'products',
+  //     label: 'Products',
+  //     stuffs: [
+  //       { label: 'View', value: 'view', isChoose: false },
+  //       { label: 'Edit', value: 'edit' },
+  //       { label: 'Delete', value: 'delete' },
+  //       { label: 'Insert', value: 'insert' },
+  //     ],
+  //   },
+  //   {
+  //     value: 'purchases',
+  //     label: 'Purchases',
+  //     stuffs: [
+  //       { label: 'View', value: 'view' },
+  //       { label: 'Edit', value: 'edit' },
+  //       { label: 'Delete', value: 'delete' },
+  //       { label: 'Insert', value: 'insert' },
+  //     ],
+  //   },
+  //   {
+  //     value: 'category',
+  //     label: 'Category & Brands',
+  //     stuffs: [
+  //       { label: 'View', value: 'view' },
+  //       { label: 'Edit', value: 'edit' },
+  //       { label: 'Delete', value: 'delete' },
+  //       { label: 'Insert', value: 'insert' },
+  //     ],
+  //   },
+  //   { value: 'split', label: 'Settings', stuffs: [], icon: faGear },
+  //   {
+  //     value: 'taxes',
+  //     label: 'Taxes',
+  //     stuffs: [
+  //       { label: 'View', value: 'view' },
+  //       { label: 'Insert & Edit', value: 'insert' },
+  //       { label: 'Delete', value: 'delete' },
+  //     ],
+  //   },
+  //   {
+  //     value: 'discounts',
+  //     label: 'Discount',
+  //     stuffs: [
+  //       { label: 'View', value: 'view' },
+  //       { label: 'Edit', value: 'edit' },
+  //       { label: 'Delete', value: 'delete' },
+  //       { label: 'Insert', value: 'insert' },
+  //     ],
+  //   },
+  //   {
+  //     value: 'expanses',
+  //     label: 'Expenses',
+  //     stuffs: [
+  //       { label: 'View', value: 'view' },
+  //       { label: 'Insert & Edit', value: 'insert' },
+  //       { label: 'Delete', value: 'delete' },
+  //     ],
+  //   },
+  //   { value: 'split', label: 'POS Screen', stuffs: [], icon: faDesktop },
+  //   {
+  //     value: 'POS',
+  //     label: 'POS',
+  //     stuffs: [
+  //       { label: 'Orders', value: 'orders' },
+  //       { label: 'payment', value: 'payment' },
+  //     ],
+  //   },
+  // ];
   async function insertUpdateUsers() {
     let res;
     if (selectedRole > -1)
@@ -142,45 +142,35 @@ const AddNewRole = (props: any) => {
     else perms.splice(perms.indexOf(value), 1)
     setPermissions([...perms])
   }
-  const showInnerRoles = (item: any, index: number) => {
-    return item.stuffs.map((st: any, stIndex: number) => {
-      return (
-        <div
-          className="form-control"
-          // onClick={(e) => {
-          //   handelChange(e, item.value, st.value, st.isChoose);
-          // }}
-          >
-          <input className="form-check-input me-1" type="checkbox" defaultChecked={st.isChoose} />
-          <label>{st.label}</label>
-        </div>
-      );
-    });
-  };
+
   var errors = [];
   const [fields, setFields] = useState<any>([])
   const [permissions, setPermissions] = useState([])
   const initPageData = async () => {
     const res = await findAllData('permissions');
-    const finalRes: any = [];
-    for (const key in res.data.result) {
-      const el = res.data.result[key]
-      const current: any = {title: key, roles: []};
-      for (const entry in el) {
-        if(el[entry].name.includes('GET') && !current.roles.some((role) => role.label === 'View'))
-          current.roles.push({value: el[entry].id, label: 'View',})
-        else if(el[entry].name.includes('POST') && !current.roles.some((role) => role.label === 'Create'))
-          current.roles.push({value: el[entry].id, label: 'Create',})
-        else if(el[entry].name.includes('PUT') && !current.roles.some((role) => role.label === 'Edit'))
-          current.roles.push({value: el[entry].id, label: 'Edit',})
-        else if(el[entry].name.includes('DELETE') && !current.roles.some((role) => role.label === 'Delete'))
-          current.roles.push({value: el[entry].id, label: 'Delete',})
-      }
-      finalRes.push(current)
-    }
-    console.log('finalRes', finalRes);
+    console.log('role slug page', res.data.result);
+    let finalRes: any = {}
+    Object.keys(res.data.result).forEach(field => {
+      let currentField: any = []
+      Object.keys(res.data.result[field]).forEach(role => {
+        if(role === 'reports')
+          finalRes = {...finalRes, reports: {...res.data.result[field][role]}}
+        else if(Array.isArray(res.data.result[field][role])){
+          if(currentField.length > 0) {
+            finalRes = {...finalRes, [field]: {...finalRes[field], others: [...currentField]}}
+            console.log('currentField',currentField, finalRes);
+            
+          }
+          finalRes = {...finalRes, [field]: {...finalRes[field], [role]: [...res.data.result[field][role]]}}
+        }
+        else currentField.push({...res.data.result[field][role]})
+      })
+    })
+    console.log(finalRes);
+    
     setFields(finalRes)
   }
+
   useEffect(() => {
     initPageData()
     if (props.index > -1) {
@@ -190,16 +180,7 @@ const AddNewRole = (props: any) => {
       setRoles(props.selectedStuff);
       setPermissions(props.selectedStuff)
       setFormObj({ ...props.stuffs[props.index], isNew: false, name: props.selectedName  });
-      // var _userStuff = props.stuffs[props.index].stuff.toLowerCase();
-
-      // pages2.map((pg, i) => {
-      //   pg.stuffs.map((st: any, stIndex: number) => {
-      //     if (_userStuff.includes(pg.value.toLowerCase() + '/' + st.value.toLowerCase()))
-      //       pages2[i].stuffs[stIndex].isChoose = true;
-      //   });
-      // });
     }
-    // setPages(pages2);
   }, []);
 
   return (
@@ -212,7 +193,6 @@ const AddNewRole = (props: any) => {
             </Card.Header>
             <Card.Body>
               <form className="form-style">
-                {/* {JSON.stringify(formObj)} */}
                 <div className="col-md-12">
                   <div className="col-md-6">
                     <div>
@@ -233,62 +213,42 @@ const AddNewRole = (props: any) => {
                   </div>
                   <div className="row">
                     <form className="user-stuff-form">
-                      <div className="col-md-6 col-lg-6 col-cm-6">
-                        {/* {JSON.stringify(pages)} */}
+                      <div className="col-sm-6 col-md-8 col-lg-6 col-cm-6">
                         <label>
                           Rules: <span className="text-danger">*</span>
                         </label>
                         <ul className="list-group">
-                          {/* {pages.map((pg, i) => {
-                            if (pg.value == 'split')
-                              return (
-                                <>
-                                  <li className="list-group-item bg-primary">
-                                    <span>
-                                      <FontAwesomeIcon icon={pg.icon!} size="1x" /> {pg.label}
-                                    </span>
-                                    <div className="checkbox-rols"></div>
-                                  </li>
-                                </>
-                              );
-                            return (
-                              <>
-                                <li className="list-group-item">
-                                  <span>{pg.label}</span>
-                                  <div className="checkbox-rols">{showInnerRoles(pg, i)}</div>
-                                </li>
-                              </>
-                            );
-                          })} */}
-                          {fields.length > 0 && fields.map((pg, i) => {
-                            return (
-                              <>
-                                <li className="list-group-item bg-primary">
-                                  <span>
-                                    {pg.title}
-                                  </span>
-                                  <div className="checkbox-rols"></div>
-                                </li>
-                                <div className="flex">
-                                  {pg.roles.map((role) => {
-                                    return (
-                                      <li className="list-group-item">
-                                        <div className="checkbox-rols">
-                                          <div className="form-control">
-                                            <input className="form-check-input me-1" type="checkbox"
-                                              onClick={(e: any) => {
-                                                handelChange(e.target.checked, role.value, pg.title);
-                                              }}
-                                              defaultChecked={props.selectedStuff.indexOf(role.value) > -1} />
-                                            <label>{role.label}</label>
-                                          </div>
-                                        </div>
-                                      </li>
-                                    )
-                                  })}
-                                </div>
-                              </>
-                            );
+                          {Object.keys(fields).map(key => {
+                            return <>
+                              <li className="list-group-item bg-primary">
+                                <span>
+                                  <FontAwesomeIcon icon={'page'} size="1x" /> {key.charAt(0).toUpperCase() + key.slice(1)}
+                                </span>
+                                <div className="checkbox-rols"></div>
+                              </li>
+                              {Object.keys(fields[key]).map(field => {
+                                return <>
+                                    <li className="list-group-item">
+                                      {field !== 'others' && <span>{field.charAt(0).toUpperCase() + field.slice(1)}</span>}
+                                      <div className="checkbox-rols flex-wrap">
+                                        {fields[key][field].map(role => {
+                                          return <>
+                                            <div className="form-control" style={{ width: 'fit-content' }}>
+                                              <input className="form-check-input me-1" type="checkbox"
+                                                onClick={(e: any) => {
+                                                  handelChange(e.target.checked, role.id, role);
+                                                }}
+                                                defaultChecked={props.selectedStuff.indexOf(role.id) > -1} />
+                                              <label>{role.name}</label>
+                                            </div>
+                                          </>
+                                        })}
+                                      </div>
+                                    </li>
+                                  </>
+                                }
+                              )}
+                            </>
                           })}
                         </ul>
                       </div>

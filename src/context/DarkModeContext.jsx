@@ -1,6 +1,4 @@
-/*MOHAMMED MAHER */
-
-import { createContext, useState } from 'react';
+import { createContext, useContext, useState } from 'react';
 
 export const darkModeContext = createContext();
 
@@ -22,4 +20,10 @@ export const DarkModeProvider = (props) => {
   );
 };
 
-/*MOHAMMED MAHER */
+export const useDarkMode = () => {
+  const context = useContext(darkModeContext);
+  if (context === undefined) {
+    throw new Error('useDarkMode must be used within a DarkModeProvider');
+  }
+  return context;
+};

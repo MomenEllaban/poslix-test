@@ -19,9 +19,7 @@ interface ICreateBusinessLocationPayload {
 const businessService = {
   getBusinesses: async (id?: string) => {
     {
-      const session = await getSession();
-
-      return (await authApi(session))
+      return api
         .get<any, TServiceResponse<IUserBusiness[]>, any>('/business' + (id ? `/${id}` : ''))
         .then((data) => data.data);
     }
@@ -102,7 +100,7 @@ const businessService = {
 export const useBusinessList = (config?: SWRConfiguration) => {
   const { data, error, isLoading, mutate } = useSWR(
     config?.suspense ? null : '/business',
-    businessService.getBusinesses,
+    () => businessService.getBusinesses(),
     {
       ...config,
     }

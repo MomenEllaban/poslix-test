@@ -1,11 +1,11 @@
 import { IOrderMiniDetails } from '@models/common-model';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Select from 'react-select';
 import { useProducts } from 'src/context/ProductContext';
-import { Toastify } from 'src/libs/allToasts';
-import CustomerModal from '../modals/CustomerModal';
 import { useAppDispatch, useAppSelector } from 'src/hooks';
+import { Toastify } from 'src/libs/allToasts';
 import { selectCartByLocation, setCartCustomer } from 'src/redux/slices/cart.slice';
+import CustomerModal from '../modals/CustomerModal';
 
 const selectStyle = {
   control: (style: any) => ({
@@ -29,9 +29,8 @@ export default function CustomerDataSelect({
     React.SetStateAction<{ value: string; label: string; isNew: boolean }>
   >;
   orderEditDetails: IOrderMiniDetails;
-  customer: { value: string; label: string; isNew: boolean };
+  customer: { value: string | number; label: string; isNew: boolean };
 }) {
-  const ref = useRef(null);
   const dispatch = useAppDispatch();
   const { customers } = useProducts();
   const selectCartForLocation = selectCartByLocation(shopId);
@@ -39,13 +38,7 @@ export default function CustomerDataSelect({
 
   const [showType, setShowType] = useState(String);
   const [customerIsModal, setCustomerIsModal] = useState<boolean>(false);
-  const currentCustomer = customers.find((c) => c.value === cart?.customer_id);
-
-  const handleSelectCustomer = (e) => {
-    if (cart?.customer_id > 0 && cart.cartItems.length > 0) {
-      Toastify('error', 'Customer already selected!, clear or hold cart first!');
-    }
-  };
+  const currentCustomer = customers?.find((c) => c.value === cart?.customer_id) ?? [];
 
   const customerModalHandler = (status: any) => setCustomerIsModal(false);
 
@@ -55,7 +48,7 @@ export default function CustomerDataSelect({
 
   return (
     <>
-      <div className="d-flex" onClick={handleSelectCustomer} ref={ref}>
+      <div className="d-flex">
         <div className="flex-grow-1">
           <Select
             isLoading={customers.length === 0}
@@ -82,7 +75,7 @@ export default function CustomerDataSelect({
           />
         </div>
         <button
-          disabled={isOrderEdit > 0 || (cart?.customer_id > 0 && cart.cartItems.length > 0)}
+          // disabled={isOrderEdit > 0 || (cart?.customer_id > 0 && cart.cartItems.length > 0)}
           className="btn btn-primary ms-2 p-3"
           style={{
             lineHeight: 0,
@@ -91,7 +84,7 @@ export default function CustomerDataSelect({
           }}
           type="button"
           onClick={() => {
-            if (customer && customer.value !== '1') {
+            if (currentCustomer && currentCustomer !== '1') {
               setShowType('edit');
               setCustomerIsModal(true);
             } else Toastify('error', 'Choose Customer First!');
@@ -99,7 +92,7 @@ export default function CustomerDataSelect({
           <i className="ri-edit-box-line" />
         </button>
         <button
-          disabled={isOrderEdit > 0 || (cart?.customer_id > 0 && cart.cartItems.length > 0)}
+          // disabled={isOrderEdit > 0 || (cart?.customer_id > 0 && cart.cartItems.length > 0)}
           className="btn btn-primary ms-2 p-3"
           style={{
             lineHeight: 0,
