@@ -1,5 +1,6 @@
 import { AdminLayout } from '@layout';
 import { ILocationSettings } from '@models/common-model';
+import { IStockReport } from '@models/reports.types';
 import { Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
@@ -12,34 +13,26 @@ import {
   GridToolbarExport,
   GridToolbarQuickFilter,
 } from '@mui/x-data-grid';
+import { nanoid } from '@reduxjs/toolkit';
 import { useRouter } from 'next/router';
 import React, { useContext, useEffect, useState } from 'react';
 import { Button } from 'react-bootstrap';
 import { useReactToPrint } from 'react-to-print';
 import withAuth from 'src/HOCs/withAuth';
 import AlertDialog from 'src/components/utils/AlertDialog';
-import { UserContext } from 'src/context/UserContext';
+import { UserContext, useUser } from 'src/context/UserContext';
 import { apiFetch, apiFetchCtr } from 'src/libs/dbUtils';
+import api from 'src/utils/app-api';
 
 function StockReport() {
   const router = useRouter();
   const shopId = router.query.id;
 
-  const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
-    // @ts-ignore
-    value: 0,
-    label: '',
-    currency_decimal_places: 0,
-    currency_code: '',
-    currency_id: 0,
-    currency_rate: 1,
-    currency_symbol: '',
-  });
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const handleClose = () => {
     setAnchorEl(null);
   };
-  const [sales, setsales] = useState<any>([]);
+  const [sales, setSales] = useState<any>([]);
 
   const [selectId, setSelectId] = useState(0);
   const [selectRow, setSelectRow] = useState<any>({});
@@ -49,7 +42,7 @@ function StockReport() {
   const [showViewPopUp, setShowViewPopUp] = useState(false);
   const [handleSearchTxt, setHandleSearchTxt] = useState('');
   const [details, setDetails] = useState({ subTotal: 1, tax: 0, cost: 0 });
-  const { setInvoicDetails, invoicDetails } = useContext(UserContext);
+  const { setInvoicDetails, invoicDetails, locationSettings } = useUser();
 
   const [filteredSales, setFilteredSales] = useState<any>([]);
   const [selectedRange, setSelectedRange] = useState(null);
@@ -60,8 +53,8 @@ function StockReport() {
 
   useEffect(() => {
     let localFilteredSales = [];
-    if (strSelectedDate.length === 2) {
-      const filteredList = sales.filter((sale) => {
+    if (strSelectedDate?.length === 2) {
+      const filteredList = sales?.filter((sale) => {
         const dateCreated = sale.created_at.split(' ')[0];
         return (
           new Date(dateCreated).getDate() >= new Date(strSelectedDate[0]).getDate() &&
@@ -74,7 +67,7 @@ function StockReport() {
       });
       setSelectedDateValue(`${strSelectedDate[0]} - ${strSelectedDate[1]}`);
       localFilteredSales = filteredList;
-    } else if (strSelectedDate.length === 1) {
+    } else if (strSelectedDate?.length === 1) {
       const filteredList = sales.filter((sale) => {
         const dateCreated = sale.created_at.split(' ')[0];
         return (
@@ -123,26 +116,39 @@ function StockReport() {
   };
 
   //table columns
-  const columns: GridColDef[] = [
-    { field: 'SKU', headerName: 'SKU', flex: 1 },
-    { field: 'Product', headerName: 'Product', flex: 1 },
-    { field: 'Location', headerName: 'Location', flex: 1 },
-    { field: 'Unit Price', headerName: 'Unit Price', flex: 1 },
-    { field: 'Current Stock', headerName: 'Current Stock', flex: 1 },
+  const columns: GridColDef<IStockReport>[] = [
+    { field: 'sku', headerName: 'SKU', width: 80 },
+    { field: 'brand_name', headerName: 'Brand Name' },
+    { field: 'product_name', headerName: 'Product', flex: 1 },
+    { field: 'location_name', headerName: 'Location', flex: 1, minWidth: 120 },
+    { field: 'unit_name', headerName: 'Unit Price', flex: 1 },
     {
-      field: 'Current Stock Value (By purchase price)',
-      headerName: 'Current Stock Value (By purchase price)',
+      field: 'sub_category',
+      headerName: 'Sub Category',
       flex: 1,
+      renderCell: ({ row }) => row.sub_category?.trim() || '---',
     },
     {
-      field: 'Current Stock Value (By sale price)',
-      headerName: 'Current Stock Value (By sale price)',
-      flex: 1,
+      field: 'cost_price',
+      headerName: 'Cost Price',
+      renderCell: ({ row }) =>
+        `${(+row.cost_price).toFixed(locationSettings.location_decimal_places)} ${
+          locationSettings.currency_name
+        }`,
     },
-    { field: 'Potential profit', headerName: 'Potential profit', flex: 1 },
-    { field: 'Total Unit sold', headerName: 'Total Unit sold', flex: 1 },
-    { field: 'Total Unit transfered', headerName: 'Total Unit transfered', flex: 1 },
-    { field: 'Total Unit Adjusted', headerName: 'Total Unit Adjusted', flex: 1 },
+    {
+      field: 'sell_price',
+      headerName: 'Sell Price',
+      renderCell: ({ row }) =>
+        `${(+row.sell_price).toFixed(locationSettings.location_decimal_places)} ${
+          locationSettings.currency_name
+        }`,
+    },
+    {
+      field: 'sold_qty',
+      headerName: 'Sold Qty',
+      renderCell: ({ row }) => (+row.sold_qty).toFixed(0),
+    },
   ];
 
   const componentRef = React.useRef(null);
@@ -252,28 +258,38 @@ function StockReport() {
       setLines(newdata.sellLines);
     }
   }
+
   // init sales data
   async function initDataPage() {
-    var _locs = JSON.parse(localStorage.getItem('locations') || '[]');
-    if (_locs.toString().length > 10)
-      setLocationSettings(
-        _locs[
-          _locs.findIndex((loc: any) => {
-            return loc.value == shopId;
-          })
-        ]
-      );
-
-    const { success, data } = await apiFetchCtr({
-      fetch: 'reports',
-      subType: 'getItemsReport',
-      shopId,
-    });
-    if (success) {
-      setsales(data.sales);
-      setDetails(data.sums[0]);
-    }
+    setIsLoadItems(true);
+    api
+      .get(`reports/itemStock/${shopId}`, { params: { all_data: 1 } })
+      .then(({ data }) => {
+        console.table(data.result);
+        setSales(
+          data.result.map((item) => ({
+            id: nanoid(5),
+            ...item,
+          }))
+        );
+      })
+      .finally(() => {
+        setIsLoadItems(false);
+      });
   }
+
+  // init sales data
+  // async function initDataPage() {
+  //   const { success, data } = await apiFetchCtr({
+  //     fetch: 'reports',
+  //     subType: 'getItemsReport',
+  //     shopId,
+  //   });
+  //   if (success) {
+  //     setSales(data.sales);
+  //     setDetails(data.sums[0]);
+  //   }
+  // }
 
   async function getItems(id: number) {
     setIsLoadItems(true);
@@ -290,18 +306,10 @@ function StockReport() {
   }
 
   useEffect(() => {
-    var _locs = JSON.parse(localStorage.getItem('locations') || '[]');
-    if (_locs.toString().length > 10)
-      setLocationSettings(
-        _locs[
-          _locs.findIndex((loc: any) => {
-            return loc.value == shopId;
-          })
-        ]
-      );
-    else alert('errorr location settings');
+    if (!shopId) return;
+
     initDataPage();
-  }, []);
+  }, [shopId]);
 
   function CustomToolbar() {
     return (

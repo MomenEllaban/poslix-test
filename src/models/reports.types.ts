@@ -127,3 +127,17 @@ export interface IPurchaseReport {
   payment_method: string;
   type: string;
 }
+
+export interface IStockReport {
+  sku: string;
+  product_name: string;
+  sub_category: any;
+  cost_price: string;
+  sell_price: string;
+  unit_name: string;
+  receive_qty: string;
+  sold_qty: string;
+  brand_name: string;
+  brand_id: number;
+  location_name: string;
+}
