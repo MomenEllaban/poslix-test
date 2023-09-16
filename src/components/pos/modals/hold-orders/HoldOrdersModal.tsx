@@ -154,7 +154,7 @@ export default function HoldOrdersModal({ shopId, lang }: any) {
               />
             </Tab>
             <Tab eventKey="order" title={lang.cartComponent.orderModal.order}>
-              <OrdersTable lang={lang} shopId={shopId} searchQuery={searchQuery} />
+              <OrdersTable lang={lang} shopId={shopId} searchQuery={searchQuery} closeModal={handleClose} />
             </Tab>
           </Tabs>
         </Modal.Body>

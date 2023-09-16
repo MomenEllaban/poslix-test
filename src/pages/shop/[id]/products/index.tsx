@@ -304,14 +304,14 @@ const Product: NextPage = (props: any) => {
   useEffect(() => {
     const perms = JSON.parse(localStorage.getItem('permissions'));
     const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
-    perms.inventory.map((perm) =>
-      perm.name.includes('inventory products GET')
+    perms.inventory.products.map((perm) =>
+      perm.name.includes('products/show')
         ? (getPermissions.hasView = true)
-        : perm.name.includes('inventory products POST')
+        : perm.name.includes('products/add')
         ? (getPermissions.hasInsert = true)
-        : perm.name.includes('inventory products PUT')
+        : perm.name.includes('products/update')
         ? (getPermissions.hasEdit = true)
-        : perm.name.includes('inventory products DELETE')
+        : perm.name.includes('products/delete')
         ? (getPermissions.hasDelete = true)
         : null
     );

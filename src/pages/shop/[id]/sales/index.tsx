@@ -420,12 +420,14 @@ export default function SalesList(props: any) {
   }
   // init sales data
   async function initDataPage() {
-   const res = await findAllData('reports/sales/140')
-    if (res.data.success) {
-      setSales(res.data.result);
-    //   if (newdata.invoiceDetails != null && newdata.invoiceDetails?.length > 10)
-    //     setInvoicDetails(JSON.parse(newdata.invoiceDetails));
-    }
+   if(router.isReady) {
+      const res = await findAllData(`reports/sales/${router.query.id}`)
+      if (res.data.success) {
+        setSales(res.data.result);
+      //   if (newdata.invoiceDetails != null && newdata.invoiceDetails?.length > 10)
+      //     setInvoicDetails(JSON.parse(newdata.invoiceDetails));
+      }
+   }
   }
 
   async function getItems(id: number) {

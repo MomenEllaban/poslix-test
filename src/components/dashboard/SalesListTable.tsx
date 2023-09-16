@@ -32,9 +32,12 @@ import SalesPaymentModal from '../pos/modals/SalesPaymentModal';
 import { cartJobType } from 'src/recoil/atoms';
 import { useRecoilState } from 'recoil';
 import { findAllData } from 'src/services/crud.api';
+import { useAppDispatch } from 'src/hooks';
+import { addMultipleToCart, addToCart } from 'src/redux/slices/cart.slice';
 
 export default function SalesListTable(props: any) {
   const { shopId, rules, salesList } = props;
+  const dispatch = useAppDispatch();
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
     // @ts-ignore
     value: 0,
@@ -131,14 +134,16 @@ export default function SalesListTable(props: any) {
         <>
           <ButtonGroup className="mb-2 m-buttons-style">
             <Button
-              onClick={() => {
+              onClick={async () => {
                 // setEdit(true);
                 // onRowsSelectionHandler(row);
                 setJobType({
                   req: 3,
                   val: row.id,
                 });
-                router.push('/pos/' + shopId);
+                const res = await findAllData(`sales/${row.id}`)
+                dispatch(addMultipleToCart({ location_id: router.query.id, products: res.data.result.products }));
+                router.push('/pos/' + router.query.id);
               }}>
               <FontAwesomeIcon icon={faPenToSquare} />
             </Button>
