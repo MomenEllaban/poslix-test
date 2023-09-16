@@ -1,7 +1,6 @@
 import React from 'react'
 import { Button } from "react-bootstrap";
 import { useState ,useEffect,useContext} from "react";
-import Nmodal from "../modal/Nmodal";
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
@@ -18,20 +17,18 @@ const style = {
   boxShadow: 24,
   borderRadius: 1
 };
-const handleCloseFromChild = (e) => {
-  e.stopPropagation();
-  setOpen(false)
-}
+// const handleCloseFromChild = (e) => {
+//   e.stopPropagation();
+//   setOpen(false)
+// }
 const CartModal = ({product,idd,onCloseModal}) => {
   const { id, name, description, price, image } = product;
-  
-     console.log(idd==id,"idd==id")
      const [modalVisible, setModalVisible] = useState(false);
      const [open, setOpen] = useState(false);
      const handleOpen = () => setOpen(true);
      const handleClose = () => setOpen(false);
      const dispatch = useDispatch()
-  const {digitalCart} = useSelector((state) => state.digitalCart)
+  const {digitalCart} = useSelector((state:any) => state.digitalCart)
      const cartItem = digitalCart.filter((item) => item.id == id);
      const [quantQuenter, setQuantQuenter] = useState(1);
      const [tPrice, setTPrice] = useState(1);
@@ -43,7 +40,6 @@ const CartModal = ({product,idd,onCloseModal}) => {
  const getItemTotal = (quantQuenter) => {
      let totalQuantity = quantQuenter
      let totalPrice = 0
-     console.log(cartItem);
      cartItem.forEach(item => {
        totalQuantity += item.quantity
        totalPrice += item.price * item.quantity

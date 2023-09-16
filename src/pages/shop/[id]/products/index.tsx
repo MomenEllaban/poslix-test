@@ -34,20 +34,12 @@ import * as XLSX from 'xlsx';
 import { darkModeContext } from '../../../../context/DarkModeContext';
 import { apiInsertCtr } from '../../../../libs/dbUtils';
 import styles from './table.module.css';
+import { useUser } from 'src/context/UserContext';
 
 const Product: NextPage = (props: any) => {
   const { rules } = props;
   const myLoader = (img: any) => img.src;
-  const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
-    // @ts-ignore
-    value: 0,
-    label: '',
-    currency_decimal_places: 0,
-    currency_code: '',
-    currency_id: 0,
-    currency_rate: 1,
-    currency_symbol: '',
-  });
+  const {locationSettings,setLocationSettings }=useUser()
   const dataGridRef = useRef(null);
   const router = useRouter();
   const [products, setProducts] = useState<
@@ -304,14 +296,14 @@ const Product: NextPage = (props: any) => {
   useEffect(() => {
     const perms = JSON.parse(localStorage.getItem('permissions'));
     const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
-    perms.inventory.map((perm) =>
-      perm.name.includes('inventory products GET')
+    perms.inventory.products.map((perm) =>
+      perm.name.includes('products/show')
         ? (getPermissions.hasView = true)
-        : perm.name.includes('inventory products POST')
+        : perm.name.includes('products/add')
         ? (getPermissions.hasInsert = true)
-        : perm.name.includes('inventory products PUT')
+        : perm.name.includes('products/update')
         ? (getPermissions.hasEdit = true)
-        : perm.name.includes('inventory products DELETE')
+        : perm.name.includes('products/delete')
         ? (getPermissions.hasDelete = true)
         : null
     );

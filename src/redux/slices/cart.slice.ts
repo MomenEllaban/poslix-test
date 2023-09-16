@@ -78,7 +78,6 @@ const cartSlice = createSlice({
     },
     addToCart: (state, action) => {
       const { id, location_id } = action.payload;
-      console.log(current(state));
       const cart = findOrCreateCart(state, location_id);
       const existingItem = cart.cartItems.find((item) => item.id === id);
 
@@ -87,8 +86,6 @@ const cartSlice = createSlice({
       } else {
         cart.cartItems.push({ ...action.payload, product_id: id, quantity: 1 });
       }
-      console.log(id, location_id, cart);
-
       cart.cartSellTotal += +action.payload.sell_price;
       cart.cartCostTotal += +action.payload.cost_price;
       localStorage.setItem('cart', JSON.stringify(state));
@@ -129,6 +126,22 @@ const cartSlice = createSlice({
         localStorage.setItem('cart', JSON.stringify(state));
       }
     },
+    addMultipleToCart: (state, action) => {
+      const { location_id, products } = action.payload;
+      const cart = findOrCreateCart(state, location_id);
+      products.map((prod) => {
+        const existingItem = cart.cartItems.find((item) => item.id === prod.id);
+
+        if (existingItem) {
+          existingItem.quantity += 1;
+        } else {
+          cart.cartItems.push({ ...prod, product_id: prod.id, quantity: 1 });
+        }
+        cart.cartSellTotal += +action.payload.sell_price;
+        cart.cartCostTotal += +action.payload.cost_price;
+      })
+      localStorage.setItem('cart', JSON.stringify(state));
+    }
   },
 });
 
@@ -152,4 +165,5 @@ export const {
   decreaseItemQuantity,
   clearCart,
   removeFromCart,
+  addMultipleToCart
 } = cartSlice.actions;

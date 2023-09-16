@@ -9,6 +9,7 @@ import { Toastify } from 'src/libs/allToasts';
 import { useRouter } from 'next/router';
 import { useAppDispatch } from 'src/hooks';
 import { setPosRegister } from 'src/redux/slices/pos.slice';
+import { createNewData } from 'src/services/crud.api';
 
 export function OpenRegisterView({ setShopId, shopId, setIsLoading }) {
   const router = useRouter();
@@ -16,6 +17,7 @@ export function OpenRegisterView({ setShopId, shopId, setIsLoading }) {
   const [locations, setLocations] = useState([]);
   const { cashHand, setCashHand } = usePosContext();
   const dispatch = useAppDispatch();
+  const [currentShopId, setCurrentShopId] = useState(shopId)
 
   const { isLoading } = useBusinessList({
     onSuccess: (data) => {
@@ -28,43 +30,24 @@ export function OpenRegisterView({ setShopId, shopId, setIsLoading }) {
     const idx = cusLocs?.findIndex((el) => el.id == e.target?.value);
     const locs = idx > -1 ? cusLocs?.[idx].locations : [];
     setLocations(locs);
-    setShopId(locs?.[0]?.location_id);
+    setCurrentShopId(locs?.[0]?.location_id);
   };
 
   const handleLocationChange = (e: any) => {
-    setShopId(e.target?.value);
+    setCurrentShopId(e.target?.value);
   };
 
   async function openRegister() {
     setIsLoading(true);
-    await api
-      .post(`/registration/${shopId}/open`, { hand_cash: +cashHand })
-      .then(({ data }) => {
-        Toastify('success', data.result.message);
-        localStorage.setItem(
-          ELocalStorageKeys.POS_REGISTER_STATE,
-          JSON.stringify({
-            state: 'open',
-            hand_cash: +cashHand,
-          })
-        );
-        router.replace(`/pos/${shopId}`);
-      })
-      .catch(() => {
-        alert('error..Try Again');
-      })
-      .finally(() => {
-        dispatch(
-          setPosRegister({
-            state: 'open',
-            hand_cash: +cashHand,
-          })
-        );
-
-        setIsLoading(false);
-      });
-
-    // // initData();
+    const res = await createNewData(`/registration/${currentShopId}/open`, { hand_cash: +cashHand })
+    if(res.data.success) {
+      Toastify('success', res.data.result.message);
+      dispatch(setPosRegister({state: 'open', hand_cash: +cashHand}));
+      localStorage.setItem(ELocalStorageKeys.POS_REGISTER_STATE,
+        JSON.stringify({state: 'open', hand_cash: +cashHand}));
+      router.replace(`/pos/${currentShopId}`);
+    } else alert('error..Try Again');
+    setIsLoading(false);
   }
 
   useEffect(() => {
@@ -81,17 +64,14 @@ export function OpenRegisterView({ setShopId, shopId, setIsLoading }) {
       }}>
       <img className="logo" src="/images/logo1.png" />
       <p>You have Open Register First!</p>
-      {/*//! why */}
-      {/* mohamed elsayed reg */}
-      {/* <div className="col-lg-4 mb-3">
+      <div className="col-lg-4 mb-3">
           <label>Bussnies</label>
-
           <select
             className="form-select"
             disabled={isLoading || !cusLocs?.length}
             defaultValue={0}
             onChange={handleBussinesChange}>
-            {isLoading || !cusLocs?.length ? (
+            { cusLocs?.length == 0 ? (
               <option value={0} disabled>
                 Loading...
               </option>
@@ -108,8 +88,7 @@ export function OpenRegisterView({ setShopId, shopId, setIsLoading }) {
               </>
             )}
           </select>
-        </div> */}
-      {/* 
+        </div>
         <div className="col-lg-4 mb-3">
           <label>Location</label>
           <select
@@ -117,7 +96,7 @@ export function OpenRegisterView({ setShopId, shopId, setIsLoading }) {
             defaultValue={0}
             className="form-select"
             onChange={handleLocationChange}>
-            {isLoading || !locations?.length ? (
+            {locations?.length == 0 ? (
               <option value={0} disabled>
                 Loading...
               </option>
@@ -134,8 +113,7 @@ export function OpenRegisterView({ setShopId, shopId, setIsLoading }) {
               </>
             )}
           </select>
-        </div> */}
-      {/* ------------------ */}
+        </div>
       <div className="col-lg-4 mb-3">
         <input
           type="number"

@@ -164,12 +164,12 @@ const Purchases: NextPage = (props: any) => {
   useEffect(() => {
     const perms = JSON.parse(localStorage.getItem('permissions'));
     const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
-    perms.inventory.map((perm) =>
-      perm.name.includes('inventory purchases POST')
+    perms.inventory.purchases.map((perm) =>
+      perm.name.includes('purchases/add')
         ? (getPermissions.hasInsert = true)
-        : perm.name.includes('inventory purchases PUT')
+        : perm.name.includes('purchases/update')
         ? (getPermissions.hasEdit = true)
-        : perm.name.includes('inventory purchases DELETE')
+        : perm.name.includes('purchases/delete')
         ? (getPermissions.hasDelete = true)
         : null
     );

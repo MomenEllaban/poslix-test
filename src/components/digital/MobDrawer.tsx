@@ -39,14 +39,11 @@ const Puller = styled(Box)(({ theme }) => ({
 function MobDrawer({toggleDrawer,setOpen,open,setShowCart}) {
 
   const handleDrawer = (open) => {
-    console.log("first")
     setShowCart((s)=>!s)
     setOpen(!open);
     toggleDrawer(!open)
   };
-  // This is used only for the example
-  const {digitalCart} = useSelector((state) => state.digitalCart)
-  console.log("first",digitalCart.digitalCart)
+  const {digitalCart} = useSelector((state:any) => state.digitalCart)
   const dispatch = useDispatch()
   const getTotal = () => {
       let totalQuantity = 0

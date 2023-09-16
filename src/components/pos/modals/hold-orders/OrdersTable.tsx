@@ -4,13 +4,15 @@ import Fuse from 'fuse.js';
 import { useState } from 'react';
 import { Button, Table } from 'react-bootstrap';
 import { MdAutorenew, MdInfoOutline } from 'react-icons/md';
-import { FixedSizeList } from 'react-window';
-import InfiniteLoader from 'react-window-infinite-loader';
+// import { FixedSizeList } from 'react-window';
+// import InfiniteLoader from 'react-window-infinite-loader';
 import { useUser } from 'src/context/UserContext';
-import { ICart } from 'src/redux/slices/cart.slice';
+import { ICart, addMultipleToCart } from 'src/redux/slices/cart.slice';
 import { useGetSalesReport } from 'src/services/pos.service';
 import OrderInfoTable from './OrderInfoTable';
 import { motion } from 'framer-motion';
+import { useAppDispatch } from 'src/hooks';
+import { findAllData } from 'src/services/crud.api';
 
 const orderToCartMapping = (order: IReportData, location_id: number): ICart => {
   return {
@@ -26,7 +28,9 @@ const orderToCartMapping = (order: IReportData, location_id: number): ICart => {
   };
 };
 
-export default function OrdersTable({ lang, shopId, searchQuery = '' }) {
+export default function OrdersTable({ lang, shopId, searchQuery = '', closeModal }) {
+  const dispatch = useAppDispatch();
+
   const { locationSettings } = useUser();
   const [isOrderDetails, setIsOrderDetails] = useState<boolean>(false);
   const [orderId, setOrderId] = useState<string | number>('');
@@ -76,8 +80,10 @@ export default function OrdersTable({ lang, shopId, searchQuery = '' }) {
             <span className="d-flex flex-row gap-3">
               <Button
                 variant="outline-info"
-                onClick={() => {
-                  console.log(item);
+                onClick={async () => {
+                  const res = await findAllData(`sales/${item.id}`)
+                  dispatch(addMultipleToCart({ location_id: shopId, products: res.data.result.products }));
+                  closeModal()
                 }}>
                 <MdAutorenew />
               </Button>

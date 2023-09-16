@@ -51,8 +51,7 @@ export default function Sidebar(props: {
       </div>
 
       <div className="sidebar-nav flex-fill">
-        {/* {isOwner ? <OwnerSidebarNav /> : <SidebarNav shopId={shopId} />} */}
-     <SidebarNav shopId={shopId} />
+        {isOwner ? <OwnerSidebarNav /> : <SidebarNav shopId={shopId} />}
       </div>
 
       <Button

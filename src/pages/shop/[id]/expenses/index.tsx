@@ -127,24 +127,30 @@ const Expenses: NextPage = (props: any) => {
       hasEdit: false,
       hasDelete: false,
     };
-    perms.inventory.map((perm) =>
-      perm.name.includes('inventory expense category all GET')
-        ? (getCatPermissions.hasCategories = true)
-        : perm.name.includes('inventory expense category show GET')
-        ? (getCatPermissions.hasView = true)
-        : perm.name.includes('inventory expense category update PUT')
-        ? (getCatPermissions.hasEdit = true)
-        : perm.name.includes('inventory expense category add POST')
-        ? (getCatPermissions.hasInsert = true)
-        : perm.name.includes('inventory expense category delete DELETE')
-        ? (getCatPermissions.hasDelete = true)
-        : perm.name.includes('inventory expenses add POST')
+    perms.inventory.expenses.map((perm) =>
+      perm.name.includes('expenses/show')
+        ? (getPermissions.hasView = true)
+        : perm.name.includes('expenses/add')
         ? (getPermissions.hasInsert = true)
-        : perm.name.includes('inventory expenses update PUT')
+        : perm.name.includes('expenses/update')
         ? (getPermissions.hasEdit = true)
-        : perm.name.includes('inventory expenses delete DELETE')
+        : perm.name.includes('expenses/delete')
         ? (getPermissions.hasDelete = true)
         : null
+    );
+
+    perms.inventory['expense-category'].map((perm) =>
+      perm.name.includes('expense-category/show')
+      ? (getCatPermissions.hasCategories = true)
+      : perm.name.includes('expense-category/show')
+      ? (getCatPermissions.hasView = true)
+      : perm.name.includes('expense-category/update')
+      ? (getCatPermissions.hasEdit = true)
+      : perm.name.includes('expense-category/add')
+      ? (getCatPermissions.hasInsert = true)
+      : perm.name.includes('expense-category/delete')
+      ? (getCatPermissions.hasDelete = true)
+      : null
     );
 
     setPermissions(getPermissions);
