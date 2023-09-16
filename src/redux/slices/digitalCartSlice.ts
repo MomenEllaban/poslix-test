@@ -1,9 +1,10 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { any } from 'joi';
 
 const digitalCartSlice = createSlice({
   name: 'digitalCart',
   initialState: {
-    digitalCart: [],
+    digitalCart:[],
   },
   reducers: {
     addTodigitalCart: (state, action) => {

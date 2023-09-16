@@ -25,7 +25,7 @@ const AddNewRole = (props: any) => {
   const [roles, setRoles] = useState([]);
   const [selectedRole, setSelectedRole] = useState(-1);
   const [pages, setPages] = useState<
-    { value: string; label: string; stuffs: object[]; icon?: IconProp }[]
+    { value: string; label: string; stuffs: object[]; icon?: IconProp   }[]
   >([]);
   // const pages2 = [
   //   { value: 'split', label: 'Sales List', stuffs: [], icon: faChartPie },
@@ -222,7 +222,7 @@ const AddNewRole = (props: any) => {
                             return <>
                               <li className="list-group-item bg-primary">
                                 <span>
-                                  <FontAwesomeIcon icon={'pg.icon!'} size="1x" /> {key.charAt(0).toUpperCase() + key.slice(1)}
+                                  <FontAwesomeIcon icon={'page'} size="1x" /> {key.charAt(0).toUpperCase() + key.slice(1)}
                                 </span>
                                 <div className="checkbox-rols"></div>
                               </li>

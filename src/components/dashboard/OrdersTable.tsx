@@ -20,19 +20,11 @@ import {
   GridToolbarExport,
   GridToolbarQuickFilter,
 } from '@mui/x-data-grid';
+import { useUser } from 'src/context/UserContext';
 const OrdersTable = (props: any) => {
   const { shopId, rules } = props;
   const myLoader = (img: any) => img.src;
-  const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
-    value: 0,
-    label: '',
-    location_decimal_places: 0,
-    currency_code: '',
-    currency_id: 0,
-    // @ts-ignore
-    currency_rate: 1,
-    currency_symbol: '',
-  });
+  const {locationSettings,setLocationSettings }=useUser()
   const router = useRouter();
   const [orders, setOrders] = useState<
     {

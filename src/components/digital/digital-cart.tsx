@@ -4,8 +4,7 @@ import  CartItem  from "./CartItem"
 import { useDispatch,useSelector } from 'react-redux';
 import {addTodigitalCart ,incrementQuantity, decrementQuantity, removeItem} from '../../redux/slices/digitalCartSlice';
 const DigitalCart = (props: any) => {
-    const {digitalCart} = useSelector((state) => state.digitalCart)
-    console.log("first",digitalCart.digitalCart)
+    const {digitalCart} = useSelector((state:any) => state.digitalCart)
     const dispatch = useDispatch()
     const getTotal = () => {
         let totalQuantity = 0

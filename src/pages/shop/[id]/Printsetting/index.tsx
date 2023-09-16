@@ -26,7 +26,7 @@ import { ProductContext } from '../../../../context/ProductContext';
 const Printers: NextPage = (props: any) => {
   const { shopId, rules } = props;
 
-  const [locationSettings, setLocationSettings] = useState<ILocationSettings>({});
+  // const [locationSettings, setLocationSettings] = useState<ILocationSettings>({});
   const router = useRouter();
  
   

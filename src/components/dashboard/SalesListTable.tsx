@@ -23,7 +23,7 @@ import AlertDialog from 'src/components/utils/AlertDialog';
 import { apiFetch, apiFetchCtr } from 'src/libs/dbUtils';
 import { Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import { ILocationSettings, IpaymentRow } from '@models/common-model';
-import { UserContext } from 'src/context/UserContext';
+import { UserContext, useUser } from 'src/context/UserContext';
 import { useReactToPrint } from 'react-to-print';
 import { Toastify } from 'src/libs/allToasts';
 import { ToastContainer } from 'react-toastify';
@@ -38,16 +38,9 @@ import { addMultipleToCart, addToCart } from 'src/redux/slices/cart.slice';
 export default function SalesListTable(props: any) {
   const { shopId, rules, salesList } = props;
   const dispatch = useAppDispatch();
-  const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
-    // @ts-ignore
-    value: 0,
-    label: '',
-    currency_decimal_places: 0,
-    currency_code: '',
-    currency_id: 0,
-    currency_rate: 1,
-    currency_symbol: '',
-  });
+  const {locationSettings,setLocationSettings }=useUser()
+
+ 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const handleClose = () => {
     setAnchorEl(null);

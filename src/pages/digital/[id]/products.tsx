@@ -1,18 +1,17 @@
-import { NextPage } from 'next';
-import { Button, Card, Form, InputGroup } from 'react-bootstrap';
-import { Button as MButton } from '@mui/material';
-import ProductItem from 'src/components/digital/product-item';
-import DigitalCart from 'src/components/digital/digital-cart';
-import MobDrawer from 'src/components/digital/MobDrawer';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import React, { useRef, useState, useEffect, useMemo } from 'react';
-import useMediaQuery from '@mui/material/useMediaQuery';
-import {  createTheme } from '@mui/material/styles';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
-import {useSelector } from 'react-redux';
-import {addTodigitalCart ,incrementQuantity, decrementQuantity, removeItem} from '../../redux/slices/digitalCartSlice';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
+import { createTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { NextPage } from 'next';
+import React, { useState } from 'react';
+import { Button } from 'react-bootstrap';
+import { useSelector } from 'react-redux';
+import MobDrawer from 'src/components/digital/MobDrawer';
+import DigitalCart from 'src/components/digital/digital-cart';
+import ProductItem from 'src/components/digital/product-item';
+
 const Products: NextPage = (props: any) => {
   const [type, setType] = useState('all');
   const [showCart, setShowCart] = useState(true);
@@ -21,13 +20,12 @@ const Products: NextPage = (props: any) => {
     setOpen(newOpen);
   };
   const handleDrawer = (open) => {
-    console.log("first")
     setOpen(!open);
     toggleDrawer(!open)
 
       setShowCart((s)=>!s)
   };
-  const {digitalCart} = useSelector((state) => state.digitalCart)
+  const {digitalCart} = useSelector((state:any) => state.digitalCart)
   const getTotal = () => {
       let totalQuantity = 0
       let totalPrice = 0
@@ -38,15 +36,7 @@ const Products: NextPage = (props: any) => {
       })
       return {totalPrice, totalQuantity}
     }
-  const customTheme = createTheme({
-    transitions: {
-      easing: {
-        // This is the most common easing curve.
-        easeInOut: 'cubic-bezier(5, 3, 6, 5)',
-        
-      },
-    },
-  });
+ 
   const matches = useMediaQuery('(max-width:850px)');
   const [value, setValue] = React.useState(0);
 
@@ -367,11 +357,11 @@ const Products: NextPage = (props: any) => {
                 aria-label="digital-products-filter"
                 sx={{ textTransform: 'none' }}
       >
-        <Tab className='filter_btn' label="all" value="1" onClick={(e) => {setType(e.target.innerText)}} /> 
-        <Tab className='filter_btn' label="Chicken" value="2" onClick={(e) => {setType(e.target.innerText)}} /> 
-        <Tab className='filter_btn' label="ozy" value="3" onClick={(e) => {setType(e.target.innerText)}} /> 
-        <Tab className='filter_btn' label="cozy" value="4" onClick={(e) => {setType(e.target.innerText)}} /> 
-        <Tab className='filter_btn' label="Pasta" value="5" onClick={(e) => {setType(e.target.innerText)}} /> 
+        <Tab className='filter_btn' label="all" value="1" onClick={(e:any) => {setType(e.target.innerText)}} /> 
+        <Tab className='filter_btn' label="Chicken" value="2" onClick={(e:any) => {setType(e.target.innerText)}} /> 
+        <Tab className='filter_btn' label="ozy" value="3" onClick={(e:any) => {setType(e.target.innerText)}} /> 
+        <Tab className='filter_btn' label="cozy" value="4" onClick={(e:any) => {setType(e.target.innerText)}} /> 
+        <Tab className='filter_btn' label="Pasta" value="5" onClick={(e:any) => {setType(e.target.innerText)}} /> 
      
       </Tabs>
     </Box>
@@ -384,13 +374,13 @@ const Products: NextPage = (props: any) => {
               : products
                   .filter((product) => product.type == type)
                   .map((product, ind) => (
-                    <ProductItem product={product} className={ind} key={product.id} />
+                    <ProductItem product={product}  key={product.id} />
                   ))}
           </div>
         </div>
         <DigitalCart />
         {matches?
-          <div className="digital-cart-small" theme={customTheme}
+          <div className="digital-cart-small" 
             style={{ display: showCart ? 'flex' : 'none', transition: "all 1.5s ease-in-out" ,background: getTotal().totalPrice ? '#045c54' : '#909090',}}>
  <div className='d-flex h-100 align-items-center '>
  <ShoppingCartIcon/>
