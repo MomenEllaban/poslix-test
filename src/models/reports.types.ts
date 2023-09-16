@@ -43,7 +43,7 @@ export interface IOpenCloseReport {
   cheque: string;
   bank: number;
   date: Date;
-  note: string | null;
+  note?: string;
   status: EStatus;
 }
 

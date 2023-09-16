@@ -14,29 +14,20 @@ import { useRouter } from 'next/router';
 import React, { useContext, useEffect, useState } from 'react';
 import withAuth from 'src/HOCs/withAuth';
 import AlertDialog from 'src/components/utils/AlertDialog';
-import { UserContext } from 'src/context/UserContext';
+import { UserContext, useUser } from 'src/context/UserContext';
 import { apiFetchCtr } from 'src/libs/dbUtils';
 import api from 'src/utils/app-api';
 
 function SalesReport() {
   const router = useRouter();
   const shopId = router.query.id;
-
-  const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
-    // @ts-ignore
-    value: 0,
-    label: '',
-    currency_decimal_places: 0,
-    currency_code: '',
-    currency_id: 0,
-    currency_rate: 1,
-    currency_symbol: '',
-  });
+  const { locationSettings, setLocationSettings, invoicDetails } = useUser();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const handleClose = () => {
     setAnchorEl(null);
   };
   const [sales, setSales] = useState<IOpenCloseReport[]>([]);
+
   const [show, setShow] = useState(false);
 
   const [selectId, setSelectId] = useState(0);
@@ -45,8 +36,21 @@ function SalesReport() {
   const [isLoadItems, setIsLoadItems] = useState(false);
   const [showViewPopUp, setShowViewPopUp] = useState(false);
   const [handleSearchTxt, setHandleSearchTxt] = useState('');
-  const [details, setDetails] = useState({ subTotal: 1, tax: 0, cost: 0, total: 1 });
-  const { setInvoicDetails, invoicDetails } = useContext(UserContext);
+  const [details, setDetails] = useState<{
+    total_hand_cash: number;
+    total_cash: number;
+    total_cheque: number;
+    total_bank: number;
+    total_cart: number;
+    total: number;
+  }>({
+    total_hand_cash: 0,
+    total_cash: 0,
+    total_cheque: 0,
+    total_bank: 0,
+    total_cart: 0,
+    total: 0,
+  });
 
   const columns: GridColDef<IOpenCloseReport>[] = [
     { field: 'id', headerName: '#', maxWidth: 72 },
@@ -102,9 +106,15 @@ function SalesReport() {
       field: 'date',
       headerName: 'Date',
       flex: 1,
-      renderCell: ({ row }: Partial<GridRowParams>) => row.date.split('T')[0],
+      renderCell: ({ row }: Partial<GridRowParams>) => `${new Date(row.date).toLocaleDateString()}`,
     },
-    { field: 'closing_note', headerName: 'Note', flex: 1, disableColumnMenu: true },
+    {
+      field: 'closing_note',
+      headerName: 'Note',
+      flex: 1,
+      disableColumnMenu: true,
+      renderCell: ({ row }) => row.note?.trim() || '---',
+    },
   ];
 
   const componentRef = React.useRef(null);
@@ -204,20 +214,12 @@ function SalesReport() {
   }
   async function initDataPage() {
     if (!shopId) return;
-    var _locs = JSON.parse(localStorage.getItem('locations') || '[]');
-    if (_locs.toString().length > 10)
-      setLocationSettings(
-        _locs[
-          _locs.findIndex((loc: any) => {
-            return loc.value == shopId;
-          })
-        ]
-      );
+
     api.get(`reports/register/${shopId}`, { params: { all_data: 1 } }).then(({ data }) => {
       console.log(data.result);
       const { data: ocReports, ...details } = data.result ?? { data: [], details: {} };
       setSales(ocReports as IOpenCloseReport[]);
-      setDetails(details);
+      setDetails((data) => ({ ...data, ...details }));
     });
   }
 
@@ -236,16 +238,6 @@ function SalesReport() {
   }
 
   useEffect(() => {
-    var _locs = JSON.parse(localStorage.getItem('locations') || '[]');
-    if (_locs.toString().length > 10)
-      setLocationSettings(
-        _locs[
-          _locs.findIndex((loc: any) => {
-            return loc.value == shopId;
-          })
-        ]
-      );
-    else alert('errorr location settings');
     initDataPage();
   }, [router.query.id]);
 
@@ -277,16 +269,18 @@ function SalesReport() {
         <h5> Report Open Register</h5>
         <div className="deatils_box">
           <div>
-            <span>SubTotal: </span>
-            {Number(details.subTotal ?? 0).toFixed(3)} {locationSettings?.currency_code}
-          </div>
-          <div>
-            <span>Tax: </span>
-            {Number(details.tax ?? 0).toFixed(3)} {locationSettings?.currency_code}
-          </div>
-          <div>
             <span>Total: </span>
-            {Number(Number(details.total ?? 0) + Number(details.tax ?? 0)).toFixed(3)}{' '}
+            {details.total?.toFixed(locationSettings?.location_decimal_places)}{' '}
+            {locationSettings?.currency_code}
+          </div>
+          <div>
+            <span>Total Bank: </span>
+            {details.total_bank?.toFixed(locationSettings?.location_decimal_places)}{' '}
+            {locationSettings?.currency_code}
+          </div>
+          <div>
+            <span>Total Card: </span>
+            {details.total_cart?.toFixed(locationSettings?.location_decimal_places)}{' '}
             {locationSettings?.currency_code}
           </div>
         </div>
