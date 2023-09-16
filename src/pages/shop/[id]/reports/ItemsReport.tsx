@@ -136,7 +136,7 @@ function ItemsReport() {
       renderCell: ({ row }) =>
         (+row.price).toFixed(locationSettings?.location_decimal_places) +
         ' ' +
-        locationSettings?.currency_code,
+        locationSettings?.currency_name,
     },
     // { field: 'Product', headerName: 'Product', flex: 1 },
     // { field: 'SKU', headerName: 'SKU', flex: 1 },
@@ -154,23 +154,16 @@ function ItemsReport() {
       field: 'status',
       headerName: 'Status',
       renderCell: ({ row }) => (
-        <span className="text-black border px-3 rounded rounded-1">{row.status}</span>
+        <span className="text-black border px-3 rounded rounded-3">{row.status}</span>
       ),
     },
-    // { field: 'Purchase', headerName: 'Purchase', flex: 1 },
-    // { field: 'Supplier', headerName: 'Supplier', flex: 1 },
-    // { field: 'Purchase Price', headerName: 'Purchase Price', flex: 1 },
-    // { field: 'Sale Date', headerName: 'Sale Date', flex: 1 },
-    // { field: 'Sale', headerName: 'Sale', flex: 1 },
-    // { field: 'Customer', headerName: 'Customer', flex: 1 },
+
     {
       field: 'Quantity',
       headerName: 'Quantity',
 
       renderCell: ({ row }) => +(row.qty ?? 0),
     },
-    // { field: 'Selling price', headerName: 'Selling price', flex: 1 },
-    // { field: 'Subtotal', headerName: 'Subtotal', flex: 1 },
   ];
 
   const componentRef = React.useRef(null);

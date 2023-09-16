@@ -1,5 +1,4 @@
 import { AdminLayout } from '@layout';
-import { ILocationSettings } from '@models/common-model';
 import { KeyboardArrowLeft, KeyboardArrowRight } from '@mui/icons-material';
 import { Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from '@mui/material';
 import FormControl from '@mui/material/FormControl';
@@ -16,36 +15,28 @@ import {
   GridToolbarQuickFilter,
 } from '@mui/x-data-grid';
 import { useRouter } from 'next/router';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Button } from 'react-bootstrap';
 import { useReactToPrint } from 'react-to-print';
 import withAuth from 'src/HOCs/withAuth';
 import DatePicker from 'src/components/filters/Date';
 import AlertDialog from 'src/components/utils/AlertDialog';
-import { UserContext } from 'src/context/UserContext';
+import { useUser } from 'src/context/UserContext';
 import { apiFetch, apiFetchCtr } from 'src/libs/dbUtils';
+import api from 'src/utils/app-api';
 
 const pageSizeOptions = [10, 20, 50, 100];
 
 function SalesReport() {
   const router = useRouter();
   const shopId = router.query.id;
+  const { locationSettings, invoicDetails } = useUser();
 
-  const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
-    // @ts-ignore
-    value: 0,
-    label: '',
-    currency_decimal_places: 0,
-    currency_code: '',
-    currency_id: 0,
-    currency_rate: 1,
-    currency_symbol: '',
-  });
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const handleClose = () => {
     setAnchorEl(null);
   };
-  const [sales, setsales] = useState<any>([]);
+  const [sales, setSales] = useState<any>([]);
   const [filteredSales, setFilteredSales] = useState<any>([]);
   const [customersOptions, setCustomersOptions] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState('');
@@ -58,31 +49,46 @@ function SalesReport() {
   const [showViewPopUp, setShowViewPopUp] = useState(false);
   const [handleSearchTxt, setHandleSearchTxt] = useState('');
   const [details, setDetails] = useState({ subTotal: 1, tax: 0, cost: 0 });
-  const { setInvoicDetails, invoicDetails } = useContext(UserContext);
 
   //table columns
-  const columns: GridColDef[] = [
-    { field: 'id', headerName: '#', maxWidth: 72 },
-    { field: 'created_at', headerName: 'Date', flex: 1 },
-    { field: 'added_by', headerName: 'Sold By', flex: 1 },
-    { field: 'customer_name', headerName: 'Sold To', flex: 1 },
-    {
-      field: 'tax_amount',
-      headerName: 'Tax',
-      flex: 1,
-      disableColumnMenu: true,
-      renderCell: ({ row }: Partial<GridRowParams>) =>
-        Number(row.tax_amount).toFixed(locationSettings?.location_decimal_places),
-    },
-    {
-      field: 'total_price',
-      headerName: 'Total',
-      maxWidth: 72,
-      renderCell: ({ row }: Partial<GridRowParams>) =>
-        Number(row.total_price).toFixed(locationSettings?.location_decimal_places),
-    },
-    { field: 'notes', headerName: 'Note', flex: 1, disableColumnMenu: true },
-  ];
+  const columns: GridColDef[] = useMemo(
+    () => [
+      { field: 'id', headerName: '#', maxWidth: 72 },
+      {
+        field: 'date',
+        headerName: 'Date',
+        width: 180,
+        renderCell: ({ row }) => new Date(row.date).toLocaleDateString(),
+      },
+      { field: 'user_name', headerName: 'Sold By', flex: 1 },
+      {
+        field: 'contact_name',
+        headerName: 'Sold To',
+        flex: 1,
+
+        renderCell: ({ row }) => row.contact_name.trim() || '---',
+      },
+      {
+        field: 'tax',
+        headerName: 'Tax',
+        flex: 1,
+        disableColumnMenu: true,
+        renderCell: ({ row }: Partial<GridRowParams>) =>
+          (+(row.tax ?? 0))?.toFixed(locationSettings?.location_decimal_places),
+      },
+      {
+        field: 'total_price',
+        headerName: 'Total',
+        maxWidth: 72,
+        renderCell: ({ row }: Partial<GridRowParams>) =>
+          `${(+row.sub_total + +row.tax).toFixed(locationSettings?.location_decimal_places)} ${
+            locationSettings.currency_name
+          }`,
+      },
+      { field: 'notes', headerName: 'Note', flex: 1, disableColumnMenu: true },
+    ],
+    [locationSettings]
+  );
 
   const componentRef = React.useRef(null);
   class ComponentToPrint extends React.PureComponent {
@@ -198,29 +204,35 @@ function SalesReport() {
       setLines(newdata.sellLines);
     }
   }
+
   // init sales data
   async function initDataPage() {
-    var _locs = JSON.parse(localStorage.getItem('locations') || '[]');
-    if (_locs.toString().length > 10)
-      setLocationSettings(
-        _locs[
-          _locs.findIndex((loc: any) => {
-            return loc.value == shopId;
-          })
-        ]
-      );
-
-    const { success, data } = await apiFetchCtr({
-      fetch: 'reports',
-      subType: 'getSalesReport',
-      shopId,
-    });
-    if (success) {
-      setsales(data.sales);
-      setFilteredSales(data.sales);
-      setDetails(data.sums[0]);
-    }
+    setIsLoadItems(true);
+    api
+      .get(`reports/sales/${shopId}`, { params: { all_data: 1 } })
+      .then(({ data }) => {
+        console.log(data.result);
+        setSales(data.result.data);
+        setFilteredSales(data.result.data);
+      })
+      .finally(() => {
+        setIsLoadItems(false);
+      });
   }
+  // // init sales data
+  // async function initDataPage() {
+  //   setIsLoadItems(true);
+  //   const { success, data } = await apiFetchCtr({
+  //     fetch: 'reports',
+  //     subType: 'getSalesReport',
+  //     shopId,
+  //   });
+  //   if (success) {
+  //     setSales(data.sales);
+  //     setFilteredSales(data.sales);
+  //     setDetails(data.sums[0]);
+  //   }
+  // }
 
   async function getItems(id: number) {
     setIsLoadItems(true);
@@ -237,28 +249,11 @@ function SalesReport() {
   }
 
   useEffect(() => {
-    var _locs = JSON.parse(localStorage.getItem('locations') || '[]');
-    if (_locs.toString().length > 10)
-      setLocationSettings(
-        _locs[
-          _locs.findIndex((loc: any) => {
-            return loc.value == shopId;
-          })
-        ]
-      );
-    else alert('errorr location settings');
-    initDataPage();
-  }, []);
+    if (!shopId) return;
 
-  function CustomToolbar() {
-    return (
-      <GridToolbarContainer>
-        <GridToolbarExport />
-        <GridToolbarColumnsButton />
-        <GridToolbarQuickFilter />
-      </GridToolbarContainer>
-    );
-  }
+    initDataPage();
+  }, [shopId]);
+
   const handlePrint = useReactToPrint({
     content: () => componentRef.current,
   });
@@ -598,6 +593,16 @@ function SalesReport() {
         </DialogActions>
       </Dialog>
     </AdminLayout>
+  );
+}
+
+function CustomToolbar() {
+  return (
+    <GridToolbarContainer>
+      <GridToolbarExport />
+      <GridToolbarColumnsButton />
+      <GridToolbarQuickFilter />
+    </GridToolbarContainer>
   );
 }
 
