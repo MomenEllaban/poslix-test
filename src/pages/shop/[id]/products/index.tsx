@@ -1,35 +1,12 @@
-import type { NextPage } from "next";
-import Image from "next/image";
-import { AdminLayout } from "@layout";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import Spinner from "react-bootstrap/Spinner";
-import {
-  faTrash,
-  faPenToSquare,
-  faPlus,
-  faTag,
-  faBarcode,
-} from "@fortawesome/free-solid-svg-icons";
-import { Button, ButtonGroup, Card } from "react-bootstrap";
-import React, { useState, useEffect, useRef, ChangeEvent, MouseEventHandler, useContext } from "react";
-import { apiFetchCtr, apiInsertCtr } from "../../../../libs/dbUtils";
-import { useRouter } from "next/router";
-import AlertDialog from "src/components/utils/AlertDialog";
-import {Button as MButton} from '@mui/material'
-import {
-  ILocationSettings,
-  IPageRules,
-  ITokenVerfy,
-} from "@models/common-model";
-import {
-  hasPermissions,
-  keyValueRules,
-  verifayTokens,
-} from "src/pages/api/checkUtils";
-import * as cookie from "cookie";
-import ShowPriceListModal from "src/components/dashboard/modal/ShowPriceListModal";
-import { Toastify } from "src/libs/allToasts";
-import { ToastContainer } from "react-toastify";
+import { faBarcode, faPenToSquare, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { AdminLayout } from '@layout';
+import { ILocationSettings } from '@models/common-model';
+import { Button as MButton } from '@mui/material';
+import TextField from '@mui/material/TextField';
+import { useTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { debounce } from '@mui/material/utils';
 import {
   DataGrid,
   GridColDef,
@@ -37,30 +14,32 @@ import {
   GridToolbarColumnsButton,
   GridToolbarContainer,
   GridToolbarExport,
-  useGridApiContext,
-  useGridApiRef,
-} from "@mui/x-data-grid";
-import { debounce } from "@mui/material/utils";
-import TextField from "@mui/material/TextField";
-import { Checkbox } from "@mui/material";
-import LocationModal from "src/components/pos/modals/LocationModal";
-import * as XLSX from 'xlsx'
+} from '@mui/x-data-grid';
+import type { NextPage } from 'next';
+import { getSession } from 'next-auth/react';
+import Image from 'next/image';
+import { useRouter } from 'next/router';
+import { ChangeEvent, useContext, useEffect, useRef, useState } from 'react';
+import { Button, ButtonGroup } from 'react-bootstrap';
+import Spinner from 'react-bootstrap/Spinner';
+import { ToastContainer } from 'react-toastify';
+import ShowPriceListModal from 'src/components/dashboard/modal/ShowPriceListModal';
+import LocationModal from 'src/components/pos/modals/LocationModal';
+import AlertDialog from 'src/components/utils/AlertDialog';
+import { Toastify } from 'src/libs/allToasts';
+import { findAllData } from 'src/services/crud.api';
+import { ROUTES } from 'src/utils/app-routes';
+import { authApi } from 'src/utils/auth-api';
+import * as XLSX from 'xlsx';
+import { darkModeContext } from '../../../../context/DarkModeContext';
+import { apiInsertCtr } from '../../../../libs/dbUtils';
+import styles from './table.module.css';
+import { useUser } from 'src/context/UserContext';
 
-
-/*MOHAMMED MAHER */
-import { darkModeContext } from "../../../../context/DarkModeContext";
-const Product: NextPage = (probs: any) => {
-  const { shopId, rules } = probs;
+const Product: NextPage = (props: any) => {
+  const { rules } = props;
   const myLoader = (img: any) => img.src;
-  const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
-    value: 0,
-    label: "",
-    currency_decimal_places: 0,
-    currency_code: "",
-    currency_id: 0,
-    currency_rate: 1,
-    currency_symbol: "",
-  });
+  const {locationSettings,setLocationSettings }=useUser()
   const dataGridRef = useRef(null);
   const router = useRouter();
   const [products, setProducts] = useState<
@@ -69,20 +48,19 @@ const Product: NextPage = (probs: any) => {
   const [show, setShow] = useState(false);
   const [showDeleteAll, setShowDeleteAll] = useState(false);
   const [selectId, setSelectId] = useState(0);
-  const [type, setType] = useState("");
+  const [type, setType] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isOpenPriceDialog, setIsOpenPriceDialog] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [filteredProducts, setFilteredProducts] = useState([]);
-  const [selectedItems, setSelectedItems] = useState<Array<string>>([])
+  const [selectedItems, setSelectedItems] = useState<Array<string>>([]);
   const [locationModal, setLocationModal] = useState<boolean>(false);
-  const [locations, setLocations] = useState<{ value: number, label: string }[]>([])
-  // var _locs = JSON.parse(localStorage.getItem('userlocs') || '[]');
-   
+  const [locations, setLocations] = useState<{ value: number; label: string }[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [lastPage, setLastPage] = useState();
+  const [totalRows, setTotalRows] = useState();
   /*MOHAMMED MAHER */
   const { darkMode } = useContext(darkModeContext);
- 
-
 
   const columns: GridColDef[] = [
     // { field: "check", headerName: <Checkbox aria-label={"select-all"} onChange={(e: ChangeEvent<HTMLInputElement>)=>{
@@ -90,120 +68,137 @@ const Product: NextPage = (probs: any) => {
     //   // else setSelectedItems(selectedItems.filter((id) => {return id !== row.id}))
     // }} />,
     // headerClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}` ,
-    // cellClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}`, 
+    // cellClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}`,
     // minWidth: 10, renderCell: ({ row }: Partial<GridRowParams>) => (
     //   <Checkbox aria-label={row.name} onChange={(e: ChangeEvent<HTMLInputElement>)=>{
     //     if(e.target.checked) setSelectedItems([...selectedItems, row.id])
     //     else setSelectedItems(selectedItems.filter((id) => {return id !== row.id}))
     //   }} />
     // ) },
-    { field: "id", headerName: "#", 
-    minWidth: 50, 
-    headerClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}` ,
-    cellClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}`,
-  },
     {
-      field: "image",
-      headerName: "Image",
+      field: 'id',
+      headerName: '#',
+      minWidth: 50,
+      headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
+      cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
+    },
+    {
+      field: 'image',
+      headerName: 'Image',
       flex: 1,
-      headerClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}` ,
-      cellClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}`,
+      headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
+      cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       renderCell: ({ row }: Partial<GridRowParams>) => (
         <Image
           alt=""
           loader={myLoader}
           width={50}
           height={50}
-          src={
-            row.image && row.image.length > 0
-              ? row.image
-              : "/images/pos/placeholder.png"
-          }
+          src={row.image && row.image.length > 0 ? row.image : '/images/pos/placeholder.png'}
         />
       ),
     },
-    { field: "type", headerName: "Type", 
-    flex: 0.5, 
-    headerClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}` ,
-    cellClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}` 
-  },
-    { field: "sku", headerName: "sku ", flex: 0.5, 
-    headerClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}` ,
-    cellClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}`,
-   },
-    { field: "name", headerName: "name ", flex: 1, 
-    headerClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}` ,
-    cellClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}` 
-  },
     {
-      field: "sell_price",
-      headerName: "sell",
-      flex: 1,
-      headerClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}` ,
-      cellClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}`,
-      renderCell: (params) =>
-        Number(params.value).toFixed(locationSettings?.currency_decimal_places),
-    },
-    { field: "category", headerName: "Category", flex: 1, 
-    headerClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}` ,
-    cellClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}` 
-  },
-    {
-      field: "qty",
-      headerName: "Qty",
+      field: 'type',
+      headerName: 'Type',
       flex: 0.5,
-      headerClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}` ,
-      cellClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}`,
-      renderCell: ({ row }: Partial<GridRowParams>) => (
-        <>
-          <div
-            className={
-              row.qty > 0 && row.type != "package" ? "clickable-qty" : ""
-            }
-          >
-            {row.type != "package" ? Number(row.qty).toFixed(0) : "---"}
-            <span className="qty-over">
-              [{Number(row.qty_over_sold).toFixed(0)}]
-            </span>
-          </div>
-        </>
-      ),
+      headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
+      cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
     },
     {
-      field: "action",
-      headerName: "Action ",
+      field: 'sku',
+      headerName: 'sku ',
+      flex: 0.5,
+      headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
+      cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
+    },
+    {
+      field: 'name',
+      headerName: 'name ',
+      flex: 1,
+      headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
+      cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
+    },
+    {
+      field: 'sell_price',
+      headerName: 'Sell (Min - Max)',
+      flex: 1,
+      headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
+      cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
+      renderCell: ({ row }: Partial<GridRowParams>) => {
+        if (row.type == 'single')
+          return Number(row.sell_price).toFixed(locationSettings?.location_decimal_places);
+        else
+          return (
+            Number(row.min_price).toFixed(locationSettings?.location_decimal_places) +
+            ' - ' +
+            Number(row.max_price).toFixed(locationSettings?.location_decimal_places)
+          );
+      },
+    },
+    // {
+    //   field: "min_price",
+    //   headerName: "Min",
+    //   flex: 1,
+    //   headerClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}` ,
+    //   cellClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}`,
+    //   renderCell: ({row}) => row.min_price
+    // },
+    // {
+    //   field: "max_price",
+    //   headerName: "Max",
+    //   flex: 1,
+    //   headerClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}` ,
+    //   cellClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}`,
+    //   renderCell: ({row}) => row.max_price
+    // },
+    {
+      field: 'category',
+      headerName: 'Category',
+      flex: 1,
+      headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
+      cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
+      renderCell: ({ row }) => <p>{row.name}</p>,
+    },
+    {
+      field: 'stock',
+      headerName: 'Qty',
+      flex: 0.5,
+      headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
+      cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
+    },
+    {
+      field: 'action',
+      headerName: 'Action ',
       sortable: false,
       disableExport: true,
-      headerClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}` ,
-      cellClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}`,
+      headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
+      cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) => (
         <>
           <ButtonGroup className="mb-2 m-buttons-style">
-            {rules.hasEdit && (
+            {permissions.hasEdit && (
               <Button
                 onClick={() => {
-                  router.push("/shop/" + shopId + "/products/edit/" + row.id);
-                }}
-              >
+                  router.push('/shop/' + shopId + '/products/edit/' + row.id);
+                }}>
                 <FontAwesomeIcon icon={faPenToSquare} />
               </Button>
             )}
-            {rules.hasDelete && (
+            {permissions.hasDelete && (
               <Button
                 onClick={() => {
                   setSelectId(row.id);
                   setShow(true);
-                }}
-              >
+                }}>
                 <FontAwesomeIcon icon={faTrash} />
               </Button>
             )}
             <Button
               onClick={() => {
-                router.push("/shop/" + shopId + "/products/barcodes/");
-              }}
-            >
+                router.push('/shop/' + shopId + '/products/barcodes/');
+              }}>
               <FontAwesomeIcon icon={faBarcode} />
             </Button>
           </ButtonGroup>
@@ -213,67 +208,110 @@ const Product: NextPage = (probs: any) => {
   ];
 
   const fileRef = useRef(null);
-  const importFileClickHandler = ()=>{
+  const importFileClickHandler = () => {
     fileRef.current.click();
-  }
+  };
   const importFileHandler = (e: ChangeEvent<HTMLInputElement>) => {
     const reader = new FileReader();
     reader.readAsBinaryString(e.target.files[0]);
     reader.onload = async (e) => {
       const data = e.target.result;
-      const workbook = XLSX.read(data, {type: 'binary'});
+      const workbook = XLSX.read(data, { type: 'binary' });
       const sheetName = workbook.SheetNames[0];
       const sheet = workbook.Sheets[sheetName];
-      const parsedData:{ id: number; name: string; sku: string; type: string; qty: number; sell: number; category: string }[]
-       = XLSX.utils.sheet_to_json(sheet);
-      const newData = parsedData.map(item => {
-        delete item.id
-        return {...item, location_id: shopId}
-      })
-      const { success, newdata } = await apiInsertCtr({ type: 'products', subType: 'importFromFile', shopId,
-            data: newData
-        })
-      if(success) initDataPage()
-    }
-  }
+      const parsedData: {
+        id: number;
+        name: string;
+        sku: string;
+        type: string;
+        qty: number;
+        sell: number;
+        category: string;
+      }[] = XLSX.utils.sheet_to_json(sheet);
+      const newData = parsedData.map((item) => {
+        delete item.id;
+        return { ...item, location_id: shopId };
+      });
+      const { success, newdata } = await apiInsertCtr({
+        type: 'products',
+        subType: 'importFromFile',
+        shopId,
+        data: newData,
+      });
+      if (success) initDataPage();
+    };
+  };
   function CustomToolbar() {
+    const [isHovered, setIsHovered] = useState(false);
+
+    const divStyle = {
+      background: isHovered ? '#99CC66' : '#779933',
+      padding: '4px',
+      display: 'flex',
+      alignItems: 'center',
+      borderRadius: '12px',
+      marginRight: '0.5rem',
+      transition: 'background-color 0.3s',
+    };
     return (
       <GridToolbarContainer className="d-flex align-items-center">
         <GridToolbarExport />
-         {/* mohamed elsayed */}
-         <MButton onClick={importFileClickHandler}>Import</MButton>
-        <input
-        style={{display: 'none'}}
-        ref={fileRef}
-        type="file"
-        onChange={importFileHandler}
-      />
-      {/* /////////// */}
+        {/* mohamed elsayed */}
+        <MButton onClick={importFileClickHandler}>Import</MButton>
+        <input style={{ display: 'none' }} ref={fileRef} type="file" onChange={importFileHandler} />
+        {/* /////////// */}
         <GridToolbarColumnsButton />
-        <div style={{color: '#1976d2', cursor: 'pointer'}} className={`${locations?.length > 1 && selectedItems.length > 0 ? 'pe-auto' : 'pe-none'}`}
-          onClick={() => setLocationModal(true)}>SEND</div>
-        <div style={{color: '#1976d2', cursor: 'pointer', marginLeft: '0.5rem'}} className={`${locations?.length > 1 && selectedItems.length > 0 ? 'pe-auto' : 'pe-none'}`}
-          onClick={() => setShowDeleteAll(true)}>DELETE</div>
+        <div
+          style={{ color: '#1976d2', cursor: 'pointer' }}
+          className={`${locations?.length > 1 && selectedItems.length > 0 ? 'pe-auto' : 'pe-none'}`}
+          onClick={() => setLocationModal(true)}>
+          SEND
+        </div>
+        <div
+          style={{ color: '#1976d2', cursor: 'pointer', marginLeft: '0.5rem' }}
+          className={`${locations?.length > 1 && selectedItems.length > 0 ? 'pe-auto' : 'pe-none'}`}
+          onClick={() => setShowDeleteAll(true)}>
+          DELETE
+        </div>
       </GridToolbarContainer>
     );
   }
   async function initDataPage() {
-    const { success, data } = await apiFetchCtr({
-      fetch: "products",
-      subType: "getProducts",
-      shopId,
-    });
-    if (!success) {
-      Toastify("error", "Somthing wrong!!, try agian");
-      return;
-    }
-    setProducts(data.products);
-    setFilteredProducts(data.products);
     setIsLoading(false);
+    if (router.isReady) {
+      const res = await findAllData(`products/${router.query.id}?all_data=1`);
+      setProducts(res.data.result);
+      // setCurrentPage(res.data.result.current_page);
+      // setLastPage(res.data.result.last_page);
+      // setTotalRows(res.data.result.total);
+      // setFilteredProducts(data.products);
+      setIsLoading(false);
+    }
+    // if (!success) {
+    //   Toastify('error', 'Somthing wrong!!, try agian');
+    //   return;
+    // }
   }
+  const [permissions, setPermissions] = useState<any>();
   useEffect(() => {
-    var _locs = JSON.parse(localStorage.getItem("userlocs") || "[]");
-    setLocations(_locs)
+    const perms = JSON.parse(localStorage.getItem('permissions'));
+    const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
+    perms.inventory.products.map((perm) =>
+      perm.name.includes('products/show')
+        ? (getPermissions.hasView = true)
+        : perm.name.includes('products/add')
+        ? (getPermissions.hasInsert = true)
+        : perm.name.includes('products/update')
+        ? (getPermissions.hasEdit = true)
+        : perm.name.includes('products/delete')
+        ? (getPermissions.hasDelete = true)
+        : null
+    );
+
+    setPermissions(getPermissions);
+
+    const _locs = JSON.parse(localStorage.getItem('locations') || '[]');
+    setLocations(_locs);
     if (_locs.toString().length > 10)
       setLocationSettings(
         _locs[
@@ -282,32 +320,24 @@ const Product: NextPage = (probs: any) => {
           })
         ]
       );
-    else alert("errorr location settings");
+    else alert('errorr location settings');
     initDataPage();
-  }, [router.asPath]);
+  }, []);
 
   const handleDeleteFuc = (result: boolean, msg: string, section: string) => {
-    if (result) {
-      // const _data = [...products];
-      // const idx = _data.findIndex((itm: any) => itm.id == selectId);
-      // if (idx != -1) {
-      //   _data.splice(idx, 1);
-      //   setProducts(_data);
-      // }
-    initDataPage()
-    }
-    if (msg.length > 0) Toastify(result ? "success" : "error", msg);
+    initDataPage();
+    if (msg.length > 0) Toastify(result ? 'success' : 'error', msg);
     setShow(false);
     setShowDeleteAll(false);
   };
   const onRowsSelectionHandler = (ids: any) => {
-    setSelectedItems(ids)
+    setSelectedItems(ids);
   };
   const handleCellClick = (params, event) => {
-    if (params.field === "qty") {
+    if (params.field === 'qty') {
       let index = products.findIndex((p) => params.id == p.id);
       if (index == -1) return;
-      if (products[index].type != "package" && products[index].qty > 0) {
+      if (products[index].type != 'package' && products[index].qty > 0) {
         setSelectId(products[index].id);
         setType(products[index].type);
         setIsOpenPriceDialog(true);
@@ -336,6 +366,15 @@ const Product: NextPage = (probs: any) => {
     }
   }, [searchTerm, products]);
 
+  const [shopId, setShopId] = useState('');
+  useEffect(() => {
+    if (router.isReady) setShopId(router.query.id.toString());
+  }, []);
+
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMediumScreen = useMediaQuery(theme.breakpoints.between('md', 'lg'));
+  const getRowClassName = () => styles.rowStyling;
   return (
     <>
       <AdminLayout shopId={shopId}>
@@ -345,9 +384,7 @@ const Product: NextPage = (probs: any) => {
           alertFun={handleDeleteFuc}
           shopId={shopId}
           id={selectId}
-          type="products"
-          subType="deleteProduct"
-        >
+          url={'products'}>
           Are you Sure You Want Delete This Item?
         </AlertDialog>
         <AlertDialog
@@ -356,8 +393,7 @@ const Product: NextPage = (probs: any) => {
           shopId={shopId}
           id={selectedItems}
           type="products"
-          subType="deleteProducts"
-        >
+          subType="deleteProducts">
           Are you Sure You Want Delete The Selected Items?
         </AlertDialog>
         <ShowPriceListModal
@@ -367,23 +403,26 @@ const Product: NextPage = (probs: any) => {
           isOpenPriceDialog={isOpenPriceDialog}
           setIsOpenPriceDialog={() => setIsOpenPriceDialog(false)}
         />
-        <LocationModal showDialog={locationModal} setShowDialog={setLocationModal} locations={locations}
-          data={selectedItems} setData={setSelectedItems}
-          shopId={shopId} value={locations.findIndex((loc: any) => { return loc.value == shopId })} />
+        <LocationModal
+          showDialog={locationModal}
+          setShowDialog={setLocationModal}
+          locations={locations}
+          data={selectedItems}
+          setData={setSelectedItems}
+          shopId={shopId}
+          value={locations.findIndex((loc: any) => {
+            return loc.value == shopId;
+          })}
+        />
         {/* start */}
-        {!isLoading && rules.hasInsert && (
+        {!isLoading && permissions.hasInsert && (
           <div className="mb-2 flex items-center justify-between">
             <button
               className="btn btn-primary p-3"
-              onClick={() => router.push("/shop/" + shopId + "/products/add")}
-            >
-              <FontAwesomeIcon icon={faPlus} /> Add New Product{" "}
+              onClick={() => router.push('/shop/' + shopId + '/products/add')}>
+              <FontAwesomeIcon icon={faPlus} /> Add New Product{' '}
             </button>
-            <TextField
-              label="search name/sku"
-              variant="filled"
-              onChange={handleSearch}
-            />
+            <TextField label="search name/sku" variant="filled" onChange={handleSearch} />
           </div>
         )}
 
@@ -396,22 +435,23 @@ const Product: NextPage = (probs: any) => {
                 checkboxSelection
                 className="datagrid-style"
                 sx={{
-                  ".MuiDataGrid-columnSeparator": {
-                    display: "none",
+                  '.MuiDataGrid-columnSeparator': {
+                    display: 'none',
                   },
-                  "&.MuiDataGrid-root": {
-                    border: "none",
+                  '&.MuiDataGrid-root': {
+                    border: 'none',
                   },
                 }}
-                rows={filteredProducts}
+                rows={products}
                 columns={columns}
                 pageSize={10}
                 rowsPerPageOptions={[10]}
-                onSelectionModelChange={(ids: any) =>
-                  onRowsSelectionHandler(ids)
-                }
+                onSelectionModelChange={(ids: any) => onRowsSelectionHandler(ids)}
                 onCellClick={handleCellClick}
                 components={{ Toolbar: CustomToolbar }}
+                // rowCount={totalRows}
+                // onPageChange={(params) => setCurrentPage(params + 1)}
+                // pagination
               />
             </div>
           </>
@@ -424,56 +464,36 @@ const Product: NextPage = (probs: any) => {
     </>
   );
 };
+
 export default Product;
+/**
+ * @description get server side props
+ * @param {any} context
+ *
+ * get the cookies from the context
+ * check the page params
+ * check user permissions
+ *
+ */
 export async function getServerSideProps(context: any) {
-  const parsedCookies = cookie.parse(context.req.headers.cookie || "[]");
-  var _isOk = true,
-    _rule = true;
-  //check page params
-  var shopId = context.query.id;
-  if (shopId == undefined)
-    return { redirect: { permanent: false, destination: "/page403" } };
+  // check if the user is logged in
+  const session = await getSession(context);
+  if (!session) return { redirect: { permanent: false, destination: ROUTES.AUTH } };
 
-  //check user permissions
-  var _userRules = {};
-  await verifayTokens(
-    { headers: { authorization: "Bearer " + parsedCookies.tokend } },
-    (repo: ITokenVerfy) => {
-      _isOk = repo.status;
+  const shopId = context.query.id;
+  if (!shopId) return { redirect: { permanent: false, destination: '/page403' } };
 
-      if (_isOk) {
-        var _rules = keyValueRules(repo.data.rules || []);
-        if (
-          _rules[-2] != undefined &&
-          _rules[-2][0].stuff != undefined &&
-          _rules[-2][0].stuff == "owner"
-        ) {
-          _rule = true;
-          _userRules = {
-            hasDelete: true,
-            hasEdit: true,
-            hasView: true,
-            hasInsert: true,
-          };
-        } else if (_rules[shopId] != undefined) {
-          var _stuf = "";
-          _rules[shopId].forEach((dd: any) => (_stuf += dd.stuff));
-          const { userRules, hasPermission } = hasPermissions(
-            _stuf,
-            "products"
-          );
-          _rule = hasPermission;
-          _userRules = userRules;
-        } else _rule = false;
-      }
-    }
-  );
-  if (!_isOk)
-    return { redirect: { permanent: false, destination: "/user/login" } };
-  if (!_rule)
-    return { redirect: { permanent: false, destination: "/page403" } };
   return {
-    props: { shopId: context.query.id, rules: _userRules },
+    props: {
+      permissions: {},
+      shopId,
+      rules: {
+        //! this should be dynamic
+        hasDelete: true,
+        hasEdit: true,
+        hasView: true,
+        hasInsert: true,
+      },
+    },
   };
-  //status ok
 }

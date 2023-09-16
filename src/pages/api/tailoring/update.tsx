@@ -1,161 +1,150 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-import type { NextApiRequest, NextApiResponse } from 'next'
-import { Data, ITax, ITokenVerfy } from "../../../models/common-model"
+import type { NextApiRequest, NextApiResponse } from 'next';
+import { Data, ITax, ITokenVerfy } from '../../../models/common-model';
 import { QueryError, RowDataPacket } from 'mysql2';
 var { doConnect, doConnectMulti } = require('../../../libs/myConnection');
-import { locationPermission, redirection, verifayTokens } from '../checkUtils'
+import { locationPermission, redirection, verifayTokens } from '../checkUtils';
 
-export default async function handler(
-    req: NextApiRequest,
-    res: NextApiResponse<Data>
-) {
-    if (req.body.method !== 'POST') {
+export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
+  if (req.body.method !== 'POST') {
+  }
 
-    }
+  try {
+    verifayTokens(req, async (repo: ITokenVerfy) => {
+      if (repo.status === true) {
+        const { shopId, subType } = req.body;
 
-    try {
+        if (locationPermission(repo.data.locs, shopId) != -1) {
+          var con = doConnectMulti();
 
-        verifayTokens(req, async (repo: ITokenVerfy) => {
-            if (repo.status === true) {
-                const { shopId, subType } = req.body;
-                console.log(shopId, repo.data.locs);
+          if (subType == 'tailoringedit') {
+            const { data2, id } = req.body;
+            const { data, selectedExtras } = data2;
 
-                if (locationPermission(repo.data.locs, shopId) != -1) {
-                    var con = doConnectMulti();
+            if (data.sizes.length == 0) {
+              redirection(400, con, res, 'somthing wrong');
+              return;
+            }
 
-                    if (subType == 'tailoringedit') {
-                        const { data2, id } = req.body;
-                        const { data, selectedExtras } = data2;
+            let _extras = '';
+            if (selectedExtras != undefined && selectedExtras != null) {
+              selectedExtras.map((sel) => {
+                return (_extras += sel.value + ',');
+              });
+            }
 
-                        if (data.sizes.length == 0) {
-                            redirection(400, con, res, 'somthing wrong')
-                            return;
-                        }
+            con.query(
+              `update tailoring_type set name = ? ,multiple_value = ?,extras = ? where id = ?`,
+              [data.name, data.multiple, _extras, id],
+              async function (err: QueryError, tail: any) {
+                if (err) {
+                  res.setHeader('Content-Type', 'application/json');
+                  res.status(200).json({ success: false, msg: 'tailor type not added!!' });
+                  res.end();
+                  con.end();
+                  return;
+                }
 
-                        let _extras = "";
-                        if (selectedExtras != undefined && selectedExtras != null) {
-                            selectedExtras.map(sel => {
-                                return _extras += sel.value + ",";
-                            })
-                        }
-                        console.log('_extras ', _extras);
+                const sqlCondi =
+                  'INSERT INTO tailoring_sizes(tailoring_type_id,name,is_primary) VALUES ?';
+                const sqlValues: any = [];
+                data.sizes.map(async (itm: ITax) => {
+                  if (itm.isNew && itm.name.length > 0)
+                    sqlValues.push([id, itm.name, itm.is_primary]);
+                  else {
+                    await con
+                      .promise()
+                      .query('update tailoring_sizes set name = ?, is_primary = ? where id = ?', [
+                        itm.name,
+                        itm.is_primary,
+                        itm.id,
+                      ])
+                      .then((rows: any, fields: any) => {})
+                      .catch();
+                  }
+                });
 
+                if (sqlValues.length) {
+                  await con
+                    .promise()
+                    .query(sqlCondi, [sqlValues])
+                    .then((rows: any, fields: any) => {})
+                    .catch();
+                }
 
+                con.end();
+                res.status(200).json({ success: true, msg: 'tailoring Edited' });
+                res.end();
+                return;
+              }
+            );
+          }
+          if (subType == 'updateExtra') {
+            const { data, id } = req.body;
 
-                        con.query(`update tailoring_type set name = ? ,multiple_value = ?,extras = ? where id = ?`,
-                            [data.name, data.multiple, _extras, id],
-                            async function (err: QueryError, tail: any) {
-                                if (err) {
-                                    console.log(err);
-                                    res.setHeader('Content-Type', 'application/json');
-                                    res.status(200).json({ success: false, msg: 'tailor type not added!!' });
-                                    res.end();
-                                    con.end();
-                                    return
-                                }
+            if (data.items.length == 0) {
+              redirection(400, con, res, 'somthing wrong');
+              return;
+            }
+            const _items = [];
+            data.items.map((it: any) => {
+              if (it.name.length > 0) _items.push(it);
+            });
 
-                                const sqlCondi = 'INSERT INTO tailoring_sizes(tailoring_type_id,name,is_primary) VALUES ?'
-                                const sqlValues: any = [];
-                                data.sizes.map(async (itm: ITax) => {
-                                    if (itm.isNew && itm.name.length > 0)
-                                        sqlValues.push([id, itm.name, itm.isPrimary])
-                                    else {
-                                        await con.promise().query('update tailoring_sizes set name = ?, is_primary = ? where id = ?',
-                                            [itm.name, itm.isPrimary, itm.id])
-                                            .then((rows: any, fields: any) => {
-                                                console.log('sizes ', rows);
-                                            })
-                                            .catch()
-                                    }
-                                });
+            con.query(
+              `update tailoring_extra set name = ? ,is_required = ?,items = ? where id = ?`,
+              [data.name, data.isRequired ? 1 : 0, JSON.stringify(_items), id],
+              async function (err: QueryError, tail: any) {
+                if (err) {
+                  res.setHeader('Content-Type', 'application/json');
+                  res.status(200).json({ success: false, msg: 'extra not edited!!' });
+                  res.end();
+                  con.end();
+                  return;
+                }
 
-                                if (sqlValues.length) {
-                                    await con.promise().query(sqlCondi, [sqlValues])
-                                        .then((rows: any, fields: any) => {
-                                            console.log('sizes ', rows);
-                                        })
-                                        .catch()
-                                }
+                con.end();
+                res.status(200).json({ success: true, msg: 'extra Edited' });
+                res.end();
+                return;
+              }
+            );
+          }
+          if (subType == 'changeStOrder') {
+            const { stType, id } = req.body;
+            if (stType != 'pending' && stType != 'processing' && stType != 'complete') {
+              redirection(403, con, res, 'status type is wrong!!');
+              return;
+            }
+            con.query(
+              `UPDATE transactions_lines SET status=? WHERE id=? LIMIT 1`,
+              [stType, id],
+              async function (err: QueryError, tail: any) {
+                if (err) {
+                  res.setHeader('Content-Type', 'application/json');
+                  res.status(200).json({ success: false, msg: 'tailor type not added!!' });
+                  res.end();
+                  con.end();
+                  return;
+                }
+                con.end();
+                res.status(200).json({ success: true, msg: 'Order status changed!' });
+                res.end();
+                return;
+              }
+            );
+          }
+        } else redirection(403, con, res, 'you have not permissions');
+      } else redirection(401, con, res, 'login first!');
+    });
+  } catch (err) {
+    res.setHeader('Content-Type', 'application/json');
 
-                                con.end()
-                                res.status(200).json({ success: true, msg: 'tailoring Edited' });
-                                res.end();
-                                return;
+    res.status(200).json({ success: false, msg: 'error2', newdata: [] });
+    res.end();
+  }
 
-                            });
-                    }
-                    if (subType == 'updateExtra') {
-                        const { data, id } = req.body;
-
-                        if (data.items.length == 0) {
-                            redirection(400, con, res, 'somthing wrong')
-                            return;
-                        }
-                        const _items = [];
-                        data.items.map((it: any) => {
-                            if (it.name.length > 0) _items.push(it)
-                        })
-
-                        con.query(`update tailoring_extra set name = ? ,is_required = ?,items = ? where id = ?`,
-                            [data.name, data.isRequired ? 1 : 0, JSON.stringify(_items), id],
-                            async function (err: QueryError, tail: any) {
-                                if (err) {
-                                    console.log(err);
-                                    res.setHeader('Content-Type', 'application/json');
-                                    res.status(200).json({ success: false, msg: 'extra not edited!!' });
-                                    res.end();
-                                    con.end();
-                                    return
-                                }
-
-                                con.end()
-                                res.status(200).json({ success: true, msg: 'extra Edited' });
-                                res.end();
-                                return;
-
-                            });
-                    }
-                    if (subType == 'changeStOrder') {
-                        const { stType, id } = req.body;
-                        if (stType != "pending" && stType != "processing" && stType != "complete") {
-                            redirection(403, con, res, 'status type is wrong!!')
-                            return;
-                        }
-                        con.query(`UPDATE transactions_lines SET status=? WHERE id=? LIMIT 1`,
-                            [stType, id],
-                            async function (err: QueryError, tail: any) {
-                                if (err) {
-                                    console.log(err);
-                                    res.setHeader('Content-Type', 'application/json');
-                                    res.status(200).json({ success: false, msg: 'tailor type not added!!' });
-                                    res.end();
-                                    con.end();
-                                    return
-                                }
-                                con.end()
-                                res.status(200).json({ success: true, msg: 'Order status changed!' });
-                                res.end();
-                                return;
-
-                            });
-                    }
-                } else
-                    redirection(403, con, res, 'you have not permissions')
-            } else
-                redirection(401, con, res, 'login first!')
-        });
-
-    } catch (err) {
-        res.setHeader('Content-Type', 'application/json');
-        console.log("errorr inja ", err);
-
-        res.status(200).json({ success: false, msg: 'error2', newdata: [] });
-        res.end();
-    }
-
-
-
-    /*
+  /*
     
     */
 }

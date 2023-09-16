@@ -1,42 +1,42 @@
-import type { NextPage } from "next";
-import Select from "react-select";
-import { useRouter } from "next/router";
-import Spinner from "react-bootstrap/Spinner";
-import { AdminLayout } from "@layout";
-import { Card } from "react-bootstrap";
-import React, { useState, useEffect, useRef } from "react";
-import {
-  apiFetchCtr,
-  apiInsertCtr,
-  apiUpdateCtr,
-} from "../../../../libs/dbUtils";
-import * as cookie from "cookie";
+import type { NextPage } from 'next';
+import Select from 'react-select';
+import { useRouter } from 'next/router';
+import Spinner from 'react-bootstrap/Spinner';
+import { AdminLayout } from '@layout';
+import { Card } from 'react-bootstrap';
+import React, { useState, useEffect, useRef } from 'react';
+import { apiFetchCtr, apiInsertCtr, apiUpdateCtr } from '../../../../libs/dbUtils';
+import * as cookie from 'cookie';
 import {
   getRealWord,
   hasPermissions,
   keyValueRules,
   verifayTokens,
-} from "src/pages/api/checkUtils";
-import { ITokenVerfy } from "@models/common-model";
-import Link from "next/dist/client/link";
-import { ToastContainer } from "react-toastify";
-import { Toastify } from "src/libs/allToasts";
+} from 'src/pages/api/checkUtils';
+import { ITokenVerfy } from '@models/common-model';
+import Link from 'next/dist/client/link';
+import { ToastContainer } from 'react-toastify';
+import { Toastify } from 'src/libs/allToasts';
+import withAuth from 'src/HOCs/withAuth';
+import { createNewData, findAllData, updateData } from 'src/services/crud.api';
 
-const Product: NextPage = (probs: any) => {
-  const { shopId, pageType, editId } = probs;
+const CategorySlug: NextPage = (props: any) => {
+  const { editId, id} = props;
+  const [shopId, setShopId] = useState('')
   const [formObj, setFormObj] = useState({
     id: 0,
-    name: "",
-    des: "",
-    tax: null,
+    name: '',
+    description: '',
+    tax_id: null,
   });
   const [errorForm, setErrorForm] = useState({ name: false });
   const colourStyles = {
-    control: (style: any) => ({ ...style, borderRadius: "10px" }),
+    control: (style: any) => ({ ...style, borderRadius: '10px' }),
   };
-  const [taxGroup, setTaxGroup] = useState<{ value: number; label: string }[]>(
-    []
-  );
+  const [taxGroup, setTaxGroup] = useState<{ value: number; label: string }[]>([]);
+  const [selectedTax, setSelectedTax] = useState();
+  const [type, setType] = useState('categories');
+  const [typeName, setTypeName] = useState('Category');
   const [loading, setLoading] = useState(true);
   const [isEdit, setIsEdit] = useState(false);
 
@@ -44,81 +44,68 @@ const Product: NextPage = (probs: any) => {
   var formObjRef = useRef<any>();
   formObjRef.current = formObj;
 
-  async function initDataPage(id = "0", type = "") {
-    if (id != "0") setIsEdit(true);
-    var result = await apiFetchCtr({
-      fetch: "categery_brand",
-      subType: "initCateBrand",
-      shopId,
-      id,
-      type,
-    });
-    const { success, newdata } = result;
-
-    if (!success) {
-      Toastify("error", "Error in init page");
-      return;
-    }
-    setTaxGroup([
-      { value: null, label: "Default Tax" },
-      { value: -1, label: "Never Tax" },
-      ...newdata.taxes,
-    ]);
-    console.log(newdata);
-
-    if (newdata.itm.length > 0) {
-      const itm = newdata.itm[0];
-      itm.tax_id = itm.tax_id == 0 ? null : itm.tax_id;
-      setFormObj({
-        ...formObj,
-        id: itm.id,
-        name: itm.name,
-        des: itm.description,
-        tax: itm.never_tax == 1 ? -1 : itm.tax_id,
-      });
+  async function initDataPage() {
+    if(router.isReady) {
+      setType(router.query.type.toString())
+      setTypeName(router.query.type === 'categories' ? 'Category' : 'Brand')
+      setShopId(router.query.id.toString())
+      const routerParams = router.query.slug
+      const res = await findAllData(`taxes/${router.query.id}`)
+      res.data.result.taxes.map(tax => tax.label = tax.name)
+      setTaxGroup(res.data.result.taxes)
+      setSelectedTax(res.data.result.taxes.filter((f: any) => {
+        return f.id == formObj.tax_id;
+      }))
+      if(routerParams[0] === 'edit') {
+        setIsEdit(true)
+        const res = await findAllData(`${router.query.type}/${routerParams[1]}/show`)
+        const itm = res.data.result;
+        itm.tax_id = itm.tax_id == 0 ? null : itm.tax_id;
+        setFormObj({
+          ...formObj,
+          id: itm.id,
+          name: itm.name,
+          description: itm.description,
+          tax_id: itm.never_tax == 1 ? -1 : itm.tax_id,
+        });
+        
+      }
     }
     setLoading(false);
+    // setTaxGroup([
+    //   { value: null, label: 'Default Tax' },
+    //   { value: -1, label: 'Never Tax' },
+    //   ...newdata.taxes,
+    // ]);
   }
 
   async function insertHandle() {
-    var result = await apiInsertCtr({
-      type: "categery_brand",
-      subType: "insert_" + pageType,
-      shopId,
-      data: { frmobj: formObjRef.current },
-    });
-    const { success } = result;
-    if (success) {
-      Toastify("success", "successfuly added");
+    const data = formObjRef.current
+    delete data.id
+    const res = await createNewData(`${type}/${router.query.id}`, data)
+    if (res.data.success || res.data.status === 201) {
+      Toastify('success', 'successfuly added');
       setTimeout(() => {
-        router.push("/shop/" + shopId + "/category");
+        router.push('/shop/' + shopId + '/category');
       }, 1000);
     } else {
-      alert("Has Error ,try Again");
+      alert('Has Error ,try Again');
     }
   }
   async function editHandle() {
-    var result = await apiUpdateCtr({
-      type: "categery_brand",
-      subType: "edit_" + pageType,
-      shopId,
-      data: { frmobj: formObjRef.current },
-    });
-    const { success } = result;
-    if (success) {
-      Toastify("success", "successfuly added");
+    const res = await updateData(`${type}`, router.query.slug[1], formObjRef.current)
+    if (res.data.success) {
+      Toastify('success', 'successfuly added');
       setTimeout(() => {
-        router.push("/shop/" + shopId + "/category");
+        router.push('/shop/' + shopId + '/category');
       }, 1000);
     } else {
-      alert("Has Error ,try Again");
+      alert('Has Error ,try Again');
     }
   }
   var errors = [];
-  const [show, setShow] = useState(false);
-
   useEffect(() => {
-    initDataPage(editId, pageType);
+    initDataPage();
   }, [router.asPath]);
 
   return (
@@ -129,22 +116,18 @@ const Product: NextPage = (probs: any) => {
           <div className="mb-4">
             <Link
               className="btn btn-primary p-3"
-              href={"/shop/" + shopId + "/category"}
-              onClick={(e)=>{
+              href={'/shop/' + shopId + '/category'}
+              onClick={(e) => {
                 e.preventDefault();
-                pageType === "category"
-                  ? localStorage.setItem("key", "Categories")
-                  : localStorage.setItem("key", "Brands");
-                  router.push("/shop/" + shopId + "/category");
-              }}
-            >
+                router.push('/shop/' + shopId + '/category');
+              }}>
               Back To List
             </Link>
           </div>
         </div>
         <Card className="mb-4">
           <Card.Header className="p-3 bg-white">
-            <h5>{isEdit ? "Edit " + pageType : "Add New " + pageType}</h5>
+            <h5>{isEdit ? 'Edit ' + typeName : 'Add New ' + typeName}</h5>
           </Card.Header>
           <Card.Body>
             {!loading ? (
@@ -162,9 +145,7 @@ const Product: NextPage = (probs: any) => {
                       setFormObj({ ...formObj, name: e.target.value });
                     }}
                   />
-                  {errorForm.name && (
-                    <p className="p-1 h6 text-danger ">Enter {pageType} name</p>
-                  )}
+                  {errorForm.name && <p className="p-1 h6 text-danger ">Enter {typeName} name</p>}
                 </div>
                 <div className="row">
                   <div className="form-group">
@@ -173,9 +154,9 @@ const Product: NextPage = (probs: any) => {
                       type="text"
                       className="form-control"
                       placeholder="description"
-                      value={formObj.des}
+                      value={formObj.description}
                       onChange={(e) => {
-                        setFormObj({ ...formObj, des: e.target.value });
+                        setFormObj({ ...formObj, description: e.target.value });
                       }}
                     />
                   </div>
@@ -183,13 +164,13 @@ const Product: NextPage = (probs: any) => {
                   <div className="form-group">
                     <label>Custom Tax :</label>
                     <Select
-                      styles={colourStyles}
+                      // styles={colourStyles}
                       options={taxGroup}
-                      value={taxGroup.filter((f: any) => {
-                        return f.value == formObj.tax;
-                      })}
+                      value={selectedTax || undefined}
                       onChange={(itm) => {
-                        setFormObj({ ...formObj, tax: itm!.value });
+                        console.log(itm);
+                        setSelectedTax(itm)
+                        setFormObj({ ...formObj, tax_id: itm?.id });
                       }}
                     />
                   </div>
@@ -199,13 +180,10 @@ const Product: NextPage = (probs: any) => {
                   type="button"
                   className="btn m-btn btn-primary p-2 "
                   onClick={(e) => {
-                    pageType === "category"
-                      ? localStorage.setItem("key", "Categories")
-                      : localStorage.setItem("key", "Brands");
                     e.preventDefault();
                     errors = [];
 
-                    if (formObj.name.length == 0) errors.push("error");
+                    if (formObj.name.length == 0) errors.push('error');
 
                     setErrorForm({
                       ...errorForm,
@@ -213,10 +191,9 @@ const Product: NextPage = (probs: any) => {
                     });
                     if (errors.length == 0) {
                       isEdit ? editHandle() : insertHandle();
-                    } else alert("Enter Requires Field");
-                  }}
-                >
-                  {isEdit ? "Edit" : "Save"}
+                    } else alert('Enter Required Field');
+                  }}>
+                  {isEdit ? 'Edit' : 'Save'}
                 </button>
               </form>
             ) : (
@@ -230,66 +207,4 @@ const Product: NextPage = (probs: any) => {
     </>
   );
 };
-export default Product;
-export async function getServerSideProps(context: any) {
-  const parsedCookies = cookie.parse(context.req.headers.cookie || "[]");
-  //check page params
-  var shopId = context.query.id;
-  var _addOrEdit = context.query.slug[0];
-  var _EditId = context.query.slug[1];
-  var _pageType = context.query.type;
-  var _isOk = true,
-    _hasPer = true;
-  if (shopId == undefined) _isOk = false;
-  if (_addOrEdit == undefined || (_addOrEdit != "add" && _addOrEdit != "edit"))
-    _isOk = false;
-  if (
-    _pageType == undefined ||
-    (_pageType != "category" && _pageType != "brand")
-  )
-    _isOk = false;
-  if (!_isOk || context.query.id == undefined) _isOk = false;
-  if (!_isOk)
-    return { redirect: { permanent: false, destination: "/page403" } };
-
-  //check user permission
-  var _userRules;
-  await verifayTokens(
-    { headers: { authorization: "Bearer " + parsedCookies.tokend } },
-    (repo: ITokenVerfy) => {
-      _isOk = repo.status;
-      if (_isOk) {
-        var _rules = keyValueRules(repo.data.rules || []);
-        if (
-          _rules[-2] != undefined &&
-          _rules[-2][0].stuff != undefined &&
-          _rules[-2][0].stuff == "owner"
-        ) {
-          _hasPer = true;
-        } else if (_rules[shopId] != undefined) {
-          var _stuf = "";
-          _rules[shopId].forEach((dd: any) => (_stuf += dd.stuff));
-          _addOrEdit = getRealWord(_addOrEdit);
-          const { hasPermission } = hasPermissions(
-            _stuf,
-            "category",
-            _addOrEdit
-          );
-          _hasPer = hasPermission;
-        } else _isOk = false;
-      }
-    }
-  );
-  if (!_isOk)
-    return { redirect: { permanent: false, destination: "/user/login" } };
-  if (!_hasPer)
-    return { redirect: { permanent: false, destination: "/page403" } };
-  //status ok
-  return {
-    props: {
-      shopId,
-      pageType: _pageType,
-      editId: _addOrEdit == "edit" ? _EditId : 0,
-    },
-  };
-}
+export default withAuth(CategorySlug);

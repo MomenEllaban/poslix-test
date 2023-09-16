@@ -1,15 +1,15 @@
-import { AdminLayout } from "@layout";
+import { AdminLayout } from '@layout';
 import {
   GridColDef,
   GridToolbarContainer,
   GridToolbarExport,
   GridToolbarColumnsButton,
   GridToolbarFilterButton,
-} from "@mui/x-data-grid";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowDown, faArrowUp } from "@fortawesome/free-solid-svg-icons";
-import moment from "moment";
-import ShuffleText from "shuffle-text";
+} from '@mui/x-data-grid';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowDown, faArrowUp } from '@fortawesome/free-solid-svg-icons';
+import moment from 'moment';
+import ShuffleText from 'shuffle-text';
 
 import {
   Chart as ChartJS,
@@ -25,13 +25,13 @@ import {
   BarElement,
   Filler,
   ChartOptions,
-} from "chart.js";
-import { useState, useEffect, useRef } from "react";
-import { apiFetchCtr } from "src/libs/dbUtils";
-import { Bar } from "react-chartjs-2";
-import { Toastify } from "src/libs/allToasts";
-import { ILocationSettings } from "@models/common-model";
-import { Switch } from "@mui/material";
+} from 'chart.js';
+import { useState, useEffect, useRef } from 'react';
+import { apiFetchCtr } from 'src/libs/dbUtils';
+import { Bar } from 'react-chartjs-2';
+import { Toastify } from 'src/libs/allToasts';
+import { ILocationSettings } from '@models/common-model';
+import { Switch } from '@mui/material';
 
 ChartJS.register(
   CategoryScale,
@@ -55,18 +55,18 @@ ChartJS.register(
 );
 
 const data22 = {
-  labels: ["Red", "Blue", "Yellow"],
+  labels: ['Red', 'Blue', 'Yellow'],
   datasets: [
     {
       data: [300, 50, 100],
-      backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"],
-      hoverBackgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"],
+      backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+      hoverBackgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
     },
   ],
 };
 
-const Home = (probs: any) => {
-  const { shopId } = probs;
+const Home = (props: any) => {
+  const { shopId } = props;
   const [facrtors, setFacrtors] = useState([]);
   const [upDown, setUpDown] = useState(false);
   const [topProdcuts, setTopProdcuts] = useState({ labels: [], values: [] });
@@ -75,10 +75,10 @@ const Home = (probs: any) => {
     values: [],
   });
   const [isLoading, setIsLoading] = useState(true);
-  const [txtP1, setTxtP1] = useState({ name: "", index: 1 });
-  const [txtP2, setTxtP2] = useState({ name: "", index: 1 });
-  const [txtP3, setTxtP3] = useState({ name: "", index: 1 });
-  const [txtP4, setTxtP4] = useState({ name: "", index: 1 });
+  const [txtP1, setTxtP1] = useState({ name: '', index: 1 });
+  const [txtP2, setTxtP2] = useState({ name: '', index: 1 });
+  const [txtP3, setTxtP3] = useState({ name: '', index: 1 });
+  const [txtP4, setTxtP4] = useState({ name: '', index: 1 });
   const [profitMonthLabels, setProfitMonthLabels] = useState([]);
   const [profitMonthValues, setProfitMonthValues] = useState([]);
   const [box1Price, setBox1Price] = useState([1, 2, 3, 4]);
@@ -90,23 +90,24 @@ const Home = (probs: any) => {
   const title3 = useRef(null);
   const title4 = useRef(null);
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
+    // @ts-ignore
     value: 0,
-    label: "",
+    label: '',
     currency_decimal_places: 0,
-    currency_code: "",
+    currency_code: '',
     currency_id: 0,
     currency_rate: 1,
-    currency_symbol: "",
+    currency_symbol: '',
   });
 
   async function initData() {
     const { success, data } = await apiFetchCtr({
-      fetch: "dashboard",
-      subType: "initDash",
+      fetch: 'dashboard',
+      subType: 'initDash',
       shopId,
     });
     if (!success) {
-      Toastify("error", "Error in loading, Try Again");
+      Toastify('error', 'Error in loading, Try Again');
       return;
     }
     setIsLoading(false);
@@ -140,7 +141,7 @@ const Home = (probs: any) => {
   }
   useEffect(() => {
     initData();
-    var _locs = JSON.parse(localStorage.getItem("userlocs") || "[]");
+    var _locs = JSON.parse(localStorage.getItem('locations') || '[]');
     if (_locs.toString().length > 10)
       setLocationSettings(
         _locs[
@@ -149,7 +150,7 @@ const Home = (probs: any) => {
           })
         ]
       );
-    else alert("errorr location settings");
+    else alert('errorr location settings');
 
     setTxtP1({ name: getTxtTimeFrame(1), index: 1 });
     setTxtP2({ name: getTxtTimeFrame(1), index: 1 });
@@ -157,11 +158,11 @@ const Home = (probs: any) => {
     setTxtP4({ name: getTxtTimeFrame(1), index: 1 });
   }, []);
   function getTxtTimeFrame(p: number) {
-    if (p == 1) return "Daily";
-    else if (p == 2) return "Weekly";
-    else if (p == 3) return "Monthly";
-    else if (p == 4) return "Yearly";
-    else return "err";
+    if (p == 1) return 'Daily';
+    else if (p == 2) return 'Weekly';
+    else if (p == 3) return 'Monthly';
+    else if (p == 4) return 'Yearly';
+    else return 'err';
   }
   function getRightNum(p: number) {
     if (p > 4) p = 1;
@@ -196,11 +197,11 @@ const Home = (probs: any) => {
     responsive: true,
     plugins: {
       legend: {
-        position: "top" as const,
+        position: 'top' as const,
       },
       title: {
         display: true,
-        text: "Chart.js Bar Chart",
+        text: 'Chart.js Bar Chart',
       },
     },
   };
@@ -208,7 +209,7 @@ const Home = (probs: any) => {
     setUpDown(event.target.checked);
   };
   function getRightTime(dateTimeString: string) {
-    return moment(dateTimeString).format("YYYY/MM/DD hh:mm A");
+    return moment(dateTimeString).format('YYYY/MM/DD hh:mm A');
   }
 
   // const labels = ['January', 'February', 'March', 'April', 'May', 'June', 'July'];
@@ -216,23 +217,23 @@ const Home = (probs: any) => {
     labels: profitMonthLabels,
     datasets: [
       {
-        label: "Monthly Sales",
+        label: 'Monthly Sales',
         data: profitMonthValues,
         backgroundColor: [
-          "rgba(255, 99, 132, 0.2)",
-          "rgba(54, 162, 235, 0.2)",
-          "rgba(255, 206, 86, 0.2)",
-          "rgba(75, 192, 192, 0.2)",
-          "rgba(153, 102, 255, 0.2)",
-          "rgba(255, 159, 64, 0.2)",
+          'rgba(255, 99, 132, 0.2)',
+          'rgba(54, 162, 235, 0.2)',
+          'rgba(255, 206, 86, 0.2)',
+          'rgba(75, 192, 192, 0.2)',
+          'rgba(153, 102, 255, 0.2)',
+          'rgba(255, 159, 64, 0.2)',
         ],
         borderColor: [
-          "rgba(255, 99, 132, 1)",
-          "rgba(54, 162, 235, 1)",
-          "rgba(255, 206, 86, 1)",
-          "rgba(75, 192, 192, 1)",
-          "rgba(153, 102, 255, 1)",
-          "rgba(255, 159, 64, 1)",
+          'rgba(255, 99, 132, 1)',
+          'rgba(54, 162, 235, 1)',
+          'rgba(255, 206, 86, 1)',
+          'rgba(75, 192, 192, 1)',
+          'rgba(153, 102, 255, 1)',
+          'rgba(255, 159, 64, 1)',
         ],
         borderWidth: 1,
       },
@@ -242,23 +243,23 @@ const Home = (probs: any) => {
     labels: upDown ? topProdcutsDown.labels : topProdcuts.labels,
     datasets: [
       {
-        label: "TOP/Down Products",
+        label: 'TOP/Down Products',
         data: upDown ? topProdcutsDown.values : topProdcuts.values,
         backgroundColor: [
-          "rgba(255, 99, 132, 0.2)",
-          "rgba(54, 162, 235, 0.2)",
-          "rgba(255, 206, 86, 0.2)",
-          "rgba(75, 192, 192, 0.2)",
-          "rgba(153, 102, 255, 0.2)",
-          "rgba(255, 159, 64, 0.2)",
+          'rgba(255, 99, 132, 0.2)',
+          'rgba(54, 162, 235, 0.2)',
+          'rgba(255, 206, 86, 0.2)',
+          'rgba(75, 192, 192, 0.2)',
+          'rgba(153, 102, 255, 0.2)',
+          'rgba(255, 159, 64, 0.2)',
         ],
         borderColor: [
-          "rgba(255, 99, 132, 1)",
-          "rgba(54, 162, 235, 1)",
-          "rgba(255, 206, 86, 1)",
-          "rgba(75, 192, 192, 1)",
-          "rgba(153, 102, 255, 1)",
-          "rgba(255, 159, 64, 1)",
+          'rgba(255, 99, 132, 1)',
+          'rgba(54, 162, 235, 1)',
+          'rgba(255, 206, 86, 1)',
+          'rgba(75, 192, 192, 1)',
+          'rgba(153, 102, 255, 1)',
+          'rgba(255, 159, 64, 1)',
         ],
         borderWidth: 1,
       },
@@ -267,7 +268,7 @@ const Home = (probs: any) => {
 
   return (
     <AdminLayout shopId={shopId}>
-      <div className="row loc-dash-top" style={{ background: "#f6f8fa" }}>
+      <div className="row loc-dash-top" style={{ background: '#f6f8fa' }}>
         <div className="loc-dash-top-items">
           <div className="inner-loc-dash-top-items">
             <div className="top-cricle-dash">
@@ -279,22 +280,16 @@ const Home = (probs: any) => {
             <h5 ref={title1}>{txtP1.name}</h5>
             <h3>
               {Number(box1Price[txtP1.index - 1]).toFixed(
-                locationSettings?.currency_decimal_places
+                locationSettings?.location_decimal_places
               )}
               <span>{locationSettings?.currency_code}</span>
             </h3>
           </div>
           <div className="inner-loc-dash-top-items arrows-details">
-            <div
-              className="arrow-updown"
-              onClick={() => btnHandleTimeFrame(txtP1.index + 1, 1)}
-            >
+            <div className="arrow-updown" onClick={() => btnHandleTimeFrame(txtP1.index + 1, 1)}>
               <FontAwesomeIcon icon={faArrowUp} />
             </div>
-            <div
-              className="arrow-updown"
-              onClick={() => btnHandleTimeFrame(txtP1.index - 1, 1)}
-            >
+            <div className="arrow-updown" onClick={() => btnHandleTimeFrame(txtP1.index - 1, 1)}>
               <FontAwesomeIcon icon={faArrowDown} />
             </div>
           </div>
@@ -311,22 +306,16 @@ const Home = (probs: any) => {
             <h5 ref={title3}>{txtP3.name}</h5>
             <h3>
               {Number(box3Price[txtP3.index - 1]).toFixed(
-                locationSettings?.currency_decimal_places
+                locationSettings?.location_decimal_places
               )}
               <span>{locationSettings?.currency_code}</span>
             </h3>
           </div>
           <div className="inner-loc-dash-top-items arrows-details">
-            <div
-              className="arrow-updown"
-              onClick={() => btnHandleTimeFrame(txtP3.index + 1, 3)}
-            >
+            <div className="arrow-updown" onClick={() => btnHandleTimeFrame(txtP3.index + 1, 3)}>
               <FontAwesomeIcon icon={faArrowUp} />
             </div>
-            <div
-              className="arrow-updown"
-              onClick={() => btnHandleTimeFrame(txtP3.index - 1, 3)}
-            >
+            <div className="arrow-updown" onClick={() => btnHandleTimeFrame(txtP3.index - 1, 3)}>
               <FontAwesomeIcon icon={faArrowDown} />
             </div>
           </div>
@@ -343,22 +332,16 @@ const Home = (probs: any) => {
             <h5 ref={title2}>{txtP2.name}</h5>
             <h3>
               {Number(box2Price[txtP2.index - 1]).toFixed(
-                locationSettings?.currency_decimal_places
+                locationSettings?.location_decimal_places
               )}
               <span>{locationSettings?.currency_code}</span>
             </h3>
           </div>
           <div className="inner-loc-dash-top-items arrows-details">
-            <div
-              className="arrow-updown"
-              onClick={() => btnHandleTimeFrame(txtP2.index + 1, 2)}
-            >
+            <div className="arrow-updown" onClick={() => btnHandleTimeFrame(txtP2.index + 1, 2)}>
               <FontAwesomeIcon icon={faArrowUp} />
             </div>
-            <div
-              className="arrow-updown"
-              onClick={() => btnHandleTimeFrame(txtP2.index - 1, 2)}
-            >
+            <div className="arrow-updown" onClick={() => btnHandleTimeFrame(txtP2.index - 1, 2)}>
               <FontAwesomeIcon icon={faArrowDown} />
             </div>
           </div>
@@ -379,16 +362,10 @@ const Home = (probs: any) => {
             </h3>
           </div>
           <div className="inner-loc-dash-top-items arrows-details">
-            <div
-              className="arrow-updown"
-              onClick={() => btnHandleTimeFrame(txtP4.index + 1, 4)}
-            >
+            <div className="arrow-updown" onClick={() => btnHandleTimeFrame(txtP4.index + 1, 4)}>
               <FontAwesomeIcon icon={faArrowUp} />
             </div>
-            <div
-              className="arrow-updown"
-              onClick={() => btnHandleTimeFrame(txtP4.index - 1, 4)}
-            >
+            <div className="arrow-updown" onClick={() => btnHandleTimeFrame(txtP4.index - 1, 4)}>
               <FontAwesomeIcon icon={faArrowDown} />
             </div>
           </div>
@@ -404,7 +381,7 @@ const Home = (probs: any) => {
               height={200}
               options={{
                 maintainAspectRatio: false,
-                indexAxis: "y",
+                indexAxis: 'y',
               }}
             />
           </div>
@@ -412,7 +389,7 @@ const Home = (probs: any) => {
         <div className="loc-dash-small-chart">
           <h4>
             Top 7 Products <Switch checked={upDown} onChange={handleUpDown} />
-            <span>{upDown ? "Down" : "Up"}</span>
+            <span>{upDown ? 'Down' : 'Up'}</span>
           </h4>
           <div>
             <Bar
@@ -441,14 +418,10 @@ const Home = (probs: any) => {
                 return (
                   <div key={i} className="me-tr-table">
                     <div className="m-fileds">{itm.id}</div>
+                    <div className="m-fileds">{getRightTime(itm.created_at)}</div>
                     <div className="m-fileds">
-                      {getRightTime(itm.created_at)}
-                    </div>
-                    <div className="m-fileds">
-                      {Number(itm.total_price).toFixed(
-                        locationSettings.currency_decimal_places
-                      )}{" "}
-                      {locationSettings.currency_code}
+                      {Number(itm.total_price).toFixed(locationSettings?.location_decimal_places)}{' '}
+                      {locationSettings?.currency_code}
                     </div>
                     <div className="m-fileds">{itm.created_by}</div>
                   </div>
@@ -467,7 +440,7 @@ export async function getServerSideProps(context: any) {
     return {
       redirect: {
         permanent: false,
-        destination: "/page403",
+        destination: '/page403',
       },
     };
   return {

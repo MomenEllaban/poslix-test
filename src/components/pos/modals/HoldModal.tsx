@@ -1,95 +1,108 @@
-import React, { useState, useContext, useEffect } from 'react'
-import { useRecoilState } from 'recoil';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import { clearOrders } from "../../../recoil/atoms";
+import { joiResolver } from '@hookform/resolvers/joi';
+import { IHoldItems } from '@models/common-model';
+import { nanoid } from '@reduxjs/toolkit';
+import Joi from 'joi';
+import { useEffect, useState } from 'react';
+import { Button, Form, Modal } from 'react-bootstrap';
+import { useForm } from 'react-hook-form';
+import FormField from 'src/components/form/FormField';
+import { useAppDispatch, useAppSelector } from 'src/hooks';
 import { Toastify } from 'src/libs/allToasts';
-import { IHold, IHoldItems } from '@models/common-model';
+import { clearCart, selectCartByLocation } from 'src/redux/slices/cart.slice';
+const holdSchema = Joi.object({
+  name: Joi.string().required().messages({
+    'string.empty': `Name is required`,
+    'any.required': `Name is required`,
+  }),
+});
+const HoldModal = ({ shopId, lang }: any) => {
+  const dispatch = useAppDispatch();
 
-const HoldModal = (probs: any) => {
+  const selectCartForLocation = selectCartByLocation(shopId);
+  const cart = useAppSelector(selectCartForLocation); // current location order
 
-    const { openDialog, isShowModal, holdObj, shopId } = probs;
-    const [clearEvent, setClear] = useRecoilState(clearOrders);
-    const [holdItems, setHoldItems] = useState<IHold[]>([]);
-    const [newItem, setNewItem] = useState<IHold>({ name: "", data: "", length: 0, location_id: 0 });
-    const [orderIds, setOrderIds] = useState<IHoldItems[]>([]);
+  const [holdItems, setHoldItems] = useState<IHoldItems[]>([]);
+  const [holdModal, setHoldModal] = useState<boolean>(false);
 
-    useEffect(() => {
-        if (isShowModal) {
-            setNewItem({ name: "", data: "", length: 0, location_id: 0 })
-            const holdItemsFromStorage = localStorage.getItem("holdItems" + shopId);
-            if (holdItemsFromStorage)
-                setHoldItems(JSON.parse(holdItemsFromStorage));
-            holdObj.orders.map((p: any, i: number) => orderIds.push({
-                type: p.type, product_id: p.product_id, variation_id: p.variation_id, data: "", qty: 0,
-                tailoring: holdObj.quantity[i].tailoring, tailoringCutsom: holdObj.quantity[i].tailoringCutsom
-            }))
-        } else
-            setOrderIds([])
-    }, [isShowModal])
-    const style = {
-        minWidth: '500px'
-    };
-    return (
-        <>
-            <Dialog
-                open={isShowModal}
-                sx={style}
-                className="poslix-modal">
-                <DialogTitle className="poslix-modal text-primary">Hold Orders</DialogTitle>
-                <DialogContent className="poslix-modal-content" style={{ minWidth: "400px", minHeight: "180px" }}>
-                    <div className="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
-                        <div className="modal-content">
-                            <div className="modal-body">
-                                <div className="row">
-                                    <div className="col-lg-12 mb-12">
-                                        <label>Enter Name :</label>
-                                        <input
-                                            type="text"
-                                            name="cname"
-                                            className="form-control"
-                                            placeholder="First Name"
-                                            value={newItem.name}
-                                            onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
-                                        />
-                                    </div>
-                                </div>
-                                <hr />
-                            </div>
-                            <div className="modal-footer">
-                                <a
-                                    className="btn btn-link link-success fw-medium"
-                                    onClick={() => { openDialog(false) }}
-                                >
-                                    Close <i className="ri-close-line me-1 align-middle" />
-                                </a>
-                                <button type="button" className="btn p-2 btn-primary" onClick={() => {
-                                    if (holdObj.orders.length > 0) {
-                                        if (newItem.name.length > 0) {
-                                            Toastify('success', 'Products Saved');
-                                            const _data = [...holdItems, { name: newItem.name, data: JSON.stringify(orderIds), length: orderIds.length, location_id: shopId }];
-                                            localStorage.setItem("holdItems" + shopId, JSON.stringify(_data))
-                                            const random = Math.random();
-                                            setClear(random);
-                                            openDialog(false)
-                                        } else
-                                            Toastify('error', "Enter Hold Name First!");
-                                    } else
-                                        Toastify('error', 'There Is Nothing For Hold!')
-                                }}>
-                                    Save
-                                </button>
-                            </div>
-                        </div>
-                        {/* /.modal-content */}
-                    </div>
-                </DialogContent >
-            </Dialog>
+  // assumption of one order at a time / one cart
+  const {
+    handleSubmit,
+    register,
+    reset,
+    formState: { errors },
+  } = useForm({ resolver: joiResolver(holdSchema) });
 
-        </>
-    )
+  const handleClose = () => setHoldModal(false);
 
-}
+  const handleSaveOrder = (data) => {
+    if (!data?.name) return Toastify('error', 'Enter Hold Name First!');
+    if (!cart?.cartItems?.length) return Toastify('error', 'There Is Nothing For Hold!');
+
+    const _holdOrder = { ...cart, id: nanoid(5), name: data.name, length: cart.cartItems.length };
+
+    const _newHoldArr = [...holdItems, _holdOrder];
+    localStorage.setItem(`holdItems[${shopId}]`, JSON.stringify(_newHoldArr));
+    Toastify('success', 'Products Saved');
+    dispatch(clearCart({ location_id: shopId }));
+    handleClose();
+  };
+
+  const holdCartHandler = () => {
+    if (!cart?.cartItems?.length) return Toastify('error', 'Cart is empty');
+    setHoldModal(true);
+  };
+
+  useEffect(() => {
+    reset();
+    if (holdModal) {
+      const holdItemsFromStorage = localStorage.getItem(`holdItems[${shopId}]`);
+      if (holdItemsFromStorage) {
+        const _holdItems = JSON.parse(holdItemsFromStorage);
+        setHoldItems([..._holdItems]);
+      } else {
+        setHoldItems([]);
+      }
+    }
+  }, [holdModal]);
+
+  return (
+    <>
+      <Button
+        type="button"
+        variant="warning"
+        onClick={holdCartHandler}
+        disabled={!cart?.cartItems?.length}
+        className="flex-grow-1">
+        {lang.cartComponent.hold}
+      </Button>
+      <Modal show={holdModal} onHide={handleClose}>
+        <Form onSubmit={handleSubmit(handleSaveOrder)}>
+          <Modal.Header className="poslix-modal-title text-primary text-capitalize" closeButton>
+            Hold Orders
+          </Modal.Header>
+          <Modal.Body>
+            <FormField
+              required
+              name="name"
+              type="text"
+              label="Name"
+              errors={errors}
+              register={register}
+              placeholder="Enter Name"
+            />
+          </Modal.Body>
+          <Modal.Footer>
+            <a className="btn btn-link link-success fw-medium" onClick={handleClose}>
+              Close <i className="ri-close-line me-1 align-middle" />
+            </a>
+            <Button type="submit" variant="primary" className="p-2">
+              Save
+            </Button>
+          </Modal.Footer>
+        </Form>
+      </Modal>
+    </>
+  );
+};
 
 export default HoldModal;

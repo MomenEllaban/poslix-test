@@ -39,3 +39,4 @@ yarn-error.log*
 
 *.sql
 .env
+poslix.sql

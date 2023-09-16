@@ -1,22 +1,23 @@
-import React, { useState, useContext, useEffect } from "react";
-import { useRecoilState } from "recoil";
-import Dialog from "@mui/material/Dialog";
-import DialogContent from "@mui/material/DialogContent";
-import DialogTitle from "@mui/material/DialogTitle";
-import { IHold, IpaymentRow } from "../../../models/common-model";
-import { apiInsertCtr } from "../../../libs/dbUtils";
-import { cartJobType } from "../../../recoil/atoms";
-import Select from "react-select";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Button, ButtonGroup, Card } from "react-bootstrap";
-import { faTrash } from "@fortawesome/free-solid-svg-icons";
-import { paymentTypeData } from "@models/data";
-import { ProductContext } from "src/context/ProductContext";
-import { UserContext } from "src/context/UserContext";
-import { Toastify } from "src/libs/allToasts";
-import { ToastContainer } from "react-toastify";
+import React, { useState, useContext, useEffect } from 'react';
+import { useRecoilState } from 'recoil';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import { IHold, IpaymentRow } from '../../../models/common-model';
+import { apiInsertCtr } from '../../../libs/dbUtils';
+import { cartJobType } from '../../../recoil/atoms';
+import Select from 'react-select';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Button, ButtonGroup, Card } from 'react-bootstrap';
+import { faTrash } from '@fortawesome/free-solid-svg-icons';
+import { paymentTypeData } from '@models/data';
+import { ProductContext } from 'src/context/ProductContext';
+import { UserContext } from 'src/context/UserContext';
+import { Toastify } from 'src/libs/allToasts';
+import { ToastContainer } from 'react-toastify';
+import { updateData } from 'src/services/crud.api';
 
-const SalesPaymentModal = (probs: any) => {
+const SalesPaymentModal = (props: any) => {
   const { locationSettings } = useContext(UserContext);
   const {
     openDialog,
@@ -34,99 +35,93 @@ const SalesPaymentModal = (probs: any) => {
     handlePrint,
     completeHandele,
     ///
-  } = probs;
+  } = props;
   // with discount feature
-  const { tax, __WithDiscountFeature__total, setDiscount, totalDiscount } =
-    probs;
+  const { tax, __WithDiscountFeature__total, setDiscount, totalDiscount } = props;
   const [totalPaid, setTotalPaid] = useState<number>(0);
   const [mustPay, setMustPay] = useState<number>(0);
   const [difference, setDifference] = useState<number>(0);
   const [hasError, setHasError] = useState<{ st: boolean; msg: string }>({
     st: false,
-    msg: "",
+    msg: '',
   });
+  const [paymentData, setPaymentData] = useState<any>({})
   const [, setJobType] = useRecoilState(cartJobType);
   const [paymentRows, setPaymentRows] = useState<IpaymentRow[]>([
-    { amount: 0, method: "cash", notes: "" },
+    { amount: 0, method: 'cash', notes: '' },
   ]);
 
   const [canPay, setCanPay] = useState<boolean>(true);
-  const [orderNote, setOrderNote] = useState<string>("");
+  const [orderNote, setOrderNote] = useState<string>('');
   const selectStyle = {
     control: (style: any) => ({
       ...style,
-      fontSize: "12px",
-      minWidth: "150px",
-      maxHeight: "10px",
+      fontSize: '12px',
+      minWidth: '150px',
+      maxHeight: '10px',
     }),
-    menu: (base: any) => ({ ...base, fontSize: "12p x" }),
+    menu: (base: any) => ({ ...base, fontSize: '12p x' }),
   };
   const [paymentMethods] = useState(paymentTypeData);
-  const { products, setProducts, variations, setVariations } =
-    useContext(ProductContext);
+  const { products, setProducts, variations, setVariations } = useContext(ProductContext);
   const [holdItems, setHoldItems] = useState<IHold[]>([]);
 
   useEffect(() => {
-    setHasError({ st: false, msg: "" });
+    setPaymentData({amount: userData.due, payment_type: 'cash'})
+    setHasError({ st: false, msg: '' });
     let _mustPay = +Math.abs(
       __WithDiscountFeature__total + details?.totalAmount - details?.subTotal
-    ).toFixed(locationSettings.currency_decimal_places);
+    ).toFixed(locationSettings?.location_decimal_places);
     setMustPay(_mustPay);
-    setPaymentRows([{ amount: _mustPay, method: "cash", notes: "" }]);
+    setPaymentRows([{ amount: _mustPay, method: 'cash', notes: '' }]);
 
     if (!statusDialog) return;
 
-    setOrderNote(orderEditDetails?.notes != null ? orderEditDetails?.notes : "");
+    setOrderNote(orderEditDetails?.notes != null ? orderEditDetails?.notes : '');
     let _id = 0,
       fabs: any = [];
     holdObj?.orders.map((od: any, i: number) => {
-      if (od.type == "tailoring_package") {
+      if (od.type == 'tailoring_package') {
         _id = holdObj.quantity[i].tailoringCutsom?.fabric_id!;
         let index = fabs.findIndex((item: any) => item.product_id == _id);
         if (index !== -1)
           fabs[index].qty +=
-            holdObj.quantity[i].tailoringCutsom?.fabric_length! *
-            holdObj.quantity[i].quantity;
+            holdObj.quantity[i].tailoringCutsom?.fabric_length! * holdObj.quantity[i].quantity;
         else
           fabs.push({
             product_id: _id,
-            qty:
-              holdObj.quantity[i].tailoringCutsom?.fabric_length! *
-              holdObj.quantity[i].quantity,
+            qty: holdObj.quantity[i].tailoringCutsom?.fabric_length! * holdObj.quantity[i].quantity,
           });
       }
     });
     holdObj?.orders.map((od: any, i: number) => {
-      if (od.type == "single" && od.is_fabric == 1 && od.sell_over_stock == 0) {
+      if (od.type == 'single' && od.is_fabric == 1 && od.sell_over_stock == 0) {
         _id = od.product_id;
         let index = fabs.findIndex((item: any) => item.product_id == _id);
         if (index !== -1) {
           let _sum = fabs[index].qty + holdObj.quantity[i].quantity;
-          let _pro: any = products.products[holdObj.quantity[i].productIndex];
+          let _pro: any = products[holdObj.quantity[i].productIndex];
           if (_sum > _pro.total_qty) {
-            Toastify("error", "Over Stock #" + od.name);
+            Toastify('error', 'Over Stock #' + od.name);
             openDialog(false);
           }
         }
       }
     });
-    const holdItemsFromStorage = localStorage.getItem("holdItems" + shopId);
-    if (holdItemsFromStorage)
-      setHoldItems(JSON.parse(holdItemsFromStorage).reverse());
+    const holdItemsFromStorage = localStorage.getItem('holdItems' + shopId);
+    if (holdItemsFromStorage) setHoldItems(JSON.parse(holdItemsFromStorage).reverse());
   }, [statusDialog]);
 
   function calculation(_rows: IpaymentRow[]) {
     let _sum = 0;
-    localStorage.setItem("payment", JSON.stringify(_rows));
+    localStorage.setItem('payment', JSON.stringify(_rows));
     _rows.map((_i: IpaymentRow) => (_sum += Number(_i.amount!)));
-    setTotalPaid(
-      +Number(_sum).toFixed(locationSettings.currency_decimal_places)
-    );
+    setTotalPaid(+Number(_sum).toFixed(locationSettings?.location_decimal_places));
   }
-  const style = { minWidth: "500px" };
+  const style = { minWidth: '500px' };
   const paymentRowChange = (index: any, evnt: any): void => {
     const _rows: any = [...paymentRows];
-    if ("label" in evnt) _rows[index].method = evnt.value;
+    if ('label' in evnt) _rows[index].method = evnt.value;
     else {
       const { name, value } = evnt.target;
       _rows[index][name] = value;
@@ -143,40 +138,22 @@ const SalesPaymentModal = (probs: any) => {
       }
     });
     if (!isOk) {
-      Toastify("error", "Choose Payment Method First ");
+      Toastify('error', 'Choose Payment Method First ');
       return;
     }
     completeHandele(paymentRows[0], userData);
     setPaymentModalShow(false);
     // remove comment to call the api
-    // canPay ? insertPayment() : Toastify("error", "Wrong Amount!!");
+    canPay ? insertPayment() : Toastify("error", "Wrong Amount!!");
   };
-  
+
   async function insertPayment() {
-    var result = await apiInsertCtr({
-      type: "transactions",
-      subType: "newPosSale",
-      data: {
-        items: holdObj,
-        details: {
-            isReturn: userData.id,
-            totalAmount: +userData.total_price
-        },
-        paymentRows,
-        orderEditDetails: {
-            total_price: +userData.amount + +paymentRows[0].amount,
-            isEdit: true,
-            orderId: userData.id
-        },
-        orderNote,
-      },
-      shopId,
-    });
-    if (result.success) {
-      Toastify("success", "successfully done");
+    const res = await updateData('sales/complete-payment', userData.id, paymentData)
+    if (res.data.success) {
+      Toastify('success', 'successfully done');
       setPaymentModalShow(false);
-      setPaymentModalData({})
-      setJobType({ req: 2, val: orderNote, val2: result.newdata });
+      setPaymentModalData({});
+      setJobType({ req: 2, val: orderNote, val2: res.data.result });
       handlePrint();
       if (
         holdItems.length > 0 &&
@@ -185,10 +162,10 @@ const SalesPaymentModal = (probs: any) => {
         selectedHold.holdId > -1
       ) {
         holdItems.splice(selectedHold.holdId, 1);
-        localStorage.setItem("holdItems" + shopId, JSON.stringify(holdItems));
+        localStorage.setItem('holdItems' + shopId, JSON.stringify(holdItems));
       }
     } else {
-      alert("has error, Try Again...");
+      alert('has error, Try Again...');
     }
   }
   return (
@@ -198,18 +175,36 @@ const SalesPaymentModal = (probs: any) => {
         <DialogTitle>Payment</DialogTitle>
         <DialogContent className="poslix-modal-content">
           <div className="modal-body">
-            <div className="d-flex gap-2 justify-between" style={{fontSize: 'small'}}>
-                <div style={{backgroundColor: '#ccc', borderRadius: '5px', paddingInline: '16px', paddingTop: '6px'}}>
-                    <p>Customer: {userData?.customer_name}</p>
-                </div>
-                <div style={{backgroundColor: '#ccc', borderRadius: '5px', paddingInline: '16px', paddingTop: '6px'}}>
-                    <p>Invoice No.: {userData.id}</p>
-                    <p>Location: {location}</p>
-                </div>
-                <div style={{backgroundColor: '#ccc', borderRadius: '5px', paddingInline: '16px', paddingTop: '6px'}}>
-                    <p>Total Amount: {userData.total_price}</p>
-                    <p>Payment Note: {userData.note ? userData.note : '...'}</p>
-                </div>
+            <div className="d-flex gap-2 justify-between" style={{ fontSize: 'small' }}>
+              <div
+                style={{
+                  backgroundColor: '#ccc',
+                  borderRadius: '5px',
+                  paddingInline: '16px',
+                  paddingTop: '6px',
+                }}>
+                <p>Customer: {userData?.contact_name}</p>
+              </div>
+              <div
+                style={{
+                  backgroundColor: '#ccc',
+                  borderRadius: '5px',
+                  paddingInline: '16px',
+                  paddingTop: '6px',
+                }}>
+                <p>Invoice No.: {userData.id}</p>
+                <p>Location: {location}</p>
+              </div>
+              <div
+                style={{
+                  backgroundColor: '#ccc',
+                  borderRadius: '5px',
+                  paddingInline: '16px',
+                  paddingTop: '6px',
+                }}>
+                <p>Total Amount: {userData.sub_total}</p>
+                <p>Payment Note: {userData.note ? userData.note : '...'}</p>
+              </div>
             </div>
             <div>
               <div className="payment-item">
@@ -235,19 +230,26 @@ const SalesPaymentModal = (probs: any) => {
                         className="form-control"
                         type="number"
                         name="amount"
-                        onChange={(evnt) => paymentRowChange(0, evnt)}
-                        value={paymentRow.amount ? paymentRow.amount : userData.totalDue}
+                        onChange={(e) => {
+                          paymentRowChange(0, e)
+                          setPaymentData({...paymentData, amount: +e.target.value})
+                        }}
+                        value={paymentData.amount ? paymentData.amount : userData.totalDue}
                       />
                     </div>
 
                     <div className="payment-item">
                       <label className="label" htmlFor="abount">
-                        Method{" "}
+                        Method{' '}
                       </label>
                       <Select
                         styles={selectStyle}
                         options={paymentMethods}
-                        onChange={(evnt: any) => paymentRowChange(i, evnt)}
+                        onChange={(e: any) => {
+                          paymentRowChange(i, e)
+                          setPaymentData({...paymentData, payment_type: e.value})
+                          
+                        }}
                         value={paymentMethods.find((f) => {
                           return f.value == paymentRow.method;
                         })}
@@ -276,7 +278,7 @@ const SalesPaymentModal = (probs: any) => {
                         type="text"
                         name="notes"
                         onChange={(evnt) => paymentRowChange(i, evnt)}
-                        value={(new Date()).toString()}
+                        value={new Date().toString()}
                         disabled
                       />
                     </div>
@@ -289,25 +291,23 @@ const SalesPaymentModal = (probs: any) => {
             <a
               onClick={() => {
                 setPaymentModalShow(false);
-                setPaymentModalData({})
+                setPaymentModalData({});
               }}
               href="#"
-              className="btn btn-link link-success fw-medium"
-            >
+              className="btn btn-link link-success fw-medium">
               <i className="ri-close-line me-1 align-middle" /> Close
             </a>
             <button
               type="button"
               className={
-                "btn btn-label " +
-                (canPay ? "btn-primary" : "btn-danger") +
-                " right nexttab"
+                'btn btn-label ' + (canPay ? 'btn-primary' : 'btn-danger') + ' right nexttab'
               }
               data-nexttab="pills-finish-tab"
-              onClick={()=> {handlePayment()}}
-            >
+              onClick={() => {
+                handlePayment();
+              }}>
               <i className="ri-shopping-basket-line label-icon align-middle fs-16 ms-2" />
-              {canPay ? "Complete Order" : "Amount(s) Wrong!"}
+              {canPay ? 'Complete Order' : 'Amount(s) Wrong!'}
             </button>
           </div>
         </DialogContent>

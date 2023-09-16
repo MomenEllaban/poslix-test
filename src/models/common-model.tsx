@@ -1,3 +1,5 @@
+import { ITaxGroup } from './pos.types';
+
 export class CommonModels {}
 
 export interface IproductInfo {
@@ -78,15 +80,25 @@ export type IpurchaseProductItem = {
 //isCost 0 => cost 1 => withExpends  2=> withTax 3=>sumAll
 export interface ITax {
   id: number;
+  location_id: number;
   name: string;
   amount: number;
-  amountType: string;
-  taxType: string;
-  isPrimary: boolean;
-  parentId?: number;
-  isNew?: number;
-  isChoosed?: boolean;
-  isSplit?: boolean;
+  is_tax_group: number;
+  for_tax_group: number;
+  created_by: number;
+  woocommerce_tax_rate_id?: any;
+  deleted_at?: any;
+  created_at?: any;
+  updated_at?: any;
+  for_tax_inclusive: number;
+  for_tax_exclusive: number;
+  is_inc_or_exc: string;
+  type: 'percentage' | 'fixed';
+  is_primary: boolean | 0 | 1;
+  tax_type: string;
+  tax_group: ITaxGroup[];
+
+  isNew?: number; // this is not existed but to ignore errors
 }
 export interface IreadyGroupTax {
   primary: number;
@@ -131,15 +143,16 @@ export interface IOrderMiniDetails {
   notes?: string;
 }
 
-export type DiscountType = "fixed" | "percent";
+export type DiscountType = 'fixed' | 'percent';
 export type Discount = {
   type: DiscountType;
   amount: number;
 };
 
 export interface IOrdersCalcs {
+  shopId: number;
   taxRate: number;
-  totalAmount: number;
+
   shippingRate: number;
   subTotal: number;
   orderEditDetails: IOrderMiniDetails;
@@ -149,7 +162,7 @@ export interface IOrdersCalcs {
   totalDiscount?: number;
   setDiscount?: (discount: Discount) => void;
   __WithDiscountFeature__total?: number;
-  lang?: any
+  lang?: any;
 }
 
 export interface IVariation {
@@ -228,7 +241,8 @@ export type userDashboard = {
   name: string;
   username: string;
   password: string;
-  mobile: string;
+  contact_number?: string;
+  mobile?: string;
   email: string;
 };
 export interface IRoles {
@@ -254,13 +268,19 @@ export type IsaleProductItem = {
   def_tax: boolean;
 };
 export interface ILocationSettings {
-  value: number;
-  label: string;
+  // value: number;
+  // label: string;
+  location_id: number;
+  location_name: string;
+  location_decimal_places: number;
   currency_id: number;
+  currency_name: string;
   currency_code: string;
-  currency_decimal_places: number;
-  currency_rate: number;
   currency_symbol: string;
+  // currency_decimal_places: number;
+  // currency_rate:number
+
+  
 }
 export interface IPurchaseExpndes {
   label: string;
@@ -282,7 +302,7 @@ export interface IExpenseList {
   id: number;
   name: string;
   amount: number;
-  cate_name?: string;
+  category_id?: string;
   expense_id: number;
   date: Date;
 }
@@ -342,6 +362,7 @@ export interface ITailoringExtraItems {
   name: string;
 }
 export interface IHold {
+  id: string | number;
   name: string;
   data: string;
   length: number;
@@ -359,23 +380,29 @@ export interface IHoldItems {
   tailoringCutsom?: ITailoringCustom;
 }
 
-
-export interface ITransferItem{
-  id: number,
-  date: string,
-  refNo: number,
-  status: string,
-  loctionFrom: number,
-  loctionTo: number,
-  product: {
-    id: number,
-    name: string,
-    qty: number,
-    sell: number,
-    totalPrice: number
-  },
-  charges: number,
-  notes: string
+export interface ITransferItem {
+  id: number;
+  date: string;
+  refNo: number;
+  status: string;
+  loctionFrom?: number;
+  locationFrom?: number;
+  loctionTo?: number;
+  locationTo?: number;
+  product?: {
+    id: number;
+    name: string;
+    qty: number;
+    sell: number;
+    totalPrice: number;
+  };
+  products: Array<{
+    id: number;
+    name: string;
+    qty: number;
+    sell: number;
+    totalPrice: number;
+  }>;
+  charges: number;
+  notes: string;
 }
-
-

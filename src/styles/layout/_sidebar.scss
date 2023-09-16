@@ -23,7 +23,13 @@ $sidebar-overlay-z-index: 1025;
   width: var(--sidebar-width);
   background: $sidebar-background;
   color: $sidebar-text-color;
-  transition: margin-left 0.15s, margin-right 0.15s, box-shadow 0.075s, transform 0.15s, width 0.15s, z-index 0s ease 0.15s;
+  transition:
+    margin-left 0.15s,
+    margin-right 0.15s,
+    box-shadow 0.075s,
+    transform 0.15s,
+    width 0.15s,
+    z-index 0s ease 0.15s;
   z-index: $sidebar-z-index;
 
   & + .wrapper {
@@ -132,16 +138,14 @@ $sidebar-overlay-z-index: 1025;
           }
         }
 
-        .nav-title, .nav-group-items {
+        .nav-title,
+        .nav-group-items {
           display: none;
         }
-
-        & + .wrapper {
-          --sidebar-width: 4rem;
-        }
       }
-      
-
+      & + .wrapper {
+        --sidebar-width: 4rem;
+      }
     }
 
     &.md-hide {
@@ -156,4 +160,8 @@ $sidebar-overlay-z-index: 1025;
 
 .sidebar-overlay {
   z-index: $sidebar-overlay-z-index;
+}
+
+.hover-color:hover {
+  color: blue !important;
 }

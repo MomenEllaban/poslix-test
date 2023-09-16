@@ -19,16 +19,29 @@ export default async function handler(
                 if (locationPermission(repo.data.locs, shopId) != -1) {
                     if (subType == 'getProducts') {
                         var con = doConnect();
-                        con.query(`SELECT products.id,products.type,products.name,products.image,products.sku,products.alert_quantity,products.sell_price,products.qty_over_sold,
+                        con.query(`SELECT
+                        products.id,
+                        products.type,
+                        products.name,
+                        products.image,
+                        products.sku,
+                        products.alert_quantity,
+                        products.sell_price,
+                        products.qty_over_sold,
                         categories.name AS 'category',
-                        COALESCE(sum(stock.qty_received - stock.qty_sold),0) AS 'qty'
-                            FROM products
-                                left JOIN categories ON categories.id = products.category_id
-                                left JOIN business_locations ON business_locations.id = products.location_id
-                                left JOIN stock ON stock.product_id = products.id
-                                    WHERE products.location_id = ? AND business_locations.owner_id = ? AND products.is_disabled=0
-                                    GROUP BY products.id
-                                                    ORDER BY id DESC;`, [shopId, Number(repo.data.oid!) > 0 ? repo.data.oid! : repo.data.id],
+                        COALESCE(SUM(stock.qty_received - stock.qty_sold), 0) AS 'qty',
+                        MIN(product_variations.price) AS 'min_price',
+                        MAX(product_variations.price) AS 'max_price'
+                    FROM products
+                    LEFT JOIN categories ON categories.id = products.category_id
+                    LEFT JOIN business_locations ON business_locations.id = products.location_id
+                    LEFT JOIN stock ON stock.product_id = products.id
+                    LEFT JOIN product_variations ON product_variations.parent_id = products.id
+                    WHERE products.location_id = ? 
+                        AND business_locations.owner_id = ? 
+                        AND products.is_disabled = 0
+                    GROUP BY products.id
+                    ORDER BY products.id DESC;`, [shopId, Number(repo.data.oid!) > 0 ? repo.data.oid! : repo.data.id],
                             function (err: QueryError, products: any) {
                                 if (err) {
                                     redirection(401, con, res, 'error fetching...' + err.message)

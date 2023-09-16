@@ -1,51 +1,49 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faBars, faLanguage } from '@fortawesome/free-solid-svg-icons'
-import Link from 'next/link'
-import Breadcrumb from '@layout/AdminLayout/Breadcrumb/Breadcrumb'
-import HeaderFeaturedNav from '@layout/AdminLayout/Header/HeaderFeaturedNav'
-import HeaderNotificationNav from '@layout/AdminLayout/Header/HeaderNotificationNav'
-import HeaderProfileNav from '@layout/AdminLayout/Header/HeaderProfileNav'
-import { Button, Container, Dropdown } from 'react-bootstrap'
-import { useEffect, useState, useContext } from 'react'
-
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBars, faLanguage } from '@fortawesome/free-solid-svg-icons';
+import Link from 'next/link';
+import Breadcrumb from '@layout/AdminLayout/Breadcrumb/Breadcrumb';
+import HeaderFeaturedNav from '@layout/AdminLayout/Header/HeaderFeaturedNav';
+import HeaderNotificationNav from '@layout/AdminLayout/Header/HeaderNotificationNav';
+import HeaderProfileNav from '@layout/AdminLayout/Header/HeaderProfileNav';
+import { Button, Container, Dropdown } from 'react-bootstrap';
+import { useEffect, useState, useContext } from 'react';
+import { RiEnglishInput } from 'react-icons/ri';
+import { GiArabicDoor } from 'react-icons/gi';
 
 /*MOHAMMED MAHER */
-import DarkModeToggle from "../DarkModeToggle";
-import { darkModeContext } from "../../../context/DarkModeContext";
+import DarkModeToggle from '../DarkModeToggle';
+import { darkModeContext } from '../../../context/DarkModeContext';
 
 type HeaderProps = {
   toggleSidebar: () => void;
   toggleSidebarMd: () => void;
-}
+};
 
 export default function Header(props: HeaderProps) {
-  const { toggleSidebar, toggleSidebarMd } = props
-  const [fullname, setFullname] = useState('')
+  const { toggleSidebar, toggleSidebarMd } = props;
+  const [fullname, setFullname] = useState('');
 
   const { toggleDarkMode, darkMode, setDarkMode } = useContext(darkModeContext);
 
   useEffect(() => {
     setFullname(localStorage.getItem('userfullname') || '');
-  }, [])
+  }, []);
   return (
-    <header className={`header sticky-top2 p-2 ${
-      darkMode ? "dark-mode-body " : "light-mode-body "
-    }`}>
+    <header
+      className={`header sticky-top2 p-2 ${darkMode ? 'dark-mode-body ' : 'light-mode-body '}`}>
       <Container fluid className="header-navbar d-flex align-items-center">
         <Button
           variant="link"
           className="header-toggler d-md-none px-md-0 me-md-3 rounded-0 shadow-none"
           type="button"
-          onClick={toggleSidebar}
-        >
+          onClick={toggleSidebar}>
           <FontAwesomeIcon icon={faBars} />
         </Button>
         <Button
           variant="link"
           className="header-toggler d-none d-md-inline-block px-md-0 me-md-3 rounded-0 shadow-none"
           type="button"
-          onClick={toggleSidebarMd}
-        >
+          onClick={toggleSidebarMd}>
           <FontAwesomeIcon icon={faBars} />
         </Button>
         <Link href="/" className="header-brand d-md-none">
@@ -61,11 +59,17 @@ export default function Header(props: HeaderProps) {
           </Dropdown.Toggle>
 
           <Dropdown.Menu>
-            <Dropdown.Item /*href="/action-1"*/>
+            <Dropdown.Item className="d-flex align-items-center" /*href="/action-1"*/>
               {/* <FontAwesomeIcon icon={faKaaba} /> */}
+              <GiArabicDoor className="me-2" />
               Arabic
             </Dropdown.Item>
-            {<Dropdown.Item /*href="/action-2"*/>English</Dropdown.Item>}
+            {
+              <Dropdown.Item className="d-flex align-items-center" /*href="/action-2"*/>
+                <RiEnglishInput className="me-2" />
+                English
+              </Dropdown.Item>
+            }
           </Dropdown.Menu>
         </Dropdown>
         <div className="ms-2">
@@ -80,5 +84,5 @@ export default function Header(props: HeaderProps) {
         </div>
       </Container>
     </header>
-  )
+  );
 }

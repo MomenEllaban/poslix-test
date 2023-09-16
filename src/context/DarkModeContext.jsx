@@ -1,18 +1,16 @@
-/*MOHAMMED MAHER */
-
-import { createContext, useState } from "react";
+import { createContext, useContext, useState } from 'react';
 
 export const darkModeContext = createContext();
 
 export const DarkModeProvider = (props) => {
   const [darkMode, setDarkMode] = useState(false);
-  console.log(darkMode);
+
   const toggleDarkMode = () => {
     const isDark = !darkMode;
     setDarkMode(isDark);
-    localStorage.setItem("dark", isDark);
+    localStorage.setItem('dark', isDark);
     const root = document.documentElement;
-    root.classList.toggle("dark");
+    root.classList.toggle('dark');
   };
 
   return (
@@ -22,4 +20,10 @@ export const DarkModeProvider = (props) => {
   );
 };
 
-/*MOHAMMED MAHER */
+export const useDarkMode = () => {
+  const context = useContext(darkModeContext);
+  if (context === undefined) {
+    throw new Error('useDarkMode must be used within a DarkModeProvider');
+  }
+  return context;
+};
