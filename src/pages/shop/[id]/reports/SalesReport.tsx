@@ -1,5 +1,6 @@
 import { AdminLayout } from '@layout';
-import { KeyboardArrowLeft, KeyboardArrowRight } from '@mui/icons-material';
+import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
+import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
 import { Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from '@mui/material';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';

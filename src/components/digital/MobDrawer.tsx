@@ -1,19 +1,14 @@
-import * as React from 'react';
-import PropTypes from 'prop-types';
 import { Global } from '@emotion/react';
-import { styled } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-import { grey } from '@mui/material/colors';
-import Button from '@mui/material/Button';
-import Box from '@mui/material/Box';
-import Skeleton from '@mui/material/Skeleton';
-import Typography from '@mui/material/Typography';
-import SwipeableDrawer from '@mui/material/SwipeableDrawer';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import  CartItem  from "../../components/digital/CartItem"
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import CssBaseline from '@mui/material/CssBaseline';
+import SwipeableDrawer from '@mui/material/SwipeableDrawer';
+import { grey } from '@mui/material/colors';
+import { styled } from '@mui/material/styles';
+import CartItem from "../../components/digital/CartItem";
+import { useDispatch, useSelector } from 'react-redux';
 
-import { useDispatch,useSelector } from 'react-redux';
-import {addTodigitalCart ,incrementQuantity, decrementQuantity, removeItem} from '../../redux/slices/digitalCartSlice';
 const drawerBleeding = 56;
 
 const Root = styled('div')(({ theme }) => ({
