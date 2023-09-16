@@ -1,5 +1,4 @@
 import { AdminLayout } from '@layout';
-import { ILocationSettings } from '@models/common-model';
 import { IOpenCloseReport } from '@models/reports.types';
 import {
   DataGrid,
@@ -11,113 +10,113 @@ import {
   GridToolbarQuickFilter,
 } from '@mui/x-data-grid';
 import { useRouter } from 'next/router';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import withAuth from 'src/HOCs/withAuth';
 import AlertDialog from 'src/components/utils/AlertDialog';
-import { UserContext, useUser } from 'src/context/UserContext';
-import { apiFetchCtr } from 'src/libs/dbUtils';
+import { useUser } from 'src/context/UserContext';
 import api from 'src/utils/app-api';
+
+interface ISummaryDetails {
+  total_hand_cash: number;
+  total_cash: number;
+  total_cheque: number;
+  total_bank: number;
+  total_cart: number;
+  total: number;
+}
+
+const initialDetails = {
+  total_hand_cash: 0,
+  total_cash: 0,
+  total_cheque: 0,
+  total_bank: 0,
+  total_cart: 0,
+  total: 0,
+};
 
 function SalesReport() {
   const router = useRouter();
   const shopId = router.query.id;
-  const { locationSettings, setLocationSettings, invoicDetails } = useUser();
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-  const [sales, setSales] = useState<IOpenCloseReport[]>([]);
+  const componentRef = useRef(null);
+  const { locationSettings, invoicDetails } = useUser();
 
   const [show, setShow] = useState(false);
-
-  const [selectId, setSelectId] = useState(0);
-  const [selectRow, setSelectRow] = useState<any>({});
   const [lines, setLines] = useState<any>([]);
-  const [isLoadItems, setIsLoadItems] = useState(false);
-  const [showViewPopUp, setShowViewPopUp] = useState(false);
-  const [handleSearchTxt, setHandleSearchTxt] = useState('');
-  const [details, setDetails] = useState<{
-    total_hand_cash: number;
-    total_cash: number;
-    total_cheque: number;
-    total_bank: number;
-    total_cart: number;
-    total: number;
-  }>({
-    total_hand_cash: 0,
-    total_cash: 0,
-    total_cheque: 0,
-    total_bank: 0,
-    total_cart: 0,
-    total: 0,
-  });
+  const [selectId, setSelectId] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectRow, setSelectRow] = useState<any>({});
+  const [sales, setSales] = useState<IOpenCloseReport[]>([]);
+  const [details, setDetails] = useState<ISummaryDetails>(initialDetails);
 
-  const columns: GridColDef<IOpenCloseReport>[] = [
-    { field: 'id', headerName: '#', maxWidth: 72 },
-    {
-      field: 'name',
-      headerName: 'Cashier',
-      maxWidth: 100,
-      renderCell: ({ row }: Partial<GridRowParams>) => row.status,
-    },
-    {
-      field: 'status',
-      headerName: 'Type',
-      maxWidth: 100,
-      disableColumnMenu: true,
-      renderCell: ({ row }: Partial<GridRowParams>) => row.status,
-    },
-    {
-      field: 'closing_amount',
-      headerName: 'hand cash',
-      flex: 1,
-      renderCell: ({ row }: Partial<GridRowParams>) =>
-        +Number(row.hand_cash).toFixed(locationSettings?.location_decimal_places),
-    },
-    {
-      field: 'total_card_slips',
-      headerName: 'Card',
-      flex: 1,
-      renderCell: ({ row }: Partial<GridRowParams>) =>
-        +Number(row.cart).toFixed(locationSettings?.location_decimal_places),
-    },
-    {
-      field: 'total_cash',
-      headerName: 'Cash',
-      flex: 1,
-      renderCell: ({ row }: Partial<GridRowParams>) =>
-        +Number(row.cash).toFixed(locationSettings?.location_decimal_places),
-    },
-    {
-      field: 'total_cheques',
-      headerName: 'Cheques',
-      flex: 1,
-      renderCell: ({ row }: Partial<GridRowParams>) =>
-        +Number(row.cheque).toFixed(locationSettings?.location_decimal_places),
-    },
-    {
-      field: 'total_bank',
-      headerName: 'Bank',
-      flex: 1,
-      renderCell: ({ row }: Partial<GridRowParams>) =>
-        +Number(row.bank).toFixed(locationSettings?.location_decimal_places),
-    },
-    {
-      field: 'date',
-      headerName: 'Date',
-      flex: 1,
-      renderCell: ({ row }: Partial<GridRowParams>) => `${new Date(row.date).toLocaleDateString()}`,
-    },
-    {
-      field: 'closing_note',
-      headerName: 'Note',
-      flex: 1,
-      disableColumnMenu: true,
-      renderCell: ({ row }) => row.note?.trim() || '---',
-    },
-  ];
+  const columns: GridColDef<IOpenCloseReport>[] = useMemo(
+    () => [
+      { field: 'id', headerName: '#', maxWidth: 72 },
+      {
+        field: 'name',
+        headerName: 'Cashier',
+        maxWidth: 100,
+        renderCell: ({ row }: Partial<GridRowParams>) => row.status,
+      },
+      {
+        field: 'status',
+        headerName: 'Type',
+        maxWidth: 100,
+        disableColumnMenu: true,
+        renderCell: ({ row }: Partial<GridRowParams>) => row.status,
+      },
+      {
+        field: 'closing_amount',
+        headerName: 'hand cash',
+        flex: 1,
+        renderCell: ({ row }: Partial<GridRowParams>) =>
+          +Number(row.hand_cash).toFixed(locationSettings?.location_decimal_places),
+      },
+      {
+        field: 'total_card_slips',
+        headerName: 'Card',
+        flex: 1,
+        renderCell: ({ row }: Partial<GridRowParams>) =>
+          +Number(row.cart).toFixed(locationSettings?.location_decimal_places),
+      },
+      {
+        field: 'total_cash',
+        headerName: 'Cash',
+        flex: 1,
+        renderCell: ({ row }: Partial<GridRowParams>) =>
+          +Number(row.cash).toFixed(locationSettings?.location_decimal_places),
+      },
+      {
+        field: 'total_cheques',
+        headerName: 'Cheques',
+        flex: 1,
+        renderCell: ({ row }: Partial<GridRowParams>) =>
+          +Number(row.cheque).toFixed(locationSettings?.location_decimal_places),
+      },
+      {
+        field: 'total_bank',
+        headerName: 'Bank',
+        flex: 1,
+        renderCell: ({ row }: Partial<GridRowParams>) =>
+          +Number(row.bank).toFixed(locationSettings?.location_decimal_places),
+      },
+      {
+        field: 'date',
+        headerName: 'Date',
+        flex: 1,
+        renderCell: ({ row }: Partial<GridRowParams>) =>
+          `${new Date(row.date).toLocaleDateString()}`,
+      },
+      {
+        field: 'closing_note',
+        headerName: 'Note',
+        flex: 1,
+        disableColumnMenu: true,
+        renderCell: ({ row }) => row.note?.trim() || '---',
+      },
+    ],
+    [locationSettings]
+  );
 
-  const componentRef = React.useRef(null);
   class ComponentToPrint extends React.PureComponent {
     render() {
       if (!selectRow) return;
@@ -212,44 +211,26 @@ function SalesReport() {
       );
     }
   }
+
   async function initDataPage() {
     if (!shopId) return;
-
-    api.get(`reports/register/${shopId}`, { params: { all_data: 1 } }).then(({ data }) => {
-      console.log(data.result);
-      const { data: ocReports, ...details } = data.result ?? { data: [], details: {} };
-      setSales(ocReports as IOpenCloseReport[]);
-      setDetails((data) => ({ ...data, ...details }));
-    });
-  }
-
-  async function getItems(id: number) {
-    setIsLoadItems(true);
-    const { success, newdata } = await apiFetchCtr({
-      fetch: 'transactions',
-      subType: 'getSaleItems',
-      shopId,
-      id,
-    });
-    if (success) {
-      setLines(newdata);
-      setIsLoadItems(false);
-    }
+    setIsLoading(true);
+    api
+      .get(`reports/register/${shopId}`, { params: { all_data: 1 } })
+      .then(({ data }) => {
+        const { data: ocReports, ...details } = data.result ?? { data: [], details: {} };
+        setSales(ocReports as IOpenCloseReport[]);
+        setDetails((data) => ({ ...data, ...details }));
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   }
 
   useEffect(() => {
     initDataPage();
   }, [router.query.id]);
 
-  function CustomToolbar() {
-    return (
-      <GridToolbarContainer>
-        <GridToolbarExport />
-        <GridToolbarColumnsButton />
-        <GridToolbarQuickFilter />
-      </GridToolbarContainer>
-    );
-  }
   return (
     <AdminLayout shopId={shopId}>
       <AlertDialog
@@ -285,6 +266,7 @@ function SalesReport() {
           </div>
         </div>
         <DataGrid
+          loading={isLoading}
           className="datagrid-style"
           sx={{
             '.MuiDataGrid-columnSeparator': {
@@ -302,6 +284,16 @@ function SalesReport() {
         />
       </div>
     </AdminLayout>
+  );
+}
+
+function CustomToolbar() {
+  return (
+    <GridToolbarContainer>
+      <GridToolbarExport />
+      <GridToolbarColumnsButton />
+      <GridToolbarQuickFilter />
+    </GridToolbarContainer>
   );
 }
 
