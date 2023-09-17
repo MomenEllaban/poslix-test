@@ -1,20 +1,17 @@
 import { AdminLayout } from '@layout';
+import { ILocation } from '@models/auth.types';
 import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
-import { Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from '@mui/material';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
 import FormControl from '@mui/material/FormControl';
+import IconButton from '@mui/material/IconButton';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
-import {
-  DataGrid,
-  GridColDef,
-  GridRowParams,
-  GridToolbarColumnsButton,
-  GridToolbarContainer,
-  GridToolbarExport,
-  GridToolbarQuickFilter,
-} from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridRowParams } from '@mui/x-data-grid';
 import { useRouter } from 'next/router';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Button } from 'react-bootstrap';
@@ -24,14 +21,18 @@ import DatePicker from 'src/components/filters/Date';
 import AlertDialog from 'src/components/utils/AlertDialog';
 import { useUser } from 'src/context/UserContext';
 import { apiFetch, apiFetchCtr } from 'src/libs/dbUtils';
+import CustomToolbar from 'src/modules/reports/_components/CustomToolbar';
+import SalesReportToPrint from 'src/modules/reports/_components/SalesReportToPrint';
 import api from 'src/utils/app-api';
+import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
 
 const pageSizeOptions = [10, 20, 50, 100];
 
 function SalesReport() {
   const router = useRouter();
-  const shopId = router.query.id;
-  const { locationSettings, invoicDetails } = useUser();
+  const shopId = router.query.id ?? '';
+
+  const { locationSettings, setLocationSettings, invoicDetails } = useUser();
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const handleClose = () => {
@@ -50,8 +51,12 @@ function SalesReport() {
   const [showViewPopUp, setShowViewPopUp] = useState(false);
   const [handleSearchTxt, setHandleSearchTxt] = useState('');
   const [details, setDetails] = useState({ subTotal: 1, tax: 0, cost: 0 });
+  const [selectedRange, setSelectedRange] = useState(null);
+  const [strSelectedDate, setStrSelectedDate] = useState([]);
+  const [selectedDateVlaue, setSelectedDateValue] = useState('');
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(pageSizeOptions[0]);
 
-  //table columns
   const columns: GridColDef[] = useMemo(
     () => [
       { field: 'id', headerName: '#', maxWidth: 72 },
@@ -82,9 +87,9 @@ function SalesReport() {
         headerName: 'Total',
         maxWidth: 72,
         renderCell: ({ row }: Partial<GridRowParams>) =>
-          `${(+row.sub_total + +row.tax).toFixed(locationSettings?.location_decimal_places)} ${
-            locationSettings.currency_name
-          }`,
+          `${(+row.sub_total + +row.tax).toFixed(
+            locationSettings?.location_decimal_places
+          )} ${locationSettings?.currency_code}`,
       },
       { field: 'notes', headerName: 'Note', flex: 1, disableColumnMenu: true },
     ],
@@ -92,100 +97,6 @@ function SalesReport() {
   );
 
   const componentRef = React.useRef(null);
-  class ComponentToPrint extends React.PureComponent {
-    render() {
-      if (!selectRow) return;
-      return (
-        <div className="bill">
-          <div className="brand-logo">
-            <img src={invoicDetails.logo} />
-          </div>
-          <br />
-          <div className="brand-name">{invoicDetails.name}</div>
-          <div className="shop-details">{invoicDetails.tell}</div>
-          <br />
-          <div className="bill-details">
-            <div className="flex justify-between">
-              <div>
-                {invoicDetails.txtCustomer}{' '}
-                {invoicDetails.isMultiLang && invoicDetails.txtCustomer2}
-              </div>
-              <div>{selectRow.customer_name}</div>
-            </div>
-            <div className="flex justify-between">
-              <div>
-                {invoicDetails.orderNo} {invoicDetails.isMultiLang && invoicDetails.orderNo2}
-              </div>
-              <div>{selectRow.id}</div>
-            </div>
-            <div className="flex justify-between">
-              <div>
-                {invoicDetails.txtDate} {invoicDetails.isMultiLang && invoicDetails.txtDate2}
-              </div>
-              <div>{new Date().toISOString().slice(0, 10)}</div>
-            </div>
-          </div>
-          <table className="table">
-            <thead>
-              <tr className="header">
-                <th>
-                  {invoicDetails.txtQty}
-                  <br />
-                  {invoicDetails.isMultiLang && invoicDetails.txtQty2}
-                </th>
-                <th>
-                  {invoicDetails.txtItem}
-                  <br />
-                  {invoicDetails.isMultiLang && invoicDetails.txtItem2}
-                </th>
-                <th></th>
-                <th>
-                  {invoicDetails.txtAmount}
-                  <br />
-                  {invoicDetails.isMultiLang && invoicDetails.txtAmount2}
-                </th>
-              </tr>
-              {lines &&
-                lines.map((line: any, index: number) => {
-                  return (
-                    <tr key={index}>
-                      <td>{Number(line.qty)}</td>
-                      <td>{line.name}</td>
-                      <td></td>
-                      <td>{line.price}</td>
-                    </tr>
-                  );
-                })}
-              <tr className="net-amount">
-                <td></td>
-                <td>
-                  {invoicDetails.txtTax} {invoicDetails.isMultiLang && invoicDetails.txtTax2}
-                </td>
-                <td></td>
-                {/* <td>{(selectRow.total_price).toFixed(locationSettings?.location_decimal_places)}</td> */}
-              </tr>
-              <tr className="net-amount">
-                <td></td>
-                <td className="txt-bold">
-                  {invoicDetails.txtTotal} {invoicDetails.isMultiLang && invoicDetails.txtTotal2}
-                </td>
-                <td></td>
-                <td className="txt-bold">
-                  {Number(selectRow.total_price).toFixed(locationSettings?.location_decimal_places)}
-                </td>
-              </tr>
-            </thead>
-          </table>
-          <p className="recipt-footer">
-            {invoicDetails.footer}
-            {invoicDetails.isMultiLang && invoicDetails.footer2}
-          </p>
-          <p className="recipt-footer">{selectRow.notes}</p>
-          <br />
-        </div>
-      );
-    }
-  }
 
   useEffect(() => {
     const customers = [];
@@ -252,6 +163,10 @@ function SalesReport() {
   useEffect(() => {
     if (!shopId) return;
 
+    const locations: ILocation[] = getLocalStorage(ELocalStorageKeys.LOCATIONS);
+    const currentLocation = locations.find((location) => +location.location_id === +shopId);
+    setLocationSettings(currentLocation ?? locationSettings);
+
     initDataPage();
   }, [shopId]);
 
@@ -267,11 +182,6 @@ function SalesReport() {
   const handleSearch = (e: any) => {
     setHandleSearchTxt(e.target.value);
   };
-  const [selectedRange, setSelectedRange] = useState(null);
-  const [strSelectedDate, setStrSelectedDate] = useState([]);
-  const [selectedDateVlaue, setSelectedDateValue] = useState('');
-  const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(pageSizeOptions[0]);
 
   useEffect(() => {
     let localFilteredSales = [];
@@ -359,12 +269,9 @@ function SalesReport() {
     <AdminLayout shopId={shopId}>
       <div className="flex" style={{ alignItems: 'center' }}>
         <DatePicker
-          {...{
-            strSelectedDate,
-            setStrSelectedDate,
-            selectedRange,
-            setSelectedRange,
-          }}
+          setStrSelectedDate={setStrSelectedDate}
+          selectedRange={selectedRange}
+          setSelectedRange={setSelectedRange}
         />
         <FormControl sx={{ m: 1, width: 220 }}>
           <InputLabel id="customer-select-label">Customer</InputLabel>
@@ -395,7 +302,13 @@ function SalesReport() {
       </AlertDialog>
       {
         <div style={{ display: 'none' }}>
-          <ComponentToPrint ref={componentRef} />
+          <SalesReportToPrint
+            lines={lines}
+            ref={componentRef}
+            selectRow={selectRow}
+            invoicDetails={invoicDetails}
+            locationSettings={locationSettings}
+          />
         </div>
       }
       <div className="page-content-style card">
@@ -594,16 +507,6 @@ function SalesReport() {
         </DialogActions>
       </Dialog>
     </AdminLayout>
-  );
-}
-
-function CustomToolbar() {
-  return (
-    <GridToolbarContainer>
-      <GridToolbarExport />
-      <GridToolbarColumnsButton />
-      <GridToolbarQuickFilter />
-    </GridToolbarContainer>
   );
 }
 
