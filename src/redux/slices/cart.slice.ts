@@ -128,17 +128,16 @@ const cartSlice = createSlice({
     },
     addMultipleToCart: (state, action) => {
       const { location_id, products } = action.payload;
-      const cart = findOrCreateCart(state, location_id);
+      const cart = findOrCreateCart(state, location_id);   
       products.map((prod) => {
         const existingItem = cart.cartItems.find((item) => item.id === prod.id);
-
         if (existingItem) {
           existingItem.quantity += 1;
         } else {
           cart.cartItems.push({ ...prod, product_id: prod.id, quantity: 1 });
         }
-        cart.cartSellTotal += +action.payload.sell_price;
-        cart.cartCostTotal += +action.payload.cost_price;
+        cart.cartSellTotal += +prod.sell_price;
+        cart.cartCostTotal += +prod.cost_price;
       })
       localStorage.setItem('cart', JSON.stringify(state));
     }
