@@ -30,24 +30,6 @@ const initialDetailsState: IDetails = {
   total: 0,
 };
 
-interface ISummaryDetails {
-  total_hand_cash: number;
-  total_cash: number;
-  total_cheque: number;
-  total_bank: number;
-  total_cart: number;
-  total: number;
-}
-
-const initialDetails = {
-  total_hand_cash: 0,
-  total_cash: 0,
-  total_cheque: 0,
-  total_bank: 0,
-  total_cart: 0,
-  total: 0,
-};
-
 function SalesReport() {
   const router = useRouter();
   const shopId = router.query.id ?? '';
@@ -202,6 +184,8 @@ function SalesReport() {
           columns={columns}
           loading={isLoadItems}
           className="datagrid-style"
+          autoPageSize
+          pageSize={30}
           rowsPerPageOptions={[10, 20, 30]}
           components={{ Toolbar: CustomToolbar }}
           sx={{

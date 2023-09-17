@@ -9,7 +9,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import { DataGrid, GridColDef, GridRowParams } from '@mui/x-data-grid';
 import { useRouter } from 'next/router';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from 'react-bootstrap';
 import { useReactToPrint } from 'react-to-print';
 import withAuth from 'src/HOCs/withAuth';
@@ -26,6 +26,8 @@ const pageSizeOptions = [10, 20, 50, 100];
 function SalesReport() {
   const router = useRouter();
   const shopId = router.query.id ?? '';
+
+  const componentRef = useRef(null);
 
   const { locationSettings, setLocationSettings, invoicDetails } = useUser();
 
@@ -46,7 +48,6 @@ function SalesReport() {
   const [selectedDateVlaue, setSelectedDateValue] = useState('');
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(pageSizeOptions[0]);
-
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const handleClose = () => {
     setAnchorEl(null);
@@ -91,28 +92,24 @@ function SalesReport() {
     [locationSettings]
   );
 
-  const componentRef = React.useRef(null);
-
   useEffect(() => {
     const customers = [];
-    sales.forEach((sale) => {
+    sales.forEach((sale: any) => {
       if (!customers.includes(sale.customer_name)) customers.push(sale.customer_name);
     });
     setCustomersOptions(customers);
   }, [sales]);
 
-  // init sales data
   async function initDataPage() {
     setIsLoading(true);
     api
       .get(`reports/sales/${shopId}`, { params: { all_data: 1 } })
       .then(({ data }) => {
-        console.log(data.result);
         setSales(data.result.data);
         setFilteredSales(data.result.data);
         setDetails({
           subTotal: data.result.sub_total,
-          total: data.result.total as any,
+          total: data.result.total,
           tax: data.result.tax,
         });
       })
@@ -158,6 +155,7 @@ function SalesReport() {
           new Date(dateCreated).getFullYear() <= new Date(strSelectedDate[1]).getFullYear()
         );
       });
+
       setSelectedDateValue(`${strSelectedDate[0]} - ${strSelectedDate[1]}`);
       localFilteredSales = filteredList;
     } else if (strSelectedDate.length === 1) {
@@ -183,24 +181,19 @@ function SalesReport() {
     //Eslam 19
     let totalPrice = 0;
     let taxAmount = 0;
-    localFilteredSales.forEach((obj) => {
-      const price = parseFloat(obj.total_price);
-      const tax = parseFloat(obj.tax_amount);
+    localFilteredSales.forEach((obj: ISalesReport) => {
+      const price = +obj.sub_total;
+      const tax = parseFloat(obj.tax);
       totalPrice += price;
       taxAmount += tax;
     });
     const totalPriceAndTax = totalPrice + taxAmount;
-    setDetails({
-      subTotal: totalPrice,
-      tax: taxAmount,
-      total: totalPriceAndTax as any,
-    });
+    setDetails({ subTotal: totalPrice, tax: taxAmount, total: totalPriceAndTax });
     setFilteredSales(localFilteredSales);
   }, [strSelectedDate, selectedCustomer]);
 
-  const handleChangeCustomer = (event: SelectChangeEvent<string>) => {
+  const handleChangeCustomer = (event: SelectChangeEvent<string>) =>
     setSelectedCustomer(event.target.value);
-  };
 
   const resetFilters = () => {
     setFilteredSales(sales);
@@ -210,22 +203,14 @@ function SalesReport() {
     setPage(0);
   };
 
-  const handlePageChange = (params) => {
-    setPage(params.page);
-  };
-
   const handlePageSizeChange = (event) => {
     setPageSize(+event.target.value);
     setPage(0);
   };
 
-  const handlePrevPageButtonClick = () => {
-    setPage((prevPage) => prevPage - 1);
-  };
-
-  const handleNextPageButtonClick = () => {
-    setPage((prevPage) => prevPage + 1);
-  };
+  const handlePageChange = (params) => setPage(params.page);
+  const handlePrevPageButtonClick = () => setPage((prevPage) => prevPage - 1);
+  const handleNextPageButtonClick = () => setPage((prevPage) => prevPage + 1);
 
   return (
     <AdminLayout shopId={shopId}>
