@@ -35,5 +35,8 @@ yarn-error.log*
 *.tsbuildinfo
 
 /.idea
+
+
+*.sql
 .env
 poslix.sql

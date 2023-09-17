@@ -9,6 +9,7 @@ export enum ELocalStorageKeys {
   CUSTOEMR_LOCATIONS = 'cusLocs',
   FULL_NAME = 'userfullname',
   LEVELS = 'levels',
+  LOCATIONS = 'locations',
 
   POS_REGISTER_STATE = 'posRegister',
 }
