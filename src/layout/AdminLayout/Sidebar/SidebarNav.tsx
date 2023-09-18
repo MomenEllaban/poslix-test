@@ -8,44 +8,18 @@ import { MdOutlinePointOfSale } from 'react-icons/md';
 import { findAllData } from 'src/services/crud.api';
 import SidebarNavGroup from './_components/SidebarNavGroup';
 import SidebarNavItem from './_components/SidebarNavItem';
-
-const initialPermissions = {
-  hasProducts: false,
-  hasTailoring: false,
-  hasCats: false,
-  hasTaxes: false,
-  hasPurchases: false,
-  hasSalesList: false,
-  hasPOS: false,
-  hasDiscount: false,
-  hasExpenses: false,
-  hasOrders: false,
-  hasTransfer: false,
-  hasSupplier: false,
-  hasCustomers: false,
-  hasAppearance: false,
-  hasAppStore: false,
-  hasItemSales: false,
-  hasCategorySales: false,
-  hasCurrentStock: false,
-  hasSupplierSales: false,
-  hasRegister: false,
-  hasQuotations: false,
-};
-
-const initialTruePermissions = Object.keys(initialPermissions).reduce((acc, key) => {
-  acc[key] = true;
-  return acc;
-}, {} as any);
+import { initialPermissions, initialTruePermissions } from './_data/permissions';
 
 export function SidebarNav({ shopId }: any): React.JSX.Element {
   const [btype, setBType] = useState('');
   const [loading, setLoading] = useState(true);
   const [permiss, setPermiss] = useState(initialPermissions);
+  const [permissions, setPermissions] = useState(initialTruePermissions);
 
   async function intData() {
     const res = await findAllData('permissions/13');
     if (!res) return;
+    console.log(res);
     // let { success, newdata } = await apiFetch({ fetch: 'checkwt' });
     // if (newdata.types == undefined || newdata.types.length == 0) success = false;
     if (
@@ -83,15 +57,15 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
     intData();
   }, [shopId]);
 
-  const [permissions, setPermissions] = useState<any>();
   useEffect(() => {
     const perms = JSON.parse(localStorage.getItem('permissions'));
+    console.log(perms);
     const getPermissions = {
       hasPos: false,
       hasProducts: false,
       hasPurchases: false,
       hasTransfers: false,
-      hasSuppliers: false,
+      hasSuppliers: true,
       hasExpenses: false,
       hasPricingGroups: false,
       hasCustomers: false,
@@ -103,44 +77,45 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
       hasAppearance: false,
     };
 
-    perms.inventory.products.map((perm) =>
+    perms.inventory.products.forEach((perm) =>
       perm.name === 'products/view' ? (getPermissions.hasProducts = true) : null
     );
-    perms.inventory.purchases.map((perm) =>
+    perms.inventory.purchases.forEach((perm) =>
       perm.name === 'purchases/view' ? (getPermissions.hasPurchases = true) : null
     );
-    perms.inventory.transfers.map((perm) =>
+    perms.inventory.transfers.forEach((perm) =>
       perm.name === 'transfers/view' ? (getPermissions.hasTransfers = true) : null
     );
-    perms.inventory.expenses.map((perm) =>
+    perms.inventory.expenses.forEach((perm) =>
       perm.name === 'expenses/view' ? (getPermissions.hasExpenses = true) : null
     );
-    perms.customers.map((perm) =>
+    perms.customers.forEach((perm) =>
       perm.name === 'customers/view' ? (getPermissions.hasCustomers = true) : null
     );
     perms.pos[0].name.includes('open/register') ? (getPermissions.hasPos = true) : null;
-    perms.settings.categories.map((perm) =>
+    perms.settings.categories.forEach((perm) =>
       perm.name === 'categories/view' ? (getPermissions.hasCategories = true) : null
     );
-    perms.settings.brands.map((perm) =>
+    perms.settings.brands.forEach((perm) =>
       perm.name === 'brands/view' ? (getPermissions.hasBrands = true) : null
     );
-    perms.settings.taxes.map((perm) =>
+    perms.settings.taxes.forEach((perm) =>
       perm.name === 'taxes/view' ? (getPermissions.hasTaxes = true) : null
     );
-    perms.settings.appearance.map((perm) =>
+    perms.settings.appearance.forEach((perm) =>
       perm.name === 'appearance/view' ? (getPermissions.hasAppearance = true) : null
     );
-    perms.pos.pricinggroup.map((perm) =>
+    perms.pos.pricinggroup.forEach((perm) =>
       perm.name === 'pricinggroup/view' ? (getPermissions.hasPricingGroups = true) : null
     );
-    perms.sales['sales-list'].map((perm) =>
+    perms.sales['sales-list'].forEach((perm) =>
       perm.name === 'sales-list/view' ? (getPermissions.hasSalesList = true) : null
     );
-    perms.sales['quotations-list'].map((perm) =>
+    perms.sales['quotations-list'].forEach((perm) =>
       perm.name === 'quotations-list/view' ? (getPermissions.hasQuotations = true) : null
     );
 
+    console.log(getPermissions);
     setPermissions(getPermissions);
   }, []);
 
@@ -165,36 +140,36 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
       {(permissions.hasProducts ||
         permissions.hasPurchases ||
         permissions.hasTransfers ||
-        // permissions.hasSupplier ||
+        permissions.hasSuppliers ||
         permissions.hasExpenses) && (
         <SidebarNavGroup toggleIcon="MdOutlineLocalGroceryStore" toggleText="Inventory">
           {permissions.hasProducts && (
-            <SidebarNavItem href={'/shop/' + shopId + '/products'} sub={true} isShown={!!shopId}>
+            <SidebarNavItem href={`/shop/${shopId}/products`} sub={true} isShown={!!shopId}>
               Products
             </SidebarNavItem>
           )}
           {permissions.hasPurchases && (
-            <SidebarNavItem href={'/shop/' + shopId + '/purchases'} sub={true} isShown={!!shopId}>
+            <SidebarNavItem href={`/shop/${shopId}/purchases`} sub={true} isShown={!!shopId}>
               Purchases
             </SidebarNavItem>
           )}
           {permissions.hasTransfers && (
-            <SidebarNavItem href={'/shop/' + shopId + '/transfers'} sub={true} isShown={!!shopId}>
+            <SidebarNavItem href={`/shop/${shopId}/transfers`} sub={true} isShown={!!shopId}>
               Transfers
             </SidebarNavItem>
           )}
-          {permissions.hasSupplier && (
-            <SidebarNavItem href={'/shop/' + shopId + '/suppliers'} sub={true} isShown={!!shopId}>
+          {permissions.hasSuppliers && (
+            <SidebarNavItem href={`/shop/${shopId}/suppliers`} sub={true} isShown={!!shopId}>
               Suppliers
             </SidebarNavItem>
           )}
           {permissions.hasExpenses && (
-            <SidebarNavItem href={'/shop/' + shopId + '/expenses'} sub={true} isShown={!!shopId}>
+            <SidebarNavItem href={`/shop/${shopId}/expenses`} sub={true} isShown={!!shopId}>
               Expenses
             </SidebarNavItem>
           )}
           {permissions.hasTailoring && btype == 'Kianvqyqndr' && (
-            <SidebarNavItem href={'/shop/' + shopId + '/tailoring'} sub={true} isShown={!!shopId}>
+            <SidebarNavItem href={`/shop/${shopId}/tailoring`} sub={true} isShown={!!shopId}>
               Tailoring
             </SidebarNavItem>
           )}
