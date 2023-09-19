@@ -17,6 +17,7 @@ import { Toastify } from 'src/libs/allToasts';
 import { generateUniqueString } from 'src/libs/toolsUtils';
 import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/checkUtils';
 import { apiFetchCtr, apiUpdateCtr } from '../../../../libs/dbUtils';
+import { createNewData, findAllData } from 'src/services/crud.api';
 
 const Appearance: NextPage = (props: any) => {
   const { shopId } = props;
@@ -27,45 +28,24 @@ const Appearance: NextPage = (props: any) => {
   const [isOpenPriceDialog, setIsOpenPriceDialog] = useState(false);
   const [img, setImg] = useState<any>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
-  const [invoiceType, setInvoiceType] = useState('receipt');
-  const invoiceOptions: any = [
-    { value: 'receipt', label: 'Receipt' },
-    { value: 'a4', label: 'Invoice A4' },
-  ];
-  useEffect(() => {
-    const inv: string = localStorage.getItem('invoiceType');
-    if (inv) setInvoiceType(JSON.parse(inv));
-    else {
-      localStorage.setItem('invoiceType', JSON.stringify({ value: 'receipt', label: 'Receipt' }));
-    }
-  }, []);
 
   async function initDataPage() {
-    const { success, data } = await apiFetchCtr({
-      fetch: 'pos',
-      subType: 'getAppearance',
-      shopId,
-    });
-    if (!success) {
+    const res = await findAllData(`appearance/${router.query.id}`)
+    if (!res.data.success) {
       Toastify('error', 'Somthing wrong!!, try agian');
       return;
     }
-    if (data.details != undefined && data.details != null && data.details.length > 10) {
-      const _data = JSON.parse(data.details);
-      setFormObj({ ...formObj, ..._data });
-    }
+    setFormObj({ ...formObj, ...res.data.result });
+    // if (res.data.result.details != undefined && res.data.result.details != null && res.data.result.details.length > 10) {
+    //   const _data= JSON.parse(res.data.details);
+    // }
     setIsLoading(false);
   }
-  async function editInvice(url = '0') {
+  async function editInvoice(url = '0') {
     if (isLoading) return;
     setIsLoading(true);
-    const { success } = await apiUpdateCtr({
-      type: 'pos',
-      subType: 'EditAppearance',
-      shopId,
-      data: { formObj, url },
-    });
-    if (!success) {
+    const res = await createNewData(`appearance`, {...formObj, location_id: router.query.id})
+    if (!res.data.success) {
       Toastify('error', 'Somthing wrong!!, try agian');
       return;
     }
@@ -80,7 +60,7 @@ const Appearance: NextPage = (props: any) => {
     }
   };
   useEffect(() => {
-    initDataPage();
+    if(router.query.id) initDataPage();
   }, [router.asPath]);
 
   const handleRemoveImg = () => {
@@ -98,7 +78,7 @@ const Appearance: NextPage = (props: any) => {
 
   const handleSave = () => {
     if (previewUrl.length > 2) handleRemoveImg();
-    else editInvice();
+    else editInvoice();
   };
   async function handleUpload() {
     if (previewUrl.length < 2) {
@@ -119,7 +99,7 @@ const Appearance: NextPage = (props: any) => {
         async () => {
           await getDownloadURL(uploadTask.snapshot.ref).then((url) => {
             setFormObj({ ...formObj, logo: url });
-            editInvice(url);
+            editInvoice(url);
           });
         }
       );
@@ -131,15 +111,6 @@ const Appearance: NextPage = (props: any) => {
         <ToastContainer />
         {!isLoading ? (
           <>
-            <Select
-              className="mt-3"
-              options={invoiceOptions}
-              value={invoiceType}
-              onChange={(e: any) => {
-                localStorage.setItem('invoiceType', JSON.stringify(e));
-                setInvoiceType(e);
-              }}
-            />
             <Tabs
               id="controlled-tab-example"
               activeKey={key}
@@ -1231,50 +1202,3 @@ const Appearance: NextPage = (props: any) => {
   );
 };
 export default Appearance;
-export async function getServerSideProps(context: any) {
-  const parsedCookies = cookie.parse(context.req.headers.cookie || '[]');
-  var _isOk = true,
-    _rule = true;
-  //check page params
-  var shopId = context.query.id;
-  if (shopId == undefined) return { redirect: { permanent: false, destination: '/page403' } };
-
-  //check user permissions
-  var _userRules = {};
-  await verifayTokens(
-    { headers: { authorization: 'Bearer ' + parsedCookies.tokend } },
-    (repo: ITokenVerfy) => {
-      _isOk = repo.status;
-
-      if (_isOk) {
-        var _rules = keyValueRules(repo.data.rules || []);
-
-        if (
-          _rules[-2] != undefined &&
-          _rules[-2][0].stuff != undefined &&
-          _rules[-2][0].stuff == 'owner'
-        ) {
-          _rule = true;
-          _userRules = {
-            hasDelete: true,
-            hasEdit: true,
-            hasView: true,
-            hasInsert: true,
-          };
-        } else if (_rules[shopId] != undefined) {
-          var _stuf = '';
-          _rules[shopId].forEach((dd: any) => (_stuf += dd.stuff));
-          const { userRules, hasPermission } = hasPermissions(_stuf, 'appearance');
-          _rule = hasPermission;
-          _userRules = userRules;
-        } else _rule = false;
-      }
-    }
-  );
-  if (!_isOk) return { redirect: { permanent: false, destination: '/user/auth' } };
-  if (!_rule) return { redirect: { permanent: false, destination: '/page403' } };
-  return {
-    props: { shopId: context.query.id, rules: _userRules },
-  };
-  //status ok
-}

@@ -58,6 +58,14 @@ export function paymentStatusData(): {
 }
 export function defaultInvoiceDetials(): IinvoiceDetails {
   return {
+    location_id: '',
+    email: '',
+    address: '',
+    vatNumber: '',
+    customerNumber: '',
+    description: '',
+    subTotal: '',
+    unitPrice: '',
     logo: '/images/logo1.png',
     footer: 'Terms and Conditions',
     footersecond: 'Thank you for your business.',
