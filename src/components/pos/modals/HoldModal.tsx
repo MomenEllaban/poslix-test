@@ -9,12 +9,14 @@ import FormField from 'src/components/form/FormField';
 import { useAppDispatch, useAppSelector } from 'src/hooks';
 import { Toastify } from 'src/libs/allToasts';
 import { clearCart, selectCartByLocation } from 'src/redux/slices/cart.slice';
+
 const holdSchema = Joi.object({
   name: Joi.string().required().messages({
     'string.empty': `Name is required`,
     'any.required': `Name is required`,
   }),
 });
+
 const HoldModal = ({ shopId, lang }: any) => {
   const dispatch = useAppDispatch();
 
