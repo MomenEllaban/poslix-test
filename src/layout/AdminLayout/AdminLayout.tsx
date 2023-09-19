@@ -71,15 +71,10 @@ export default function AdminLayout({ children, shopId }: any) {
 
       <Sidebar shopId={shopId} isOwner={false} isShow={isShowSidebar} isShowMd={isShowSidebarMd} />
 
-      <div
-        className={`wrapper d-flex flex-column min-vh-100 ${
-          darkMode ? 'dark-mode-body' : 'light-mode-body'
-        }`}>
+      <div className={`wrapper d-flex flex-column min-vh-100`}>
         <Header toggleSidebar={toggleIsShowSidebar} toggleSidebarMd={toggleIsShowSidebarMd} />
         <Breadcrumb shopId={shopId} />
-        <div className={`body body-container ${darkMode ? 'dark-mode-body' : 'light-mode-body'}`}>
-          {children}
-        </div>
+        <div className={`body body-container`}>{children}</div>
         <Footer />
       </div>
 
