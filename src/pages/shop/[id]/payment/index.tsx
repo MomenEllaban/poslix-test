@@ -16,6 +16,7 @@ import { ToastContainer } from 'react-toastify';
 import { darkModeContext } from '../../../../context/DarkModeContext';
 import { Button } from 'react-bootstrap';
 import { ROUTES } from 'src/utils/app-routes';
+import withAuth from 'src/HOCs/withAuth';
 
 const PaymentMethods: NextPage = (props: any) => {
   const { shopId, rules } = props;
@@ -143,44 +144,4 @@ const PaymentMethods: NextPage = (props: any) => {
     </>
   );
 };
-export default PaymentMethods;
-export async function getServerSideProps(context: any) {
-  const parsedCookies = cookie.parse(context.req.headers.cookie || '[]');
-  var _isOk = true,
-    _rule = true;
-  //check page params
-  var shopId = context.query.id;
-  if (shopId == undefined) return { redirect: { permanent: false, destination: '/page403' } };
-
-  //check user permissions
-  var _userRules = {};
-  await verifayTokens(
-    { headers: { authorization: 'Bearer ' + parsedCookies.tokend } },
-    (repo: ITokenVerfy) => {
-      _isOk = repo.status;
-      if (_isOk) {
-        var _rules = keyValueRules(repo.data.rules || []);
-        if (
-          _rules[-2] != undefined &&
-          _rules[-2][0].stuff != undefined &&
-          _rules[-2][0].stuff == 'owner'
-        ) {
-          _rule = true;
-          _userRules = { hasDelete: true, hasEdit: true, hasView: true, hasInsert: true };
-        } else if (_rules[shopId] != undefined) {
-          var _stuf = '';
-          _rules[shopId].forEach((dd: any) => (_stuf += dd.stuff));
-          const { userRules, hasPermission } = hasPermissions(_stuf, 'taxes');
-          _rule = hasPermission;
-          _userRules = userRules;
-        } else _rule = false;
-      }
-    }
-  );
-  if (!_isOk) return { redirect: { permanent: false, destination: ROUTES.AUTH } };
-  if (!_rule) return { redirect: { permanent: false, destination: '/page403' } };
-  //status ok
-  return {
-    props: { shopId, rules: _userRules },
-  };
-}
+export default withAuth(PaymentMethods);
