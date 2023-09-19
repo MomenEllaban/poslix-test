@@ -1,7 +1,6 @@
 import { faBarcode, faPenToSquare, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { AdminLayout } from '@layout';
-import { ILocationSettings } from '@models/common-model';
 import { Button as MButton } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
@@ -27,12 +26,9 @@ import ShowPriceListModal from 'src/components/dashboard/modal/ShowPriceListModa
 import LocationModal from 'src/components/pos/modals/LocationModal';
 import AlertDialog from 'src/components/utils/AlertDialog';
 import { Toastify } from 'src/libs/allToasts';
-import { findAllData } from 'src/services/crud.api';
+import { createNewData, findAllData } from 'src/services/crud.api';
 import { ROUTES } from 'src/utils/app-routes';
-import { authApi } from 'src/utils/auth-api';
-import * as XLSX from 'xlsx';
 import { darkModeContext } from '../../../../context/DarkModeContext';
-import { apiInsertCtr } from '../../../../libs/dbUtils';
 import styles from './table.module.css';
 import { useUser } from 'src/context/UserContext';
 
@@ -59,22 +55,10 @@ const Product: NextPage = (props: any) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [lastPage, setLastPage] = useState();
   const [totalRows, setTotalRows] = useState();
-  /*MOHAMMED MAHER */
   const { darkMode } = useContext(darkModeContext);
 
   const columns: GridColDef[] = [
-    // { field: "check", headerName: <Checkbox aria-label={"select-all"} onChange={(e: ChangeEvent<HTMLInputElement>)=>{
-    //   // if(e.target.checked) setSelectedItems([...selectedItems, row.id])
-    //   // else setSelectedItems(selectedItems.filter((id) => {return id !== row.id}))
-    // }} />,
-    // headerClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}` ,
-    // cellClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}`,
-    // minWidth: 10, renderCell: ({ row }: Partial<GridRowParams>) => (
-    //   <Checkbox aria-label={row.name} onChange={(e: ChangeEvent<HTMLInputElement>)=>{
-    //     if(e.target.checked) setSelectedItems([...selectedItems, row.id])
-    //     else setSelectedItems(selectedItems.filter((id) => {return id !== row.id}))
-    //   }} />
-    // ) },
+
     {
       field: 'id',
       headerName: '#',
@@ -136,29 +120,14 @@ const Product: NextPage = (props: any) => {
           );
       },
     },
-    // {
-    //   field: "min_price",
-    //   headerName: "Min",
-    //   flex: 1,
-    //   headerClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}` ,
-    //   cellClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}`,
-    //   renderCell: ({row}) => row.min_price
-    // },
-    // {
-    //   field: "max_price",
-    //   headerName: "Max",
-    //   flex: 1,
-    //   headerClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}` ,
-    //   cellClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}`,
-    //   renderCell: ({row}) => row.max_price
-    // },
+ 
     {
       field: 'category',
       headerName: 'Category',
       flex: 1,
       headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
-      renderCell: ({ row }) => <p>{row.name}</p>,
+      renderCell: ({ row }) => <p>{row.category?.name}</p>,
     },
     {
       field: 'stock',
@@ -211,35 +180,12 @@ const Product: NextPage = (props: any) => {
   const importFileClickHandler = () => {
     fileRef.current.click();
   };
-  const importFileHandler = (e: ChangeEvent<HTMLInputElement>) => {
-    const reader = new FileReader();
-    reader.readAsBinaryString(e.target.files[0]);
-    reader.onload = async (e) => {
-      const data = e.target.result;
-      const workbook = XLSX.read(data, { type: 'binary' });
-      const sheetName = workbook.SheetNames[0];
-      const sheet = workbook.Sheets[sheetName];
-      const parsedData: {
-        id: number;
-        name: string;
-        sku: string;
-        type: string;
-        qty: number;
-        sell: number;
-        category: string;
-      }[] = XLSX.utils.sheet_to_json(sheet);
-      const newData = parsedData.map((item) => {
-        delete item.id;
-        return { ...item, location_id: shopId };
-      });
-      const { success, newdata } = await apiInsertCtr({
-        type: 'products',
-        subType: 'importFromFile',
-        shopId,
-        data: newData,
-      });
-      if (success) initDataPage();
-    };
+  const importFileHandler = async (e: ChangeEvent<HTMLInputElement>) => {
+    const formData = new FormData()
+    formData.append('file', e.target.files[0])
+    const res = await createNewData(`products/${router.query.id}/import`, formData)
+    if (res.data.success) initDataPage();
+    else Toastify("error", "Something went wrong, please try again.");
   };
   function CustomToolbar() {
     const [isHovered, setIsHovered] = useState(false);
@@ -261,18 +207,7 @@ const Product: NextPage = (props: any) => {
         <input style={{ display: 'none' }} ref={fileRef} type="file" onChange={importFileHandler} />
         {/* /////////// */}
         <GridToolbarColumnsButton />
-        <div
-          style={{ color: '#1976d2', cursor: 'pointer' }}
-          className={`${locations?.length > 1 && selectedItems.length > 0 ? 'pe-auto' : 'pe-none'}`}
-          onClick={() => setLocationModal(true)}>
-          SEND
-        </div>
-        <div
-          style={{ color: '#1976d2', cursor: 'pointer', marginLeft: '0.5rem' }}
-          className={`${locations?.length > 1 && selectedItems.length > 0 ? 'pe-auto' : 'pe-none'}`}
-          onClick={() => setShowDeleteAll(true)}>
-          DELETE
-        </div>
+     
       </GridToolbarContainer>
     );
   }
@@ -280,17 +215,14 @@ const Product: NextPage = (props: any) => {
     setIsLoading(false);
     if (router.isReady) {
       const res = await findAllData(`products/${router.query.id}?all_data=1`);
+      if (!res.data.success) {
+        Toastify('error', 'Somthing wrong!!, try agian');
+        return;
+      }
       setProducts(res.data.result);
-      // setCurrentPage(res.data.result.current_page);
-      // setLastPage(res.data.result.last_page);
-      // setTotalRows(res.data.result.total);
-      // setFilteredProducts(data.products);
+      setFilteredProducts(res.data.result);
       setIsLoading(false);
     }
-    // if (!success) {
-    //   Toastify('error', 'Somthing wrong!!, try agian');
-    //   return;
-    // }
   }
   const [permissions, setPermissions] = useState<any>();
   useEffect(() => {
@@ -357,8 +289,8 @@ const Product: NextPage = (props: any) => {
     if (searchTerm.trim()) {
       const filteredList = products.filter(
         (product) =>
-          product.name.includes(searchTerm.toLowerCase()) ||
-          product.sku.includes(searchTerm.toLowerCase())
+          product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          product.sku.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredProducts(filteredList);
     } else {
@@ -442,16 +374,14 @@ const Product: NextPage = (props: any) => {
                     border: 'none',
                   },
                 }}
-                rows={products}
+                rows={filteredProducts}
                 columns={columns}
                 pageSize={10}
                 rowsPerPageOptions={[10]}
                 onSelectionModelChange={(ids: any) => onRowsSelectionHandler(ids)}
                 onCellClick={handleCellClick}
                 components={{ Toolbar: CustomToolbar }}
-                // rowCount={totalRows}
-                // onPageChange={(params) => setCurrentPage(params + 1)}
-                // pagination
+
               />
             </div>
           </>
