@@ -94,7 +94,7 @@ export interface ISalesReport {
   due: number;
   discount: string;
   tax: string;
-  date: Date;
+  date: string;
   transaction_status: string;
   payment_status: string;
   payment_method: string;

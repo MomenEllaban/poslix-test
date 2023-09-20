@@ -1,19 +1,13 @@
 import { AdminLayout } from '@layout';
-import { IItemSalesReport } from '@models/reports.types';
+import { ILocation } from '@models/auth.types';
+import { EStatus, IItemSalesReport } from '@models/reports.types';
 import { Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
-import {
-  DataGrid,
-  GridColDef,
-  GridToolbarColumnsButton,
-  GridToolbarContainer,
-  GridToolbarExport,
-  GridToolbarQuickFilter,
-} from '@mui/x-data-grid';
+import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { useRouter } from 'next/router';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from 'react-bootstrap';
 import { useReactToPrint } from 'react-to-print';
 import withAuth from 'src/HOCs/withAuth';
@@ -21,13 +15,18 @@ import DatePicker from 'src/components/filters/Date';
 import AlertDialog from 'src/components/utils/AlertDialog';
 import { useUser } from 'src/context/UserContext';
 import { apiFetch, apiFetchCtr } from 'src/libs/dbUtils';
+import CustomToolbar from 'src/modules/reports/_components/CustomToolbar';
+import ItemsReportToPrint from 'src/modules/reports/_components/ItemsReportToPrint';
 import api from 'src/utils/app-api';
+import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
 
 function ItemsReport() {
   const router = useRouter();
-  const shopId = router.query.id;
+  const shopId = router.query.id ?? '';
 
-  const { locationSettings, invoicDetails } = useUser();
+  const componentRef = useRef(null);
+
+  const { locationSettings, setLocationSettings, invoicDetails } = useUser();
 
   const [sales, setSales] = useState<any>([]);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
@@ -46,11 +45,131 @@ function ItemsReport() {
   const [selectedCustomer, setSelectedCustomer] = useState('');
   const [customersOptions, setCustomersOptions] = useState([]);
 
+  const handleChangeCustomer = (event: SelectChangeEvent<string>) => {
+    setSelectedCustomer(event.target.value);
+  };
+  const handleClose = () => setAnchorEl(null);
+
+  const resetFilters = () => {
+    // setFilteredSales(sales);
+    setSelectedCustomer('');
+    setSelectedRange(null);
+    setStrSelectedDate([]);
+  };
+
+  //table columns
+  const columns: GridColDef<IItemSalesReport>[] = useMemo(
+    () => [
+      { field: 'order_id', headerName: '#', maxWidth: 72, renderCell: ({ row }) => row.order_id },
+      {
+        field: 'user_name',
+        headerName: 'User',
+        renderCell: ({ row }) => `${row.user_first_name} ${row.user_last_name ?? ''}`,
+      },
+      {
+        field: 'contact_name',
+        headerName: 'Contact',
+        flex: 1,
+        renderCell: ({ row }) => `${row.contact_first_name} ${row.contact_last_name}`,
+      },
+      {
+        field: 'price',
+        headerName: 'Price',
+        renderCell: ({ row }) =>
+          (+row.price).toFixed(locationSettings?.location_decimal_places) +
+          ' ' +
+          locationSettings?.currency_name,
+      },
+      {
+        field: 'tax',
+        headerName: 'Tax',
+        renderCell: ({ row }) =>
+          (+row.tax).toFixed(locationSettings?.location_decimal_places) +
+          ' ' +
+          locationSettings?.currency_name,
+      },
+      {
+        field: 'Purchase Date',
+        headerName: 'Purchase Date',
+        width: 180,
+        renderCell: ({ row }) =>
+          `${new Date(row.date).toLocaleDateString()} ${new Date(row.date).toLocaleTimeString()}`,
+      },
+      {
+        field: 'status',
+        headerName: 'Status',
+        renderCell: ({ row }) => (
+          <span
+            className="text-black border px-3 rounded rounded-3"
+            style={{
+              color: row.status === EStatus.Close ? 'black' : 'gray',
+            }}>
+            {row.status}
+          </span>
+        ),
+      },
+      {
+        field: 'Quantity',
+        headerName: 'Quantity',
+        renderCell: ({ row }) => <span className="text-center">{+(row.qty ?? 0)} </span>,
+      },
+    ],
+    [locationSettings]
+  );
+
+  async function viewTransaction() {
+    setShowViewPopUp(true);
+    var result = await apiFetch({
+      fetch: 'getSellLinesByTransactionId',
+      data: { id: selectId },
+    });
+    const { success, newdata } = result;
+    if (success) {
+      setLines(newdata.sellLines);
+    }
+  }
+  // init sales data
+  async function initDataPage() {
+    setIsLoadItems(true);
+    api
+      .get(`reports/item-sales/${shopId}`, { params: { all_data: 1 } })
+      .then(({ data }) => setSales(data.result.data))
+      .finally(() => {
+        setIsLoadItems(false);
+      });
+  }
+
+  async function getItems(id: number) {
+    setIsLoadItems(true);
+    const { success, newdata } = await apiFetchCtr({
+      fetch: 'transactions',
+      subType: 'getSaleItems',
+      shopId,
+      id,
+    });
+    if (success) {
+      setLines(newdata);
+      setIsLoadItems(false);
+    }
+  }
+
+  const handlePrint = useReactToPrint({ content: () => componentRef.current });
+
+  const onRowsSelectionHandler = (selectedRowsData: any) => {
+    setSelectRow(selectedRowsData);
+    setSelectId(selectedRowsData.id);
+    getItems(selectedRowsData.id);
+    setShowViewPopUp(true);
+  };
+  const handleSearch = (e: any) => {
+    setHandleSearchTxt(e.target.value);
+  };
+
   useEffect(() => {
     let localFilteredSales = [];
     if (strSelectedDate.length === 2) {
       const filteredList = sales.filter((sale) => {
-        const dateCreated = sale.created_at.split(' ')[0];
+        const dateCreated = sale.date.split(' ')[0];
         return (
           new Date(dateCreated).getDate() >= new Date(strSelectedDate[0]).getDate() &&
           new Date(dateCreated).getMonth() >= new Date(strSelectedDate[0]).getMonth() &&
@@ -64,7 +183,7 @@ function ItemsReport() {
       localFilteredSales = filteredList;
     } else if (strSelectedDate.length === 1) {
       const filteredList = sales.filter((sale) => {
-        const dateCreated = sale.created_at.split(' ')[0];
+        const dateCreated = sale.date.split(' ')[0];
         return (
           new Date(dateCreated).getDate() === new Date(strSelectedDate[0]).getDate() &&
           new Date(dateCreated).getMonth() === new Date(strSelectedDate[0]).getMonth() &&
@@ -85,8 +204,8 @@ function ItemsReport() {
     let totalPrice = 0;
     let taxAmount = 0;
     localFilteredSales.forEach((obj) => {
-      const price = parseFloat(obj.total_price);
-      const tax = parseFloat(obj.tax_amount);
+      const price = parseFloat(obj.price);
+      const tax = parseFloat(obj.tax);
       totalPrice += price;
       taxAmount += tax;
     });
@@ -99,235 +218,17 @@ function ItemsReport() {
     setFilteredSales(localFilteredSales);
   }, [strSelectedDate, selectedCustomer]);
 
-  const handleChangeCustomer = (event: SelectChangeEvent<string>) => {
-    setSelectedCustomer(event.target.value);
-  };
-  const handleClose = () => setAnchorEl(null);
-
-  const resetFilters = () => {
-    // setFilteredSales(sales);
-    setSelectedCustomer('');
-    setSelectedRange(null);
-    setStrSelectedDate([]);
-  };
-
-  //table columns
-  const columns: GridColDef<IItemSalesReport>[] = [
-    {
-      field: 'order_id',
-      headerName: '#',
-      maxWidth: 72,
-      renderCell: ({ row }) => row.order_id,
-    },
-    {
-      field: 'user_name',
-      headerName: 'User',
-      renderCell: ({ row }) => `${row.user_first_name} ${row.user_last_name ?? ''}`,
-    },
-    {
-      field: ' contact_name',
-      headerName: 'Contact',
-      flex: 1,
-      renderCell: ({ row }) => `${row.contact_first_name} ${row.contact_last_name}`,
-    },
-    {
-      field: 'price',
-      headerName: 'Price',
-      renderCell: ({ row }) =>
-        (+row.price).toFixed(locationSettings?.location_decimal_places) +
-        ' ' +
-        locationSettings?.currency_name,
-    },
-    // { field: 'Product', headerName: 'Product', flex: 1 },
-    // { field: 'SKU', headerName: 'SKU', flex: 1 },
-    // { field: 'Category', headerName: 'Category', flex: 1 },
-    // { field: 'Brand', headerName: 'Brand', flex: 1 },
-    // { field: 'Description', headerName: 'Description', flex: 1 },
-    {
-      field: 'Purchase Date',
-      headerName: 'Purchase Date',
-      width: 180,
-      renderCell: ({ row }) =>
-        `${new Date(row.date).toLocaleDateString()} ${new Date(row.date).toLocaleTimeString()}`,
-    },
-    {
-      field: 'status',
-      headerName: 'Status',
-      renderCell: ({ row }) => (
-        <span className="text-black border px-3 rounded rounded-3">{row.status}</span>
-      ),
-    },
-
-    {
-      field: 'Quantity',
-      headerName: 'Quantity',
-
-      renderCell: ({ row }) => +(row.qty ?? 0),
-    },
-  ];
-
-  const componentRef = React.useRef(null);
-  class ComponentToPrint extends React.PureComponent {
-    render() {
-      if (!selectRow) return;
-      return (
-        <div className="bill">
-          <div className="brand-logo">
-            <img src={invoicDetails.logo} />
-          </div>
-          <br />
-          <div className="brand-name">{invoicDetails.name}</div>
-          <div className="shop-details">{invoicDetails.tell}</div>
-          <br />
-          <div className="bill-details">
-            <div className="flex justify-between">
-              <div>
-                {invoicDetails.txtCustomer}{' '}
-                {invoicDetails.isMultiLang && invoicDetails.txtCustomer2}
-              </div>
-              <div>{selectRow.customer_name}</div>
-            </div>
-            <div className="flex justify-between">
-              <div>
-                {invoicDetails.orderNo} {invoicDetails.isMultiLang && invoicDetails.orderNo2}
-              </div>
-              <div>{selectRow.id}</div>
-            </div>
-            <div className="flex justify-between">
-              <div>
-                {invoicDetails.txtDate} {invoicDetails.isMultiLang && invoicDetails.txtDate2}
-              </div>
-              <div>{new Date().toISOString().slice(0, 10)}</div>
-            </div>
-          </div>
-          <table className="table">
-            <thead>
-              <tr className="header">
-                <th>
-                  {invoicDetails.txtQty}
-                  <br />
-                  {invoicDetails.isMultiLang && invoicDetails.txtQty2}
-                </th>
-                <th>
-                  {invoicDetails.txtItem}
-                  <br />
-                  {invoicDetails.isMultiLang && invoicDetails.txtItem2}
-                </th>
-                <th></th>
-                <th>
-                  {invoicDetails.txtAmount}
-                  <br />
-                  {invoicDetails.isMultiLang && invoicDetails.txtAmount2}
-                </th>
-              </tr>
-              {lines &&
-                lines.map((line: any, index: number) => {
-                  return (
-                    <tr key={index}>
-                      <td>{Number(line.qty)}</td>
-                      <td>{line.name}</td>
-                      <td></td>
-                      <td>{line.price}</td>
-                    </tr>
-                  );
-                })}
-              <tr className="net-amount">
-                <td></td>
-                <td>
-                  {invoicDetails.txtTax} {invoicDetails.isMultiLang && invoicDetails.txtTax2}
-                </td>
-                <td></td>
-                {/* <td>{(selectRow.total_price).toFixed(locationSettings?.location_decimal_places)}</td> */}
-              </tr>
-              <tr className="net-amount">
-                <td></td>
-                <td className="txt-bold">
-                  {invoicDetails.txtTotal} {invoicDetails.isMultiLang && invoicDetails.txtTotal2}
-                </td>
-                <td></td>
-                <td className="txt-bold">
-                  {Number(selectRow.total_price).toFixed(locationSettings?.location_decimal_places)}
-                </td>
-              </tr>
-            </thead>
-          </table>
-          <p className="recipt-footer">
-            {invoicDetails.footer}
-            {invoicDetails.isMultiLang && invoicDetails.footer2}
-          </p>
-          <p className="recipt-footer">{selectRow.notes}</p>
-          <br />
-        </div>
-      );
-    }
-  }
-
-  async function viewTransaction() {
-    setShowViewPopUp(true);
-    var result = await apiFetch({
-      fetch: 'getSellLinesByTransactionId',
-      data: { id: selectId },
-    });
-    const { success, newdata } = result;
-    if (success) {
-      setLines(newdata.sellLines);
-    }
-  }
-  // init sales data
-  async function initDataPage() {
-    setIsLoadItems(true);
-    api
-      .get(`reports/item-sales/${shopId}`, { params: { all_data: 1 } })
-      .then(({ data }) => {
-        console.log(data.result);
-        setSales(data.result.data);
-      })
-      .finally(() => {
-        setIsLoadItems(false);
-      });
-  }
-
-  async function getItems(id: number) {
-    setIsLoadItems(true);
-    const { success, newdata } = await apiFetchCtr({
-      fetch: 'transactions',
-      subType: 'getSaleItems',
-      shopId,
-      id,
-    });
-    if (success) {
-      setLines(newdata);
-      setIsLoadItems(false);
-    }
-  }
-
+  /*************************************/
   useEffect(() => {
     if (!shopId) return;
+
+    const locations: ILocation[] = getLocalStorage(ELocalStorageKeys.LOCATIONS);
+    const currentLocation = locations.find((location) => +location.location_id === +shopId);
+    setLocationSettings(currentLocation ?? locationSettings);
 
     initDataPage();
   }, [shopId]);
 
-  function CustomToolbar() {
-    return (
-      <GridToolbarContainer>
-        <GridToolbarExport />
-        <GridToolbarColumnsButton />
-        <GridToolbarQuickFilter />
-      </GridToolbarContainer>
-    );
-  }
-  const handlePrint = useReactToPrint({
-    content: () => componentRef.current,
-  });
-  const onRowsSelectionHandler = (selectedRowsData: any) => {
-    setSelectRow(selectedRowsData);
-    setSelectId(selectedRowsData.id);
-    getItems(selectedRowsData.id);
-    setShowViewPopUp(true);
-  };
-  const handleSearch = (e: any) => {
-    setHandleSearchTxt(e.target.value);
-  };
   return (
     <AdminLayout shopId={shopId}>
       <div className="flex" style={{ alignItems: 'center' }}>
@@ -440,7 +341,13 @@ function ItemsReport() {
       </AlertDialog>
       {
         <div style={{ display: 'none' }}>
-          <ComponentToPrint ref={componentRef} />
+          <ItemsReportToPrint
+            lines={lines}
+            ref={componentRef}
+            selectRow={selectRow}
+            invoicDetails={invoicDetails}
+            locationSettings={locationSettings}
+          />
         </div>
       }
       <div className="page-content-style card">
@@ -468,6 +375,7 @@ function ItemsReport() {
           </div>
         </div> */}
         <DataGrid
+          loading={isLoadItems}
           className="datagrid-style"
           sx={{
             '.MuiDataGrid-columnSeparator': {

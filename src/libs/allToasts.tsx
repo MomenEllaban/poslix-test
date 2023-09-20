@@ -13,6 +13,7 @@ export const Toast = Swal.mixin({
     toast.addEventListener("mouseleave", Swal.resumeTimer);
   },
 });
+
 export const Toastify = (type: TypeOptions, msg: string) => {
   toast(msg, {
     type: type,

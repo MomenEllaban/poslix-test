@@ -1,6 +1,5 @@
 import { AdminLayout } from '@layout';
 import { ILocation } from '@models/auth.types';
-import { ILocationSettings } from '@models/common-model';
 import { IOpenCloseReport } from '@models/reports.types';
 import { DataGrid, GridColDef, GridRowParams } from '@mui/x-data-grid';
 import { useRouter } from 'next/router';
@@ -181,11 +180,12 @@ function SalesReport() {
         </div>
 
         <DataGrid
-          className="datagrid-style"
-          loading={isLoadItems}
           rows={sales}
           columns={columns}
-          // pageSize={30}
+          loading={isLoadItems}
+          className="datagrid-style"
+          autoPageSize
+          pageSize={30}
           rowsPerPageOptions={[10, 20, 30]}
           components={{ Toolbar: CustomToolbar }}
           sx={{

@@ -1,47 +1,134 @@
-import React, { useState, useContext, useEffect } from 'react';
-import { apiFetch, apiUpdateCtr, apiInsertCtr, apiFetchCtr } from '../../../libs/dbUtils';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import { ProductContext } from '../../../context/ProductContext';
-import CircularProgress from '@mui/material/CircularProgress';
-import Box from '@mui/material/Box';
-import SnakeAlert from '../utils/SnakeAlert';
-import mStyle from '../../../styles/Customermodal.module.css';
+import { joiResolver } from '@hookform/resolvers/joi';
+import { useContext, useEffect, useState } from 'react';
+import { Button, Form, Modal } from 'react-bootstrap';
+import { useForm } from 'react-hook-form';
+import FormField from 'src/components/form/FormField';
 import { Toastify } from 'src/libs/allToasts';
+import { addSuplierSchema } from 'src/modules/suppliers/_schema/add-supplier-schema';
+import { ProductContext } from '../../../context/ProductContext';
+import { apiFetchCtr, apiInsertCtr, apiUpdateCtr } from '../../../libs/dbUtils';
+import { initalSupplierCustomerTemplate } from './_data/customer';
+import api from 'src/utils/app-api';
+import { Box, CircularProgress } from '@mui/material';
 
-const Suppliermodal = (props: any) => {
-  const { openDialog, statusDialog, userdata, showType, shopId } = props;
-  const customerTemplate = {
-    id: 0,
-    firstName: '',
-    lastName: '',
-    mobile: '',
-    addr1: '',
-    addr2: '',
-    city: '',
-    state: '',
-    country: '',
-    zipCode: '',
-    shipAddr: '',
-  };
+const supplierFields = [
+  { name: 'name', label: 'Name', placeholder: 'Enter supplier name', type: 'text', required: true },
+  {
+    name: 'email',
+    label: 'Email',
+    placeholder: 'Enter supplier email',
+    type: 'email',
+    required: true,
+  },
+  {
+    name: 'phone',
+    label: 'Phone',
+    placeholder: 'Enter supplier phone number',
+    type: 'text',
+    required: true,
+  },
+  {
+    name: 'facility_name',
+    label: 'Facility Name',
+    placeholder: 'Enter facility name',
+    type: 'text',
+    required: true,
+  },
+  {
+    name: 'tax_number',
+    label: 'Tax Number',
+    placeholder: 'Enter supplier name',
+    type: 'text',
+    required: true,
+  },
+  {
+    name: 'invoice_address',
+    label: 'Invoice Address',
+    placeholder: 'Enter supplier name',
+    type: 'text',
+    required: false,
+  },
+  {
+    name: 'invoice_City',
+    label: 'Ivoice City',
+    placeholder: 'Enter supplier name',
+    type: 'text',
+    required: false,
+  },
+  {
+    name: 'invoice_Country',
+    label: 'Ivoice Country',
+    placeholder: 'Enter supplier name',
+    type: 'text',
+    required: false,
+  },
+  {
+    name: 'postal_code',
+    label: 'Postal Code',
+    placeholder: 'Enter supplier name',
+    type: 'text',
+    required: false,
+  },
+];
+
+const SupplierModal = ({ openDialog, statusDialog, userdata, showType, shopId }: any) => {
   const [moreInfo, setMoreInfo] = useState(false);
-  const [customerInfo, setCustomerInfo] = useState(customerTemplate);
+  const [customerInfo, setCustomerInfo] = useState(initalSupplierCustomerTemplate);
   const { customers, setCustomers } = useContext(ProductContext);
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [openSnakeBar, setOpenSnakeBar] = useState(false);
+
+  // assumption of one order at a time / one cart
+  const {
+    handleSubmit,
+    register,
+    reset,
+    setError,
+    formState: { errors },
+  } = useForm({
+    resolver: joiResolver(addSuplierSchema),
+    reValidateMode: 'onBlur',
+    mode: 'onTouched',
+    criteriaMode: 'all',
+  });
+
   const handleClose = () => {
     setOpen(false);
     openDialog(false);
+    reset();
   };
-  useEffect(() => {
-    if (!statusDialog) return;
-    setCustomerInfo(customerTemplate);
-    setOpen(statusDialog);
-    if (userdata !== undefined && showType != 'add' && statusDialog)
-      getCustomerInfo(userdata.value);
-  }, [statusDialog]);
+
+  const onSubmit = (data) => {
+
+    setIsLoading(true);
+    api
+      .post(
+        `suppliers/${shopId}`,
+        {},
+        {
+          params: { ...data },
+        }
+      )
+      .then(() => {
+        Toastify('success', 'Successfully Created');
+        handleClose();
+      })
+      .catch(({ response }) => {
+
+        const err = response.data.error;
+        Object.keys(err).forEach((errorItem) => {
+          setError(errorItem, { message: err[errorItem][0] });
+        });
+        Toastify('error', 'Has Error, Try Again...');
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  };
+  const onError = (data) => {
+    // console.log(data);
+  };
 
   async function insertCustomerInfo() {
     const { success, msg, code, newdata } = await apiInsertCtr({
@@ -59,7 +146,7 @@ const Suppliermodal = (props: any) => {
   }
   async function getCustomerInfo(theId: any) {
     setIsLoading(true);
-    setCustomerInfo(customerTemplate);
+    setCustomerInfo(initalSupplierCustomerTemplate);
     var result = await apiFetchCtr({
       fetch: 'customer',
       subType: 'getCustomerInfo',
@@ -114,9 +201,70 @@ const Suppliermodal = (props: any) => {
     setOpenSnakeBar(val);
   };
 
+  useEffect(() => {
+    if (!statusDialog) return;
+    setCustomerInfo(initalSupplierCustomerTemplate);
+    setOpen(statusDialog);
+    if (userdata !== undefined && showType != 'add' && statusDialog)
+      getCustomerInfo(userdata.value);
+  }, [statusDialog]);
+
+  if (isLoading)
+    return (
+      <Modal show={open} onHide={handleClose}>
+        <Modal.Header className="poslix-modal-title text-primary text-capitalize" closeButton>
+          {showType + ' Supplier'}
+        </Modal.Header>
+        <Modal.Body>
+          <Box sx={{ display: 'flex', justifyContent: 'center', margin: '20px' }}>
+            <CircularProgress />
+          </Box>
+        </Modal.Body>
+      </Modal>
+    );
   return (
-    <>
-      <Dialog open={open} className="poslix-modal" onClose={handleClose} maxWidth={'xl'}>
+    <Modal show={open} onHide={handleClose} className="scroll-form">
+      <style scoped jsx>{`
+        .scroll-form {
+          max-height: 70dvh;
+          overflow-y: auto;
+          padding-inline: 0.5rem;
+        }
+      `}</style>
+      <Form noValidate onSubmit={handleSubmit(onSubmit, onError)}>
+        <Modal.Header className="poslix-modal-title text-primary text-capitalize" closeButton>
+          {showType + ' Supplier'}
+        </Modal.Header>
+        <Modal.Body>
+          <div className="scroll-form">
+            {supplierFields.map((field) => (
+              <FormField
+                key={`supplier-form-${field.name}`}
+                {...field}
+                errors={errors}
+                register={register}
+              />
+            ))}
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <a className="btn btn-link link-success fw-medium" onClick={handleClose}>
+            Close <i className="ri-close-line me-1 align-middle" />
+          </a>
+          <Button type="submit" variant="primary" className="p-2">
+            Save
+          </Button>
+        </Modal.Footer>
+      </Form>
+    </Modal>
+  );
+};
+
+export default SupplierModal;
+/**
+ * 
+ * 
+ *   {/* <Dialog open={open} className="poslix-modal" onClose={handleClose} maxWidth={'xl'}>
         <DialogTitle className="poslix-modal-title text-primary">
           {showType + ' Supplier'}
         </DialogTitle>
@@ -290,7 +438,7 @@ const Suppliermodal = (props: any) => {
                                             />
                                         </>
                                     ) : null
-                                } */}
+                                }
                 </div>
                 <div className="modal-footer">
                   <a className="btn btn-link link-success fw-medium" onClick={() => handleClose()}>
@@ -309,13 +457,9 @@ const Suppliermodal = (props: any) => {
                   )}
                 </div>
               </div>
-              {/* /.modal-content */}
-            </div>
+
+</div>
           )}
         </DialogContent>
-      </Dialog>
-    </>
-  );
-};
-
-export default Suppliermodal;
+      </Dialog> 
+ */
