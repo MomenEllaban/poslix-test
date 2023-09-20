@@ -1,10 +1,5 @@
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import Box from '@mui/material/Box';
-import CircularProgress from '@mui/material/CircularProgress';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
 import { useContext, useEffect, useState } from 'react';
 import { Button, Form, Modal } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
@@ -27,7 +22,7 @@ const customerTemplate = {
   shipAddr: '',
 };
 
-const Suppliermodal = ({ openDialog, statusDialog, userdata, showType, shopId }: any) => {
+const SupplierModal = ({ openDialog, statusDialog, userdata, showType, shopId }: any) => {
   const [moreInfo, setMoreInfo] = useState(false);
   const [customerInfo, setCustomerInfo] = useState(customerTemplate);
   const { customers, setCustomers } = useContext(ProductContext);
@@ -47,13 +42,13 @@ const Suppliermodal = ({ openDialog, statusDialog, userdata, showType, shopId }:
     setOpen(false);
     openDialog(false);
   };
-  useEffect(() => {
-    if (!statusDialog) return;
-    setCustomerInfo(customerTemplate);
-    setOpen(statusDialog);
-    if (userdata !== undefined && showType != 'add' && statusDialog)
-      getCustomerInfo(userdata.value);
-  }, [statusDialog]);
+
+  const onSubmit = (data) => {
+    console.log(data);
+  };
+  const onError = (data) => {
+    console.warn(data);
+  };
 
   async function insertCustomerInfo() {
     const { success, msg, code, newdata } = await apiInsertCtr({
@@ -126,6 +121,14 @@ const Suppliermodal = ({ openDialog, statusDialog, userdata, showType, shopId }:
     setOpenSnakeBar(val);
   };
 
+  useEffect(() => {
+    if (!statusDialog) return;
+    setCustomerInfo(customerTemplate);
+    setOpen(statusDialog);
+    if (userdata !== undefined && showType != 'add' && statusDialog)
+      getCustomerInfo(userdata.value);
+  }, [statusDialog]);
+
   return (
     <>
       <Button
@@ -145,53 +148,55 @@ const Suppliermodal = ({ openDialog, statusDialog, userdata, showType, shopId }:
             {showType + ' Supplier'}
           </Modal.Header>
           <Modal.Body>
-            <FormField
-              required
-              name="name"
-              type="text"
-              label="Name"
-              errors={errors}
-              register={register}
-              placeholder="Enter Name"
-            />
-            <FormField
-              required
-              name="email"
-              type="email"
-              label="Email"
-              errors={errors}
-              register={register}
-              placeholder="Enter Email"
-            />
-            <FormField
-              required
-              name="phone"
-              type="phone"
-              label="Phone"
-              errors={errors}
-              register={register}
-              placeholder="Enter Phone"
-            />
-            <FormField
-              required
-              name="facility_name"
-              type="text"
-              label="Facility Name"
-              errors={errors}
-              register={register}
-              placeholder="Enter Facility Name"
-            />
-            <FormField
-              required
-              name="postal_code"
-              type="number"
-              min="000"
-              minLength={4}
-              label="Postal Code"
-              errors={errors}
-              register={register}
-              placeholder="Enter Postal Code"
-            />
+            <Form noValidate onSubmit={handleSubmit(onSubmit, onError)}>
+              <FormField
+                required
+                name="name"
+                type="text"
+                label="Name"
+                errors={errors}
+                register={register}
+                placeholder="Enter Name"
+              />
+              <FormField
+                required
+                name="email"
+                type="email"
+                label="Email"
+                errors={errors}
+                register={register}
+                placeholder="Enter Email"
+              />
+              <FormField
+                required
+                name="phone"
+                type="phone"
+                label="Phone"
+                errors={errors}
+                register={register}
+                placeholder="Enter Phone"
+              />
+              <FormField
+                required
+                name="facility_name"
+                type="text"
+                label="Facility Name"
+                errors={errors}
+                register={register}
+                placeholder="Enter Facility Name"
+              />
+              <FormField
+                required
+                name="postal_code"
+                type="number"
+                min="000"
+                minLength={4}
+                label="Postal Code"
+                errors={errors}
+                register={register}
+                placeholder="Enter Postal Code"
+              />
+            </Form>
           </Modal.Body>
           <Modal.Footer>
             <a className="btn btn-link link-success fw-medium" onClick={handleClose}>
@@ -405,4 +410,4 @@ const Suppliermodal = ({ openDialog, statusDialog, userdata, showType, shopId }:
   );
 };
 
-export default Suppliermodal;
+export default SupplierModal;

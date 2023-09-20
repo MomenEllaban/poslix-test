@@ -14,12 +14,13 @@ import { useUser } from 'src/context/UserContext';
 import { Toast, Toastify } from 'src/libs/allToasts';
 import CustomToolbar from 'src/modules/reports/_components/CustomToolbar';
 import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
-import Suppliermodal from '../../../../components/pos/modals/Suppliermodal';
+
 import { apiFetchCtr } from '../../../../libs/dbUtils';
 import { useSuppliersList } from 'src/services/suppliers.service';
 import { ISupplier } from '@models/suppliers.types';
 import ConfirmationModal from 'src/components/modals/confirmation-modal/ConfirmationModal';
 import api from 'src/utils/app-api';
+import SupplierModal from 'src/components/pos/modals/Suppliermodal';
 
 type TProduct = { id: number; name: string; sku: string; type: string; qty: number };
 
@@ -153,7 +154,7 @@ const Product: NextPage = () => {
           />
         </div>
       </AdminLayout>
-      <Suppliermodal
+      <SupplierModal
         shopId={shopId}
         showType={'add'}
         userdata={{}}
