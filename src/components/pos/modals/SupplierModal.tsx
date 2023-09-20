@@ -1,30 +1,17 @@
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { joiResolver } from '@hookform/resolvers/joi';
 import { useContext, useEffect, useState } from 'react';
 import { Button, Form, Modal } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import FormField from 'src/components/form/FormField';
 import { Toastify } from 'src/libs/allToasts';
+import { addSuplierSchema } from 'src/modules/suppliers/_schema/add-supplier-schema';
 import { ProductContext } from '../../../context/ProductContext';
 import { apiFetchCtr, apiInsertCtr, apiUpdateCtr } from '../../../libs/dbUtils';
-
-const customerTemplate = {
-  id: 0,
-  firstName: '',
-  lastName: '',
-  mobile: '',
-  addr1: '',
-  addr2: '',
-  city: '',
-  state: '',
-  country: '',
-  zipCode: '',
-  shipAddr: '',
-};
+import { initalSupplierCustomerTemplate } from './_data/customer';
 
 const SupplierModal = ({ openDialog, statusDialog, userdata, showType, shopId }: any) => {
   const [moreInfo, setMoreInfo] = useState(false);
-  const [customerInfo, setCustomerInfo] = useState(customerTemplate);
+  const [customerInfo, setCustomerInfo] = useState(initalSupplierCustomerTemplate);
   const { customers, setCustomers } = useContext(ProductContext);
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -36,7 +23,11 @@ const SupplierModal = ({ openDialog, statusDialog, userdata, showType, shopId }:
     register,
     reset,
     formState: { errors },
-  } = useForm();
+  } = useForm({
+    mode: 'onTouched',
+    reValidateMode: 'onBlur',
+    resolver: joiResolver(addSuplierSchema),
+  });
 
   const handleClose = () => {
     setOpen(false);
@@ -66,7 +57,7 @@ const SupplierModal = ({ openDialog, statusDialog, userdata, showType, shopId }:
   }
   async function getCustomerInfo(theId: any) {
     setIsLoading(true);
-    setCustomerInfo(customerTemplate);
+    setCustomerInfo(initalSupplierCustomerTemplate);
     var result = await apiFetchCtr({
       fetch: 'customer',
       subType: 'getCustomerInfo',
@@ -123,92 +114,85 @@ const SupplierModal = ({ openDialog, statusDialog, userdata, showType, shopId }:
 
   useEffect(() => {
     if (!statusDialog) return;
-    setCustomerInfo(customerTemplate);
+    setCustomerInfo(initalSupplierCustomerTemplate);
     setOpen(statusDialog);
     if (userdata !== undefined && showType != 'add' && statusDialog)
       getCustomerInfo(userdata.value);
   }, [statusDialog]);
 
   return (
-    <>
-      <Button
-        type="button"
-        variant="warning"
-        onClick={() => {
-          /***/
-        }}
-        className="flex-grow-1">
-        <FontAwesomeIcon icon={faPlus} /> Add New Supplier
-      </Button>
-      <Modal show={open} onHide={handleClose}>
-        <Form
-        //onSubmit={handleSubmit(handleSaveOrder)}
-        >
-          <Modal.Header className="poslix-modal-title text-primary text-capitalize" closeButton>
-            {showType + ' Supplier'}
-          </Modal.Header>
-          <Modal.Body>
-            <Form noValidate onSubmit={handleSubmit(onSubmit, onError)}>
-              <FormField
-                required
-                name="name"
-                type="text"
-                label="Name"
-                errors={errors}
-                register={register}
-                placeholder="Enter Name"
-              />
-              <FormField
-                required
-                name="email"
-                type="email"
-                label="Email"
-                errors={errors}
-                register={register}
-                placeholder="Enter Email"
-              />
-              <FormField
-                required
-                name="phone"
-                type="phone"
-                label="Phone"
-                errors={errors}
-                register={register}
-                placeholder="Enter Phone"
-              />
-              <FormField
-                required
-                name="facility_name"
-                type="text"
-                label="Facility Name"
-                errors={errors}
-                register={register}
-                placeholder="Enter Facility Name"
-              />
-              <FormField
-                required
-                name="postal_code"
-                type="number"
-                min="000"
-                minLength={4}
-                label="Postal Code"
-                errors={errors}
-                register={register}
-                placeholder="Enter Postal Code"
-              />
-            </Form>
-          </Modal.Body>
-          <Modal.Footer>
-            <a className="btn btn-link link-success fw-medium" onClick={handleClose}>
-              Close <i className="ri-close-line me-1 align-middle" />
-            </a>
-            <Button type="submit" variant="primary" className="p-2">
-              Save
-            </Button>
-          </Modal.Footer>
-        </Form>
-      </Modal>
-      {/* <Dialog open={open} className="poslix-modal" onClose={handleClose} maxWidth={'xl'}>
+    <Modal show={open} onHide={handleClose}>
+      <Form noValidate onSubmit={handleSubmit(onSubmit, onError)}>
+        <Modal.Header className="poslix-modal-title text-primary text-capitalize" closeButton>
+          {showType + ' Supplier'}
+        </Modal.Header>
+        <Modal.Body>
+          <FormField
+            required
+            name="name"
+            type="text"
+            label="Name"
+            errors={errors}
+            register={register}
+            placeholder="Enter Name"
+          />
+          <FormField
+            required
+            name="email"
+            type="email"
+            label="Email"
+            errors={errors}
+            register={register}
+            placeholder="Enter Email"
+          />
+          <FormField
+            required
+            name="phone"
+            type="phone"
+            label="Phone"
+            errors={errors}
+            register={register}
+            placeholder="Enter Phone"
+          />
+          <FormField
+            required
+            name="facility_name"
+            type="text"
+            label="Facility Name"
+            errors={errors}
+            register={register}
+            placeholder="Enter Facility Name"
+          />
+          <FormField
+            required
+            name="postal_code"
+            type="number"
+            min="000"
+            minLength={4}
+            label="Postal Code"
+            errors={errors}
+            register={register}
+            placeholder="Enter Postal Code"
+          />
+        </Modal.Body>
+        <Modal.Footer>
+          <a className="btn btn-link link-success fw-medium" onClick={handleClose}>
+            Close <i className="ri-close-line me-1 align-middle" />
+          </a>
+          <Button type="submit" variant="primary" className="p-2">
+            Save
+          </Button>
+        </Modal.Footer>
+      </Form>
+    </Modal>
+  );
+};
+
+export default SupplierModal;
+/**
+ * 
+ * 
+ *   {/* <Dialog open={open} className="poslix-modal" onClose={handleClose} maxWidth={'xl'}>
         <DialogTitle className="poslix-modal-title text-primary">
           {showType + ' Supplier'}
         </DialogTitle>
@@ -405,9 +389,5 @@ const SupplierModal = ({ openDialog, statusDialog, userdata, showType, shopId }:
 </div>
           )}
         </DialogContent>
-      </Dialog> */}
-    </>
-  );
-};
-
-export default SupplierModal;
+      </Dialog> 
+ */

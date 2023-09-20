@@ -2,29 +2,37 @@ import { faEye, faPenToSquare, faPlus, faTrash } from '@fortawesome/free-solid-s
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { AdminLayout } from '@layout';
 import { ILocation } from '@models/auth.types';
+import { ISupplier } from '@models/suppliers.types';
 import { DataGrid, GridColDef, GridRowParams } from '@mui/x-data-grid';
 import type { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { Button, ButtonGroup } from 'react-bootstrap';
-import Spinner from 'react-bootstrap/Spinner';
 import { ToastContainer } from 'react-toastify';
-import AlertDialog from 'src/components/utils/AlertDialog';
-import { useUser } from 'src/context/UserContext';
-import { Toast, Toastify } from 'src/libs/allToasts';
-import CustomToolbar from 'src/modules/reports/_components/CustomToolbar';
-import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
-
-import { apiFetchCtr } from '../../../../libs/dbUtils';
-import { useSuppliersList } from 'src/services/suppliers.service';
-import { ISupplier } from '@models/suppliers.types';
 import ConfirmationModal from 'src/components/modals/confirmation-modal/ConfirmationModal';
+import SupplierModal from 'src/components/pos/modals/SupplierModal';
+import { useUser } from 'src/context/UserContext';
+import { Toastify } from 'src/libs/allToasts';
+import CustomToolbar from 'src/modules/reports/_components/CustomToolbar';
+import { useSuppliersList } from 'src/services/suppliers.service';
 import api from 'src/utils/app-api';
-import SupplierModal from 'src/components/pos/modals/Suppliermodal';
+import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
 
 type TProduct = { id: number; name: string; sku: string; type: string; qty: number };
 
-const Product: NextPage = () => {
+const supplierFields = [
+  { name: 'name', label: 'Name', placeholder: 'Enter supplier name', required: true },
+  { name: 'email', label: 'Name', placeholder: 'Enter supplier email', required: true },
+  { name: 'phone', label: 'Name', placeholder: 'Enter supplier phone number', required: true },
+  { name: 'facility_name', label: 'Name', placeholder: 'Enter facility name', required: true },
+  { name: 'tax_number', label: 'Name', placeholder: 'Enter supplier name', required: true },
+  { name: 'invoice_address', label: 'Name', placeholder: 'Enter supplier name', required: false },
+  { name: 'invoice_City', label: 'Name', placeholder: 'Enter supplier name', required: false },
+  { name: 'invoice_Country', label: 'Name', placeholder: 'Enter supplier name', required: false },
+  { name: 'postal_code', label: 'Name', placeholder: 'Enter supplier name', required: false },
+];
+
+const Suppliers: NextPage = () => {
   const router = useRouter();
   const { locationSettings, setLocationSettings } = useUser();
   const shopId = (router.query.id as string) ?? '';
@@ -38,7 +46,7 @@ const Product: NextPage = () => {
   const [show, setShow] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [customerIsModal, setCustomerIsModal] = useState(false);
+  const [supplierIsModal, setSupplierIsModal] = useState(false);
   const [isOpenPriceDialog, setIsOpenPriceDialog] = useState(false);
 
   useEffect(() => {
@@ -50,7 +58,7 @@ const Product: NextPage = () => {
   }, [shopId]);
 
   const customerModalHandler = (status: any) => {
-    setCustomerIsModal(false);
+    setSupplierIsModal(false);
     refetch();
   };
 
@@ -127,7 +135,7 @@ const Product: NextPage = () => {
           <button
             className="btn btn-primary p-3"
             onClick={() => {
-              setCustomerIsModal(true);
+              setSupplierIsModal(true);
             }}>
             <FontAwesomeIcon icon={faPlus} /> Add New Supplier{' '}
           </button>
@@ -159,10 +167,10 @@ const Product: NextPage = () => {
         showType={'add'}
         userdata={{}}
         customers={{}}
-        statusDialog={customerIsModal}
+        statusDialog={supplierIsModal}
         openDialog={customerModalHandler}
       />
     </>
   );
 };
-export default Product;
+export default Suppliers;
