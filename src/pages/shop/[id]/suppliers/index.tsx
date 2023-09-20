@@ -20,18 +20,6 @@ import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
 
 type TProduct = { id: number; name: string; sku: string; type: string; qty: number };
 
-const supplierFields = [
-  { name: 'name', label: 'Name', placeholder: 'Enter supplier name', required: true },
-  { name: 'email', label: 'Name', placeholder: 'Enter supplier email', required: true },
-  { name: 'phone', label: 'Name', placeholder: 'Enter supplier phone number', required: true },
-  { name: 'facility_name', label: 'Name', placeholder: 'Enter facility name', required: true },
-  { name: 'tax_number', label: 'Name', placeholder: 'Enter supplier name', required: true },
-  { name: 'invoice_address', label: 'Name', placeholder: 'Enter supplier name', required: false },
-  { name: 'invoice_City', label: 'Name', placeholder: 'Enter supplier name', required: false },
-  { name: 'invoice_Country', label: 'Name', placeholder: 'Enter supplier name', required: false },
-  { name: 'postal_code', label: 'Name', placeholder: 'Enter supplier name', required: false },
-];
-
 const Suppliers: NextPage = () => {
   const router = useRouter();
   const { locationSettings, setLocationSettings } = useUser();

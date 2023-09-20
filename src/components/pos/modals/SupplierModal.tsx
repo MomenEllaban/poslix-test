@@ -8,6 +8,68 @@ import { addSuplierSchema } from 'src/modules/suppliers/_schema/add-supplier-sch
 import { ProductContext } from '../../../context/ProductContext';
 import { apiFetchCtr, apiInsertCtr, apiUpdateCtr } from '../../../libs/dbUtils';
 import { initalSupplierCustomerTemplate } from './_data/customer';
+import api from 'src/utils/app-api';
+import { Box, CircularProgress } from '@mui/material';
+
+const supplierFields = [
+  { name: 'name', label: 'Name', placeholder: 'Enter supplier name', type: 'text', required: true },
+  {
+    name: 'email',
+    label: 'Email',
+    placeholder: 'Enter supplier email',
+    type: 'email',
+    required: true,
+  },
+  {
+    name: 'phone',
+    label: 'Phone',
+    placeholder: 'Enter supplier phone number',
+    type: 'text',
+    required: true,
+  },
+  {
+    name: 'facility_name',
+    label: 'Facility Name',
+    placeholder: 'Enter facility name',
+    type: 'text',
+    required: true,
+  },
+  {
+    name: 'tax_number',
+    label: 'Tax Number',
+    placeholder: 'Enter supplier name',
+    type: 'text',
+    required: true,
+  },
+  {
+    name: 'invoice_address',
+    label: 'Invoice Address',
+    placeholder: 'Enter supplier name',
+    type: 'text',
+    required: false,
+  },
+  {
+    name: 'invoice_City',
+    label: 'Ivoice City',
+    placeholder: 'Enter supplier name',
+    type: 'text',
+    required: false,
+  },
+  {
+    name: 'invoice_Country',
+    label: 'Ivoice Country',
+    placeholder: 'Enter supplier name',
+    type: 'text',
+    required: false,
+  },
+  {
+    name: 'postal_code',
+    label: 'Postal Code',
+    placeholder: 'Enter supplier name',
+    type: 'text',
+    required: false,
+  },
+];
 
 const SupplierModal = ({ openDialog, statusDialog, userdata, showType, shopId }: any) => {
   const [moreInfo, setMoreInfo] = useState(false);
@@ -22,23 +84,50 @@ const SupplierModal = ({ openDialog, statusDialog, userdata, showType, shopId }:
     handleSubmit,
     register,
     reset,
+    setError,
     formState: { errors },
   } = useForm({
-    mode: 'onTouched',
-    reValidateMode: 'onBlur',
     resolver: joiResolver(addSuplierSchema),
+    reValidateMode: 'onBlur',
+    mode: 'onTouched',
+    criteriaMode: 'all',
   });
 
   const handleClose = () => {
     setOpen(false);
     openDialog(false);
+    reset();
   };
 
   const onSubmit = (data) => {
-    console.log(data);
+
+    setIsLoading(true);
+    api
+      .post(
+        `suppliers/${shopId}`,
+        {},
+        {
+          params: { ...data },
+        }
+      )
+      .then(() => {
+        Toastify('success', 'Successfully Created');
+        handleClose();
+      })
+      .catch(({ response }) => {
+
+        const err = response.data.error;
+        Object.keys(err).forEach((errorItem) => {
+          setError(errorItem, { message: err[errorItem][0] });
+        });
+        Toastify('error', 'Has Error, Try Again...');
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   };
   const onError = (data) => {
-    console.warn(data);
+    // console.log(data);
   };
 
   async function insertCustomerInfo() {
@@ -120,60 +209,43 @@ const SupplierModal = ({ openDialog, statusDialog, userdata, showType, shopId }:
       getCustomerInfo(userdata.value);
   }, [statusDialog]);
 
+  if (isLoading)
+    return (
+      <Modal show={open} onHide={handleClose}>
+        <Modal.Header className="poslix-modal-title text-primary text-capitalize" closeButton>
+          {showType + ' Supplier'}
+        </Modal.Header>
+        <Modal.Body>
+          <Box sx={{ display: 'flex', justifyContent: 'center', margin: '20px' }}>
+            <CircularProgress />
+          </Box>
+        </Modal.Body>
+      </Modal>
+    );
   return (
-    <Modal show={open} onHide={handleClose}>
+    <Modal show={open} onHide={handleClose} className="scroll-form">
+      <style scoped jsx>{`
+        .scroll-form {
+          max-height: 70dvh;
+          overflow-y: auto;
+          padding-inline: 0.5rem;
+        }
+      `}</style>
       <Form noValidate onSubmit={handleSubmit(onSubmit, onError)}>
         <Modal.Header className="poslix-modal-title text-primary text-capitalize" closeButton>
           {showType + ' Supplier'}
         </Modal.Header>
         <Modal.Body>
-          <FormField
-            required
-            name="name"
-            type="text"
-            label="Name"
-            errors={errors}
-            register={register}
-            placeholder="Enter Name"
-          />
-          <FormField
-            required
-            name="email"
-            type="email"
-            label="Email"
-            errors={errors}
-            register={register}
-            placeholder="Enter Email"
-          />
-          <FormField
-            required
-            name="phone"
-            type="phone"
-            label="Phone"
-            errors={errors}
-            register={register}
-            placeholder="Enter Phone"
-          />
-          <FormField
-            required
-            name="facility_name"
-            type="text"
-            label="Facility Name"
-            errors={errors}
-            register={register}
-            placeholder="Enter Facility Name"
-          />
-          <FormField
-            required
-            name="postal_code"
-            type="number"
-            min="000"
-            minLength={4}
-            label="Postal Code"
-            errors={errors}
-            register={register}
-            placeholder="Enter Postal Code"
-          />
+          <div className="scroll-form">
+            {supplierFields.map((field) => (
+              <FormField
+                key={`supplier-form-${field.name}`}
+                {...field}
+                errors={errors}
+                register={register}
+              />
+            ))}
+          </div>
         </Modal.Body>
         <Modal.Footer>
           <a className="btn btn-link link-success fw-medium" onClick={handleClose}>
