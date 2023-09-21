@@ -1,15 +1,14 @@
 import { joiResolver } from '@hookform/resolvers/joi';
+import { Box, CircularProgress } from '@mui/material';
 import { useContext, useEffect, useState } from 'react';
 import { Button, Form, Modal } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import FormField from 'src/components/form/FormField';
 import { Toastify } from 'src/libs/allToasts';
 import { addSuplierSchema } from 'src/modules/suppliers/_schema/add-supplier-schema';
-import { ProductContext } from '../../../context/ProductContext';
-import { apiFetchCtr, apiInsertCtr, apiUpdateCtr } from '../../../libs/dbUtils';
-import { initalSupplierCustomerTemplate } from './_data/customer';
 import api from 'src/utils/app-api';
-import { Box, CircularProgress } from '@mui/material';
+import { ProductContext } from '../../../context/ProductContext';
+import { initalSupplierCustomerTemplate } from './_data/customer';
 
 const supplierFields = [
   { name: 'name', label: 'Name', placeholder: 'Enter supplier name', type: 'text', required: true },
@@ -44,35 +43,34 @@ const supplierFields = [
   {
     name: 'invoice_address',
     label: 'Invoice Address',
-    placeholder: 'Enter supplier name',
+    placeholder: 'Enter address',
     type: 'text',
     required: false,
   },
   {
     name: 'invoice_City',
-    label: 'Ivoice City',
-    placeholder: 'Enter supplier name',
+    label: 'Invoice City',
+    placeholder: 'Enter invoice city',
     type: 'text',
     required: false,
   },
   {
     name: 'invoice_Country',
-    label: 'Ivoice Country',
-    placeholder: 'Enter supplier name',
+    label: 'Invoice Country',
+    placeholder: 'Enter invoice country',
     type: 'text',
     required: false,
   },
   {
     name: 'postal_code',
     label: 'Postal Code',
-    placeholder: 'Enter supplier name',
+    placeholder: 'Enter postal code',
     type: 'text',
     required: false,
   },
 ];
 
-const SupplierModal = ({ openDialog, statusDialog, userdata, showType, shopId }: any) => {
-  const [moreInfo, setMoreInfo] = useState(false);
+const SupplierModal = ({ openDialog, statusDialog, supplierId, showType, shopId }: any) => {
   const [customerInfo, setCustomerInfo] = useState(initalSupplierCustomerTemplate);
   const { customers, setCustomers } = useContext(ProductContext);
   const [open, setOpen] = useState(false);
@@ -85,6 +83,7 @@ const SupplierModal = ({ openDialog, statusDialog, userdata, showType, shopId }:
     register,
     reset,
     setError,
+    setValue,
     formState: { errors },
   } = useForm({
     resolver: joiResolver(addSuplierSchema),
@@ -100,22 +99,45 @@ const SupplierModal = ({ openDialog, statusDialog, userdata, showType, shopId }:
   };
 
   const onSubmit = (data) => {
-
     setIsLoading(true);
+
+    if (showType === 'add')
+      return api
+        .post(
+          `suppliers/${shopId}`,
+          {},
+          {
+            params: { ...data },
+          }
+        )
+        .then(() => {
+          Toastify('success', 'Successfully Created');
+          handleClose();
+        })
+        .catch(({ response }) => {
+          const err = response.data.error;
+          Object.keys(err).forEach((errorItem) => {
+            setError(errorItem, { message: err[errorItem][0] });
+          });
+          Toastify('error', 'Has Error, Try Again...');
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    const { id, ...rest } = data;
     api
-      .post(
-        `suppliers/${shopId}`,
+      .put(
+        `suppliers/${id}`,
         {},
         {
-          params: { ...data },
+          params: { ...rest },
         }
       )
       .then(() => {
-        Toastify('success', 'Successfully Created');
+        Toastify('success', 'Successfully Updated');
         handleClose();
       })
       .catch(({ response }) => {
-
         const err = response.data.error;
         Object.keys(err).forEach((errorItem) => {
           setError(errorItem, { message: err[errorItem][0] });
@@ -130,83 +152,35 @@ const SupplierModal = ({ openDialog, statusDialog, userdata, showType, shopId }:
     // console.log(data);
   };
 
-  async function insertCustomerInfo() {
-    const { success, msg, code, newdata } = await apiInsertCtr({
-      type: 'customer',
-      subType: 'addCustomer',
-      shopId,
-      data: customerInfo,
-    });
-    if (success) {
-      setCustomers([...customers, newdata]);
-      handleClose();
-      Toastify('success', 'Successfully Created');
-    } else if (code == 100) Toastify('error', msg);
-    else Toastify('error', 'Has Error, Try Again...');
-  }
   async function getCustomerInfo(theId: any) {
     setIsLoading(true);
-    setCustomerInfo(initalSupplierCustomerTemplate);
-    var result = await apiFetchCtr({
-      fetch: 'customer',
-      subType: 'getCustomerInfo',
-      theId,
-      shopId,
-    });
-    if (result.success) {
-      const selCustomer = result?.newdata[0];
-      setCustomerInfo({
-        ...customerInfo,
-        id: theId,
-        mobile: selCustomer.mobile,
-        firstName: selCustomer.first_name,
-        lastName: selCustomer.last_name,
-        city: selCustomer.city,
-        state: selCustomer.state,
-        addr1: selCustomer.addr1,
-        addr2: selCustomer.addr2,
-        zipCode: selCustomer.zip_code,
-        country: selCustomer.country,
-        shipAddr: selCustomer.shipping_address,
+
+    api
+      .get(`suppliers/${theId}/show`)
+      .then(({ data }) => {
+        return data.result;
+      })
+      .then((result) => {
+        Object.keys(result).forEach((item) => {
+          setValue(item, result[item]);
+        });
+      })
+      .catch(() => {
+        Toastify('error', 'has error, Try Again...');
+
+        handleClose();
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
-      setIsLoading(false);
-    } else {
-      Toastify('error', 'has error, Try Again...');
-    }
   }
-  async function editCustomerInfo() {
-    var result = await apiUpdateCtr({
-      type: 'customer',
-      subType: 'editCustomerInfo',
-      shopId,
-      data: customerInfo,
-    });
-    if (result.success) {
-      const cinx = customers.findIndex((customer) => customer.value === customerInfo.id);
-      if (cinx > -1) {
-        const upCustomer = [...customers];
-        upCustomer[cinx] = {
-          ...upCustomer[cinx],
-          value: customerInfo.id,
-          label: customerInfo.firstName + ' ' + customerInfo.lastName + ' | ' + customerInfo.mobile,
-          mobile: result.newdata.mobile,
-        };
-        setCustomers(upCustomer);
-      }
-      handleClose();
-      Toastify('success', 'Successfully Edited');
-    } else Toastify('error', 'has error, Try Again...');
-  }
-  const makeShowSnake = (val: any) => {
-    setOpenSnakeBar(val);
-  };
 
   useEffect(() => {
     if (!statusDialog) return;
     setCustomerInfo(initalSupplierCustomerTemplate);
     setOpen(statusDialog);
-    if (userdata !== undefined && showType != 'add' && statusDialog)
-      getCustomerInfo(userdata.value);
+    if (supplierId !== undefined && showType === 'edit' && statusDialog)
+      getCustomerInfo(supplierId);
   }, [statusDialog]);
 
   if (isLoading)
