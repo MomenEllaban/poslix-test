@@ -71,11 +71,8 @@ const supplierFields = [
 ];
 
 const SupplierModal = ({ openDialog, statusDialog, supplierId, showType, shopId }: any) => {
-  const [customerInfo, setCustomerInfo] = useState(initalSupplierCustomerTemplate);
-  const { customers, setCustomers } = useContext(ProductContext);
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [openSnakeBar, setOpenSnakeBar] = useState(false);
 
   // assumption of one order at a time / one cart
   const {
@@ -98,32 +95,31 @@ const SupplierModal = ({ openDialog, statusDialog, supplierId, showType, shopId 
     reset();
   };
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     setIsLoading(true);
 
     if (showType === 'add')
-      return api
-        .post(
-          `suppliers/${shopId}`,
-          {},
-          {
-            params: { ...data },
-          }
-        )
-        .then(() => {
+      try {
+        try {
+          await api.post(
+            `suppliers/${shopId}`,
+            {},
+            {
+              params: { ...data },
+            }
+          );
           Toastify('success', 'Successfully Created');
           handleClose();
-        })
-        .catch(({ response }) => {
+        } catch ({ response }) {
           const err = response.data.error;
           Object.keys(err).forEach((errorItem) => {
             setError(errorItem, { message: err[errorItem][0] });
           });
           Toastify('error', 'Has Error, Try Again...');
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
+        }
+      } finally {
+        setIsLoading(false);
+      }
     const { id, ...rest } = data;
     api
       .put(
@@ -148,6 +144,7 @@ const SupplierModal = ({ openDialog, statusDialog, supplierId, showType, shopId 
         setIsLoading(false);
       });
   };
+
   const onError = (data) => {
     // console.log(data);
   };
@@ -177,9 +174,9 @@ const SupplierModal = ({ openDialog, statusDialog, supplierId, showType, shopId 
 
   useEffect(() => {
     if (!statusDialog) return;
-    setCustomerInfo(initalSupplierCustomerTemplate);
+
     setOpen(statusDialog);
-    if (supplierId !== undefined && showType === 'edit' && statusDialog)
+    if (supplierId !== undefined && (showType === 'edit' || showType === 'show') && statusDialog)
       getCustomerInfo(supplierId);
   }, [statusDialog]);
 
@@ -187,7 +184,7 @@ const SupplierModal = ({ openDialog, statusDialog, supplierId, showType, shopId 
     return (
       <Modal show={open} onHide={handleClose}>
         <Modal.Header className="poslix-modal-title text-primary text-capitalize" closeButton>
-          {showType + ' Supplier'}
+          {showType !== 'show' ? showType + ' Supplier' : 'Supplier'}
         </Modal.Header>
         <Modal.Body>
           <Box sx={{ display: 'flex', justifyContent: 'center', margin: '20px' }}>
@@ -207,27 +204,33 @@ const SupplierModal = ({ openDialog, statusDialog, supplierId, showType, shopId 
       `}</style>
       <Form noValidate onSubmit={handleSubmit(onSubmit, onError)}>
         <Modal.Header className="poslix-modal-title text-primary text-capitalize" closeButton>
-          {showType + ' Supplier'}
+          {showType === 'show' ? 'Supplier' : showType + ' Supplier'}
         </Modal.Header>
         <Modal.Body>
           <div className="scroll-form">
-            {supplierFields.map((field) => (
-              <FormField
-                key={`supplier-form-${field.name}`}
-                {...field}
-                errors={errors}
-                register={register}
-              />
-            ))}
+            {supplierFields.map((field) => {
+              return (
+                <FormField
+                  key={`supplier-form-${field.name}`}
+                  {...field}
+                  disabled={showType === 'show'}
+                  errors={errors}
+                  required={showType === 'show' ? false : field.required}
+                  register={register}
+                />
+              );
+            })}
           </div>
         </Modal.Body>
         <Modal.Footer>
           <a className="btn btn-link link-success fw-medium" onClick={handleClose}>
             Close <i className="ri-close-line me-1 align-middle" />
           </a>
-          <Button type="submit" variant="primary" className="p-2">
-            Save
-          </Button>
+          {showType !== 'show' ? (
+            <Button type="submit" variant="primary" className="p-2">
+              Save
+            </Button>
+          ) : null}
         </Modal.Footer>
       </Form>
     </Modal>

@@ -27,7 +27,7 @@ const Suppliers: NextPage = () => {
 
   const { isLoading: isSuppliersLoading, suppliersList, error, refetch } = useSuppliersList(shopId);
 
-  const [type, setType] = useState<'add' | 'edit' | ''>('');
+  const [type, setType] = useState<'add' | 'edit' | 'show'>('show');
   const [selectId, setSelectId] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -101,7 +101,13 @@ const Suppliers: NextPage = () => {
             message="Are you sure you want to delete this supplier?"
           />
 
-          <Button onClick={() => router.push('/shop/' + shopId + '/customers/' + row.id)}>
+          <Button
+            onClick={() => {
+              setType('show');
+              setSelectId(row.id);
+              setSupplierModal(true);
+              // router.push('/shop/' + shopId + '/customers/' + row.id);
+            }}>
             <FontAwesomeIcon icon={faEye} />
           </Button>
         </ButtonGroup>
