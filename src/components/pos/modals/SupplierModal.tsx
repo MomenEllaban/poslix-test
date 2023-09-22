@@ -73,6 +73,7 @@ const supplierFields = [
 const SupplierModal = ({ openDialog, statusDialog, supplierId, showType, shopId }: any) => {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [email, setEmail] = useState('');
 
   // assumption of one order at a time / one cart
   const {
@@ -120,13 +121,15 @@ const SupplierModal = ({ openDialog, statusDialog, supplierId, showType, shopId 
       } finally {
         setIsLoading(false);
       }
-    const { id, ...rest } = data;
+    const { id, email: _email, ...rest } = data;
+    const _updated = { ...rest };
+    if (_email !== email) _updated.email = _email;
     api
       .put(
         `suppliers/${id}`,
         {},
         {
-          params: { ...rest },
+          params: { ..._updated },
         }
       )
       .then(() => {
@@ -155,6 +158,7 @@ const SupplierModal = ({ openDialog, statusDialog, supplierId, showType, shopId 
     api
       .get(`suppliers/${theId}/show`)
       .then(({ data }) => {
+        setEmail(data.result.email);
         return data.result;
       })
       .then((result) => {
