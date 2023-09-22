@@ -52,20 +52,20 @@ const Category = ({ rules }: any) => {
     const perms = JSON.parse(localStorage.getItem('permissions'));
     const getCategoryPermissions = {hasView: false, hasInsert: false, hasEdit: false, hasDelete: false}
     const getBrandPermissions = {hasView: false, hasInsert: false, hasEdit: false, hasDelete: false}
-    perms.category.map((perm) =>
-      perm.name.includes('GET') ? getCategoryPermissions.hasView = true
-      : perm.name.includes('POST') ? getCategoryPermissions.hasInsert = true
-      : perm.name.includes('PUT') ? getCategoryPermissions.hasEdit = true
-      : perm.name.includes('DELETE') ? getCategoryPermissions.hasDelete = true : null)
-    perms.category.map((perm) =>
-      perm.name.includes('GET') ? getBrandPermissions.hasView = true
-      : perm.name.includes('POST') ? getBrandPermissions.hasInsert = true
-      : perm.name.includes('PUT') ? getBrandPermissions.hasEdit = true
-      : perm.name.includes('DELETE') ? getBrandPermissions.hasDelete = true : null)
+    perms[0]?.permissions.map((perm) =>
+      perm.name.includes('categories/view') ? getCategoryPermissions.hasView = true
+      : perm.name.includes('categories/add') ? getCategoryPermissions.hasInsert = true
+      : perm.name.includes('categories/update') ? getCategoryPermissions.hasEdit = true
+      : perm.name.includes('categories/delete') ? getCategoryPermissions.hasDelete = true : null)
+    perms[0]?.permissions.map((perm) =>
+      perm.name.includes('brands/view') ? getBrandPermissions.hasView = true
+      : perm.name.includes('brands/add') ? getBrandPermissions.hasInsert = true
+      : perm.name.includes('brands/update') ? getBrandPermissions.hasEdit = true
+      : perm.name.includes('brands/delete') ? getBrandPermissions.hasDelete = true : null)
 
     setCategoryPermissions(getCategoryPermissions)
     setBrandPermissions(getBrandPermissions)
-  }, [])
+  }, [router.asPath])
   return (
     <>
       <AdminLayout shopId={shopId}>

@@ -120,16 +120,16 @@ const PricingGroups = (props) => {
   const [locations, setLocations] = useState<{ value: number; label: string }[]>([]);
   const [permissions, setPermissions] = useState<any>();
   useEffect(() => {
-    const perms = JSON.parse(localStorage.getItem('permissions'));
+    const perms = JSON.parse(localStorage.getItem('permissions')).filter(loc => loc.id==router.query.id);
     const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
-    perms.pos.map((perm) =>
-      perm.name.includes('getpricinggroup get GET')
+    perms[0]?.permissions.map((perm) =>
+      perm.name.includes('pricinggroup/view')
         ? (getPermissions.hasView = true)
-        : perm.name.includes('pricinggroup add POST')
+        : perm.name.includes('pricinggroup/add')
         ? (getPermissions.hasInsert = true)
-        : perm.name.includes('pricinggroup update PUT')
+        : perm.name.includes('pricinggroup/update')
         ? (getPermissions.hasEdit = true)
-        : perm.name.includes('pricinggroup delete DELETE')
+        : perm.name.includes('pricinggroup/delete')
         ? (getPermissions.hasDelete = true)
         : null
     );

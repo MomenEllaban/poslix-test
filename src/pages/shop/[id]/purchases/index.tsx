@@ -162,9 +162,9 @@ const Purchases: NextPage = (props: any) => {
 
   const [permissions, setPermissions] = useState<any>();
   useEffect(() => {
-    const perms = JSON.parse(localStorage.getItem('permissions'));
+    const perms = JSON.parse(localStorage.getItem('permissions')).filter(loc => loc.id==router.query.id);
     const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
-    perms.inventory.purchases.map((perm) =>
+    perms[0]?.permissions.map((perm) =>
       perm.name.includes('purchases/add')
         ? (getPermissions.hasInsert = true)
         : perm.name.includes('purchases/update')
@@ -175,7 +175,7 @@ const Purchases: NextPage = (props: any) => {
     );
 
     setPermissions(getPermissions);
-  }, []);
+  }, [router.asPath]);
   function getStatusStyle(status: string) {
     switch (status) {
       case 'paid':

@@ -13,7 +13,7 @@ import { useRouter } from 'next/router';
 import PaymentModal from './component/PaymentModal';
 
 const PaymentMethods: NextPage = (props: any) => {
-  const { shopId, rules } = props;
+  const { shopId } = props;
   const [currentPaymentMethods, setCurrentPaymentMethods] = useState([]);
 
   const [paymentMethods, setPaymentMethods] = useState<any>();
@@ -37,9 +37,6 @@ const PaymentMethods: NextPage = (props: any) => {
 
   }, [data, error]);
 
-
-
-
   const handlePrimarySwitchChange = (e: any, i: number) => {
     const _paymentMethods = [...paymentMethods];
     _paymentMethods[i].enabled = !_paymentMethods[i].enabled;
@@ -50,6 +47,24 @@ const PaymentMethods: NextPage = (props: any) => {
     // initDataPage();
   };
 
+  const [permissions, setPermissions] = useState<any>();
+  useEffect(() => {
+    const perms = JSON.parse(localStorage.getItem('permissions')).filter(loc => loc.id==router.query.id)
+    const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
+    perms[0]?.permissions?.map((perm) =>
+      perm.name.includes('payment/show')
+        ? (getPermissions.hasView = true)
+        : perm.name.includes('payment/add')
+        ? (getPermissions.hasInsert = true)
+        : perm.name.includes('payment/update')
+        ? (getPermissions.hasEdit = true)
+        : perm.name.includes('payment/delete')
+        ? (getPermissions.hasDelete = true)
+        : null
+    );
+
+    setPermissions(getPermissions);
+  }, [router.asPath])
 
   return (
     <>
@@ -73,7 +88,7 @@ const PaymentMethods: NextPage = (props: any) => {
                     type="text"
                     name="tax-name"
                     className="form-control p-2"
-                    // disabled={!rules.hasInsert}
+                    disabled={!permissions.hasInsert}
                     placeholder="Enter New Method Name"
                     value={method.name}
                   />
@@ -82,7 +97,7 @@ const PaymentMethods: NextPage = (props: any) => {
                   <Form.Check
                     type="switch"
                     id={`custom-switch-${i}`}
-                    // disabled={!rules.hasInsert}
+                    disabled={!permissions.hasInsert}
                     className="custom-switch"
                     checked={method.enabled ? true : false}
                     onChange={(e) => {

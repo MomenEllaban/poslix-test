@@ -118,7 +118,7 @@ const Expenses: NextPage = (props: any) => {
   const [permissions, setPermissions] = useState<any>();
   const [catPermissions, setCatPermissions] = useState<any>();
   useEffect(() => {
-    const perms = JSON.parse(localStorage.getItem('permissions'));
+    const perms = JSON.parse(localStorage.getItem('permissions')).filter(loc => loc.id==router.query.id);
     const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
     const getCatPermissions = {
       hasCategories: false,

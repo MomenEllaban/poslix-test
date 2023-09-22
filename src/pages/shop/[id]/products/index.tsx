@@ -226,9 +226,9 @@ const Product: NextPage = (props: any) => {
   }
   const [permissions, setPermissions] = useState<any>();
   useEffect(() => {
-    const perms = JSON.parse(localStorage.getItem('permissions'));
+    const perms = JSON.parse(localStorage.getItem('permissions')).filter(loc => loc.id==router.query.id)
     const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
-    perms.inventory.products.map((perm) =>
+    perms[0]?.permissions?.map((perm) =>
       perm.name.includes('products/show')
         ? (getPermissions.hasView = true)
         : perm.name.includes('products/add')
@@ -241,7 +241,8 @@ const Product: NextPage = (props: any) => {
     );
 
     setPermissions(getPermissions);
-
+  }, [router.asPath])
+  useEffect(() => {
     const _locs = JSON.parse(localStorage.getItem('locations') || '[]');
     setLocations(_locs);
     if (_locs.toString().length > 10)
@@ -301,7 +302,7 @@ const Product: NextPage = (props: any) => {
   const [shopId, setShopId] = useState('');
   useEffect(() => {
     if (router.isReady) setShopId(router.query.id.toString());
-  }, []);
+  }, [router.asPath]);
 
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
@@ -309,7 +310,7 @@ const Product: NextPage = (props: any) => {
   const getRowClassName = () => styles.rowStyling;
   return (
     <>
-      <AdminLayout shopId={shopId}>
+      <AdminLayout shopId={router.query.id}>
         <ToastContainer />
         <AlertDialog
           alertShow={show}
