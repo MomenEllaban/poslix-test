@@ -41,10 +41,10 @@ export default function LoginView() {
     const res = await signIn('credentials', { redirect: false, ...data })
       .then(async (res) => {
         if (res.error) throw new Error(res.error);
-        const permissions = await findAllData('permissions')
-        localStorage.setItem('permissions', JSON.stringify(permissions.data.result))
-        // console.log(JSON.parse(localStorage.getItem('permissions')));
+        const session = await getSession()
+        localStorage.setItem('permissions', JSON.stringify(session.user?.locations))
         Toastify('success', 'Login Success');
+        router.push(`/${session.user.username}/business`)
       })
       .catch(() => {
         Toastify('error', 'Login Failed');

@@ -8,6 +8,7 @@ export interface ILogin {
 }
 
 export interface IUser {
+  locations?: any;
   id: number;
   owner_id?: string | number;
 
