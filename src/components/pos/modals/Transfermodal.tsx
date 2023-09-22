@@ -19,7 +19,7 @@ import { createNewData, findAllData, updateData } from 'src/services/crud.api';
 import { useRouter } from 'next/router';
 
 const Transfermodal = (props: any) => {
-  const { openDialog, statusDialog, userdata, showType, shopId } = props;
+  const { openDialog, statusDialog, userdata, showType, shopId, initData } = props;
 
   const [products, setProducts] = useState<
     {
@@ -338,13 +338,15 @@ const Transfermodal = (props: any) => {
       }),
     }
     let res;
-    console.log(data);
     if(showType === 'add') {
       res = await createNewData('transfer', data)
     } else {
       // res = await updateData('transfer', )
     }
-    if(res.data.success) setOpen(false);
+    if(res.data.success) {
+      initData()
+      setOpen(false);
+    }
   }
   return (
     <>

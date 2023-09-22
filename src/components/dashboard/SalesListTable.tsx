@@ -95,13 +95,13 @@ export default function SalesListTable(props: any) {
       field: 'status',
       headerName: 'Status',
       renderCell: ({ row }: Partial<GridRowParams>) => {
-        if (row.payment_status === 'paid') {
+        if (row.due === 0) {
           return (
             <>
               <div className="sty_Paid">Paid</div>
             </>
           );
-        } else if (row.payment_status === 'not paid') {
+        } else if (row.due === row.sub_total) {
           return (
             <>
               <div className="sty_n_Paid">Not Paid</div>

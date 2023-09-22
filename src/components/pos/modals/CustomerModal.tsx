@@ -12,6 +12,7 @@ import { useSWRConfig } from 'swr';
 import { useProducts } from '../../../context/ProductContext';
 import { apiUpdateCtr } from '../../../libs/dbUtils';
 import { useRouter } from 'next/router';
+import { findAllData } from 'src/services/crud.api';
 
 const customerTemplate = {
   id: 0,
@@ -32,7 +33,8 @@ const CustomerModal = (props: any) => {
   const [open, setOpen] = useState(false);
   const [moreInfo, setMoreInfo] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [countryList, setCountryList] = useState<any[]>([]);
+  const [pricingGroups, setPricingGroups] = useState([])
+  const [currentPricingGroup, setCurrentPricingGroup] = useState<number | null>()
 
   const [customerInfo, setCustomerInfo] = useState(customerTemplate);
   const { customers, setCustomers } = useProducts();
@@ -55,7 +57,7 @@ const CustomerModal = (props: any) => {
 
   const handleEditCustomer = (data: any) => {
     api
-      .put('/customers/' + userdata.value, data)
+      .put('/customers/' + userdata.value, {...data, price_groups_id: currentPricingGroup})
       .then((res) => res.data.result)
       .then((res) => {
         mutate('/customers/' + router.query.id);
@@ -78,9 +80,8 @@ const CustomerModal = (props: any) => {
   };
 
   const handleAddCustomer = (data: any) => {
-    delete data.pricing_group
     api
-      .post('/customers/' + router.query.id, data)
+      .post('/customers/' + router.query.id, {...data, price_groups_id: currentPricingGroup})
       .then((res) => res.data.result)
       .then((res) => {
         mutate('/customers/' + router.query.id);
@@ -97,7 +98,7 @@ const CustomerModal = (props: any) => {
   };
   
   const onSubmit = async (data: any) => {
-    setIsLoading(true);
+    // setIsLoading(true);
     if (showType === 'edit') {
       handleEditCustomer(data);
     } else {
@@ -107,6 +108,7 @@ const CustomerModal = (props: any) => {
   const onError = (errors: any, e: any) => console.log(errors, e);
 
   const handleClose = () => {
+    setCurrentPricingGroup(null)
     setOpen(false);
     openDialog(false);
   };
@@ -124,6 +126,7 @@ const CustomerModal = (props: any) => {
           if (!value) value = '';
           setValue(key, value);
         });
+        if(selCustomer.price_groups_id) setCurrentPricingGroup(selCustomer.price_groups_id)
       })
       .catch(() => {
         Toastify('error', 'has error, Try Again...');
@@ -148,6 +151,16 @@ const CustomerModal = (props: any) => {
       clearErrors();
     }
   }, [open]);
+
+  const getPricingGroups = async () => {
+    const res = await findAllData(`pricing-group/${router.query.id}`)
+    if(res?.data?.success)
+      setPricingGroups([...res.data.result.data.map(pg => {return {...pg, label: pg.name, value: pg.id}})])
+  }
+
+  useEffect(() => {
+    if(router.query.id) getPricingGroups()
+  }, [router.asPath])
 
   if (isLoading)
     return (
@@ -198,14 +211,28 @@ const CustomerModal = (props: any) => {
                 errors={errors}
                 register={register}
               />
-              <FormField
-                type="number"
-                name="pricing_group"
-                label="Pricing Group"
-                placeholder="Enter customer pricing group"
-                errors={errors}
-                register={register}
-              />
+              <div className="col-lg-6 mb-3">
+                <label>Pricing Group</label>
+                <select
+                  className="form-select"
+                  name="pricing_group"
+                  placeholder="Enter customer pricing group"
+                  defaultValue={0}
+                  value={currentPricingGroup ? currentPricingGroup : null}
+                  onChange={(e) => setCurrentPricingGroup(+e.target.value)}
+                  >
+                    <option value={0} disabled>
+                      Select Pricing Group
+                    </option>
+                    {pricingGroups.map((el, i) => {
+                      return (
+                        <option key={el.id} value={el.id}>
+                          {el.name}
+                        </option>
+                      );
+                    })}
+                </select>
+              </div>
             </fieldset>
             <div className="d-flex flex-row mb-3">
               <Button

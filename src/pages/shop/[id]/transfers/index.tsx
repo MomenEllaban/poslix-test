@@ -259,6 +259,7 @@ const Transfer: NextPage = (props: any) => {
         customers={{}}
         statusDialog={customerIsModal}
         openDialog={customerModalHandler}
+        initData={initDataPage}
       />
     </>
   );
