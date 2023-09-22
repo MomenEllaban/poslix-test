@@ -27,10 +27,9 @@ const ProfileDropdownItem = (props: NavItemProps) => {
 export default function HeaderProfileNav() {
   const router = useRouter();
   const handleLogout = () => {
-    signOut();
-    setTimeout(() => {
-      router.push(ROUTES.AUTH);
-    }, 300);
+    signOut({ redirect: false }).then(() => {
+      router.push("/"); // Redirect to the home page after signing out
+    });
   };
   return (
     <Nav>
