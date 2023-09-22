@@ -21,7 +21,7 @@ export const addSuplierSchema = Joi.object()
     invoice_address: Joi.string().allow(''),
     invoice_City: Joi.string().allow(''),
     invoice_Country: Joi.string().allow(''),
-    postal_code: Joi.string().allow(''),
+    postal_code: Joi.number().allow(''),
   })
   .unknown(true);
 /*

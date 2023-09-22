@@ -1,6 +1,7 @@
 import { joiResolver } from '@hookform/resolvers/joi';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
+import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { Button, Form, Modal } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
@@ -10,8 +11,6 @@ import { addCustomerSchema } from 'src/modules/pos/_schema/add-customer.schema';
 import api from 'src/utils/app-api';
 import { useSWRConfig } from 'swr';
 import { useProducts } from '../../../context/ProductContext';
-import { apiUpdateCtr } from '../../../libs/dbUtils';
-import { useRouter } from 'next/router';
 
 const customerTemplate = {
   id: 0,
@@ -36,7 +35,7 @@ const CustomerModal = (props: any) => {
 
   const [customerInfo, setCustomerInfo] = useState(customerTemplate);
   const { customers, setCustomers } = useProducts();
-  const router = useRouter()
+  const router = useRouter();
   const { mutate } = useSWRConfig();
   const {
     register,
@@ -78,7 +77,7 @@ const CustomerModal = (props: any) => {
   };
 
   const handleAddCustomer = (data: any) => {
-    delete data.pricing_group
+    delete data.pricing_group;
     api
       .post('/customers/' + router.query.id, data)
       .then((res) => res.data.result)
@@ -95,7 +94,7 @@ const CustomerModal = (props: any) => {
         setIsLoading(false);
       });
   };
-  
+
   const onSubmit = async (data: any) => {
     setIsLoading(true);
     if (showType === 'edit') {

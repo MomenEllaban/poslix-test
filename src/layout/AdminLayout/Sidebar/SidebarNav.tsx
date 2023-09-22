@@ -19,7 +19,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
   async function intData() {
     const res = await findAllData('permissions/13');
     if (!res) return;
-    console.log(res);
+
     // let { success, newdata } = await apiFetch({ fetch: 'checkwt' });
     // if (newdata.types == undefined || newdata.types.length == 0) success = false;
     if (

@@ -27,34 +27,32 @@ const Suppliers: NextPage = () => {
 
   const { isLoading: isSuppliersLoading, suppliersList, error, refetch } = useSuppliersList(shopId);
 
-  const [type, setType] = useState('');
+  const [type, setType] = useState<'add' | 'edit' | 'show'>('show');
   const [selectId, setSelectId] = useState(0);
-  const [products, setProducts] = useState<TProduct[]>([]);
-
-  const [show, setShow] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [supplierIsModal, setSupplierIsModal] = useState(false);
-  const [isOpenPriceDialog, setIsOpenPriceDialog] = useState(false);
-
-  useEffect(() => {
-    if (!shopId) return;
-
-    const locations: ILocation[] = getLocalStorage(ELocalStorageKeys.LOCATIONS);
-    const currentLocation = locations.find((location) => +location.location_id === +shopId);
-    setLocationSettings(currentLocation ?? locationSettings);
-  }, [shopId]);
+  const [supplierModal, setSupplierModal] = useState(false);
 
   const customerModalHandler = (status: any) => {
-    setSupplierIsModal(false);
+    setSupplierModal(false);
     refetch();
   };
 
   const handleDeleteSupplier = (id: string | number) => {
-    api.delete(`/suppliers/${id}`).then(() => {
-      Toastify('success', 'Supplier removed successfully!');
-      refetch();
-    });
+    setIsLoading(true);
+    api
+      .delete(`/suppliers/${id}`)
+      .then(() => {
+        Toastify('success', 'Supplier removed successfully!');
+        refetch();
+      })
+      .catch(() => {
+        Toastify('error', 'Something went wrong!');
+      })
+      .finally(() => {
+        setIsLoading(false);
+        setShowDeleteModal(false);
+      });
   };
 
   const columns: GridColDef<ISupplier>[] = [
@@ -77,42 +75,53 @@ const Suppliers: NextPage = () => {
       disableExport: true,
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) => (
-        <>
-          <ButtonGroup className="mb-2 m-buttons-style">
-            <Button
-              onClick={(event) => {
-                // router.push('/shop/' + shopId + '/customers/edit/' + row.id)
-                event.stopPropagation();
-              }}>
-              <FontAwesomeIcon icon={faPenToSquare} />
-            </Button>
+        <ButtonGroup className="mb-2 m-buttons-style">
+          <Button
+            onClick={(event) => {
+              event.stopPropagation();
+              setType('edit');
+              setSelectId(row.id);
+              setSupplierModal(true);
+            }}>
+            <FontAwesomeIcon icon={faPenToSquare} />
+          </Button>
 
-            <Button
-              onClick={(event) => {
-                event.stopPropagation();
-                setSelectId(row.id);
-                setShowDeleteModal(true);
-              }}>
-              <FontAwesomeIcon icon={faTrash} />
-            </Button>
-            <ConfirmationModal
-              show={showDeleteModal}
-              onConfirm={() => handleDeleteSupplier(row.id)}
-              onClose={() => setShowDeleteModal(false)}
-              message="Are you sure you want to delete this supplier?"
-            />
+          <Button
+            onClick={(event) => {
+              event.stopPropagation();
+              setSelectId(row.id);
+              setShowDeleteModal(true);
+            }}>
+            <FontAwesomeIcon icon={faTrash} />
+          </Button>
+          <ConfirmationModal
+            show={showDeleteModal}
+            onConfirm={() => handleDeleteSupplier(row.id)}
+            onClose={() => setShowDeleteModal(false)}
+            message="Are you sure you want to delete this supplier?"
+          />
 
-            <Button
-              onClick={() => {
-                router.push('/shop/' + shopId + '/customers/' + row.id);
-              }}>
-              <FontAwesomeIcon icon={faEye} />
-            </Button>
-          </ButtonGroup>
-        </>
+          <Button
+            onClick={() => {
+              setType('show');
+              setSelectId(row.id);
+              setSupplierModal(true);
+              // router.push('/shop/' + shopId + '/customers/' + row.id);
+            }}>
+            <FontAwesomeIcon icon={faEye} />
+          </Button>
+        </ButtonGroup>
       ),
     },
   ];
+
+  useEffect(() => {
+    if (!shopId) return;
+
+    const locations: ILocation[] = getLocalStorage(ELocalStorageKeys.LOCATIONS);
+    const currentLocation = locations.find((location) => +location.location_id === +shopId);
+    setLocationSettings(currentLocation ?? locationSettings);
+  }, [shopId]);
 
   return (
     <>
@@ -123,7 +132,8 @@ const Suppliers: NextPage = () => {
           <button
             className="btn btn-primary p-3"
             onClick={() => {
-              setSupplierIsModal(true);
+              setType('add');
+              setSupplierModal(true);
             }}>
             <FontAwesomeIcon icon={faPlus} /> Add New Supplier{' '}
           </button>
@@ -152,10 +162,10 @@ const Suppliers: NextPage = () => {
       </AdminLayout>
       <SupplierModal
         shopId={shopId}
-        showType={'add'}
-        userdata={{}}
+        showType={type}
+        supplierId={selectId}
         customers={{}}
-        statusDialog={supplierIsModal}
+        statusDialog={supplierModal}
         openDialog={customerModalHandler}
       />
     </>

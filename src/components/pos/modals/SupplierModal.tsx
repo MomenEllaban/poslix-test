@@ -1,15 +1,14 @@
 import { joiResolver } from '@hookform/resolvers/joi';
+import { Box, CircularProgress } from '@mui/material';
 import { useContext, useEffect, useState } from 'react';
 import { Button, Form, Modal } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import FormField from 'src/components/form/FormField';
 import { Toastify } from 'src/libs/allToasts';
 import { addSuplierSchema } from 'src/modules/suppliers/_schema/add-supplier-schema';
-import { ProductContext } from '../../../context/ProductContext';
-import { apiFetchCtr, apiInsertCtr, apiUpdateCtr } from '../../../libs/dbUtils';
-import { initalSupplierCustomerTemplate } from './_data/customer';
 import api from 'src/utils/app-api';
-import { Box, CircularProgress } from '@mui/material';
+import { ProductContext } from '../../../context/ProductContext';
+import { initalSupplierCustomerTemplate } from './_data/customer';
 
 const supplierFields = [
   { name: 'name', label: 'Name', placeholder: 'Enter supplier name', type: 'text', required: true },
@@ -44,40 +43,36 @@ const supplierFields = [
   {
     name: 'invoice_address',
     label: 'Invoice Address',
-    placeholder: 'Enter supplier name',
+    placeholder: 'Enter address',
     type: 'text',
     required: false,
   },
   {
     name: 'invoice_City',
-    label: 'Ivoice City',
-    placeholder: 'Enter supplier name',
+    label: 'Invoice City',
+    placeholder: 'Enter invoice city',
     type: 'text',
     required: false,
   },
   {
     name: 'invoice_Country',
-    label: 'Ivoice Country',
-    placeholder: 'Enter supplier name',
+    label: 'Invoice Country',
+    placeholder: 'Enter invoice country',
     type: 'text',
     required: false,
   },
   {
     name: 'postal_code',
     label: 'Postal Code',
-    placeholder: 'Enter supplier name',
+    placeholder: 'Enter postal code',
     type: 'text',
     required: false,
   },
 ];
 
-const SupplierModal = ({ openDialog, statusDialog, userdata, showType, shopId }: any) => {
-  const [moreInfo, setMoreInfo] = useState(false);
-  const [customerInfo, setCustomerInfo] = useState(initalSupplierCustomerTemplate);
-  const { customers, setCustomers } = useContext(ProductContext);
+const SupplierModal = ({ openDialog, statusDialog, supplierId, showType, shopId }: any) => {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [openSnakeBar, setOpenSnakeBar] = useState(false);
 
   // assumption of one order at a time / one cart
   const {
@@ -85,6 +80,7 @@ const SupplierModal = ({ openDialog, statusDialog, userdata, showType, shopId }:
     register,
     reset,
     setError,
+    setValue,
     formState: { errors },
   } = useForm({
     resolver: joiResolver(addSuplierSchema),
@@ -99,23 +95,45 @@ const SupplierModal = ({ openDialog, statusDialog, userdata, showType, shopId }:
     reset();
   };
 
-  const onSubmit = (data) => {
-
+  const onSubmit = async (data) => {
     setIsLoading(true);
+
+    if (showType === 'add')
+      try {
+        try {
+          await api.post(
+            `suppliers/${shopId}`,
+            {},
+            {
+              params: { ...data },
+            }
+          );
+          Toastify('success', 'Successfully Created');
+          handleClose();
+        } catch ({ response }) {
+          const err = response.data.error;
+          Object.keys(err).forEach((errorItem) => {
+            setError(errorItem, { message: err[errorItem][0] });
+          });
+          Toastify('error', 'Has Error, Try Again...');
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    const { id, ...rest } = data;
     api
-      .post(
-        `suppliers/${shopId}`,
+      .put(
+        `suppliers/${id}`,
         {},
         {
-          params: { ...data },
+          params: { ...rest },
         }
       )
       .then(() => {
-        Toastify('success', 'Successfully Created');
+        Toastify('success', 'Successfully Updated');
         handleClose();
       })
       .catch(({ response }) => {
-
         const err = response.data.error;
         Object.keys(err).forEach((errorItem) => {
           setError(errorItem, { message: err[errorItem][0] });
@@ -126,94 +144,47 @@ const SupplierModal = ({ openDialog, statusDialog, userdata, showType, shopId }:
         setIsLoading(false);
       });
   };
+
   const onError = (data) => {
     // console.log(data);
   };
 
-  async function insertCustomerInfo() {
-    const { success, msg, code, newdata } = await apiInsertCtr({
-      type: 'customer',
-      subType: 'addCustomer',
-      shopId,
-      data: customerInfo,
-    });
-    if (success) {
-      setCustomers([...customers, newdata]);
-      handleClose();
-      Toastify('success', 'Successfully Created');
-    } else if (code == 100) Toastify('error', msg);
-    else Toastify('error', 'Has Error, Try Again...');
-  }
   async function getCustomerInfo(theId: any) {
     setIsLoading(true);
-    setCustomerInfo(initalSupplierCustomerTemplate);
-    var result = await apiFetchCtr({
-      fetch: 'customer',
-      subType: 'getCustomerInfo',
-      theId,
-      shopId,
-    });
-    if (result.success) {
-      const selCustomer = result?.newdata[0];
-      setCustomerInfo({
-        ...customerInfo,
-        id: theId,
-        mobile: selCustomer.mobile,
-        firstName: selCustomer.first_name,
-        lastName: selCustomer.last_name,
-        city: selCustomer.city,
-        state: selCustomer.state,
-        addr1: selCustomer.addr1,
-        addr2: selCustomer.addr2,
-        zipCode: selCustomer.zip_code,
-        country: selCustomer.country,
-        shipAddr: selCustomer.shipping_address,
+
+    api
+      .get(`suppliers/${theId}/show`)
+      .then(({ data }) => {
+        return data.result;
+      })
+      .then((result) => {
+        Object.keys(result).forEach((item) => {
+          setValue(item, result[item]);
+        });
+      })
+      .catch(() => {
+        Toastify('error', 'has error, Try Again...');
+
+        handleClose();
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
-      setIsLoading(false);
-    } else {
-      Toastify('error', 'has error, Try Again...');
-    }
   }
-  async function editCustomerInfo() {
-    var result = await apiUpdateCtr({
-      type: 'customer',
-      subType: 'editCustomerInfo',
-      shopId,
-      data: customerInfo,
-    });
-    if (result.success) {
-      const cinx = customers.findIndex((customer) => customer.value === customerInfo.id);
-      if (cinx > -1) {
-        const upCustomer = [...customers];
-        upCustomer[cinx] = {
-          ...upCustomer[cinx],
-          value: customerInfo.id,
-          label: customerInfo.firstName + ' ' + customerInfo.lastName + ' | ' + customerInfo.mobile,
-          mobile: result.newdata.mobile,
-        };
-        setCustomers(upCustomer);
-      }
-      handleClose();
-      Toastify('success', 'Successfully Edited');
-    } else Toastify('error', 'has error, Try Again...');
-  }
-  const makeShowSnake = (val: any) => {
-    setOpenSnakeBar(val);
-  };
 
   useEffect(() => {
     if (!statusDialog) return;
-    setCustomerInfo(initalSupplierCustomerTemplate);
+
     setOpen(statusDialog);
-    if (userdata !== undefined && showType != 'add' && statusDialog)
-      getCustomerInfo(userdata.value);
+    if (supplierId !== undefined && (showType === 'edit' || showType === 'show') && statusDialog)
+      getCustomerInfo(supplierId);
   }, [statusDialog]);
 
   if (isLoading)
     return (
       <Modal show={open} onHide={handleClose}>
         <Modal.Header className="poslix-modal-title text-primary text-capitalize" closeButton>
-          {showType + ' Supplier'}
+          {showType !== 'show' ? showType + ' Supplier' : 'Supplier'}
         </Modal.Header>
         <Modal.Body>
           <Box sx={{ display: 'flex', justifyContent: 'center', margin: '20px' }}>
@@ -233,27 +204,33 @@ const SupplierModal = ({ openDialog, statusDialog, userdata, showType, shopId }:
       `}</style>
       <Form noValidate onSubmit={handleSubmit(onSubmit, onError)}>
         <Modal.Header className="poslix-modal-title text-primary text-capitalize" closeButton>
-          {showType + ' Supplier'}
+          {showType === 'show' ? 'Supplier' : showType + ' Supplier'}
         </Modal.Header>
         <Modal.Body>
           <div className="scroll-form">
-            {supplierFields.map((field) => (
-              <FormField
-                key={`supplier-form-${field.name}`}
-                {...field}
-                errors={errors}
-                register={register}
-              />
-            ))}
+            {supplierFields.map((field) => {
+              return (
+                <FormField
+                  key={`supplier-form-${field.name}`}
+                  {...field}
+                  disabled={showType === 'show'}
+                  errors={errors}
+                  required={showType === 'show' ? false : field.required}
+                  register={register}
+                />
+              );
+            })}
           </div>
         </Modal.Body>
         <Modal.Footer>
           <a className="btn btn-link link-success fw-medium" onClick={handleClose}>
             Close <i className="ri-close-line me-1 align-middle" />
           </a>
-          <Button type="submit" variant="primary" className="p-2">
-            Save
-          </Button>
+          {showType !== 'show' ? (
+            <Button type="submit" variant="primary" className="p-2">
+              Save
+            </Button>
+          ) : null}
         </Modal.Footer>
       </Form>
     </Modal>
