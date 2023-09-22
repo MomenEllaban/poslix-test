@@ -140,8 +140,7 @@ export default function SalesListTable(props: any) {
               }}>
               <FontAwesomeIcon icon={faPenToSquare} />
             </Button>
-            {/* {rules.hasDelete && ( */}
-            {true && (
+            {rules.hasDelete && (
               <Button
                 onClick={() => {
                   setSelectId(row.id);

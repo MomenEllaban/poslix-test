@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button, ButtonGroup } from 'react-bootstrap';
 import ConfirmationModal from 'src/components/modals/confirmation-modal/ConfirmationModal';
 import { useAppDispatch, useAppSelector } from 'src/hooks';
@@ -9,12 +9,16 @@ import HoldOrdersModal from '../../modals/hold-orders/HoldOrdersModal';
 import PaymentCheckoutModal from '../../modals/payment-checkout/PaymentCheckoutModal';
 import styles from './OrdersFooter.module.scss';
 import classNames from 'classnames';
+import { useRouter } from 'next/router';
+import { findAllData } from 'src/services/crud.api';
 
 export const OrdersFooter = ({ orderEditDetails, details, shopId, lang }) => {
   const dispatch = useAppDispatch();
   const selectCartForLocation = selectCartByLocation(shopId);
   const cart = useAppSelector(selectCartForLocation); // current location order
-  // assumption of one order at a time / one cart
+  
+  const router = useRouter()
+  const [invoiceType, setInvoiceType] = useState('receipt')
 
   const [clearCartModal, setClearCartModal] = useState<boolean>(false);
 
@@ -28,6 +32,19 @@ export const OrdersFooter = ({ orderEditDetails, details, shopId, lang }) => {
     dispatch(clearCart({ location_id: shopId }));
     setClearCartModal(false);
   };
+
+
+  const checkPrintType = async () => {
+    const res = await findAllData(`print-settings/${router.query.id}`)
+    setInvoiceType(res.data.result.printtype)
+  }
+  useEffect(() => {
+    try {
+      if(router.isReady) checkPrintType()
+    } catch (error) {
+      console.log(error);
+    }
+  }, [router.asPath])
 
   return (
     <>
@@ -82,7 +99,7 @@ export const OrdersFooter = ({ orderEditDetails, details, shopId, lang }) => {
         onClose={() => setClearCartModal(false)}
         message="Are you sure you want to clear cart?"
       />
-      <PaymentCheckoutModal shopId={shopId} show={paymentModalShow} setShow={setPaymentModalShow} />
+      <PaymentCheckoutModal shopId={shopId} show={paymentModalShow} setShow={setPaymentModalShow} invoiceType={invoiceType} />
     </>
   );
 };
