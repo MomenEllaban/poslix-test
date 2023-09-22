@@ -23,7 +23,7 @@ import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/chec
 import { findAllData } from 'src/services/crud.api';
 
 export default function SalesList(props: any) {
-  const { shopId, rules } = props;
+  const { shopId, id } = props;
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
     // @ts-ignore
     value: 0,
@@ -422,8 +422,14 @@ export default function SalesList(props: any) {
     setHandleSearchTxt(e.target.value);
   };
   return (
-    <AdminLayout shopId={shopId}>
-      <SalesListTable shopId={shopId} rules={permissions} salesList={sales} />
+    <AdminLayout shopId={id}>
+      <SalesListTable shopId={id} rules={permissions} salesList={sales} />
     </AdminLayout>
   );
+}
+export async function getServerSideProps({ params }) {
+  const { id } = params
+  return {
+    props: {id},
+  }
 }

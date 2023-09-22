@@ -24,7 +24,7 @@ import Customermodal from '../../../../components/pos/modals/CustomerModal';
 import { ProductContext } from '../../../../context/ProductContext';
 
 const Customers: NextPage = (props: any) => {
-  const { shopId } = props;
+  const { shopId, id } = props;
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
     // @ts-ignore
     value: 0,
@@ -109,7 +109,7 @@ const Customers: NextPage = (props: any) => {
             }
             <Button
               onClick={() => {
-                router.push('/shop/' + shopId + '/customers/' + row.id);
+                router.push('/shop/' + id + '/customers/' + row.id);
               }}>
               <FontAwesomeIcon icon={faEye} />
             </Button>
@@ -146,7 +146,7 @@ const Customers: NextPage = (props: any) => {
       setLocationSettings(
         _locs[
           _locs.findIndex((loc: any) => {
-            return loc.value == shopId;
+            return loc.value == id;
           })
         ]
       );
@@ -182,12 +182,12 @@ const Customers: NextPage = (props: any) => {
 
   return (
     <>
-      <AdminLayout shopId={shopId}>
+      <AdminLayout shopId={id}>
         <ToastContainer />
         <AlertDialog
           alertShow={show}
           alertFun={handleDeleteFuc}
-          shopId={shopId}
+          shopId={id}
           id={selectId}
           url={'customers'}>
           Are you Sure You Want Delete This Customer ?
@@ -236,7 +236,7 @@ const Customers: NextPage = (props: any) => {
         )}
       </AdminLayout>
       <Customermodal
-        shopId={shopId}
+        shopId={id}
         showType={showType}
         userdata={customer}
         customers={customers}
@@ -247,3 +247,9 @@ const Customers: NextPage = (props: any) => {
   );
 };
 export default withAuth(Customers);
+export async function getServerSideProps({ params }) {
+  const { id } = params
+  return {
+    props: {id},
+  }
+}

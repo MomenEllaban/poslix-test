@@ -13,7 +13,7 @@ import { useRouter } from 'next/router';
 import PaymentModal from './component/PaymentModal';
 
 const PaymentMethods: NextPage = (props: any) => {
-  const { shopId } = props;
+  const { shopId, id } = props;
   const [currentPaymentMethods, setCurrentPaymentMethods] = useState([]);
 
   const [paymentMethods, setPaymentMethods] = useState<any>();
@@ -68,7 +68,7 @@ const PaymentMethods: NextPage = (props: any) => {
 
   return (
     <>
-      <AdminLayout shopId={shopId}>
+      <AdminLayout shopId={id}>
         <ToastContainer />
         {/* {!isLoading ? */}
         {/* : <div className='d-flex justify-content-around' ><Spinner animation="grow" /></div> */}
@@ -137,3 +137,9 @@ const PaymentMethods: NextPage = (props: any) => {
   );
 };
 export default withAuth(PaymentMethods);
+export async function getServerSideProps({ params }) {
+  const { id } = params
+  return {
+    props: {id},
+  }
+}

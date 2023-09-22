@@ -17,7 +17,7 @@ import { Toastify } from 'src/libs/allToasts';
 import withAuth from 'src/HOCs/withAuth';
 import { findAllData } from 'src/services/crud.api';
 
-const Category = ({ rules }: any) => {
+const Category = ({ id }: any) => {
   const [cats, setCats] = useState<{ id: number; name: string }[]>([]);
   const [brands, setBrands] = useState<{ id: number; name: string }[]>([]);
   const router = useRouter();
@@ -68,7 +68,7 @@ const Category = ({ rules }: any) => {
   }, [router.asPath])
   return (
     <>
-      <AdminLayout shopId={shopId}>
+      <AdminLayout shopId={id}>
         <AlertDialog
           alertShow={show}
           alertFun={(e: boolean) => {
@@ -89,12 +89,12 @@ const Category = ({ rules }: any) => {
                 onClick={() => {
                   if (key === 'categories' && categoryPermissions.hasInsert)
                     router.push({
-                      pathname: '/shop/' + shopId + '/category/add',
+                      pathname: '/shop/' + id + '/category/add',
                       query: { type: 'categories' },
                     });
                   else if (key === 'brands' && brandPermissions.hasInsert)
                     router.push({
-                      pathname: '/shop/' + shopId + '/category/add',
+                      pathname: '/shop/' + id + '/category/add',
                       query: { type: 'brands' },
                     });
                   else Toastify('error', 'Error On Add New');
@@ -137,7 +137,7 @@ const Category = ({ rules }: any) => {
                                     <Button
                                       onClick={() =>
                                         router.push({
-                                          pathname: '/shop/' + shopId + '/category/edit/' + ex.id,
+                                          pathname: '/shop/' + id + '/category/edit/' + ex.id,
                                           query: { type: 'categories' }
                                         })
                                       }>
@@ -204,7 +204,7 @@ const Category = ({ rules }: any) => {
                                     <Button
                                       onClick={() =>
                                         router.push({
-                                          pathname: '/shop/' + shopId + '/category/edit/' + ex.id,
+                                          pathname: '/shop/' + id + '/category/edit/' + ex.id,
                                           query: { type: 'brands' }
                                         })
                                       }>
@@ -243,3 +243,9 @@ const Category = ({ rules }: any) => {
   );
 };
 export default withAuth(Category);
+export async function getServerSideProps({ params }) {
+  const { id } = params
+  return {
+    props: {id},
+  }
+}

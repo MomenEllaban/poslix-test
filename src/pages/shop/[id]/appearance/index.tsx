@@ -18,9 +18,10 @@ import { generateUniqueString } from 'src/libs/toolsUtils';
 import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/checkUtils';
 import { apiFetchCtr, apiUpdateCtr } from '../../../../libs/dbUtils';
 import { createNewData, findAllData } from 'src/services/crud.api';
+import withAuth from 'src/HOCs/withAuth';
 
 const Appearance: NextPage = (props: any) => {
-  const { shopId } = props;
+  const { shopId, id } = props;
   const router = useRouter();
   const [key, setKey] = useState('Recipt');
   const [formObj, setFormObj] = useState<IinvoiceDetails>(defaultInvoiceDetials);
@@ -84,7 +85,7 @@ const Appearance: NextPage = (props: any) => {
     if (previewUrl.length < 2) {
       Toastify('error', 'Error ,Please Select Logo First');
     } else {
-      const storageRef = ref(storage, `/files/logo/${generateUniqueString(12)}${shopId}`);
+      const storageRef = ref(storage, `/files/logo/${generateUniqueString(12)}${id}`);
       const uploadTask = uploadBytesResumable(storageRef, img);
       uploadTask.on(
         'state_changed',
@@ -107,7 +108,7 @@ const Appearance: NextPage = (props: any) => {
   }
   return (
     <>
-      <AdminLayout shopId={shopId}>
+      <AdminLayout shopId={id}>
         <ToastContainer />
         {!isLoading ? (
           <>
@@ -1201,4 +1202,10 @@ const Appearance: NextPage = (props: any) => {
     </>
   );
 };
-export default Appearance;
+export default withAuth(Appearance);
+export async function getServerSideProps({ params }) {
+  const { id } = params
+  return {
+    props: {id},
+  }
+}

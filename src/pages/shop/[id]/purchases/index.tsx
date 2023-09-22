@@ -35,7 +35,7 @@ import { Toastify } from 'src/libs/allToasts';
 import AlertDialog from 'src/components/utils/AlertDialog';
 
 const Purchases: NextPage = (props: any) => {
-  const { shopId } = props;
+  const { shopId, id } = props;
   const [purchases, setPurchases] = useState<{ id: number; name: string; sku: string }[]>([]);
   const [isloading, setIsloading] = useState(true);
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
@@ -105,7 +105,7 @@ const Purchases: NextPage = (props: any) => {
               <FontAwesomeIcon icon={faDollarSign} />
             </Button>
             {permissions.hasEdit && (
-              <Button onClick={() => router.push('/shop/' + shopId + '/purchases/edit/' + row.id)}>
+              <Button onClick={() => router.push('/shop/' + id + '/purchases/edit/' + row.id)}>
                 <FontAwesomeIcon icon={faPenToSquare} />
               </Button>
             )}
@@ -197,12 +197,12 @@ const Purchases: NextPage = (props: any) => {
 
   return (
     <>
-      <AdminLayout shopId={shopId}>
+      <AdminLayout shopId={id}>
         <ToastContainer />
         <AlertDialog
           alertShow={show}
           alertFun={handleDeleteFuc}
-          shopId={shopId}
+          shopId={id}
           id={selectId}
           url={'purchase'}>
           Are you Sure You Want Delete This Item?
@@ -275,3 +275,9 @@ const Purchases: NextPage = (props: any) => {
   );
 };
 export default withAuth(Purchases);
+export async function getServerSideProps({ params }) {
+  const { id } = params
+  return {
+    props: {id},
+  }
+}

@@ -31,9 +31,11 @@ import { ROUTES } from 'src/utils/app-routes';
 import { darkModeContext } from '../../../../context/DarkModeContext';
 import styles from './table.module.css';
 import { useUser } from 'src/context/UserContext';
+import withAuth from 'src/HOCs/withAuth';
 
 const Product: NextPage = (props: any) => {
-  const { rules } = props;
+  const { id } = props;
+  const [shopId, setShopId] = useState('');
   const myLoader = (img: any) => img.src;
   const {locationSettings,setLocationSettings }=useUser()
   const dataGridRef = useRef(null);
@@ -299,7 +301,6 @@ const Product: NextPage = (props: any) => {
     }
   }, [searchTerm, products]);
 
-  const [shopId, setShopId] = useState('');
   useEffect(() => {
     if (router.isReady) setShopId(router.query.id.toString());
   }, [router.asPath]);
@@ -310,12 +311,12 @@ const Product: NextPage = (props: any) => {
   const getRowClassName = () => styles.rowStyling;
   return (
     <>
-      <AdminLayout shopId={router.query.id}>
+      <AdminLayout shopId={id}>
         <ToastContainer />
         <AlertDialog
           alertShow={show}
           alertFun={handleDeleteFuc}
-          shopId={shopId}
+          shopId={id}
           id={selectId}
           url={'products'}>
           Are you Sure You Want Delete This Item?
@@ -323,14 +324,14 @@ const Product: NextPage = (props: any) => {
         <AlertDialog
           alertShow={showDeleteAll}
           alertFun={handleDeleteFuc}
-          shopId={shopId}
+          shopId={id}
           id={selectedItems}
           type="products"
           subType="deleteProducts">
           Are you Sure You Want Delete The Selected Items?
         </AlertDialog>
         <ShowPriceListModal
-          shopId={shopId}
+          shopId={id}
           productId={selectId}
           type={type}
           isOpenPriceDialog={isOpenPriceDialog}
@@ -342,9 +343,9 @@ const Product: NextPage = (props: any) => {
           locations={locations}
           data={selectedItems}
           setData={setSelectedItems}
-          shopId={shopId}
+          shopId={id}
           value={locations.findIndex((loc: any) => {
-            return loc.value == shopId;
+            return loc.value == id;
           })}
         />
         {/* start */}
@@ -396,7 +397,7 @@ const Product: NextPage = (props: any) => {
   );
 };
 
-export default Product;
+export default withAuth(Product);
 /**
  * @description get server side props
  * @param {any} context
@@ -406,25 +407,9 @@ export default Product;
  * check user permissions
  *
  */
-export async function getServerSideProps(context: any) {
-  // check if the user is logged in
-  const session = await getSession(context);
-  if (!session) return { redirect: { permanent: false, destination: ROUTES.AUTH } };
-
-  const shopId = context.query.id;
-  if (!shopId) return { redirect: { permanent: false, destination: '/page403' } };
-
+export async function getServerSideProps({ params }) {
+  const { id } = params
   return {
-    props: {
-      permissions: {},
-      shopId,
-      rules: {
-        //! this should be dynamic
-        hasDelete: true,
-        hasEdit: true,
-        hasView: true,
-        hasInsert: true,
-      },
-    },
-  };
+    props: {id},
+  }
 }

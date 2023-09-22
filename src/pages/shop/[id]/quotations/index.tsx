@@ -35,7 +35,7 @@ import { ToastContainer } from 'react-toastify';
 import { findAllData } from 'src/services/crud.api';
 
 export default function SalesList(props: any) {
-  const { rules } = props;
+  const { id } = props;
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
     // @ts-ignore
     value: 0,
@@ -500,12 +500,12 @@ export default function SalesList(props: any) {
     setHandleSearchTxt(e.target.value);
   };
   return (
-    <AdminLayout shopId={shopId}>
+    <AdminLayout shopId={id}>
       <ToastContainer />
       <AlertDialog
         alertShow={show}
         alertFun={handleDeleteFuc}
-        shopId={shopId}
+        shopId={id}
         id={selectId}
         type="transactions"
         subType="deleteSale"
@@ -706,4 +706,10 @@ export default function SalesList(props: any) {
       </Dialog>
     </AdminLayout>
   );
+}
+export async function getServerSideProps({ params }) {
+  const { id } = params
+  return {
+    props: {id},
+  }
 }

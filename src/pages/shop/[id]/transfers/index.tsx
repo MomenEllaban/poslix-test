@@ -27,8 +27,9 @@ import { Toastify } from 'src/libs/allToasts';
 import { ToastContainer } from 'react-toastify';
 import Transfermodal from '../../../../components/pos/modals/Transfermodal';
 import { findAllData } from 'src/services/crud.api';
+import withAuth from 'src/HOCs/withAuth';
 const Transfer: NextPage = (props: any) => {
-  const { shopId, rules } = props;
+  const { shopId, id } = props;
   const myLoader = (img: any) => img.src;
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
     // @ts-ignore
@@ -205,12 +206,12 @@ const Transfer: NextPage = (props: any) => {
   }
   return (
     <>
-      <AdminLayout shopId={shopId}>
+      <AdminLayout shopId={id}>
         <ToastContainer />
         <AlertDialog
           alertShow={show}
           alertFun={handleDeleteFuc}
-          shopId={shopId}
+          shopId={id}
           id={selectId}
           url={'transfer'}>
           Are you Sure You Want Delete This Item ?
@@ -253,7 +254,7 @@ const Transfer: NextPage = (props: any) => {
         )}
       </AdminLayout>
       <Transfermodal
-        shopId={shopId}
+        shopId={id}
         showType={'add'}
         userdata={{}}
         customers={{}}
@@ -264,4 +265,10 @@ const Transfer: NextPage = (props: any) => {
     </>
   );
 };
-export default Transfer;
+export default withAuth(Transfer);
+export async function getServerSideProps({ params }) {
+  const { id } = params
+  return {
+    props: {id},
+  }
+}
