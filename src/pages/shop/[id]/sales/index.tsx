@@ -351,8 +351,25 @@ export default function SalesList(props: any) {
       setIsLoadItems(false);
     }
   }
-
+  
+  const [permissions, setPermissions] = useState<any>();
   useEffect(() => {
+    const perms = JSON.parse(localStorage.getItem('permissions')).filter(loc => loc.id==router.query.id)
+    const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
+    perms[0]?.permissions?.map((perm) =>
+      perm.name.includes('sales-list/view')
+        ? (getPermissions.hasView = true)
+        : perm.name.includes('sales-list/add')
+        ? (getPermissions.hasInsert = true)
+        : perm.name.includes('sales-list/update')
+        ? (getPermissions.hasEdit = true)
+        : perm.name.includes('sales-list/destroy')
+        ? (getPermissions.hasDelete = true)
+        : null
+    );
+
+    setPermissions(getPermissions);
+
     var _locs = JSON.parse(localStorage.getItem('locations') || '[]');
     if (_locs.toString().length > 10)
       setLocationSettings(
@@ -406,7 +423,7 @@ export default function SalesList(props: any) {
   };
   return (
     <AdminLayout shopId={shopId}>
-      <SalesListTable shopId={shopId} rules={rules} salesList={sales} />
+      <SalesListTable shopId={shopId} rules={permissions} salesList={sales} />
     </AdminLayout>
   );
 }

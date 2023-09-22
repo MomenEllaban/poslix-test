@@ -78,9 +78,9 @@ const Transfer: NextPage = (props: any) => {
 
   const [permissions, setPermissions] = useState<any>();
   useEffect(() => {
-    const perms = JSON.parse(localStorage.getItem('permissions'));
+    const perms = JSON.parse(localStorage.getItem('permissions')).filter(loc => loc.id==router.query.id);
     const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
-    perms.inventory.transfers.map((perm) =>
+    perms[0]?.permissions.map((perm) =>
         perm.name.includes('transfers/show')
         ? (getPermissions.hasView = true)
         : perm.name.includes('transfers/add')

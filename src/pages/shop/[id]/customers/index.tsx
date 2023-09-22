@@ -24,7 +24,7 @@ import Customermodal from '../../../../components/pos/modals/CustomerModal';
 import { ProductContext } from '../../../../context/ProductContext';
 
 const Customers: NextPage = (props: any) => {
-  const { shopId, rules } = props;
+  const { shopId } = props;
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
     // @ts-ignore
     value: 0,
@@ -81,8 +81,7 @@ const Customers: NextPage = (props: any) => {
       renderCell: ({ row }: Partial<GridRowParams>) => (
         <>
           <ButtonGroup className="mb-2 m-buttons-style">
-            {/* {rules?.hasEdit && true */}
-            {true && (
+            {permissions?.hasEdit &&
               <Button
                 onClick={(event) => {
                   // router.push('/shop/' + shopId + '/customers/edit/' + row.id)
@@ -97,9 +96,8 @@ const Customers: NextPage = (props: any) => {
                 }}>
                 <FontAwesomeIcon icon={faPenToSquare} />
               </Button>
-            )}
-            {/* {rules?.hasDelete && true */}
-            {true && (
+            }
+            {permissions?.hasDelete &&
               <Button
                 onClick={(event) => {
                   event.stopPropagation();
@@ -108,7 +106,7 @@ const Customers: NextPage = (props: any) => {
                 }}>
                 <FontAwesomeIcon icon={faTrash} />
               </Button>
-            )}
+            }
             <Button
               onClick={() => {
                 router.push('/shop/' + shopId + '/customers/' + row.id);
@@ -162,6 +160,26 @@ const Customers: NextPage = (props: any) => {
     setShow(false);
   };
   const onRowsSelectionHandler = (ids: any) => {};
+
+  const [permissions, setPermissions] = useState<any>();
+  useEffect(() => {
+    const perms = JSON.parse(localStorage.getItem('permissions')).filter(loc => loc.id==router.query.id)
+    const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
+    perms[0]?.permissions?.map((perm) =>
+      perm.name.includes('customers/show')
+        ? (getPermissions.hasView = true)
+        : perm.name.includes('customers/add')
+        ? (getPermissions.hasInsert = true)
+        : perm.name.includes('customers/update')
+        ? (getPermissions.hasEdit = true)
+        : perm.name.includes('customers/delete')
+        ? (getPermissions.hasDelete = true)
+        : null
+    );
+
+    setPermissions(getPermissions);
+  }, [router.asPath])
+
   return (
     <>
       <AdminLayout shopId={shopId}>
@@ -176,8 +194,7 @@ const Customers: NextPage = (props: any) => {
         </AlertDialog>
         {/* start */}
         {/* router.push('/shop/' + shopId + '/customers/add') */}
-        {/* {!isLoading && rules?.hasInsert && ( */}
-        {!isLoading && (
+        {!isLoading && permissions?.hasInsert && (
           <div className="mb-2">
             <button
               className="btn btn-primary p-3"

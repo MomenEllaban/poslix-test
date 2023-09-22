@@ -108,7 +108,7 @@ export default function SalesList(props: any) {
             <Button onClick={() => {}}>
               <FontAwesomeIcon icon={faPenToSquare} />
             </Button>
-            {rules.hasDelete && (
+            {permissions.hasDelete && (
               <Button onClick={() => {}}>
                 <FontAwesomeIcon icon={faTrash} />
               </Button>
@@ -428,7 +428,25 @@ export default function SalesList(props: any) {
     }
   }
 
+  const [permissions, setPermissions] = useState<any>();
+
   useEffect(() => {
+    const perms = JSON.parse(localStorage.getItem('permissions')).filter(loc => loc.id==router.query.id)
+    const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
+    perms[0]?.permissions?.map((perm) =>
+      perm.name.includes('quotations-list/show')
+        ? (getPermissions.hasView = true)
+        : perm.name.includes('quotations-list/add')
+        ? (getPermissions.hasInsert = true)
+        : perm.name.includes('quotations-list/update')
+        ? (getPermissions.hasEdit = true)
+        : perm.name.includes('quotations-list/delete')
+        ? (getPermissions.hasDelete = true)
+        : null
+    );
+
+    setPermissions(getPermissions);
+
     var _locs = JSON.parse(localStorage.getItem('locations') || '[]');
     if (_locs.toString().length > 10)
       setLocationSettings(
