@@ -47,6 +47,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
   async function intData() {
     const res = await findAllData('permissions/13');
     if (!res) return;
+
     // let { success, newdata } = await apiFetch({ fetch: 'checkwt' });
     // if (newdata.types == undefined || newdata.types.length == 0) success = false;
     if (
@@ -93,7 +94,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
       hasProducts: false,
       hasPurchases: false,
       hasTransfers: false,
-      hasSuppliers: false,
+      hasSuppliers: true,
       hasExpenses: false,
       hasPricingGroups: false,
       hasCustomers: false,
@@ -141,7 +142,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
       {(permissions.hasProducts ||
         permissions.hasPurchases ||
         permissions.hasTransfers ||
-        // permissions.hasSupplier ||
+        permissions.hasSuppliers ||
         permissions.hasExpenses) && (
         <SidebarNavGroup toggleIcon="MdOutlineLocalGroceryStore" toggleText="Inventory">
           {permissions.hasProducts && (

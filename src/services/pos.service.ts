@@ -100,7 +100,7 @@ interface ICreateExpensePayload extends Partial<IExpense> {
 
 interface IUpdateExpensePayload extends Partial<IExpense> {}
 
-const posSetvice = {
+const posService = {
   getCategories: async (location_id: string) =>
     api
       .get<any, TServiceResponse<ICategory[]>, any>(`/categories/${location_id}`)
@@ -270,7 +270,7 @@ const posSetvice = {
 export const useCategoriesList = (location_id: string, config?: SWRConfiguration) => {
   const { data, error, isLoading, mutate } = useSWR(
     config?.suspense ? null : `/categories/${location_id}`,
-    () => posSetvice.getCategories(location_id),
+    () => posService.getCategories(location_id),
     { ...config }
   );
 
@@ -285,7 +285,7 @@ export const useCategoriesList = (location_id: string, config?: SWRConfiguration
 export const useGetCategory = (id: string, config?: SWRConfiguration) => {
   const { data, error, isLoading, mutate } = useSWR(
     config?.suspense ? null : `/categories/${id}/show`,
-    () => posSetvice.getCategory(id),
+    () => posService.getCategory(id),
     {
       ...config,
     }
@@ -301,7 +301,7 @@ export const useGetCategory = (id: string, config?: SWRConfiguration) => {
 export const useProductsList = (location_id: string, config?: SWRConfiguration) => {
   const { data, error, isLoading, mutate } = useSWR(
     config?.suspense ? null : `/products/${location_id}`,
-    () => posSetvice.getProducts(location_id),
+    () => posService.getProducts(location_id),
     { ...config }
   );
   return {
@@ -315,7 +315,7 @@ export const useProductsList = (location_id: string, config?: SWRConfiguration) 
 export const useGetProduct = (id: string, config?: SWRConfiguration) => {
   const { data, error, isLoading, mutate } = useSWR(
     config?.suspense ? null : `/products/${id}/show`,
-    () => posSetvice.getProduct(id),
+    () => posService.getProduct(id),
     {
       ...config,
     }
@@ -331,7 +331,7 @@ export const useGetProduct = (id: string, config?: SWRConfiguration) => {
 export const usePackageTypes = (location_id: string, config?: SWRConfiguration) => {
   const { data, error, isLoading, mutate } = useSWR(
     config?.suspense ? null : `/package-type/${location_id}`,
-    posSetvice.getPackageTypes,
+    posService.getPackageTypes,
     {
       ...config,
     }
@@ -347,7 +347,7 @@ export const usePackageTypes = (location_id: string, config?: SWRConfiguration) 
 export const useTransfer = (id: string, config?: SWRConfiguration) => {
   const { data, error, isLoading, mutate } = useSWR(
     config?.suspense ? null : `/products/${id}/transfer`,
-    () => posSetvice.transfer(id),
+    () => posService.transfer(id),
     {
       ...config,
     }
@@ -363,7 +363,7 @@ export const useTransfer = (id: string, config?: SWRConfiguration) => {
 // export const useSearch = (location_id: string, config?: SWRConfiguration) => {
 //   const { data, error, isLoading, mutate } = useSWR(
 //     config?.suspense ? null : `/products/search/${location_id}`,
-//     () => posSetvice.search(location_id),
+//     () => posService.search(location_id),
 //     {
 //       ...config,
 //     }
@@ -379,7 +379,7 @@ export const useTransfer = (id: string, config?: SWRConfiguration) => {
 export const useCustomersList = (location_id: string, config?: SWRConfiguration) => {
   const { data, error, isLoading, mutate } = useSWR(
     config?.suspense ? null : `/customers/${location_id}`,
-    () => posSetvice.getCustomers(location_id),
+    () => posService.getCustomers(location_id),
     { ...config }
   );
   return {
@@ -393,7 +393,7 @@ export const useCustomersList = (location_id: string, config?: SWRConfiguration)
 export const useGetCustomer = (id: string, config?: SWRConfiguration) => {
   const { data, error, isLoading, mutate } = useSWR(
     config?.suspense ? null : `/customers/${id}/show`,
-    () => posSetvice.getCustomer(id),
+    () => posService.getCustomer(id),
     {
       ...config,
     }
@@ -409,7 +409,7 @@ export const useGetCustomer = (id: string, config?: SWRConfiguration) => {
 export const useUnits = (config?: SWRConfiguration) => {
   const { data, error, isLoading, mutate } = useSWR(
     config?.suspense ? null : `/units`,
-    posSetvice.getUnits,
+    posService.getUnits,
     {
       ...config,
     }
@@ -425,7 +425,7 @@ export const useUnits = (config?: SWRConfiguration) => {
 export const useBrandsList = (location_id: string, config?: SWRConfiguration) => {
   const { data, error, isLoading, mutate } = useSWR(
     config?.suspense ? null : `/brands/${location_id}`,
-    () => posSetvice.getBrands(location_id),
+    () => posService.getBrands(location_id),
     { ...config }
   );
   return {
@@ -439,7 +439,7 @@ export const useBrandsList = (location_id: string, config?: SWRConfiguration) =>
 export const useGetBrand = (id: string, config?: SWRConfiguration) => {
   const { data, error, isLoading, mutate } = useSWR(
     config?.suspense ? null : `/brands/${id}/show`,
-    () => posSetvice.getBrand(id),
+    () => posService.getBrand(id),
     {
       ...config,
     }
@@ -455,7 +455,7 @@ export const useGetBrand = (id: string, config?: SWRConfiguration) => {
 export const useTaxesList = (location_id: string | number, config?: SWRConfiguration) => {
   const { data, error, isLoading, mutate } = useSWR(
     config?.suspense ? null : `/taxes/${location_id}`,
-    () => posSetvice.getTaxes(location_id),
+    () => posService.getTaxes(location_id),
     { ...config }
   );
 
@@ -470,7 +470,7 @@ export const useTaxesList = (location_id: string | number, config?: SWRConfigura
 export const useGetTax = (id: string, config?: SWRConfiguration) => {
   const { data, error, isLoading, mutate } = useSWR(
     config?.suspense ? null : `/taxes/${id}/show`,
-    () => posSetvice.getTax(id),
+    () => posService.getTax(id),
     {
       ...config,
     }
@@ -486,7 +486,7 @@ export const useGetTax = (id: string, config?: SWRConfiguration) => {
 export const useCurrencies = (config?: SWRConfiguration) => {
   const { data, error, isLoading, mutate } = useSWR(
     config?.suspense ? null : `/currency`,
-    posSetvice.getCurrencies,
+    posService.getCurrencies,
     {
       ...config,
     }
@@ -502,7 +502,7 @@ export const useCurrencies = (config?: SWRConfiguration) => {
 export const usePurchases = (location_id: string, config?: SWRConfiguration) => {
   const { data, error, isLoading, mutate } = useSWR(
     config?.suspense ? null : `/purchase/${location_id}`,
-    () => posSetvice.getPurchases(location_id),
+    () => posService.getPurchases(location_id),
     {
       ...config,
     }
@@ -518,7 +518,7 @@ export const usePurchases = (location_id: string, config?: SWRConfiguration) => 
 export const useGetPurchase = (id: string, config?: SWRConfiguration) => {
   const { data, error, isLoading, mutate } = useSWR(
     config?.suspense ? null : `/purchase/${id}/show`,
-    () => posSetvice.getPurchase(id),
+    () => posService.getPurchase(id),
     {
       ...config,
     }
@@ -534,7 +534,7 @@ export const useGetPurchase = (id: string, config?: SWRConfiguration) => {
 export const useGetCloseRegisteration = (location_id: string, config?: SWRConfiguration) => {
   const { data, error, isLoading, mutate } = useSWR(
     config?.suspense ? null : `/registeration/${location_id}/close`,
-    () => posSetvice.getCloseRegisteration(location_id),
+    () => posService.getCloseRegisteration(location_id),
     {
       ...config,
     }
@@ -550,7 +550,7 @@ export const useGetCloseRegisteration = (location_id: string, config?: SWRConfig
 export const useExpenseCategories = (location_id: string, config?: SWRConfiguration) => {
   const { data, error, isLoading, mutate } = useSWR(
     `/expenses-categories/${location_id}`,
-    () => posSetvice.getExpenseCategories(location_id),
+    () => posService.getExpenseCategories(location_id),
     {
       ...config,
     }
@@ -566,7 +566,7 @@ export const useExpenseCategories = (location_id: string, config?: SWRConfigurat
 export const useGetExpenseCategory = (id: string, config?: SWRConfiguration) => {
   const { data, error, isLoading, mutate } = useSWR(
     `/expenses-categories/${id}/show`,
-    () => posSetvice.getExpenseCategory(id),
+    () => posService.getExpenseCategory(id),
     {
       ...config,
     }
@@ -582,7 +582,7 @@ export const useGetExpenseCategory = (id: string, config?: SWRConfiguration) => 
 export const useExpenses = (location_id: string, config?: SWRConfiguration) => {
   const { data, error, isLoading, mutate } = useSWR(
     `/expenses/${location_id}`,
-    () => posSetvice.getExpenses(location_id),
+    () => posService.getExpenses(location_id),
     {
       ...config,
     }
@@ -598,7 +598,7 @@ export const useExpenses = (location_id: string, config?: SWRConfiguration) => {
 export const useGetExpense = (id: string, config?: SWRConfiguration) => {
   const { data, error, isLoading, mutate } = useSWR(
     `/expenses/${id}/show`,
-    () => posSetvice.getExpense(id),
+    () => posService.getExpense(id),
     {
       ...config,
     }
@@ -618,7 +618,7 @@ export const useGetSalesReport = (
 ) => {
   const { data, error, isLoading, mutate } = useSWR(
     `/reports/sales/${location_id}` + (order_id ? `/${order_id}` : ''),
-    () => posSetvice.getSalesReport(location_id, order_id),
+    () => posService.getSalesReport(location_id, order_id),
     {
       ...config,
     }
@@ -638,7 +638,7 @@ export const useGetItemsSalesReport = (
 ) => {
   const { data, error, isLoading, mutate } = useSWR(
     `/reports/item-sales/${location_id}` + (order_id ? `/${order_id}` : ''),
-    () => posSetvice.getItemsSalesReport(location_id, order_id),
+    () => posService.getItemsSalesReport(location_id, order_id),
     {
       ...config,
     }
@@ -651,4 +651,4 @@ export const useGetItemsSalesReport = (
   };
 };
 
-export default posSetvice;
+export default posService;

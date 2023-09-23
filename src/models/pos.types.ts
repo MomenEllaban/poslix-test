@@ -64,6 +64,7 @@ export interface IProduct {
   stocks: IStock[];
   category: ICategory;
 }
+
 export interface IVariation {
   id: number;
   location_id: number;

@@ -1,131 +1,73 @@
-import type { NextPage } from 'next';
-import Image from 'next/image';
-import Table from 'react-bootstrap/Table';
-import { AdminLayout } from '@layout';
+import { faEye, faPenToSquare, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import Spinner from 'react-bootstrap/Spinner';
-import { faTrash, faPenToSquare, faPlus, faEye } from '@fortawesome/free-solid-svg-icons';
-import {
-  DataGrid,
-  GridColDef,
-  GridRowParams,
-  GridToolbarColumnsButton,
-  GridToolbarContainer,
-  GridToolbarExport,
-} from '@mui/x-data-grid';
-import { Button, ButtonGroup, Card } from 'react-bootstrap';
-import React, { useState, useEffect } from 'react';
-import { apiFetchCtr } from '../../../../libs/dbUtils';
+import { AdminLayout } from '@layout';
+import { ILocation } from '@models/auth.types';
+import { ISupplier } from '@models/suppliers.types';
+import { DataGrid, GridColDef, GridRowParams } from '@mui/x-data-grid';
+import type { NextPage } from 'next';
 import { useRouter } from 'next/router';
-import AlertDialog from 'src/components/utils/AlertDialog';
-import { redirectToLogin } from '../../../../libs/loginlib';
-import { ILocationSettings, IPageRules, ITokenVerfy } from '@models/common-model';
-import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/checkUtils';
-import * as cookie from 'cookie';
-import ShowPriceListModal from 'src/components/dashboard/modal/ShowPriceListModal';
-import { Toastify } from 'src/libs/allToasts';
+import { useEffect, useState } from 'react';
+import { Button, ButtonGroup } from 'react-bootstrap';
 import { ToastContainer } from 'react-toastify';
-import Suppliermodal from '../../../../components/pos/modals/Suppliermodal';
-const Product: NextPage = (props: any) => {
-  const { shopId, rules } = props;
-  const myLoader = (img: any) => img.src;
-  const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
-    // @ts-ignore
-    value: 0,
-    label: '',
-    currency_decimal_places: 0,
-    currency_code: '',
-    currency_id: 0,
-    currency_rate: 1,
-    currency_symbol: '',
-  });
+import ConfirmationModal from 'src/components/modals/confirmation-modal/ConfirmationModal';
+import SupplierModal from 'src/components/pos/modals/SupplierModal';
+import { useUser } from 'src/context/UserContext';
+import { Toastify } from 'src/libs/allToasts';
+import CustomToolbar from 'src/modules/reports/_components/CustomToolbar';
+import { useSuppliersList } from 'src/services/suppliers.service';
+import api from 'src/utils/app-api';
+import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
+
+type TProduct = { id: number; name: string; sku: string; type: string; qty: number };
+
+const Suppliers: NextPage = () => {
   const router = useRouter();
-  const [products, setProducts] = useState<
-    { id: number; name: string; sku: string; type: string; qty: number }[]
-  >([]);
-  const [show, setShow] = useState(false);
+  const { locationSettings, setLocationSettings } = useUser();
+  const shopId = (router.query.id as string) ?? '';
+
+  const { isLoading: isSuppliersLoading, suppliersList, error, refetch } = useSuppliersList(shopId);
+
+  const [type, setType] = useState<'add' | 'edit' | 'show'>('show');
   const [selectId, setSelectId] = useState(0);
-  const [type, setType] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const [isOpenPriceDialog, setIsOpenPriceDialog] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [supplierModal, setSupplierModal] = useState(false);
 
-  async function initDataPage() {
-    const { success, data } = await apiFetchCtr({
-      fetch: 'products',
-      subType: 'getProducts',
-      shopId,
-    });
-    if (!success) {
-      Toastify('error', 'Somthing wrong!!, try agian');
-      return;
-    }
-    setProducts(data.products);
-    setIsLoading(false);
-  }
-
-  useEffect(() => {
-    var _locs = JSON.parse(localStorage.getItem('locations') || '[]');
-    if (_locs.toString().length > 10)
-      setLocationSettings(
-        _locs[
-          _locs.findIndex((loc: any) => {
-            return loc.value == shopId;
-          })
-        ]
-      );
-    else alert('errorr location settings');
-    initDataPage();
-  }, [router.asPath]);
-
-  const [customerIsModal, setCustomerIsModal] = useState<boolean>(false);
   const customerModalHandler = (status: any) => {
-    setCustomerIsModal(false);
-    initDataPage();
+    setSupplierModal(false);
+    refetch();
   };
 
-  const handleClick = (index: number) => {
-    if (products[index].type != 'package' && products[index].qty > 0) {
-      setSelectId(products[index].id);
-      setType(products[index].type);
-      setIsOpenPriceDialog(true);
-    }
-  };
-  const handleDeleteFuc = (result: boolean, msg: string, section: string) => {
-    if (result) {
-      const _data = [...products];
-      const idx = _data.findIndex((itm: any) => itm.id == selectId);
-      if (idx != -1) {
-        _data.splice(idx, 1);
-        setProducts(_data);
-      }
-    }
-    if (msg.length > 0) Toastify(result ? 'success' : 'error', msg);
-    setShow(false);
+  const handleDeleteSupplier = (id: string | number) => {
+    setIsLoading(true);
+    api
+      .delete(`/suppliers/${id}`)
+      .then(() => {
+        Toastify('success', 'Supplier removed successfully!');
+        refetch();
+      })
+      .catch(() => {
+        Toastify('error', 'Something went wrong!');
+      })
+      .finally(() => {
+        setIsLoading(false);
+        setShowDeleteModal(false);
+      });
   };
 
-  const customersList = [
-    {
-      id: 4888,
-      name: 'Eslam ',
-      transactions: '30',
-      paid: '20',
-      unpaid: '10',
-    },
-    {
-      id: 4803,
-      name: 'Azza Al Marhoobi',
-      transactions: '22',
-      paid: '10',
-      unpaid: '12',
-    },
-  ];
-
-  const columns: GridColDef[] = [
-    { field: 'id', headerName: '#', minWidth: 50 },
+  const columns: GridColDef<ISupplier>[] = [
+    { field: 'id', headerName: '#', width: 60 },
     { field: 'name', headerName: 'Name', flex: 1 },
-    { field: 'transactions', headerName: 'Transactions', flex: 1 },
-    { field: 'paid', headerName: 'Paid invoices', flex: 1 },
-    { field: 'unpaid', headerName: 'Unpaid invoices', flex: 1 },
+    { field: 'facility_name', headerName: 'Facility Name', flex: 1 },
+    {
+      field: 'invoice_address',
+      headerName: 'Address',
+      flex: 3,
+      renderCell({ row }) {
+        return `${row.invoice_address}, ${row.invoice_City}, ${row.invoice_Country}`;
+      },
+    },
+    { field: 'postal_code', headerName: 'Postal Code', flex: 1 },
     {
       field: 'action',
       headerName: 'Action ',
@@ -133,146 +75,100 @@ const Product: NextPage = (props: any) => {
       disableExport: true,
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) => (
-        <>
-          <ButtonGroup className="mb-2 m-buttons-style">
-            {rules.hasEdit && (
-              <Button
-                onClick={(event) => {
-                  // router.push('/shop/' + shopId + '/customers/edit/' + row.id)
-                  event.stopPropagation();
-                }}>
-                <FontAwesomeIcon icon={faPenToSquare} />
-              </Button>
-            )}
-            {rules.hasDelete && (
-              <Button
-                onClick={(event) => {
-                  event.stopPropagation();
-                  setSelectId(row.id);
-                  setShow(true);
-                }}>
-                <FontAwesomeIcon icon={faTrash} />
-              </Button>
-            )}
-            <Button
-              onClick={() => {
-                //   router.push("/shop/" + shopId + "/customers/" + row.id);
-              }}>
-              <FontAwesomeIcon icon={faEye} />
-            </Button>
-          </ButtonGroup>
-        </>
+        <ButtonGroup className="mb-2 m-buttons-style">
+          <Button
+            onClick={(event) => {
+              event.stopPropagation();
+              setType('edit');
+              setSelectId(row.id);
+              setSupplierModal(true);
+            }}>
+            <FontAwesomeIcon icon={faPenToSquare} />
+          </Button>
+
+          <Button
+            onClick={(event) => {
+              event.stopPropagation();
+              setSelectId(row.id);
+              setShowDeleteModal(true);
+            }}>
+            <FontAwesomeIcon icon={faTrash} />
+          </Button>
+          <ConfirmationModal
+            show={showDeleteModal}
+            onConfirm={() => handleDeleteSupplier(row.id)}
+            onClose={() => setShowDeleteModal(false)}
+            message="Are you sure you want to delete this supplier?"
+          />
+
+          <Button
+            onClick={() => {
+              setType('show');
+              setSelectId(row.id);
+              setSupplierModal(true);
+              // router.push('/shop/' + shopId + '/customers/' + row.id);
+            }}>
+            <FontAwesomeIcon icon={faEye} />
+          </Button>
+        </ButtonGroup>
       ),
     },
   ];
-  function CustomToolbar() {
-    return (
-      <GridToolbarContainer>
-        <GridToolbarExport />
-        <GridToolbarColumnsButton />
-      </GridToolbarContainer>
-    );
-  }
+
+  useEffect(() => {
+    if (!shopId) return;
+
+    const locations: ILocation[] = getLocalStorage(ELocalStorageKeys.LOCATIONS);
+    const currentLocation = locations.find((location) => +location.location_id === +shopId);
+    setLocationSettings(currentLocation ?? locationSettings);
+  }, [shopId]);
+
   return (
     <>
       <AdminLayout shopId={shopId}>
         <ToastContainer />
-        <AlertDialog
-          alertShow={show}
-          alertFun={handleDeleteFuc}
-          shopId={shopId}
-          id={selectId}
-          type="products"
-          subType="deleteProduct">
-          Are you Sure You Want Delete This Item ?
-        </AlertDialog>
-        {!isLoading && rules.hasInsert && (
-          <div className="mb-2">
-            <button
-              className="btn btn-primary p-3"
-              onClick={() => {
-                setCustomerIsModal(true);
-              }}>
-              <FontAwesomeIcon icon={faPlus} /> Add New Supplier{' '}
-            </button>
-          </div>
-        )}
-        {!isLoading ? (
-          <div className="page-content-style card">
-            <h5>Suppliers List</h5>
-            <DataGrid
-              className="datagrid-style"
-              sx={{
-                '.MuiDataGrid-columnSeparator': {
-                  display: 'none',
-                },
-                '&.MuiDataGrid-root': {
-                  border: 'none',
-                },
-              }}
-              rows={customersList}
-              columns={columns}
-              pageSize={10}
-              rowsPerPageOptions={[10]}
-              components={{ Toolbar: CustomToolbar }}
-            />
-          </div>
-        ) : (
-          <div className="d-flex justify-content-around">
-            <Spinner animation="grow" />
-          </div>
-        )}
+
+        <div className="mb-2">
+          <button
+            className="btn btn-primary p-3"
+            onClick={() => {
+              setType('add');
+              setSupplierModal(true);
+            }}>
+            <FontAwesomeIcon icon={faPlus} /> Add New Supplier{' '}
+          </button>
+        </div>
+
+        <div className="page-content-style card">
+          <h5>Suppliers List</h5>
+          <DataGrid
+            loading={isSuppliersLoading}
+            className="datagrid-style"
+            sx={{
+              '.MuiDataGrid-columnSeparator': {
+                display: 'none',
+              },
+              '&.MuiDataGrid-root': {
+                border: 'none',
+              },
+            }}
+            rows={suppliersList}
+            columns={columns}
+            pageSize={10}
+            rowsPerPageOptions={[10]}
+            components={{ Toolbar: CustomToolbar }}
+          />
+        </div>
       </AdminLayout>
-      <Suppliermodal
+      <SupplierModal
         shopId={shopId}
-        showType={'add'}
-        userdata={{}}
+        showType={type}
+        supplierId={selectId}
         customers={{}}
-        statusDialog={customerIsModal}
+        statusDialog={supplierModal}
         openDialog={customerModalHandler}
       />
     </>
   );
 };
-export default Product;
-export async function getServerSideProps(context: any) {
-  const parsedCookies = cookie.parse(context.req.headers.cookie || '[]');
-  var _isOk = true,
-    _rule = true;
-  //check page params
-  var shopId = context.query.id;
-  if (shopId == undefined) return { redirect: { permanent: false, destination: '/page403' } };
-
-  //check user permissions
-  var _userRules = {};
-  await verifayTokens(
-    { headers: { authorization: 'Bearer ' + parsedCookies.tokend } },
-    (repo: ITokenVerfy) => {
-      _isOk = repo.status;
-
-      if (_isOk) {
-        var _rules = keyValueRules(repo.data.rules || []);
-        if (
-          _rules[-2] != undefined &&
-          _rules[-2][0].stuff != undefined &&
-          _rules[-2][0].stuff == 'owner'
-        ) {
-          _rule = true;
-          _userRules = { hasDelete: true, hasEdit: true, hasView: true, hasInsert: true };
-        } else if (_rules[shopId] != undefined) {
-          var _stuf = '';
-          _rules[shopId].forEach((dd: any) => (_stuf += dd.stuff));
-          const { userRules, hasPermission } = hasPermissions(_stuf, 'products');
-          _rule = hasPermission;
-          _userRules = userRules;
-        } else _rule = false;
-      }
-    }
-  );
-  if (!_isOk) return { redirect: { permanent: false, destination: '/user/auth' } };
-  if (!_rule) return { redirect: { permanent: false, destination: '/page403' } };
-  return {
-    props: { shopId: context.query.id, rules: _userRules },
-  };
-  //status ok
-}
+export default Suppliers;
