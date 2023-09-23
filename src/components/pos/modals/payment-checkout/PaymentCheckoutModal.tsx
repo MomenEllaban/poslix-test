@@ -19,11 +19,10 @@ import { useAppDispatch, useAppSelector } from 'src/hooks';
 import { clearCart, selectCartByLocation } from 'src/redux/slices/cart.slice';
 import api from 'src/utils/app-api';
 
-export default function PaymentCheckoutModal({ show, setShow, shopId, invoiceType }) {
-  console.log(invoiceType);
+export default function PaymentCheckoutModal({ show, setShow, shopId, invoiceType, invoiceDetails }) {
   
   const dispatch = useAppDispatch();
-  const { locationSettings, tailoringSizes, invoicDetails, tailoringExtras } = useUser();
+  const { locationSettings, tailoringSizes, tailoringExtras } = useUser();
   const componentRef = React.useRef(null);
   const [customer, setCustomer] = useState<{
     value: string;
@@ -58,6 +57,12 @@ export default function PaymentCheckoutModal({ show, setShow, shopId, invoiceTyp
 
   const totalNoTax = +(cart?.cartSellTotal ?? 0) + +(cart?.shipping ?? 0);
   const totalAmount = totalNoTax + totalTax - totalDiscount;
+
+  useEffect(() => {
+    console.log(totalAmount, paidAmount);
+    setValue(`payment.0.amount`, totalAmount.toString())
+    setPaidAmount({ '0': totalAmount })
+  }, [totalAmount])
 
   const paymentTypes = useMemo(
     () =>
@@ -135,31 +140,31 @@ export default function PaymentCheckoutModal({ show, setShow, shopId, invoiceTyp
   class ComponentToPrint extends React.PureComponent {
     render() {
       return invoiceType === 'receipt' ? (
-        <div className="bill">
+        <div className="bill" style={{width: '100%'}}>
           <div className="brand-logo">
-            <img src={invoicDetails.logo} />
+            <img src={invoiceDetails.logo} />
           </div>
           <br />
-          <div className="brand-name">{invoicDetails.name}</div>
-          <div className="shop-details">{invoicDetails.tell}</div>
+          <div className="brand-name">{invoiceDetails.name}</div>
+          <div className="shop-details">{invoiceDetails.tell}</div>
           <br />
           <div className="bill-details">
             <div className="flex justify-between">
               <div>
-                {invoicDetails.txtCustomer}{' '}
-                {invoicDetails.isMultiLang && invoicDetails.txtCustomer2}
+                {invoiceDetails.txtCustomer}{' '}
+                {invoiceDetails.isMultiLang && invoiceDetails.txtCustomer2}
               </div>
               <div>{customer.label}</div>
             </div>
             <div className="flex justify-between">
               <div>
-                {invoicDetails.orderNo} {invoicDetails.isMultiLang && invoicDetails.orderNo2}
+                {invoiceDetails.orderNo} {invoiceDetails.isMultiLang && invoiceDetails.orderNo2}
               </div>
               <div>{printReceipt?.id}</div>
             </div>
             <div className="flex justify-between">
               <div>
-                {invoicDetails.txtDate} {invoicDetails.isMultiLang && invoicDetails.txtDate2}
+                {invoiceDetails.txtDate} {invoiceDetails.isMultiLang && invoiceDetails.txtDate2}
               </div>
               <div>{new Date().toISOString().slice(0, 10)}</div>
             </div>
@@ -168,27 +173,27 @@ export default function PaymentCheckoutModal({ show, setShow, shopId, invoiceTyp
             <thead>
               <tr className="header">
                 <th>
-                  {invoicDetails.txtQty}
+                  {invoiceDetails.txtQty}
                   <br />
-                  {invoicDetails.isMultiLang && invoicDetails.txtQty2}
+                  {invoiceDetails.isMultiLang && invoiceDetails.txtQty2}
                 </th>
                 <th>
-                  {invoicDetails.txtItem}
+                  {invoiceDetails.txtItem}
                   <br />
-                  {invoicDetails.isMultiLang && invoicDetails.txtItem2}
+                  {invoiceDetails.isMultiLang && invoiceDetails.txtItem2}
                 </th>
                 <th></th>
                 <th>
-                  {invoicDetails.txtAmount}
+                  {invoiceDetails.txtAmount}
                   <br />
-                  {invoicDetails.isMultiLang && invoicDetails.txtAmount2}
+                  {invoiceDetails.isMultiLang && invoiceDetails.txtAmount2}
                 </th>
               </tr>
-              {perperdForPrint()}
+              {perperdForPrint(printReceipt?.products)}
               <tr className="net-amount">
                 <td></td>
                 <td>
-                  {invoicDetails.txtTax} {invoicDetails.isMultiLang && invoicDetails.txtTax2}
+                  {invoiceDetails.txtTax} {invoiceDetails.isMultiLang && invoiceDetails.txtTax2}
                 </td>
                 <td></td>
                 <td>
@@ -198,8 +203,8 @@ export default function PaymentCheckoutModal({ show, setShow, shopId, invoiceTyp
               <tr className="net-amount">
                 <td></td>
                 <td>
-                  {invoicDetails.txtDiscount}{' '}
-                  {invoicDetails.isMultiLang && invoicDetails.txtDiscount2}
+                  {invoiceDetails.txtDiscount}{'Discount'}
+                  {invoiceDetails.isMultiLang && invoiceDetails.txtDiscount2}
                 </td>
                 <td></td>
                 <td>{(+printReceipt?.discount_amount).toFixed(locationSettings?.location_decimal_places)}</td>
@@ -207,7 +212,7 @@ export default function PaymentCheckoutModal({ show, setShow, shopId, invoiceTyp
               <tr className="net-amount">
                 <td></td>
                 <td className="txt-bold">
-                  {invoicDetails.txtTotal} {invoicDetails.isMultiLang && invoicDetails.txtTotal2}
+                  {invoiceDetails.txtTotal} {invoiceDetails.isMultiLang && invoiceDetails.txtTotal2}
                 </td>
                 <td></td>
                 <td className="txt-bold">
@@ -222,8 +227,8 @@ export default function PaymentCheckoutModal({ show, setShow, shopId, invoiceTyp
               <tr className="net-amount">
                 <td></td>
                 <td className="txt-bold">
-                  {invoicDetails.txtAmountpaid}{' '}
-                  {invoicDetails.isMultiLang && invoicDetails.txtAmountpaid2}
+                  {invoiceDetails.txtAmountpaid}{' '}
+                  {invoiceDetails.isMultiLang && invoiceDetails.txtAmountpaid2}
                 </td>
                 <td></td>
                 <td className="txt-bold">
@@ -233,8 +238,8 @@ export default function PaymentCheckoutModal({ show, setShow, shopId, invoiceTyp
               <tr className="net-amount">
                 <td></td>
                 <td className="txt-bold">
-                  {invoicDetails.txtTotalDue}{' '}
-                  {invoicDetails.isMultiLang && invoicDetails.txtTotalDue2}
+                  {invoiceDetails.txtTotalDue}{' '}
+                  {invoiceDetails.isMultiLang && invoiceDetails.txtTotalDue2}
                 </td>
                 <td></td>
                 {/* <td className="txt-bold">
@@ -252,8 +257,8 @@ export default function PaymentCheckoutModal({ show, setShow, shopId, invoiceTyp
             </thead>
           </table>
           <p className="recipt-footer">
-            {invoicDetails.footer}
-            {invoicDetails.isMultiLang && invoicDetails.footer2}
+            {invoiceDetails.footer}
+            {invoiceDetails.isMultiLang && invoiceDetails.footer2}
           </p>
           {/* <p className="recipt-footer">{orderNote}</p> */}
           <br />
@@ -262,7 +267,7 @@ export default function PaymentCheckoutModal({ show, setShow, shopId, invoiceTyp
         <div className="appear-body-item a4">
           <div className="bill2">
             <div className="brand-logo">
-              <img src={invoicDetails.logo} />
+              <img src={invoiceDetails.logo} />
               <div className="invoice-print">
                 INVOICE
                 <div>
@@ -272,8 +277,8 @@ export default function PaymentCheckoutModal({ show, setShow, shopId, invoiceTyp
                         <td className="td_bg">INVOICE NUMBER </td>
                         <td>
                           <div>
-                            {invoicDetails.orderNo}{' '}
-                            {invoicDetails.isMultiLang && invoicDetails.orderNo2}
+                            {invoiceDetails.orderNo}{' '}
+                            {invoiceDetails.isMultiLang && invoiceDetails.orderNo2}
                           </div>
                           <div>{printReceipt?.id}</div>
                         </td>
@@ -291,9 +296,9 @@ export default function PaymentCheckoutModal({ show, setShow, shopId, invoiceTyp
             <div className="up_of_table flex justify-between">
               <div className="left_up_of_table">
                 <div>Billed From</div>
-                <div>{invoicDetails.name}</div>
+                <div>{invoiceDetails.name}</div>
                 <div>info@poslix.com</div>
-                <div>{invoicDetails.tell}</div>
+                <div>{invoiceDetails.tell}</div>
                 <div>Office 21-22, Building 532, Mazoon St. Muscat, Oman</div>
                 <div>VAT Number: OM1100270001</div>
               </div>
@@ -311,24 +316,24 @@ export default function PaymentCheckoutModal({ show, setShow, shopId, invoiceTyp
                   <th>Description</th>
                   <th>
                     {' '}
-                    {invoicDetails.txtQty}
+                    {invoiceDetails.txtQty}
                     <br />
-                    {invoicDetails.isMultiLang && invoicDetails.txtQty2}
+                    {invoiceDetails.isMultiLang && invoiceDetails.txtQty2}
                   </th>
                   <th>Unit Price</th>
-                  {/* <th> {invoicDetails.txtItem}<br />{invoicDetails.isMultiLang && invoicDetails.txtItem2}</th> */}
+                  {/* <th> {invoiceDetails.txtItem}<br />{invoiceDetails.isMultiLang && invoiceDetails.txtItem2}</th> */}
                   <th>Tax</th>
                   <th>
                     {' '}
-                    {invoicDetails.txtAmount}
+                    {invoiceDetails.txtAmount}
                     <br />
-                    {invoicDetails.isMultiLang && invoicDetails.txtAmount2}
+                    {invoiceDetails.isMultiLang && invoiceDetails.txtAmount2}
                   </th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  {/* <td>{invoicDetails.txtTax} {invoicDetails.isMultiLang && invoicDetails.txtTax2}</td> */}
+                  {/* <td>{invoiceDetails.txtTax} {invoiceDetails.isMultiLang && invoiceDetails.txtTax2}</td> */}
                   <td colSpan={4} className="txt_bold_invoice">
                     Sub Total
                   </td>
@@ -369,8 +374,8 @@ export default function PaymentCheckoutModal({ show, setShow, shopId, invoiceTyp
               </tbody>
             </table>
             <p className="recipt-footer">
-              {invoicDetails.footer}
-              {invoicDetails.isMultiLang && invoicDetails.footer2}
+              {invoiceDetails.footer}
+              {invoiceDetails.isMultiLang && invoiceDetails.footer2}
             </p>
             {/* <p className="recipt-footer">{formObj.notes}</p> */}
             <br />
@@ -380,44 +385,18 @@ export default function PaymentCheckoutModal({ show, setShow, shopId, invoiceTyp
     }
   }
 
-  const perperdForPrint = () => {
-    let _items: any = [],
-      totalTax = 0;
-    // if (quantity.length === 0 || quantity.length != orders.length) return;
-
-    // quantity.map((qt: any, i: number) => {
-    //   // qt.taxAmount
-    //   let _temp: any = [],
-    //     _subPrice: any = [];
-    //   qt.prices.map((rs: any) => {
-    //     if (orders[i].isEdit) {
-    //       _subPrice.push({ price: rs.price, qty: qt.quantity });
-    //     } else if (!_temp.includes(rs.price)) {
-    //       _temp.push(rs.price);
-    //       _subPrice.push({ price: rs.price, qty: rs.qty });
-    //     }
-    //   });
-    //   totalTax += parseFloat(qt.taxAmount);
-    //   _items.push({
-    //     prices: _subPrice,
-    //     taxAmount: qt.taxAmount,
-    //     name: orders[i].name,
-    //   });
-    // });
-    // ClearOrders()
+  const perperdForPrint = (prods) => {
     let counter = 0;
-    return _items.map((_it: any, i: number) => {
-      return _it.prices.map((rs: any) => {
-        counter++;
-        return (
-          <tr key={counter}>
-            <td>{rs.qty}</td>
-            <td>{_it.name}</td>
-            <th></th>
-            <td>{Number(rs.price).toFixed(locationSettings?.location_decimal_places)}</td>
-          </tr>
-        );
-      });
+    return prods?.map((prod: any, i: number) => {
+      counter++;
+      return (
+        <tr key={counter}>
+          <td>{parseInt(prod.pivot.qty)}</td>
+          <td>{prod.name}</td>
+          <th></th>
+          <td>{Number(prod.sell_price).toFixed(locationSettings?.location_decimal_places)}</td>
+        </tr>
+      );
     });
   };
 

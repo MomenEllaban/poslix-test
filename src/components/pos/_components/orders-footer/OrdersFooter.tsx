@@ -19,6 +19,7 @@ export const OrdersFooter = ({ orderEditDetails, details, shopId, lang }) => {
   
   const router = useRouter()
   const [invoiceType, setInvoiceType] = useState('receipt')
+  const [invoiceDetails, setInvoiceDetails] = useState<any>({})
 
   const [clearCartModal, setClearCartModal] = useState<boolean>(false);
 
@@ -35,6 +36,8 @@ export const OrdersFooter = ({ orderEditDetails, details, shopId, lang }) => {
 
 
   const checkPrintType = async () => {
+    const res2 = await findAllData(`appearance/${router.query.id}`)
+    setInvoiceDetails(res2.data.result)
     const res = await findAllData(`print-settings/${router.query.id}`)
     setInvoiceType(res.data.result.printtype)
   }
@@ -99,7 +102,8 @@ export const OrdersFooter = ({ orderEditDetails, details, shopId, lang }) => {
         onClose={() => setClearCartModal(false)}
         message="Are you sure you want to clear cart?"
       />
-      <PaymentCheckoutModal shopId={shopId} show={paymentModalShow} setShow={setPaymentModalShow} invoiceType={invoiceType} />
+      <PaymentCheckoutModal shopId={shopId} show={paymentModalShow} setShow={setPaymentModalShow}
+        invoiceType={invoiceType} invoiceDetails={invoiceDetails} />
     </>
   );
 };
