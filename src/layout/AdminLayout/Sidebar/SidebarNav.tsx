@@ -259,24 +259,24 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
               Stock Report{' '}
             </SidebarNavItem>
           )}
-          {permiss.hasCategorySales && (
+          {/* {permiss.hasCategorySales && (
             <SidebarNavItem href={'/shop/' + shopId + '/cates'} sub={true} isShown={!!router.query.id}>
               Category Sales
             </SidebarNavItem>
-          )}
-          {permiss.hasSupplierSales && (
+          )} */}
+          {/* {permiss.hasSupplierSales && (
             <SidebarNavItem href={'/shop/' + shopId + '/supplier'} sub={true} isShown={!!router.query.id}>
               Supplier Sales
             </SidebarNavItem>
-          )}
-          {permiss.hasCurrentStock && (
+          )} */}
+          {/* {permiss.hasCurrentStock && (
             <SidebarNavItem
               href={'/shop/' + shopId + '/currentstock'}
               sub={true}
               isShown={!!router.query.id}>
               Current Stock
             </SidebarNavItem>
-          )}
+          )} */}
         </SidebarNavGroup>
       )}
 

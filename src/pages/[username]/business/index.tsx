@@ -3,7 +3,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { OwnerAdminLayout } from '@layout';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
-import { useContext } from 'react';
+import { useRouter } from 'next/router';
+import { useContext, useEffect } from 'react';
 import { Card, Spinner, Table } from 'react-bootstrap';
 import withAuth from 'src/HOCs/withAuth';
 import { darkModeContext } from 'src/context/DarkModeContext';
@@ -14,12 +15,17 @@ import { useBusinessList } from 'src/services';
 const MyBusinessesPage = () => {
   const { darkMode } = useContext(darkModeContext);
   const { data: session } = useSession();
+  const router = useRouter()
 
   const { user } = useUser();
   const { businessList, isLoading, error, refetch } = useBusinessList({
     suspense: !user.username,
   });
   const username = user?.username;
+
+  useEffect(() => {
+    refetch()
+  }, [router.asPath])
 
   return (
     <OwnerAdminLayout>

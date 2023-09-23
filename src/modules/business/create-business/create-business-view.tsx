@@ -14,6 +14,7 @@ import { useBusinessTypesList, useCurrenciesList } from 'src/services/business.s
 import { authApi } from 'src/utils/auth-api';
 import styles from './create-business.module.scss';
 import { createBusinessSchema } from './create-business.schema';
+import { createNewData } from 'src/services/crud.api';
 
 type Inputs = {
   name: string;
@@ -60,9 +61,18 @@ export default function CreateBusinessView() {
     setLoading(true);
     (await authApi(session))
       .postForm('/business', data)
-      .then((res) => {
-        Toastify('success', 'Business created successfully');
-        router.push('/[username]/business', `/${session?.user?.username}/business`);
+      .then(async (res) => {
+        const addLoc = await createNewData('business/locations', {
+          business_id: res.data.result.id,
+          name: 'Location 1',
+          state: 'egy',
+          currency_id: 35,
+          decimal: 1,
+        })
+        if(addLoc.data.success) {
+          Toastify('success', 'Business created successfully');
+          router.push('/[username]/business', `/${session?.user?.username}/business`);
+        }
       })
       .catch((err) => {
         Toastify('error', 'error occurred, try agian');
