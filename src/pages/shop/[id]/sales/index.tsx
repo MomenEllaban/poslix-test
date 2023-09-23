@@ -23,7 +23,7 @@ import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/chec
 import { findAllData } from 'src/services/crud.api';
 
 export default function SalesList(props: any) {
-  const { shopId, rules } = props;
+  const { shopId, id } = props;
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
     // @ts-ignore
     value: 0,
@@ -49,98 +49,6 @@ export default function SalesList(props: any) {
   const [showViewPopUp, setShowViewPopUp] = useState(false);
   const [handleSearchTxt, setHandleSearchTxt] = useState('');
   const { setInvoicDetails, invoicDetails } = useContext(UserContext);
-
-  //table columns
-  const columns: GridColDef[] = [
-    { field: 'id', headerName: '#', minWidth: 50 },
-    { field: 'customer_name', headerName: 'Customer Name', flex: 1 },
-    { field: 'mobile', headerName: 'Mobile', flex: 1, disableColumnMenu: true },
-    { field: 'sale_date', headerName: 'Sale Date', flex: 1 },
-    // { field: "total_price", headerName: "Final Total ", flex: 1 },
-    {
-      field: 'total_price',
-      headerName: 'Final Total ',
-      flex: 1,
-      renderCell: ({ row }: Partial<GridRowParams>) => (
-        <>{Number(+row.total_price).toFixed(locationSettings?.location_decimal_places)}</>
-      ),
-    },
-    { field: 'amount', headerName: 'Amount paid', flex: 1 },
-    {
-      flex: 1,
-      field: 'TotalDue',
-      headerName: 'Total Due ',
-      renderCell: ({ row }: Partial<GridRowParams>) => (
-        <>
-          {Number(+row.total_price - +row.amount).toFixed(
-            locationSettings?.location_decimal_places
-          )}
-        </>
-      ),
-    },
-    {
-      flex: 1,
-      field: 'status',
-      headerName: 'Status',
-      renderCell: ({ row }: Partial<GridRowParams>) => {
-        if (Number(+row.total_price - +row.amount) === 0) {
-          return (
-            <>
-              <div className="sty_Paid">Paid</div>
-            </>
-          );
-        } else if (Number(+row.total_price - +row.amount) === Number(row.total_price)) {
-          return (
-            <>
-              <div className="sty_n_Paid">Not Paid</div>
-            </>
-          );
-        } else {
-          return (
-            <>
-              <div className="sty_p_Paid">Partially Paid</div>
-            </>
-          );
-        }
-      },
-    },
-    {
-      flex: 1,
-      field: 'action',
-      headerName: 'Action ',
-      filterable: false,
-      sortable: false,
-      disableExport: true,
-      renderCell: ({ row }: Partial<GridRowParams>) => (
-        <>
-          <ButtonGroup className="mb-2 m-buttons-style">
-            <Button
-              onClick={() => {
-                setEdit(true);
-                onRowsSelectionHandler(row);
-              }}>
-              <FontAwesomeIcon icon={faPenToSquare} />
-            </Button>
-            {rules.hasDelete && (
-              <Button
-                onClick={() => {
-                  setSelectId(row.id);
-                  setShow(true);
-                }}>
-                <FontAwesomeIcon icon={faTrash} />
-              </Button>
-            )}
-            <Button
-              onClick={() => {
-                onRowsSelectionHandler(row);
-              }}>
-              <FontAwesomeIcon icon={faEye} />
-            </Button>
-          </ButtonGroup>
-        </>
-      ),
-    },
-  ];
 
   const componentRef = React.useRef(null);
   class ComponentToPrint extends React.PureComponent {
@@ -443,8 +351,25 @@ export default function SalesList(props: any) {
       setIsLoadItems(false);
     }
   }
-
+  
+  const [permissions, setPermissions] = useState<any>();
   useEffect(() => {
+    const perms = JSON.parse(localStorage.getItem('permissions')).filter(loc => loc.id==router.query.id)
+    const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
+    perms[0]?.permissions?.map((perm) =>
+      perm.name.includes('sales-list/view')
+        ? (getPermissions.hasView = true)
+        : perm.name.includes('sales-list/add')
+        ? (getPermissions.hasInsert = true)
+        : perm.name.includes('sales-list/update')
+        ? (getPermissions.hasEdit = true)
+        : perm.name.includes('sales-list/destroy')
+        ? (getPermissions.hasDelete = true)
+        : null
+    );
+
+    setPermissions(getPermissions);
+
     var _locs = JSON.parse(localStorage.getItem('locations') || '[]');
     if (_locs.toString().length > 10)
       setLocationSettings(
@@ -497,8 +422,14 @@ export default function SalesList(props: any) {
     setHandleSearchTxt(e.target.value);
   };
   return (
-    <AdminLayout shopId={shopId}>
-      <SalesListTable shopId={shopId} rules={rules} salesList={sales} />
+    <AdminLayout shopId={id}>
+      <SalesListTable shopId={id} rules={permissions} salesList={sales} />
     </AdminLayout>
   );
+}
+export async function getServerSideProps({ params }) {
+  const { id } = params
+  return {
+    props: {id},
+  }
 }

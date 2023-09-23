@@ -24,7 +24,7 @@ import Customermodal from '../../../../components/pos/modals/CustomerModal';
 import { ProductContext } from '../../../../context/ProductContext';
 
 const Customers: NextPage = (props: any) => {
-  const { shopId, rules } = props;
+  const { shopId, id } = props;
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
     // @ts-ignore
     value: 0,
@@ -81,8 +81,7 @@ const Customers: NextPage = (props: any) => {
       renderCell: ({ row }: Partial<GridRowParams>) => (
         <>
           <ButtonGroup className="mb-2 m-buttons-style">
-            {/* {rules?.hasEdit && true */}
-            {true && (
+            {permissions?.hasEdit &&
               <Button
                 onClick={(event) => {
                   // router.push('/shop/' + shopId + '/customers/edit/' + row.id)
@@ -97,9 +96,8 @@ const Customers: NextPage = (props: any) => {
                 }}>
                 <FontAwesomeIcon icon={faPenToSquare} />
               </Button>
-            )}
-            {/* {rules?.hasDelete && true */}
-            {true && (
+            }
+            {permissions?.hasDelete &&
               <Button
                 onClick={(event) => {
                   event.stopPropagation();
@@ -108,10 +106,10 @@ const Customers: NextPage = (props: any) => {
                 }}>
                 <FontAwesomeIcon icon={faTrash} />
               </Button>
-            )}
+            }
             <Button
               onClick={() => {
-                router.push('/shop/' + shopId + '/customers/' + row.id);
+                router.push('/shop/' + id + '/customers/' + row.id);
               }}>
               <FontAwesomeIcon icon={faEye} />
             </Button>
@@ -148,7 +146,7 @@ const Customers: NextPage = (props: any) => {
       setLocationSettings(
         _locs[
           _locs.findIndex((loc: any) => {
-            return loc.value == shopId;
+            return loc.value == id;
           })
         ]
       );
@@ -162,22 +160,41 @@ const Customers: NextPage = (props: any) => {
     setShow(false);
   };
   const onRowsSelectionHandler = (ids: any) => {};
+
+  const [permissions, setPermissions] = useState<any>();
+  useEffect(() => {
+    const perms = JSON.parse(localStorage.getItem('permissions')).filter(loc => loc.id==router.query.id)
+    const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
+    perms[0]?.permissions?.map((perm) =>
+      perm.name.includes('customers/show')
+        ? (getPermissions.hasView = true)
+        : perm.name.includes('customers/add')
+        ? (getPermissions.hasInsert = true)
+        : perm.name.includes('customers/update')
+        ? (getPermissions.hasEdit = true)
+        : perm.name.includes('customers/delete')
+        ? (getPermissions.hasDelete = true)
+        : null
+    );
+
+    setPermissions(getPermissions);
+  }, [router.asPath])
+
   return (
     <>
-      <AdminLayout shopId={shopId}>
+      <AdminLayout shopId={id}>
         <ToastContainer />
         <AlertDialog
           alertShow={show}
           alertFun={handleDeleteFuc}
-          shopId={shopId}
+          shopId={id}
           id={selectId}
           url={'customers'}>
           Are you Sure You Want Delete This Customer ?
         </AlertDialog>
         {/* start */}
         {/* router.push('/shop/' + shopId + '/customers/add') */}
-        {/* {!isLoading && rules?.hasInsert && ( */}
-        {!isLoading && (
+        {!isLoading && permissions?.hasInsert && (
           <div className="mb-2">
             <button
               className="btn btn-primary p-3"
@@ -219,7 +236,7 @@ const Customers: NextPage = (props: any) => {
         )}
       </AdminLayout>
       <Customermodal
-        shopId={shopId}
+        shopId={id}
         showType={showType}
         userdata={customer}
         customers={customers}
@@ -230,3 +247,9 @@ const Customers: NextPage = (props: any) => {
   );
 };
 export default withAuth(Customers);
+export async function getServerSideProps({ params }) {
+  const { id } = params
+  return {
+    props: {id},
+  }
+}

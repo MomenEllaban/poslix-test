@@ -14,20 +14,6 @@ import { motion } from 'framer-motion';
 import { useAppDispatch } from 'src/hooks';
 import { findAllData } from 'src/services/crud.api';
 
-const orderToCartMapping = (order: IReportData, location_id: number): ICart => {
-  return {
-    customer_id: order.contact_id,
-    cartCostTotal: +(order?.sub_total ?? 0),
-    cartSellTotal: +(order?.sub_total ?? 0),
-    cartTax: +(order?.tax ?? 0),
-    cartDiscount: +(order?.discount ?? 0),
-    location_id,
-    cartItems: [] as any[],
-
-    ...order,
-  };
-};
-
 export default function OrdersTable({ lang, shopId, searchQuery = '', closeModal }) {
   const dispatch = useAppDispatch();
 

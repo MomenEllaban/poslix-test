@@ -7,6 +7,7 @@ import * as cookie from 'cookie';
 import { useRouter } from 'next/router';
 import { useContext, useEffect, useState } from 'react';
 import { Button, ButtonGroup, Spinner, ToastContainer } from 'react-bootstrap';
+import withAuth from 'src/HOCs/withAuth';
 import PricingModal from 'src/components/pos/modals/PricingGroupsModal';
 import AlertDialog from 'src/components/utils/AlertDialog';
 import { ProductContext } from 'src/context/ProductContext';
@@ -16,7 +17,7 @@ import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/chec
 import { findAllData } from 'src/services/crud.api';
 
 const PricingGroups = (props) => {
-  const { shopId, rules } = props;
+  const { shopId, id } = props;
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
     // @ts-ignore
     value: 0,
@@ -83,14 +84,14 @@ const PricingGroups = (props) => {
               <Button
                 onClick={(event) => {
                   event.stopPropagation();
-                  // setSelectId(row.id);
-                  // setShow(true);
-                  const _data = [...pricingGroups];
-                  const idx = _data.findIndex((itm: any) => itm.id == row.id);
-                  if (idx != -1) {
-                    _data.splice(idx, 1);
-                    setPricingGroups(_data);
-                  }
+                  setSelectId(row.id);
+                  setShow(true);
+                  // const _data = [...pricingGroups];
+                  // const idx = _data.findIndex((itm: any) => itm.id == row.id);
+                  // if (idx != -1) {
+                  //   _data.splice(idx, 1);
+                  //   setPricingGroups(_data);
+                  // }
                 }}>
                 <FontAwesomeIcon icon={faTrash} />
               </Button>
@@ -120,16 +121,16 @@ const PricingGroups = (props) => {
   const [locations, setLocations] = useState<{ value: number; label: string }[]>([]);
   const [permissions, setPermissions] = useState<any>();
   useEffect(() => {
-    const perms = JSON.parse(localStorage.getItem('permissions'));
+    const perms = JSON.parse(localStorage.getItem('permissions')).filter(loc => loc.id==router.query.id);
     const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
-    perms.pos.map((perm) =>
-      perm.name.includes('getpricinggroup get GET')
+    perms[0]?.permissions.map((perm) =>
+      perm.name.includes('pricinggroup/view')
         ? (getPermissions.hasView = true)
-        : perm.name.includes('pricinggroup add POST')
+        : perm.name.includes('pricinggroup/add')
         ? (getPermissions.hasInsert = true)
-        : perm.name.includes('pricinggroup update PUT')
+        : perm.name.includes('pricinggroup/update')
         ? (getPermissions.hasEdit = true)
-        : perm.name.includes('pricinggroup delete DELETE')
+        : perm.name.includes('pricinggroup/delete')
         ? (getPermissions.hasDelete = true)
         : null
     );
@@ -165,15 +166,14 @@ const PricingGroups = (props) => {
   const onRowsSelectionHandler = (ids: any) => {};
   return (
     <>
-      <AdminLayout shopId={shopId}>
+      <AdminLayout shopId={id}>
         <ToastContainer />
         <AlertDialog
           alertShow={show}
           alertFun={handleDeleteFuc}
-          shopId={shopId}
+          shopId={id}
           id={selectId}
-          type="customer"
-          subType="deleteCustomer">
+          url="customers">
           Are you Sure You Want Delete This Customer ?
         </AlertDialog>
         {/* start */}
@@ -229,4 +229,10 @@ const PricingGroups = (props) => {
     </>
   );
 };
-export default PricingGroups;
+export default withAuth(PricingGroups);
+export async function getServerSideProps({ params }) {
+  const { id } = params
+  return {
+    props: {id},
+  }
+}

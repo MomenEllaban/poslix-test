@@ -30,7 +30,7 @@ import withAuth from 'src/HOCs/withAuth';
 import { createNewData, deleteData, findAllData, updateData } from 'src/services/crud.api';
 
 const Taxes: NextPage = (props: any) => {
-  const { shopId, rules } = props;
+  const { shopId, id } = props;
   const selectStyle = {
     control: (style: any) => ({
       ...style,
@@ -302,11 +302,11 @@ const Taxes: NextPage = (props: any) => {
   }, [router.asPath]);
   return (
     <>
-      <AdminLayout shopId={shopId}>
+      <AdminLayout shopId={id}>
         <ToastContainer />
         <AlertDialog
           alertShow={show}
-          shopId={shopId}
+          shopId={id}
           alertFun={handleDeleteFuc}
           id={selectId}
           url="taxes"
@@ -347,7 +347,7 @@ const Taxes: NextPage = (props: any) => {
 
         <AddGroupModal
           alertShow={groupModal}
-          shopId={shopId}
+          shopId={id}
           alertFun={(e: boolean) => setGroupModal(e)}
           id={selectId}
           type={selectType}
@@ -715,3 +715,9 @@ const Taxes: NextPage = (props: any) => {
   );
 };
 export default withAuth(Taxes);
+export async function getServerSideProps({ params }) {
+  const { id } = params
+  return {
+    props: {id},
+  }
+}

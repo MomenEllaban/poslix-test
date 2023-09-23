@@ -35,7 +35,7 @@ import { ToastContainer } from 'react-toastify';
 import { findAllData } from 'src/services/crud.api';
 
 export default function SalesList(props: any) {
-  const { rules } = props;
+  const { id } = props;
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
     // @ts-ignore
     value: 0,
@@ -108,7 +108,7 @@ export default function SalesList(props: any) {
             <Button onClick={() => {}}>
               <FontAwesomeIcon icon={faPenToSquare} />
             </Button>
-            {rules.hasDelete && (
+            {permissions.hasDelete && (
               <Button onClick={() => {}}>
                 <FontAwesomeIcon icon={faTrash} />
               </Button>
@@ -428,7 +428,25 @@ export default function SalesList(props: any) {
     }
   }
 
+  const [permissions, setPermissions] = useState<any>();
+
   useEffect(() => {
+    const perms = JSON.parse(localStorage.getItem('permissions')).filter(loc => loc.id==router.query.id)
+    const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
+    perms[0]?.permissions?.map((perm) =>
+      perm.name.includes('quotations-list/show')
+        ? (getPermissions.hasView = true)
+        : perm.name.includes('quotations-list/add')
+        ? (getPermissions.hasInsert = true)
+        : perm.name.includes('quotations-list/update')
+        ? (getPermissions.hasEdit = true)
+        : perm.name.includes('quotations-list/delete')
+        ? (getPermissions.hasDelete = true)
+        : null
+    );
+
+    setPermissions(getPermissions);
+
     var _locs = JSON.parse(localStorage.getItem('locations') || '[]');
     if (_locs.toString().length > 10)
       setLocationSettings(
@@ -482,12 +500,12 @@ export default function SalesList(props: any) {
     setHandleSearchTxt(e.target.value);
   };
   return (
-    <AdminLayout shopId={shopId}>
+    <AdminLayout shopId={id}>
       <ToastContainer />
       <AlertDialog
         alertShow={show}
         alertFun={handleDeleteFuc}
-        shopId={shopId}
+        shopId={id}
         id={selectId}
         type="transactions"
         subType="deleteSale"
@@ -688,4 +706,10 @@ export default function SalesList(props: any) {
       </Dialog>
     </AdminLayout>
   );
+}
+export async function getServerSideProps({ params }) {
+  const { id } = params
+  return {
+    props: {id},
+  }
 }

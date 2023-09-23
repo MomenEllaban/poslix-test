@@ -88,7 +88,6 @@ const NavMenu: any = ({ shopId }: any) => {
                 localStorage.setItem(ELocalStorageKeys.LANGUAGE, 'en');
                 setLang(en);
               }
-              Router.reload();
             }}>
             <i className="ri-global-fill" /> <span>{lang == ar ? 'EN' : 'العربية'}</span>
           </a>

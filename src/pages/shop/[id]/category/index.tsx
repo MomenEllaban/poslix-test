@@ -17,7 +17,7 @@ import { Toastify } from 'src/libs/allToasts';
 import withAuth from 'src/HOCs/withAuth';
 import { findAllData } from 'src/services/crud.api';
 
-const Category = ({ rules }: any) => {
+const Category = ({ id }: any) => {
   const [cats, setCats] = useState<{ id: number; name: string }[]>([]);
   const [brands, setBrands] = useState<{ id: number; name: string }[]>([]);
   const router = useRouter();
@@ -52,23 +52,23 @@ const Category = ({ rules }: any) => {
     const perms = JSON.parse(localStorage.getItem('permissions'));
     const getCategoryPermissions = {hasView: false, hasInsert: false, hasEdit: false, hasDelete: false}
     const getBrandPermissions = {hasView: false, hasInsert: false, hasEdit: false, hasDelete: false}
-    perms.category.map((perm) =>
-      perm.name.includes('GET') ? getCategoryPermissions.hasView = true
-      : perm.name.includes('POST') ? getCategoryPermissions.hasInsert = true
-      : perm.name.includes('PUT') ? getCategoryPermissions.hasEdit = true
-      : perm.name.includes('DELETE') ? getCategoryPermissions.hasDelete = true : null)
-    perms.category.map((perm) =>
-      perm.name.includes('GET') ? getBrandPermissions.hasView = true
-      : perm.name.includes('POST') ? getBrandPermissions.hasInsert = true
-      : perm.name.includes('PUT') ? getBrandPermissions.hasEdit = true
-      : perm.name.includes('DELETE') ? getBrandPermissions.hasDelete = true : null)
+    perms[0]?.permissions.map((perm) =>
+      perm.name.includes('categories/view') ? getCategoryPermissions.hasView = true
+      : perm.name.includes('categories/add') ? getCategoryPermissions.hasInsert = true
+      : perm.name.includes('categories/update') ? getCategoryPermissions.hasEdit = true
+      : perm.name.includes('categories/delete') ? getCategoryPermissions.hasDelete = true : null)
+    perms[0]?.permissions.map((perm) =>
+      perm.name.includes('brands/view') ? getBrandPermissions.hasView = true
+      : perm.name.includes('brands/add') ? getBrandPermissions.hasInsert = true
+      : perm.name.includes('brands/update') ? getBrandPermissions.hasEdit = true
+      : perm.name.includes('brands/delete') ? getBrandPermissions.hasDelete = true : null)
 
     setCategoryPermissions(getCategoryPermissions)
     setBrandPermissions(getBrandPermissions)
-  }, [])
+  }, [router.asPath])
   return (
     <>
-      <AdminLayout shopId={shopId}>
+      <AdminLayout shopId={id}>
         <AlertDialog
           alertShow={show}
           alertFun={(e: boolean) => {
@@ -89,12 +89,12 @@ const Category = ({ rules }: any) => {
                 onClick={() => {
                   if (key === 'categories' && categoryPermissions.hasInsert)
                     router.push({
-                      pathname: '/shop/' + shopId + '/category/add',
+                      pathname: '/shop/' + id + '/category/add',
                       query: { type: 'categories' },
                     });
                   else if (key === 'brands' && brandPermissions.hasInsert)
                     router.push({
-                      pathname: '/shop/' + shopId + '/category/add',
+                      pathname: '/shop/' + id + '/category/add',
                       query: { type: 'brands' },
                     });
                   else Toastify('error', 'Error On Add New');
@@ -137,7 +137,7 @@ const Category = ({ rules }: any) => {
                                     <Button
                                       onClick={() =>
                                         router.push({
-                                          pathname: '/shop/' + shopId + '/category/edit/' + ex.id,
+                                          pathname: '/shop/' + id + '/category/edit/' + ex.id,
                                           query: { type: 'categories' }
                                         })
                                       }>
@@ -204,7 +204,7 @@ const Category = ({ rules }: any) => {
                                     <Button
                                       onClick={() =>
                                         router.push({
-                                          pathname: '/shop/' + shopId + '/category/edit/' + ex.id,
+                                          pathname: '/shop/' + id + '/category/edit/' + ex.id,
                                           query: { type: 'brands' }
                                         })
                                       }>
@@ -243,3 +243,9 @@ const Category = ({ rules }: any) => {
   );
 };
 export default withAuth(Category);
+export async function getServerSideProps({ params }) {
+  const { id } = params
+  return {
+    props: {id},
+  }
+}

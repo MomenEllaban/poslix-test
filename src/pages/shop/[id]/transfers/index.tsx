@@ -27,8 +27,9 @@ import { Toastify } from 'src/libs/allToasts';
 import { ToastContainer } from 'react-toastify';
 import Transfermodal from '../../../../components/pos/modals/Transfermodal';
 import { findAllData } from 'src/services/crud.api';
+import withAuth from 'src/HOCs/withAuth';
 const Transfer: NextPage = (props: any) => {
-  const { shopId, rules } = props;
+  const { shopId, id } = props;
   const myLoader = (img: any) => img.src;
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
     // @ts-ignore
@@ -78,9 +79,9 @@ const Transfer: NextPage = (props: any) => {
 
   const [permissions, setPermissions] = useState<any>();
   useEffect(() => {
-    const perms = JSON.parse(localStorage.getItem('permissions'));
+    const perms = JSON.parse(localStorage.getItem('permissions')).filter(loc => loc.id==router.query.id);
     const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
-    perms.inventory.transfers.map((perm) =>
+    perms[0]?.permissions.map((perm) =>
         perm.name.includes('transfers/show')
         ? (getPermissions.hasView = true)
         : perm.name.includes('transfers/add')
@@ -205,12 +206,12 @@ const Transfer: NextPage = (props: any) => {
   }
   return (
     <>
-      <AdminLayout shopId={shopId}>
+      <AdminLayout shopId={id}>
         <ToastContainer />
         <AlertDialog
           alertShow={show}
           alertFun={handleDeleteFuc}
-          shopId={shopId}
+          shopId={id}
           id={selectId}
           url={'transfer'}>
           Are you Sure You Want Delete This Item ?
@@ -253,14 +254,21 @@ const Transfer: NextPage = (props: any) => {
         )}
       </AdminLayout>
       <Transfermodal
-        shopId={shopId}
+        shopId={id}
         showType={'add'}
         userdata={{}}
         customers={{}}
         statusDialog={customerIsModal}
         openDialog={customerModalHandler}
+        initData={initDataPage}
       />
     </>
   );
 };
-export default Transfer;
+export default withAuth(Transfer);
+export async function getServerSideProps({ params }) {
+  const { id } = params
+  return {
+    props: {id},
+  }
+}

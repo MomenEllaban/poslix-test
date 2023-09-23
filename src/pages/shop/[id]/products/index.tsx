@@ -1,7 +1,6 @@
 import { faBarcode, faPenToSquare, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { AdminLayout } from '@layout';
-import { ILocationSettings } from '@models/common-model';
 import { Button as MButton } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
@@ -27,17 +26,16 @@ import ShowPriceListModal from 'src/components/dashboard/modal/ShowPriceListModa
 import LocationModal from 'src/components/pos/modals/LocationModal';
 import AlertDialog from 'src/components/utils/AlertDialog';
 import { Toastify } from 'src/libs/allToasts';
-import { findAllData } from 'src/services/crud.api';
+import { createNewData, findAllData } from 'src/services/crud.api';
 import { ROUTES } from 'src/utils/app-routes';
-import { authApi } from 'src/utils/auth-api';
-import * as XLSX from 'xlsx';
 import { darkModeContext } from '../../../../context/DarkModeContext';
-import { apiInsertCtr } from '../../../../libs/dbUtils';
 import styles from './table.module.css';
 import { useUser } from 'src/context/UserContext';
+import withAuth from 'src/HOCs/withAuth';
 
 const Product: NextPage = (props: any) => {
-  const { rules } = props;
+  const { id } = props;
+  const [shopId, setShopId] = useState('');
   const myLoader = (img: any) => img.src;
   const {locationSettings,setLocationSettings }=useUser()
   const dataGridRef = useRef(null);
@@ -59,22 +57,10 @@ const Product: NextPage = (props: any) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [lastPage, setLastPage] = useState();
   const [totalRows, setTotalRows] = useState();
-  /*MOHAMMED MAHER */
   const { darkMode } = useContext(darkModeContext);
 
   const columns: GridColDef[] = [
-    // { field: "check", headerName: <Checkbox aria-label={"select-all"} onChange={(e: ChangeEvent<HTMLInputElement>)=>{
-    //   // if(e.target.checked) setSelectedItems([...selectedItems, row.id])
-    //   // else setSelectedItems(selectedItems.filter((id) => {return id !== row.id}))
-    // }} />,
-    // headerClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}` ,
-    // cellClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}`,
-    // minWidth: 10, renderCell: ({ row }: Partial<GridRowParams>) => (
-    //   <Checkbox aria-label={row.name} onChange={(e: ChangeEvent<HTMLInputElement>)=>{
-    //     if(e.target.checked) setSelectedItems([...selectedItems, row.id])
-    //     else setSelectedItems(selectedItems.filter((id) => {return id !== row.id}))
-    //   }} />
-    // ) },
+
     {
       field: 'id',
       headerName: '#',
@@ -136,29 +122,14 @@ const Product: NextPage = (props: any) => {
           );
       },
     },
-    // {
-    //   field: "min_price",
-    //   headerName: "Min",
-    //   flex: 1,
-    //   headerClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}` ,
-    //   cellClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}`,
-    //   renderCell: ({row}) => row.min_price
-    // },
-    // {
-    //   field: "max_price",
-    //   headerName: "Max",
-    //   flex: 1,
-    //   headerClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}` ,
-    //   cellClassName:`${darkMode ? "dark-mode-body" : "light-mode-body "}`,
-    //   renderCell: ({row}) => row.max_price
-    // },
+ 
     {
       field: 'category',
       headerName: 'Category',
       flex: 1,
       headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
-      renderCell: ({ row }) => <p>{row.name}</p>,
+      renderCell: ({ row }) => <p>{row.category?.name}</p>,
     },
     {
       field: 'stock',
@@ -211,35 +182,12 @@ const Product: NextPage = (props: any) => {
   const importFileClickHandler = () => {
     fileRef.current.click();
   };
-  const importFileHandler = (e: ChangeEvent<HTMLInputElement>) => {
-    const reader = new FileReader();
-    reader.readAsBinaryString(e.target.files[0]);
-    reader.onload = async (e) => {
-      const data = e.target.result;
-      const workbook = XLSX.read(data, { type: 'binary' });
-      const sheetName = workbook.SheetNames[0];
-      const sheet = workbook.Sheets[sheetName];
-      const parsedData: {
-        id: number;
-        name: string;
-        sku: string;
-        type: string;
-        qty: number;
-        sell: number;
-        category: string;
-      }[] = XLSX.utils.sheet_to_json(sheet);
-      const newData = parsedData.map((item) => {
-        delete item.id;
-        return { ...item, location_id: shopId };
-      });
-      const { success, newdata } = await apiInsertCtr({
-        type: 'products',
-        subType: 'importFromFile',
-        shopId,
-        data: newData,
-      });
-      if (success) initDataPage();
-    };
+  const importFileHandler = async (e: ChangeEvent<HTMLInputElement>) => {
+    const formData = new FormData()
+    formData.append('file', e.target.files[0])
+    const res = await createNewData(`products/${router.query.id}/import`, formData)
+    if (res.data.success) initDataPage();
+    else Toastify("error", "Something went wrong, please try again.");
   };
   function CustomToolbar() {
     const [isHovered, setIsHovered] = useState(false);
@@ -261,18 +209,7 @@ const Product: NextPage = (props: any) => {
         <input style={{ display: 'none' }} ref={fileRef} type="file" onChange={importFileHandler} />
         {/* /////////// */}
         <GridToolbarColumnsButton />
-        <div
-          style={{ color: '#1976d2', cursor: 'pointer' }}
-          className={`${locations?.length > 1 && selectedItems.length > 0 ? 'pe-auto' : 'pe-none'}`}
-          onClick={() => setLocationModal(true)}>
-          SEND
-        </div>
-        <div
-          style={{ color: '#1976d2', cursor: 'pointer', marginLeft: '0.5rem' }}
-          className={`${locations?.length > 1 && selectedItems.length > 0 ? 'pe-auto' : 'pe-none'}`}
-          onClick={() => setShowDeleteAll(true)}>
-          DELETE
-        </div>
+     
       </GridToolbarContainer>
     );
   }
@@ -280,23 +217,20 @@ const Product: NextPage = (props: any) => {
     setIsLoading(false);
     if (router.isReady) {
       const res = await findAllData(`products/${router.query.id}?all_data=1`);
+      if (!res.data.success) {
+        Toastify('error', 'Somthing wrong!!, try agian');
+        return;
+      }
       setProducts(res.data.result);
-      // setCurrentPage(res.data.result.current_page);
-      // setLastPage(res.data.result.last_page);
-      // setTotalRows(res.data.result.total);
-      // setFilteredProducts(data.products);
+      setFilteredProducts(res.data.result);
       setIsLoading(false);
     }
-    // if (!success) {
-    //   Toastify('error', 'Somthing wrong!!, try agian');
-    //   return;
-    // }
   }
   const [permissions, setPermissions] = useState<any>();
   useEffect(() => {
-    const perms = JSON.parse(localStorage.getItem('permissions'));
+    const perms = JSON.parse(localStorage.getItem('permissions')).filter(loc => loc.id==router.query.id)
     const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
-    perms.inventory.products.map((perm) =>
+    perms[0]?.permissions?.map((perm) =>
       perm.name.includes('products/show')
         ? (getPermissions.hasView = true)
         : perm.name.includes('products/add')
@@ -309,7 +243,8 @@ const Product: NextPage = (props: any) => {
     );
 
     setPermissions(getPermissions);
-
+  }, [router.asPath])
+  useEffect(() => {
     const _locs = JSON.parse(localStorage.getItem('locations') || '[]');
     setLocations(_locs);
     if (_locs.toString().length > 10)
@@ -357,8 +292,8 @@ const Product: NextPage = (props: any) => {
     if (searchTerm.trim()) {
       const filteredList = products.filter(
         (product) =>
-          product.name.includes(searchTerm.toLowerCase()) ||
-          product.sku.includes(searchTerm.toLowerCase())
+          product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          product.sku.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredProducts(filteredList);
     } else {
@@ -366,10 +301,9 @@ const Product: NextPage = (props: any) => {
     }
   }, [searchTerm, products]);
 
-  const [shopId, setShopId] = useState('');
   useEffect(() => {
     if (router.isReady) setShopId(router.query.id.toString());
-  }, []);
+  }, [router.asPath]);
 
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
@@ -377,12 +311,12 @@ const Product: NextPage = (props: any) => {
   const getRowClassName = () => styles.rowStyling;
   return (
     <>
-      <AdminLayout shopId={shopId}>
+      <AdminLayout shopId={id}>
         <ToastContainer />
         <AlertDialog
           alertShow={show}
           alertFun={handleDeleteFuc}
-          shopId={shopId}
+          shopId={id}
           id={selectId}
           url={'products'}>
           Are you Sure You Want Delete This Item?
@@ -390,14 +324,14 @@ const Product: NextPage = (props: any) => {
         <AlertDialog
           alertShow={showDeleteAll}
           alertFun={handleDeleteFuc}
-          shopId={shopId}
+          shopId={id}
           id={selectedItems}
           type="products"
           subType="deleteProducts">
           Are you Sure You Want Delete The Selected Items?
         </AlertDialog>
         <ShowPriceListModal
-          shopId={shopId}
+          shopId={id}
           productId={selectId}
           type={type}
           isOpenPriceDialog={isOpenPriceDialog}
@@ -409,9 +343,9 @@ const Product: NextPage = (props: any) => {
           locations={locations}
           data={selectedItems}
           setData={setSelectedItems}
-          shopId={shopId}
+          shopId={id}
           value={locations.findIndex((loc: any) => {
-            return loc.value == shopId;
+            return loc.value == id;
           })}
         />
         {/* start */}
@@ -442,16 +376,14 @@ const Product: NextPage = (props: any) => {
                     border: 'none',
                   },
                 }}
-                rows={products}
+                rows={filteredProducts}
                 columns={columns}
                 pageSize={10}
                 rowsPerPageOptions={[10]}
                 onSelectionModelChange={(ids: any) => onRowsSelectionHandler(ids)}
                 onCellClick={handleCellClick}
                 components={{ Toolbar: CustomToolbar }}
-                // rowCount={totalRows}
-                // onPageChange={(params) => setCurrentPage(params + 1)}
-                // pagination
+
               />
             </div>
           </>
@@ -465,7 +397,7 @@ const Product: NextPage = (props: any) => {
   );
 };
 
-export default Product;
+export default withAuth(Product);
 /**
  * @description get server side props
  * @param {any} context
@@ -475,25 +407,9 @@ export default Product;
  * check user permissions
  *
  */
-export async function getServerSideProps(context: any) {
-  // check if the user is logged in
-  const session = await getSession(context);
-  if (!session) return { redirect: { permanent: false, destination: ROUTES.AUTH } };
-
-  const shopId = context.query.id;
-  if (!shopId) return { redirect: { permanent: false, destination: '/page403' } };
-
+export async function getServerSideProps({ params }) {
+  const { id } = params
   return {
-    props: {
-      permissions: {},
-      shopId,
-      rules: {
-        //! this should be dynamic
-        hasDelete: true,
-        hasEdit: true,
-        hasView: true,
-        hasInsert: true,
-      },
-    },
-  };
+    props: {id},
+  }
 }

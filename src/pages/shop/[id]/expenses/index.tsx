@@ -38,7 +38,7 @@ import withAuth from 'src/HOCs/withAuth';
 import { findAllData } from 'src/services/crud.api';
 
 const Expenses: NextPage = (props: any) => {
-  const { shopId, rules } = props;
+  const { shopId, id } = props;
   const [cate, setCate] = useState<{ id: number; name: string; isNew: boolean }[]>([]);
   const [expensesList, setExpensesList] = useState<IExpenseList[]>([]);
   const [show, setShow] = useState(false);
@@ -118,7 +118,7 @@ const Expenses: NextPage = (props: any) => {
   const [permissions, setPermissions] = useState<any>();
   const [catPermissions, setCatPermissions] = useState<any>();
   useEffect(() => {
-    const perms = JSON.parse(localStorage.getItem('permissions'));
+    const perms = JSON.parse(localStorage.getItem('permissions')).filter(loc => loc.id==router.query.id);
     const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
     const getCatPermissions = {
       hasCategories: false,
@@ -236,7 +236,7 @@ const Expenses: NextPage = (props: any) => {
   };
   return (
     <>
-      <AdminLayout shopId={shopId}>
+      <AdminLayout shopId={id}>
         <ToastContainer />
         <AlertDialog alertShow={show} alertFun={handleDeleteFuc} id={selectId} url={type}>
           Are you Sure You Want Delete This Item ?
@@ -294,7 +294,7 @@ const Expenses: NextPage = (props: any) => {
                       setExpensesList={setExpensesList}
                       rows={expensesList}
                       setIsAddExpense={setIsAddExpense}
-                      shopId={shopId}
+                      shopId={id}
                       cats={categories}
                     />
                   )}
@@ -370,3 +370,9 @@ const Expenses: NextPage = (props: any) => {
   );
 };
 export default withAuth(Expenses);
+export async function getServerSideProps({ params }) {
+  const { id } = params
+  return {
+    props: {id},
+  }
+}

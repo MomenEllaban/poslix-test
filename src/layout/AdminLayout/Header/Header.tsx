@@ -55,7 +55,27 @@ export default function Header(props: HeaderProps) {
         <div className="header-nav d-none d-md-flex">
           <HeaderFeaturedNav />
         </div>
+        {/* <Dropdown className="header-nav ms-auto">
+          <Dropdown.Toggle variant="success" id="dropdown-basic">
+            <FontAwesomeIcon icon={faLanguage} />
+          </Dropdown.Toggle>
 
+          <Dropdown.Menu>
+            <Dropdown.Item className="d-flex align-items-center">
+              <GiArabicDoor className="me-2" />
+              Arabic
+            </Dropdown.Item>
+            {
+              <Dropdown.Item className="d-flex align-items-center">
+                <RiEnglishInput className="me-2" />
+                English
+              </Dropdown.Item>
+            }
+          </Dropdown.Menu>
+        </Dropdown> */}
+        {/* <div className="ms-2">
+          <DarkModeToggle />
+        </div> */}
         <div className="header-nav ms-auto">
           <div>Hi {fullname}</div>
         </div>

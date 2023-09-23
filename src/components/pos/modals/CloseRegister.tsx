@@ -33,6 +33,7 @@ const CloseRegister = ({ openDialog, statusDialog, shopId }: any) => {
   const { products, setProducts, customers, setCustomers } = useProducts();
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [handCash, setHandCash] = useState(0);
   const [cash, setCash] = useState(0);
   const [card, setCard] = useState(0);
   const [bank, setBank] = useState(0);
@@ -50,12 +51,16 @@ const CloseRegister = ({ openDialog, statusDialog, shopId }: any) => {
   };
   useEffect(() => {
     if (!statusDialog) return;
+    setHandCash(+JSON.parse(localStorage.getItem('posRegister')).hand_cash)
     setOpen(statusDialog);
     getCloseData()
   }, [statusDialog]);
 
   const closeRegisterReq = async () => {
-    const res = await createNewData(`registration/${shopId}/close`, {note})
+    const res = await createNewData(`registration/${shopId}/close`, {
+      hand_cash: handCash,
+      note
+    })
     if(res.data.success) {
       handleClose();
       setJobType({ req: 101, val: 'closeRegister' });
@@ -102,6 +107,18 @@ const CloseRegister = ({ openDialog, statusDialog, shopId }: any) => {
               <div className="modal-content">
                 <div className="modal-body">
                   <div className="close-register-box">
+                  <div className="close-item">
+                      <div className="close-item-inner">
+                        <div className="close-item-inner-icon">
+                          <FontAwesomeIcon icon={faCreditCard} />
+                        </div>
+                        <p className="close-item-title">Cash in hand</p>
+                        <p className="close-item-title">
+                          {Number(handCash).toFixed(3)}{' '}
+                          {locationSettings?.currency_code}
+                        </p>
+                      </div>
+                    </div>
                     <div className="close-item">
                       <div className="close-item-inner">
                         <div className="close-item-inner-icon">
@@ -155,7 +172,7 @@ const CloseRegister = ({ openDialog, statusDialog, shopId }: any) => {
                         <div className="report-name">Total Sales</div>
                       </div>
                       <div className="report-items-value">
-                        {(cash + cheque + card + bank).toFixed(3)}{' '}
+                        {(cash + cheque + card + bank + handCash).toFixed(3)}{' '}
                         {locationSettings?.currency_code}
                       </div>
                     </div>

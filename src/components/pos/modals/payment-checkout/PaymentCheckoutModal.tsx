@@ -19,11 +19,10 @@ import { useAppDispatch, useAppSelector } from 'src/hooks';
 import { clearCart, selectCartByLocation } from 'src/redux/slices/cart.slice';
 import api from 'src/utils/app-api';
 
-export default function PaymentCheckoutModal({ show, setShow, shopId }) {
+export default function PaymentCheckoutModal({ show, setShow, shopId, invoiceType }) {
   const dispatch = useAppDispatch();
   const { locationSettings, tailoringSizes, invoicDetails, tailoringExtras } = useUser();
   const componentRef = React.useRef(null);
-  let invoiceType: { value: string } = { value: '' };
   const [customer, setCustomer] = useState<{
     value: string;
     label: string;
@@ -111,7 +110,8 @@ export default function PaymentCheckoutModal({ show, setShow, shopId }) {
     api
       .post('/checkout', checkoutData)
       .then((res) => {
-        console.log(res);
+        console.log(res.data);
+        console.log(res.data.result.payment);
         setPrintReceipt(res.data.result)
         setPrint(true)
         setShow(false)

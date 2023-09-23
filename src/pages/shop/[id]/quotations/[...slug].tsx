@@ -376,17 +376,18 @@ const AddQuotations: NextPage = (props: any) => {
   }
 
   async function insertPurchase() {
-    console.log(formObj);
     const quotationData = {
       customer_id: formObj.supplier_id,
-      status: "active",
+      status: formObj.purchaseStatus,
+      paymentStatus: formObj.paymentStatus,
+      paymentDate: formObj.paymentDate,
+      paymentType: formObj.paymentType,
       location_id: router.query.id,
       quotationsLines: selectProducts.map(prod => {
-        return {product_id: prod.id, qty: prod.quantity, price_group: 77}
+        return {product_id: prod.id, qty: prod.quantity}
       })
     }
-      console.log(quotationData);
-      
+      console.log(quotationData)
     const res = await createNewData('quotations-list', quotationData)
     if (!res.data.success) {
       alert('Has Error ,try Again');
@@ -580,8 +581,6 @@ const AddQuotations: NextPage = (props: any) => {
     }
   };
   const deleteTableRows = (index: any) => {
-    console.log(index, selectedExpends);
-
     const _rows = [...selectedExpends];
     _rows.splice(index, 1);
     console.log(_rows);
@@ -684,7 +683,6 @@ const AddQuotations: NextPage = (props: any) => {
       return;
     }
     const found = selectProducts.some((el) => el.id === e.id);
-    console.log(e);
     if (!found) {
       setSelectProducts([
         ...selectProducts,

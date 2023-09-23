@@ -25,7 +25,7 @@ export const OrderCalcs = ({
   const { locationSettings } = useUser();
 
   const selectCartForLocation = selectCartByLocation(shopId);
-  const cart = useAppSelector(selectCartForLocation); // current location order
+  const cart = useAppSelector(selectCartForLocation); // current location order  
 
   const [isDiscountModalOpen, setIsDiscountModalOpen] = useState(false);
 

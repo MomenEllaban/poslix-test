@@ -306,38 +306,49 @@ export interface IExpenseList {
   expense_id: number;
   date: Date;
 }
+
 export interface IinvoiceDetails {
   logo: string;
+  location_id: string;
   name: string;
+  email: string;
+  address: string;
   tell: string;
+  txtCustomer: string;
+  txtCustomer2: string;
+  orderNo: string;
+  orderNo2: string;
+  txtDate: string;
+  txtDate2: string;
+  txtQty: string;
+  txtQty2: string;
+  txtItem: string;
+  txtItem2: string;
+  txtAmount: string;
+  txtAmount2: string;
+  txtTax: string;
+  txtTax2: string;
+  txtTotal: string;
+  txtTotal2: string;
+  vatNumber: string;
+  customerNumber: string;
+  description: string;
+  subTotal: string;
+  unitPrice: string;
   date: Date;
   footer: string;
   footersecond: string;
   footer2?: string;
   isMultiLang: boolean;
-  orderNo: string;
-  orderNo2?: string;
-  txtDate: string;
-  txtDate2?: string;
-  txtQty: string;
-  txtQty2?: string;
-  txtItem: string;
-  txtItem2?: string;
-  txtAmount: string;
-  txtAmount2?: string;
-  txtTax: string;
   txtDiscount: string;
-  txtTotal: string;
-  txtTax2?: string;
-  txtDiscount2?: string;
-  txtTotal2?: string;
+  txtDiscount2: string;
   txtAmountpaid: string;
   txtAmountpaid2: string;
   txtTotalDue: string;
   txtTotalDue2: string;
-  txtCustomer: string;
-  txtCustomer2?: string;
 }
+
+
 
 export interface IPackItem {
   parent_id: number;
