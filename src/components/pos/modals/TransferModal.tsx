@@ -1,25 +1,97 @@
-import React, { useState, useContext, useEffect } from 'react';
-import { apiFetch, apiUpdateCtr, apiInsertCtr, apiFetchCtr } from '../../../libs/dbUtils';
+import { faSearch, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { ITransferItem } from '@models/common-model';
+import { debounce } from '@mui/material';
+import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import { ProductContext } from '../../../context/ProductContext';
-import CircularProgress from '@mui/material/CircularProgress';
-import Box from '@mui/material/Box';
-import SnakeAlert from '../utils/SnakeAlert';
-import mStyle from '../../../styles/Customermodal.module.css';
-import { Toastify } from 'src/libs/allToasts';
-import { Button, ButtonGroup } from 'react-bootstrap';
 import { DataGrid, GridColDef, GridRowParams, GridSelectionModel } from '@mui/x-data-grid';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faSearch } from '@fortawesome/free-solid-svg-icons';
-import { debounce } from '@mui/material';
-import { ITransferItem } from '@models/common-model';
-import { createNewData, findAllData, updateData } from 'src/services/crud.api';
 import { useRouter } from 'next/router';
+import React, { useContext, useEffect, useState } from 'react';
+import { Button, ButtonGroup, Table } from 'react-bootstrap';
+import Select from 'react-select';
+import MainModal from 'src/components/modals/MainModal';
+import { Toastify } from 'src/libs/allToasts';
+import { createNewData, findAllData } from 'src/services/crud.api';
+import { ProductContext } from '../../../context/ProductContext';
+import { IProduct } from '@models/pos.types';
+import FormField from 'src/components/form/FormField';
+import { BiPlusCircle } from 'react-icons/bi';
+import { useForm, useFieldArray, useWatch, Control } from 'react-hook-form';
 
-const Transfermodal = (props: any) => {
+interface IProductTransfer {
+  product_id: number;
+  transferred_product_id: number;
+  variation_id?: number;
+  transferred_variation_id?: number;
+  qty: number;
+  cost: number;
+  price: number;
+  note?: string;
+}
+
+type FormValues = {
+  cart: IProductTransfer[];
+};
+
+const colourStyles = {
+  control: (style: any, state: any) => ({
+    ...style,
+    borderRadius: '10px',
+    background: '#f5f5f5',
+    height: '50px',
+    outline: state.isFocused ? '2px solid #045c54' : 'none',
+    boxShadow: 'none',
+    '&:hover': {
+      outline: '2px solid #045c54 ',
+    },
+  }),
+  menu: (provided: any, state: any) => ({
+    ...provided,
+    borderRadius: '10px',
+    padding: '10px', // Add padding to create space
+    border: '1px solid #c9ced2',
+  }),
+  option: (provided: any, state: any) => ({
+    ...provided,
+    backgroundColor: state.isSelected ? '#e6efee' : 'white',
+    color: '#2e776f',
+    borderRadius: '10px',
+    '&:hover': {
+      backgroundColor: '#e6efee',
+      color: '#2e776f',
+      borderRadius: '10px',
+    },
+    margin: '5px 0', // Add margin to create space between options
+  }),
+};
+
+const options = [
+  { value: 'chocolate', label: 'Chocolate' },
+  { value: 'strawberry', label: 'Strawberry' },
+  { value: 'vanilla', label: 'Vanilla' },
+];
+
+const transferItem = {
+  product_id: 0, //  "required|numeric:exists:products,id",
+  transferred_product_id: 0, //  "required|numeric:exists:products,id",
+  variation_id: null, //  "nullable|numeric:exists:variations,id",
+  transferred_variation_id: null, //  "required|numeric:exists:variations,id",
+  qty: 0, //  "required|numeric",
+  cost: 0, //  "required|numeric",
+  price: 0, //  "required|numeric",
+  note: '', //  "nullable|string",
+};
+
+const TransferModal = (props: any) => {
   const { openDialog, statusDialog, userdata, showType, shopId } = props;
+
+  const [fromProductslist, setFromProductsList] = useState<any[]>([]);
+  const [toProductslist, setToProductsList] = useState<any[]>([]);
+  const [transferProducts, setTransferProducts] = useState<any[]>([]);
+  const [selectedLocations, setSelectedLocations] = useState({ from: 0, to: 0 });
 
   const [products, setProducts] = useState<
     {
@@ -47,7 +119,7 @@ const Transfermodal = (props: any) => {
 
   const { customers, setCustomers } = useContext(ProductContext);
   const [open, setOpen] = useState(false);
-  const router = useRouter()
+  const router = useRouter();
   // JSON.parse(localStorage.getItem('locations') || '[]')
   const [locations, setLocations] = useState<{ value: number; label: string }[]>([]);
 
@@ -65,9 +137,11 @@ const Transfermodal = (props: any) => {
     }
     // getCustomerInfo(userdata.value);
     var _locs = JSON.parse(localStorage.getItem('locations') || '[]');
-    setLocations(_locs.map((loc) => {
-      return {...loc, label: loc.location_name, value: loc.location_id}
-    }));
+    setLocations(
+      _locs.map((loc) => {
+        return { ...loc, label: loc.location_name, value: loc.location_id };
+      })
+    );
   }, [statusDialog]);
 
   useEffect(() => {
@@ -156,24 +230,45 @@ const Transfermodal = (props: any) => {
   };
 
   async function initDataPage() {
-    if(router.isReady) {
-      transferInfo.locationFrom = Number(router.query.id)
-      transferInfo.locationTo = Number(router.query.id)
-      const res = await findAllData(`products/${router.query.id}?all_data=1`)
+    if (router.isReady) {
+      transferInfo.locationFrom = Number(router.query.id);
+      transferInfo.locationTo = Number(router.query.id);
+      const res = await findAllData(`products/${router.query.id}?all_data=1`);
       if (!res.data.success) {
         Toastify('error', 'Somthing wrong!!, try agian');
         return;
       }
-      var products = res.data.result.map((ele) => {
-        const subtotal = ele.sell_price * 1;
-        return { id: ele.id, name: ele.name, subtotal: subtotal, unitPrice: ele.sell_price, qty: 1 };
+      const products = res.data.result.map((product: IProduct) => {
+        console.log(product);
       });
 
-      setProducts(products);
-      setFilteredProducts(products);
+      // setProducts(products);
+      // setFilteredProducts(products);
       setIsLoading(false);
     }
   }
+
+  const getLocationProducts = async (location_id, setState) => {
+    const res = await findAllData(`products/${location_id}?all_data=1`);
+    if (!res.data.success) {
+      Toastify('error', 'Somthing wrong!!, try agian');
+      return;
+    }
+    const products = res.data.result.map((product: IProduct) => ({
+      ...product,
+      label: product.name,
+      value: product.id,
+    }));
+    setState(products);
+  };
+
+  useEffect(() => {
+    getLocationProducts(selectedLocations.from, setFromProductsList);
+  }, [selectedLocations.from]);
+
+  useEffect(() => {
+    getLocationProducts(selectedLocations.to, setToProductsList);
+  }, [selectedLocations.to]);
 
   const handelChangeQty = (event: React.ChangeEvent<HTMLInputElement>, id: number) => {
     const value = event.target.value;
@@ -183,15 +278,15 @@ const Transfermodal = (props: any) => {
     prods[idx].subtotal = +value * prods[idx].unitPrice;
     setProducts(prods);
     if (transferInfo.products.some((prod) => prod.id === id)) {
-      const newProducts =  transferInfo.products.map((prod) => {
-        if(prod.id === id) {
-          console.log({...prod, qty: +value});
-          return {...prod, qty: +value}
-        } else return {...prod}
-      })
+      const newProducts = transferInfo.products.map((prod) => {
+        if (prod.id === id) {
+          console.log({ ...prod, qty: +value });
+          return { ...prod, qty: +value };
+        } else return { ...prod };
+      });
       setTransferInfo({
         ...transferInfo,
-        products: [...newProducts]
+        products: [...newProducts],
       });
     }
   };
@@ -321,31 +416,178 @@ const Transfermodal = (props: any) => {
           name: products[idx].name,
           qty: products[idx].qty,
           sell: products[idx].unitPrice,
-          totalPrice: products[idx].subtotal
-        }
+          totalPrice: products[idx].subtotal,
+        },
       ],
     });
   };
 
   const handleTransfer = async () => {
-    const data = {location_id: transferInfo.locationTo,
+    const data = {
+      location_id: transferInfo.locationTo,
       transferred_location_id: transferInfo.locationFrom,
       ref_no: transferInfo.refNo,
       status: transferInfo.status,
       notes: transferInfo.notes,
-      cart: transferInfo.products.map(prod => {
-        return {product_id: prod.id, qty: prod.qty, cost: prod.sell, price: prod.totalPrice, note: ''}
+      cart: transferInfo.products.map((prod) => {
+        return {
+          product_id: prod.id,
+          qty: prod.qty,
+          cost: prod.sell,
+          price: prod.totalPrice,
+          note: '',
+        };
       }),
-    }
+    };
     let res;
     console.log(data);
-    if(showType === 'add') {
-      res = await createNewData('transfer', data)
+    if (showType === 'add') {
+      res = await createNewData('transfer', data);
     } else {
       // res = await updateData('transfer', )
     }
-    if(res.data.success) setOpen(false);
-  }
+    if (res.data.success) setOpen(false);
+  };
+
+  const { control, register } = useForm<FormValues>({
+    defaultValues: {
+      cart: [
+        {
+          product_id: 0,
+          transferred_product_id: 0,
+          qty: 0,
+        },
+      ],
+    },
+    mode: 'onBlur',
+  });
+  const { fields, append, prepend, remove, swap, move, insert } = useFieldArray({
+    control,
+    name: 'cart',
+  });
+  const onSubmit = (data: FormValues) => console.log(data);
+
+  //! check if from and to is the same locations
+  return (
+    <MainModal
+      size="xl"
+      fullScreen="sm-down"
+      scrollabe
+      show={open}
+      setShow={setOpen}
+      title={showType + ' stock transfer'}
+      body={
+        <div className="overflow-hidden">
+          <div className="d-flex flex-row gap-3 w-100">
+            <div className="d-flex flex-column w-50">
+              <p>From</p>
+              <Select
+                styles={colourStyles}
+                value={locations.find((location) => location.value === selectedLocations.from)}
+                isLoading={isLoading}
+                isSearchable
+                name="location_from"
+                onChange={({ value, label }) => {
+                  setSelectedLocations((prev) => ({
+                    ...prev,
+                    from: value,
+                  }));
+                }}
+                options={locations}
+              />
+            </div>
+            <div className="d-flex flex-column w-50">
+              <p>To</p>
+              <Select
+                styles={colourStyles}
+                value={locations.find((location) => location.value === selectedLocations.to)}
+                isLoading={isLoading}
+                isSearchable
+                name="location_to"
+                onChange={({ value, label }) => {
+                  setSelectedLocations((prev) => ({
+                    ...prev,
+                    to: value,
+                  }));
+                }}
+                options={locations}
+              />
+            </div>
+          </div>
+          <div
+            style={{
+              maxWidth: '100%',
+              overflow: 'auto',
+            }}>
+            <Table
+              style={{
+                tableLayout: 'fixed',
+                overflowX: 'auto',
+              }}>
+              <thead>
+                <tr>
+                  <th style={{ width: '15rem' }}>From</th>
+                  <th style={{ width: '15rem' }}>To</th>
+                  <th style={{ width: '14rem' }}>Details</th>
+                  <th style={{ width: '10rem' }}>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {fields.map((field, index) => (
+                  <tr key={field.id}>
+                    <td>
+                      <Select
+                        styles={colourStyles}
+                        isLoading={isLoading}
+                        isSearchable
+                        name="product_from"
+                        options={fromProductslist}
+                      />
+                    </td>
+                    <td>
+                      <Select
+                        styles={colourStyles}
+                        isLoading={isLoading}
+                        isSearchable
+                        name="product_to"
+                        options={toProductslist}
+                      />
+                    </td>
+                    <td>
+                      <div className="d-flex flex-row gap-3">
+                        <FormField
+                          name={`cart.${index}.qty`}
+                          label="Qty"
+                          errors={{}}
+                          register={register}
+                        />
+                        <FormField name={`cart.${index}.cost`} label="Cost" errors={{}} />
+                        <FormField name={`cart.${index}.price`} label="Price" errors={{}} />
+                        <FormField name={`cart.${index}.note`} label="Note" errors={{}} />
+                      </div>
+                    </td>
+                    <td>
+                      <Button
+                        className="h-100"
+                        onClick={() =>
+                          append({
+                            product_id: 0,
+                            transferred_product_id: 0,
+                            qty: 0,
+                          })
+                        }>
+                        <BiPlusCircle />
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
+        </div>
+      }
+    />
+  );
   return (
     <>
       <Dialog open={open} className="poslix-modal" onClose={handleClose} maxWidth={'xl'}>
@@ -489,7 +731,7 @@ const Transfermodal = (props: any) => {
                           onSelectionModelChange={(ids: GridSelectionModel) => {
                             console.log(ids);
                             let lastId = [...ids].pop();
-                            
+
                             onRowsSelectionHandler(lastId);
                             // console.log('idddddddddd', ids);
                           }}
@@ -560,4 +802,4 @@ const Transfermodal = (props: any) => {
   );
 };
 
-export default Transfermodal;
+export default TransferModal;

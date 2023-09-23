@@ -13,7 +13,7 @@ import AlertDialog from 'src/components/utils/AlertDialog';
 import { Toastify } from 'src/libs/allToasts';
 import CustomToolbar from 'src/modules/reports/_components/CustomToolbar';
 import { findAllData } from 'src/services/crud.api';
-import Transfermodal from '../../../../components/pos/modals/Transfermodal';
+import TransferModal from '../../../../components/pos/modals/TransferModal';
 
 const Transfer: NextPage = (props: any) => {
   const { shopId, rules } = props;
@@ -242,7 +242,7 @@ const Transfer: NextPage = (props: any) => {
           </div>
         )}
       </AdminLayout>
-      <Transfermodal
+      <TransferModal
         shopId={shopId}
         showType={'add'}
         userdata={{}}
