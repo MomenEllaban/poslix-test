@@ -121,8 +121,6 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
       : perm.name === 'quotations-list/view' ? (getPermissions.hasQuotations = true)
       : null
     );
-    console.log(getPermissions);
-
     setPermissions(getPermissions);
   }, [router.query.id]);
 

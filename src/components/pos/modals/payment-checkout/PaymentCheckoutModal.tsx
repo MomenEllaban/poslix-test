@@ -20,6 +20,8 @@ import { clearCart, selectCartByLocation } from 'src/redux/slices/cart.slice';
 import api from 'src/utils/app-api';
 
 export default function PaymentCheckoutModal({ show, setShow, shopId, invoiceType }) {
+  console.log(invoiceType);
+  
   const dispatch = useAppDispatch();
   const { locationSettings, tailoringSizes, invoicDetails, tailoringExtras } = useUser();
   const componentRef = React.useRef(null);
@@ -132,7 +134,7 @@ export default function PaymentCheckoutModal({ show, setShow, shopId, invoiceTyp
 
   class ComponentToPrint extends React.PureComponent {
     render() {
-      return invoiceType?.value === 'receipt' ? (
+      return invoiceType === 'receipt' ? (
         <div className="bill">
           <div className="brand-logo">
             <img src={invoicDetails.logo} />
@@ -190,7 +192,7 @@ export default function PaymentCheckoutModal({ show, setShow, shopId, invoiceTyp
                 </td>
                 <td></td>
                 <td>
-                  {(printReceipt.totalPrice).toFixed(locationSettings?.location_decimal_places)}
+                  {(+printReceipt?.total_price).toFixed(locationSettings?.location_decimal_places)}
                 </td>
               </tr>
               <tr className="net-amount">
@@ -200,7 +202,7 @@ export default function PaymentCheckoutModal({ show, setShow, shopId, invoiceTyp
                   {invoicDetails.isMultiLang && invoicDetails.txtDiscount2}
                 </td>
                 <td></td>
-                <td>{totalDiscount.toFixed(locationSettings?.location_decimal_places)}</td>
+                <td>{(+printReceipt?.discount_amount).toFixed(locationSettings?.location_decimal_places)}</td>
               </tr>
               <tr className="net-amount">
                 <td></td>
@@ -212,7 +214,7 @@ export default function PaymentCheckoutModal({ show, setShow, shopId, invoiceTyp
                   {/* {Number(__WithDiscountFeature__total + (totalAmount - printReceipt.totalPrice)).toFixed(
                     locationSettings?.location_decimal_places
                   )} */}
-                  {Number((printReceipt.totalPrice)).toFixed(
+                  {Number((printReceipt?.total_price)).toFixed(
                     locationSettings?.location_decimal_places
                   )}
                 </td>

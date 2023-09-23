@@ -84,14 +84,14 @@ const PricingGroups = (props) => {
               <Button
                 onClick={(event) => {
                   event.stopPropagation();
-                  setSelectId(row.id);
-                  setShow(true);
-                  // const _data = [...pricingGroups];
-                  // const idx = _data.findIndex((itm: any) => itm.id == row.id);
-                  // if (idx != -1) {
-                  //   _data.splice(idx, 1);
-                  //   setPricingGroups(_data);
-                  // }
+                  // setSelectId(row.id);
+                  // setShow(true);
+                  const _data = [...pricingGroups];
+                  const idx = _data.findIndex((itm: any) => itm.id == row.id);
+                  if (idx != -1) {
+                    _data.splice(idx, 1);
+                    setPricingGroups(_data);
+                  }
                 }}>
                 <FontAwesomeIcon icon={faTrash} />
               </Button>
@@ -108,20 +108,18 @@ const PricingGroups = (props) => {
     },
   ];
   async function initDataPage() {
-    if(router.isReady) {
-      const res = await findAllData(`pricing-group/${router.query.id}`)
-      if (!res.data.success) {
-        Toastify('error', 'Somthing wrong!!, try agian');
-        return;
-      }
-      setPricingGroups(res.data.result.pricingGroup);
-      setIsLoading(false);
+    const res = await findAllData(`pricing-group/${id}`)
+    if (!res.data.success) {
+      Toastify('error', 'Somthing wrong!!, try agian');
+      return;
     }
+    setPricingGroups(res.data.result.data);
+    setIsLoading(false);
   }
   const [locations, setLocations] = useState<{ value: number; label: string }[]>([]);
   const [permissions, setPermissions] = useState<any>();
   useEffect(() => {
-    const perms = JSON.parse(localStorage.getItem('permissions')).filter(loc => loc.id==router.query.id);
+    const perms = JSON.parse(localStorage.getItem('permissions')).filter(loc => loc.id==id);
     const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
     perms[0]?.permissions.map((perm) =>
       perm.name.includes('pricinggroup/view')
@@ -143,13 +141,13 @@ const PricingGroups = (props) => {
       setLocationSettings(
         _locs[
           _locs.findIndex((loc: any) => {
-            return loc.value == shopId;
+            return loc.value == id;
           })
         ]
       );
     else alert('errorr location settings');
     initDataPage();
-  }, [router.asPath]);
+  }, []);
 
   const handleDeleteFuc = (result: boolean, msg: string, section: string) => {
     if (result) {
@@ -190,28 +188,26 @@ const PricingGroups = (props) => {
             </button>
           </div>
         )}
-        {!isLoading ? (
-          <>
-            <div className="page-content-style card">
-              <h5>Pricing Group List</h5>
-              <DataGrid
-                className="datagrid-style"
-                sx={{
-                  '.MuiDataGrid-columnSeparator': {
-                    display: 'none',
-                  },
-                  '&.MuiDataGrid-root': {
-                    border: 'none',
-                  },
-                }}
-                rows={pricingGroups}
-                columns={columns}
-                pageSize={10}
-                rowsPerPageOptions={[10]}
-                onSelectionModelChange={(ids: any) => onRowsSelectionHandler(ids)}
-              />
-            </div>
-          </>
+        {!isLoading && pricingGroups?.length > 0 ? (
+          <div className="page-content-style card">
+            <h5>Pricing Group List</h5>
+            <DataGrid
+              className="datagrid-style"
+              sx={{
+                '.MuiDataGrid-columnSeparator': {
+                  display: 'none',
+                },
+                '&.MuiDataGrid-root': {
+                  border: 'none',
+                },
+              }}
+              rows={pricingGroups}
+              columns={columns}
+              pageSize={10}
+              rowsPerPageOptions={[10]}
+              onSelectionModelChange={(ids: any) => onRowsSelectionHandler(ids)}
+            />
+          </div>
         ) : (
           <div className="d-flex justify-content-around">
             <Spinner animation="grow" />
