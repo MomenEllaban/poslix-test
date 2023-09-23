@@ -212,7 +212,7 @@ export default function SalesListTable(props: any) {
                 {invoiceDetails.txtCustomer}{' '}
                 {invoiceDetails.isMultiLang && invoiceDetails.txtCustomer2}
               </div>
-              <div>{selectRow.customer_name}</div>
+              <div>{selectRow.contact_name}</div>
             </div>
             <div className="flex justify-between">
               <div>
@@ -251,10 +251,10 @@ export default function SalesListTable(props: any) {
                 lines.map((line: any, index: number) => {
                   return (
                     <tr key={index}>
-                      <td>{Number(line.qty).toFixed(0)}</td>
+                      <td>{Number(line.pivot.qty).toFixed(0)}</td>
                       <td>{line.name}</td>
                       <td></td>
-                      <td>{line.price}</td>
+                      <td>{+line.pivot.qty * +line.pivot.price}</td>
                     </tr>
                   );
                 })}
@@ -264,7 +264,16 @@ export default function SalesListTable(props: any) {
                   {invoiceDetails.txtTax} {invoiceDetails.isMultiLang && invoiceDetails.txtTax2}
                 </td>
                 <td></td>
-                {/* <td>{(selectRow.total_price).toFixed(locationSettings?.location_decimal_places)}</td> */}
+                <td>{(+selectRow.sub_total * +lines[0]?.pivot.tax_amount / 100).toFixed(locationSettings?.location_decimal_places)}</td>
+              </tr>
+              <tr className="net-amount">
+                <td></td>
+                <td>
+                  {invoiceDetails.txtDiscount}{'Discount'}
+                  {invoiceDetails.isMultiLang && invoiceDetails.txtDiscount2}
+                </td>
+                <td></td>
+                <td>{(+selectRow?.discount).toFixed(locationSettings?.location_decimal_places)}</td>
               </tr>
               <tr className="net-amount">
                 <td></td>
@@ -273,7 +282,7 @@ export default function SalesListTable(props: any) {
                 </td>
                 <td></td>
                 <td className="txt-bold">
-                  {Number(selectRow.total_price).toFixed(locationSettings?.location_decimal_places)}
+                  {Number(selectRow.sub_total - +selectRow?.discount).toFixed(locationSettings?.location_decimal_places)}
                 </td>
               </tr>
             </thead>
@@ -700,7 +709,6 @@ export default function SalesListTable(props: any) {
                     {edit && <div></div>}
                   </div>
                   {lines.length > 0 && lines?.map((line: any, index: number) => {
-                    console.log(line, line.pivot.qty)
                     return (
                       <div className="header-items under_items" key={index}>
                         <div>{line.name}</div>
@@ -734,12 +742,12 @@ export default function SalesListTable(props: any) {
                         <input
                           type="text"
                           className="form-control"
-                          value={Number(selectRow.total_price).toFixed(
+                          value={(+selectRow.sub_total - +selectRow?.discount).toFixed(
                             locationSettings?.location_decimal_places
                           )}
                         />
                       ) : (
-                        Number(selectRow.total_price).toFixed(
+                        (+selectRow.sub_total - +selectRow?.discount).toFixed(
                           locationSettings?.location_decimal_places
                         )
                       )}
