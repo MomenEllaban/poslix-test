@@ -38,7 +38,7 @@ export const authOptions: NextAuthOptions = {
           TLoginResponse,
           { email: string; password: string }
         >(`${process.env.API_BASE}login`, { email, password });
-
+        delete data.result.user.locations
         if (data.result) {
           const user = {
             ...data.result.user,

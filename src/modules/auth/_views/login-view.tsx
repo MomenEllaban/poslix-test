@@ -8,7 +8,7 @@ import { MdVisibility, MdVisibilityOff } from 'react-icons/md';
 import loginSchema from '../login.schema';
 import { Toastify } from 'src/libs/allToasts';
 import { useRouter } from 'next/router';
-import { findAllData } from 'src/services/crud.api';
+import { createNewData, findAllData } from 'src/services/crud.api';
 
 type Inputs = {
   email: string;
@@ -42,7 +42,8 @@ export default function LoginView() {
       .then(async (res) => {
         if (res.error) throw new Error(res.error);
         const session = await getSession()
-        localStorage.setItem('permissions', JSON.stringify(session.user?.locations))
+        const again = await createNewData('login', data)
+        localStorage.setItem('permissions', JSON.stringify(again.data.result.user?.locations))
         Toastify('success', 'Login Success');
         router.push(`/${session.user.username}/business`)
       })

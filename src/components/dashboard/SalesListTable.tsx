@@ -58,10 +58,18 @@ export default function SalesListTable(props: any) {
   
   const [showViewPopUp, setShowViewPopUp] = useState(false);
   const [handleSearchTxt, setHandleSearchTxt] = useState('');
-  const { setInvoicDetails, invoicDetails } = useContext(UserContext);
+  const [invoiceDetails, setInvoiceDetails] = useState<any>({});
   const [paymentModalShow, setPaymentModalShow] = useState<boolean>(false);
   const [paymentModalData, setPaymentModalData] = useState({});
 
+  const checkPrintType = async () => {
+    const res = await findAllData(`appearance/${router.query.id}`)
+    setInvoiceDetails(res.data.result)
+  }
+
+  useEffect(() => {
+   checkPrintType()
+  }, []);
   //table columns
   const columns: GridColDef[] = [
     { field: 'id', headerName: '#', minWidth: 50 },
@@ -190,31 +198,31 @@ export default function SalesListTable(props: any) {
     render() {
       if (!selectRow) return;
       return (
-        <div className="bill">
+        <div className="bill" style={{ width: '100%' }}>
           <div className="brand-logo">
-            <img src={invoicDetails.logo} />
+            <img src={invoiceDetails.logo} />
           </div>
           <br />
-          <div className="brand-name">{invoicDetails.name}</div>
-          <div className="shop-details">{invoicDetails.tell}</div>
+          <div className="brand-name">{invoiceDetails.name}</div>
+          <div className="shop-details">{invoiceDetails.tell}</div>
           <br />
           <div className="bill-details">
             <div className="flex justify-between">
               <div>
-                {invoicDetails.txtCustomer}{' '}
-                {invoicDetails.isMultiLang && invoicDetails.txtCustomer2}
+                {invoiceDetails.txtCustomer}{' '}
+                {invoiceDetails.isMultiLang && invoiceDetails.txtCustomer2}
               </div>
               <div>{selectRow.customer_name}</div>
             </div>
             <div className="flex justify-between">
               <div>
-                {invoicDetails.orderNo} {invoicDetails.isMultiLang && invoicDetails.orderNo2}
+                {invoiceDetails.orderNo} {invoiceDetails.isMultiLang && invoiceDetails.orderNo2}
               </div>
               <div>{selectRow.id}</div>
             </div>
             <div className="flex justify-between">
               <div>
-                {invoicDetails.txtDate} {invoicDetails.isMultiLang && invoicDetails.txtDate2}
+                {invoiceDetails.txtDate} {invoiceDetails.isMultiLang && invoiceDetails.txtDate2}
               </div>
               <div>{new Date().toISOString().slice(0, 10)}</div>
             </div>
@@ -223,20 +231,20 @@ export default function SalesListTable(props: any) {
             <thead>
               <tr className="header">
                 <th>
-                  {invoicDetails.txtQty}
+                  {invoiceDetails.txtQty}
                   <br />
-                  {invoicDetails.isMultiLang && invoicDetails.txtQty2}
+                  {invoiceDetails.isMultiLang && invoiceDetails.txtQty2}
                 </th>
                 <th>
-                  {invoicDetails.txtItem}
+                  {invoiceDetails.txtItem}
                   <br />
-                  {invoicDetails.isMultiLang && invoicDetails.txtItem2}
+                  {invoiceDetails.isMultiLang && invoiceDetails.txtItem2}
                 </th>
                 <th></th>
                 <th>
-                  {invoicDetails.txtAmount}
+                  {invoiceDetails.txtAmount}
                   <br />
-                  {invoicDetails.isMultiLang && invoicDetails.txtAmount2}
+                  {invoiceDetails.isMultiLang && invoiceDetails.txtAmount2}
                 </th>
               </tr>
               {lines.length > 0 &&
@@ -253,7 +261,7 @@ export default function SalesListTable(props: any) {
               <tr className="net-amount">
                 <td></td>
                 <td>
-                  {invoicDetails.txtTax} {invoicDetails.isMultiLang && invoicDetails.txtTax2}
+                  {invoiceDetails.txtTax} {invoiceDetails.isMultiLang && invoiceDetails.txtTax2}
                 </td>
                 <td></td>
                 {/* <td>{(selectRow.total_price).toFixed(locationSettings?.location_decimal_places)}</td> */}
@@ -261,7 +269,7 @@ export default function SalesListTable(props: any) {
               <tr className="net-amount">
                 <td></td>
                 <td className="txt-bold">
-                  {invoicDetails.txtTotal} {invoicDetails.isMultiLang && invoicDetails.txtTotal2}
+                  {invoiceDetails.txtTotal} {invoiceDetails.isMultiLang && invoiceDetails.txtTotal2}
                 </td>
                 <td></td>
                 <td className="txt-bold">
@@ -271,8 +279,8 @@ export default function SalesListTable(props: any) {
             </thead>
           </table>
           <p className="recipt-footer">
-            {invoicDetails.footer}
-            {invoicDetails.isMultiLang && invoicDetails.footer2}
+            {invoiceDetails.footer}
+            {invoiceDetails.isMultiLang && invoiceDetails.footer2}
           </p>
           <p className="recipt-footer">{selectRow.notes}</p>
           <br />
@@ -288,7 +296,7 @@ export default function SalesListTable(props: any) {
       return (
         <div className="bill2">
           <div className="brand-logo">
-            <img src={invoicDetails.logo} />
+            <img src={invoiceDetails.logo} />
             <div className="invoice-print">
               INVOICE
               <div>
@@ -309,10 +317,10 @@ export default function SalesListTable(props: any) {
           </div>
           <br />
           {/* <div className="brand-name">
-                        {invoicDetails.name}
+                        {invoiceDetails.name}
                     </div> */}
           {/* <div className="shop-details">
-                        {invoicDetails.tell}
+                        {invoiceDetails.tell}
                     </div> */}
           <div className="up_of_table flex justify-between">
             <div className="left_up_of_table">
@@ -332,15 +340,15 @@ export default function SalesListTable(props: any) {
           <br />
           {/* <div className="bill-details">
                         <div className="flex justify-between">
-                            <div>{invoicDetails.txtCustomer} {invoicDetails.isMultiLang && invoicDetails.txtCustomer2}</div>
+                            <div>{invoiceDetails.txtCustomer} {invoiceDetails.isMultiLang && invoiceDetails.txtCustomer2}</div>
                             <div>{selectRow.customer_name}</div>
                         </div>
                         <div className="flex justify-between">
-                            <div>{invoicDetails.orderNo} {invoicDetails.isMultiLang && invoicDetails.orderNo2}</div>
+                            <div>{invoiceDetails.orderNo} {invoiceDetails.isMultiLang && invoiceDetails.orderNo2}</div>
                             <div>{selectRow.id}</div>
                         </div>
                         <div className="flex justify-between">
-                            <div>{invoicDetails.txtDate} {invoicDetails.isMultiLang && invoicDetails.txtDate2}</div>
+                            <div>{invoiceDetails.txtDate} {invoiceDetails.isMultiLang && invoiceDetails.txtDate2}</div>
                             <div>{new Date().toISOString().slice(0, 10)}</div>
                         </div>
                     </div> */}
@@ -351,18 +359,18 @@ export default function SalesListTable(props: any) {
                 <th>Description</th>
                 <th>
                   {' '}
-                  {invoicDetails.txtQty}
+                  {invoiceDetails.txtQty}
                   <br />
-                  {invoicDetails.isMultiLang && invoicDetails.txtQty2}
+                  {invoiceDetails.isMultiLang && invoiceDetails.txtQty2}
                 </th>
                 <th>Unit Price</th>
-                {/* <th> {invoicDetails.txtItem}<br />{invoicDetails.isMultiLang && invoicDetails.txtItem2}</th> */}
+                {/* <th> {invoiceDetails.txtItem}<br />{invoiceDetails.isMultiLang && invoiceDetails.txtItem2}</th> */}
                 <th>Tax</th>
                 <th>
                   {' '}
-                  {invoicDetails.txtAmount}
+                  {invoiceDetails.txtAmount}
                   <br />
-                  {invoicDetails.isMultiLang && invoicDetails.txtAmount2}
+                  {invoiceDetails.isMultiLang && invoiceDetails.txtAmount2}
                 </th>
               </tr>
             </thead>
@@ -381,7 +389,7 @@ export default function SalesListTable(props: any) {
 
             <tbody>
               <tr>
-                {/* <td>{invoicDetails.txtTax} {invoicDetails.isMultiLang && invoicDetails.txtTax2}</td> */}
+                {/* <td>{invoiceDetails.txtTax} {invoiceDetails.isMultiLang && invoiceDetails.txtTax2}</td> */}
                 <td colSpan={4} className="txt_bold_invoice">
                   Sub Total
                 </td>
@@ -389,7 +397,7 @@ export default function SalesListTable(props: any) {
               </tr>
               <tr>
                 <td colSpan={4} className="txt_bold_invoice">
-                  {invoicDetails.txtTotal} {invoicDetails.isMultiLang && invoicDetails.txtTotal2}
+                  {invoiceDetails.txtTotal} {invoiceDetails.isMultiLang && invoiceDetails.txtTotal2}
                 </td>
                 <td className="txt_bold_invoice">
                   {Number(selectRow.total_price).toFixed(locationSettings?.location_decimal_places)}
@@ -402,15 +410,15 @@ export default function SalesListTable(props: any) {
             <thead>
               <tr className="header">
                 <th>
-                  {invoicDetails.txtQty}<br />{invoicDetails.isMultiLang && invoicDetails.txtQty2}
+                  {invoiceDetails.txtQty}<br />{invoiceDetails.isMultiLang && invoiceDetails.txtQty2}
                 </th>
                 <th>
-                  {invoicDetails.txtItem}<br />{invoicDetails.isMultiLang && invoicDetails.txtItem2}
+                  {invoiceDetails.txtItem}<br />{invoiceDetails.isMultiLang && invoiceDetails.txtItem2}
                 </th>
                 <th>
                 </th>
                 <th>
-                  {invoicDetails.txtAmount}<br />{invoicDetails.isMultiLang && invoicDetails.txtAmount2}
+                  {invoiceDetails.txtAmount}<br />{invoiceDetails.isMultiLang && invoiceDetails.txtAmount2}
                 </th>
               </tr>
               {lines.length > 0 && lines.map((line: any, index: number) => {
@@ -425,23 +433,23 @@ export default function SalesListTable(props: any) {
               })}
               <tr className="net-amount">
                 <td></td>
-                <td>{invoicDetails.txtTax} {invoicDetails.isMultiLang && invoicDetails.txtTax2}</td>
+                <td>{invoiceDetails.txtTax} {invoiceDetails.isMultiLang && invoiceDetails.txtTax2}</td>
                 <td></td>
                 <td>{(selectRow.total_price).toFixed(locationSettings?.location_decimal_places)}</td>
               </tr>
               <tr className="net-amount">
                 <td></td>
-                <td className='txt-bold'>{invoicDetails.txtTotal} {invoicDetails.isMultiLang && invoicDetails.txtTotal2}</td>
+                <td className='txt-bold'>{invoiceDetails.txtTotal} {invoiceDetails.isMultiLang && invoiceDetails.txtTotal2}</td>
                 <td></td>
                 <td className='txt-bold'>{Number(selectRow.total_price).toFixed(locationSettings?.location_decimal_places)}</td>
               </tr>
             </thead>
           </table> */}
           <p className="recipt-footer">
-            {invoicDetails.footer}
+            {invoiceDetails.footer}
             <br />
-            {invoicDetails.footersecond}
-            {invoicDetails.isMultiLang && invoicDetails.footer2}
+            {invoiceDetails.footersecond}
+            {invoiceDetails.isMultiLang && invoiceDetails.footer2}
           </p>
           <p className="recipt-footer">{selectRow.notes}</p>
           <br />
@@ -449,136 +457,7 @@ export default function SalesListTable(props: any) {
       );
     }
   }
-
-  const componentRef3 = React.useRef(null);
-  class ComponentToPrint3 extends React.PureComponent {
-    render() {
-      if (!selectRow) return;
-      return (
-        <div className="bill">
-          <div className="brand-logo">
-            <img src={invoicDetails.logo} />
-          </div>
-          <br />
-          <div className="brand-name">{invoicDetails.name}</div>
-          <div className="shop-details">{invoicDetails.tell}</div>
-          <br />
-          <div className="bill-details">
-            <div className="flex justify-between">
-              <div>
-                {invoicDetails.txtCustomer}{' '}
-                {invoicDetails.isMultiLang && invoicDetails.txtCustomer2}
-              </div>
-              <div>{selectRow.customer_name}</div>
-            </div>
-            <div className="flex justify-between">
-              <div>
-                {invoicDetails.orderNo} {invoicDetails.isMultiLang && invoicDetails.orderNo2}
-              </div>
-              <div>{selectRow.id}</div>
-            </div>
-            <div className="flex justify-between">
-              <div>
-                {invoicDetails.txtDate} {invoicDetails.isMultiLang && invoicDetails.txtDate2}
-              </div>
-              <div>{new Date().toISOString().slice(0, 10)}</div>
-            </div>
-          </div>
-          <table className="table">
-            <thead>
-              <tr className="header">
-                <th>
-                  {invoicDetails.txtQty}
-                  <br />
-                  {invoicDetails.isMultiLang && invoicDetails.txtQty2}
-                </th>
-                <th>
-                  {invoicDetails.txtItem}
-                  <br />
-                  {invoicDetails.isMultiLang && invoicDetails.txtItem2}
-                </th>
-                <th></th>
-                <th>
-                  {invoicDetails.txtAmount}
-                  <br />
-                  {invoicDetails.isMultiLang && invoicDetails.txtAmount2}
-                </th>
-              </tr>
-              {lines.length > 0 &&
-                lines.map((line: any, index: number) => {
-                  return (
-                    <tr key={index}>
-                      <td>{Number(line.qty).toFixed(0)}</td>
-                      <td>{line.name}</td>
-                      <td></td>
-                      <td>{line.price}</td>
-                    </tr>
-                  );
-                })}
-              <tr className="net-amount">
-                <td></td>
-                <td>
-                  {invoicDetails.txtTax} {invoicDetails.isMultiLang && invoicDetails.txtTax2}
-                </td>
-                <td></td>
-                {/* <td>{(selectRow.total_price).toFixed(locationSettings?.location_decimal_places)}</td> */}
-              </tr>
-              <tr className="net-amount">
-                <td></td>
-                <td className="txt-bold">
-                  {invoicDetails.txtTotal} {invoicDetails.isMultiLang && invoicDetails.txtTotal2}
-                </td>
-                <td></td>
-                <td className="txt-bold">
-                  {Number(selectRow.total_price).toFixed(locationSettings?.location_decimal_places)}
-                </td>
-              </tr>
-              <tr className="net-amount">
-                <td></td>
-                <td className="txt-bold">
-                  {invoicDetails.txtAmount} {invoicDetails.isMultiLang && invoicDetails.txtAmount2}
-                </td>
-                <td></td>
-                <td className="txt-bold">
-                  {Number(selectRow.amount).toFixed(locationSettings?.location_decimal_places)}
-                </td>
-              </tr>
-              <tr className="net-amount">
-                <td></td>
-                <td className="txt-bold">
-                  {invoicDetails.txtTotalDue}{' '}
-                  {invoicDetails.isMultiLang && invoicDetails.txtTotalDue2}
-                </td>
-                <td></td>
-                <td className="txt-bold">
-                  {Number(selectRow.total_price - selectRow.amount).toFixed(
-                    locationSettings?.location_decimal_places
-                  )}
-                </td>
-              </tr>
-            </thead>
-          </table>
-          <p className="recipt-footer">
-            {invoicDetails.footer}
-            {invoicDetails.isMultiLang && invoicDetails.footer2}
-          </p>
-          <p className="recipt-footer">{selectRow.notes}</p>
-          <br />
-        </div>
-      );
-    }
-  }
-  async function viewTransaction() {
-    setShowViewPopUp(true);
-    var result = await apiFetch({
-      fetch: 'getSellLinesByTransactionId',
-      data: { id: selectId },
-    });
-    const { success, newdata } = result;
-    if (success) {
-      setLines(newdata.sellLines);
-    }
-  }
+  
   // init sales data
   async function initDataPage() {
     // const { success, newdata } = await apiFetchCtr({
@@ -589,15 +468,15 @@ export default function SalesListTable(props: any) {
     // if (success) {
     //   setSales(newdata.data);
     //   if (newdata.invoiceDetails != null && newdata.invoiceDetails.length > 10)
-    //     setInvoicDetails(JSON.parse(newdata.invoiceDetails));
+    //     setinvoiceDetails(JSON.parse(newdata.invoiceDetails));
     // }
   }
 
-  async function getItems(id: number) {
+  const getItems = async (id: number) => {
     setIsLoadItems(true);
     const res = await findAllData(`sales/${id}`)
     if (res.data.success) {
-      setLines(res.data.result);
+      setLines(res.data.result.products);
       setIsLoadItems(false);
     }
   }
@@ -653,7 +532,7 @@ export default function SalesListTable(props: any) {
       // setSelectRow(_data[idx]);
     }
     setTimeout(() => {
-      handlePrint3();
+      handlePrint();
     }, 3000);
   };
 
@@ -671,9 +550,6 @@ export default function SalesListTable(props: any) {
   });
   const handlePrint2 = useReactToPrint({
     content: () => componentRef2.current,
-  });
-  const handlePrint3 = useReactToPrint({
-    content: () => componentRef3.current,
   });
   const onRowsSelectionHandler = (selectedRowsData: any) => {
     setSelectRow(selectedRowsData);
@@ -695,21 +571,12 @@ export default function SalesListTable(props: any) {
         url={'sales'}>
         Are you Sure You Want Delete This Item ?
       </AlertDialog>
-      {
-        <div style={{ display: 'none' }}>
-          <ComponentToPrint ref={componentRef} />
-        </div>
-      }
-      {
-        <div style={{ display: 'none' }}>
-          <ComponentToPrint2 ref={componentRef2} />
-        </div>
-      }
-      {
-        <div style={{ display: 'none' }}>
-          <ComponentToPrint3 ref={componentRef3} />
-        </div>
-      }
+      <div style={{ display: 'none' }}>
+        <ComponentToPrint ref={componentRef} />
+      </div>
+      <div style={{ display: 'none' }}>
+        <ComponentToPrint2 ref={componentRef2} />
+      </div>
       <div className="page-content-style card">
         <h5>Salse List</h5>
         {salesList.data && <DataGrid
@@ -740,7 +607,7 @@ export default function SalesListTable(props: any) {
         <DialogContent className="poslix-modal-content">
           <div className="poslix-modal">
             <div className="top-section-details">
-              <img src={invoicDetails.logo} style={{ width: '80px', marginBottom: '10px' }} />
+              <img src={invoiceDetails.logo} style={{ width: '80px', marginBottom: '10px' }} />
               <div className="item-sections">
                 <div className="top-detials-invoice">
                   <div className="top-detials-item">
@@ -833,6 +700,7 @@ export default function SalesListTable(props: any) {
                     {edit && <div></div>}
                   </div>
                   {lines.length > 0 && lines?.map((line: any, index: number) => {
+                    console.log(line, line.pivot.qty)
                     return (
                       <div className="header-items under_items" key={index}>
                         <div>{line.name}</div>
@@ -841,14 +709,14 @@ export default function SalesListTable(props: any) {
                             <input
                               type="text"
                               className="form-control"
-                              value={Number(line.qty).toFixed(0)}
+                              value={Number(+line.pivot.qty).toFixed(0)}
                             />
                           ) : (
-                            Number(line.qty).toFixed(0)
+                            Number(+line.pivot.qty).toFixed(0)
                           )}
                         </div>
                         <div>
-                          {Number(line.price).toFixed(locationSettings?.location_decimal_places)}
+                          {Number(+line.pivot.qty * +line.pivot.price).toFixed(locationSettings?.location_decimal_places)}
                         </div>
                         {edit && (
                           <div>
@@ -912,7 +780,7 @@ export default function SalesListTable(props: any) {
         location={locationSettings?.location_name}
         shopId={shopId}
         completeHandele={handelPaymentFun}
-        handlePrint={handlePrint3}
+        handlePrint={handlePrint}
       />
     </>
   );

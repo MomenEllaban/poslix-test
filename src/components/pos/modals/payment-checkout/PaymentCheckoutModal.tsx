@@ -197,7 +197,7 @@ export default function PaymentCheckoutModal({ show, setShow, shopId, invoiceTyp
                 </td>
                 <td></td>
                 <td>
-                  {(+printReceipt?.total_price).toFixed(locationSettings?.location_decimal_places)}
+                  {(+printReceipt?.tax).toFixed(locationSettings?.location_decimal_places)}
                 </td>
               </tr>
               <tr className="net-amount">
@@ -219,7 +219,7 @@ export default function PaymentCheckoutModal({ show, setShow, shopId, invoiceTyp
                   {/* {Number(__WithDiscountFeature__total + (totalAmount - printReceipt.totalPrice)).toFixed(
                     locationSettings?.location_decimal_places
                   )} */}
-                  {Number((printReceipt?.total_price)).toFixed(
+                  {Number((+printReceipt?.total_price - +printReceipt?.tax_amount)).toFixed(
                     locationSettings?.location_decimal_places
                   )}
                 </td>
