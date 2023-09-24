@@ -388,28 +388,27 @@ export default function SalesListTable(props: any) {
                 return (
                   <tr key={index}>
                     <td>{line.name}</td>
-                    <td>{Number(line.qty).toFixed(0)}</td>
-                    <td>{line.price}</td>
-                    <td></td>
-                    <td>{line.price * Number(line.qty)}</td>
+                    <td>{Number(line.pivot.qty).toFixed(0)}</td>
+                    <td>{line.pivot.price}</td>
+                    <td>{line.pivot.tax_amount}</td>
+                    <td>{+line.pivot.qty * +line.pivot.price}</td>
                   </tr>
                 );
               })}
 
             <tbody>
-              <tr>
-                {/* <td>{invoiceDetails.txtTax} {invoiceDetails.isMultiLang && invoiceDetails.txtTax2}</td> */}
+              {/* <tr>
                 <td colSpan={4} className="txt_bold_invoice">
                   Sub Total
                 </td>
                 <td></td>
-              </tr>
+              </tr> */}
               <tr>
                 <td colSpan={4} className="txt_bold_invoice">
                   {invoiceDetails.txtTotal} {invoiceDetails.isMultiLang && invoiceDetails.txtTotal2}
                 </td>
                 <td className="txt_bold_invoice">
-                  {Number(selectRow.total_price).toFixed(locationSettings?.location_decimal_places)}
+                  {Number(selectRow.sub_total).toFixed(locationSettings?.location_decimal_places)}
                 </td>
               </tr>
             </tbody>

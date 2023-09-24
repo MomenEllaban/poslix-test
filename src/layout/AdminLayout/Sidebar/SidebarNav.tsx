@@ -43,6 +43,8 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
   const [btype, setBType] = useState('');
   const [loading, setLoading] = useState(true);
   const [permiss, setPermiss] = useState(initialPermissions);
+  const router = useRouter();
+  const [permissions, setPermissions] = useState<any>();
 
   async function intData() {
     const res = await findAllData('permissions/13');
@@ -85,8 +87,6 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
     intData();
   }, [shopId]);
 
-  const router = useRouter();
-  const [permissions, setPermissions] = useState<any>();
   useEffect(() => {
     const localPermissions = localStorage.getItem('permissions');
     if (!localPermissions) return;
@@ -94,56 +94,30 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
     const permsArr = JSON.parse(localStorage.getItem('permissions'));
     if (!permsArr) return;
 
-    const perms = permsArr?.filter((loc) => loc.id == router.query.id);
+    const perms = permsArr?.filter((loc) => loc.id == shopId);
 
-    const getPermissions = {
-      hasPos: false,
-      hasProducts: false,
-      hasPurchases: false,
-      hasTransfers: false,
-      hasSuppliers: true,
-      hasExpenses: false,
-      hasPricingGroups: false,
-      hasCustomers: false,
-      hasSalesList: false,
-      hasQuotations: false,
-      hasCategories: false,
-      hasBrands: false,
-      hasTaxes: false,
-      hasAppearance: false,
-    };
-
+    const getPermissions = { hasPos: false, hasProducts: false, hasPurchases: false, hasTransfers: false,
+      hasSuppliers: true, hasExpenses: false, hasPricingGroups: false, hasCustomers: false, hasSalesList: false,
+      hasQuotations: false, hasCategories: false, hasBrands: false, hasTaxes: false, hasAppearance: false};
+    
     perms[0]?.permissions?.map((perm) =>
-      perm.name === 'products/view'
-        ? (getPermissions.hasProducts = true)
-        : perm.name === 'purchases/view'
-        ? (getPermissions.hasPurchases = true)
-        : perm.name === 'transfers/view'
-        ? (getPermissions.hasTransfers = true)
-        : perm.name === 'expenses/view'
-        ? (getPermissions.hasExpenses = true)
-        : perm.name === 'customers/view'
-        ? (getPermissions.hasCustomers = true)
-        : perm.name === 'open/register'
-        ? (getPermissions.hasPos = true)
-        : perm.name === 'categories/view'
-        ? (getPermissions.hasCategories = true)
-        : perm.name === 'brands/view'
-        ? (getPermissions.hasBrands = true)
-        : perm.name === 'taxes/view'
-        ? (getPermissions.hasTaxes = true)
-        : perm.name === 'appearance/view'
-        ? (getPermissions.hasAppearance = true)
-        : perm.name === 'pricinggroup/view'
-        ? (getPermissions.hasPricingGroups = true)
-        : perm.name === 'sales-list/view'
-        ? (getPermissions.hasSalesList = true)
-        : perm.name === 'quotations-list/view'
-        ? (getPermissions.hasQuotations = true)
-        : null
+      perm.name === 'products/view' ? (getPermissions.hasProducts = true)
+      : perm.name === 'purchases/view' ? (getPermissions.hasPurchases = true)
+      : perm.name === 'transfers/view' ? (getPermissions.hasTransfers = true)
+      : perm.name === 'expenses/view' ? (getPermissions.hasExpenses = true)
+      : perm.name === 'customers/view' ? (getPermissions.hasCustomers = true)
+      : perm.name === 'open/register' ? (getPermissions.hasPos = true)
+      : perm.name === 'categories/view' ? (getPermissions.hasCategories = true)
+      : perm.name === 'brands/view' ? (getPermissions.hasBrands = true)
+      : perm.name === 'taxes/view' ? (getPermissions.hasTaxes = true)
+      : perm.name === 'appearance/view' ? (getPermissions.hasAppearance = true)
+      : perm.name === 'pricinggroup/view' ? (getPermissions.hasPricingGroups = true)
+      : perm.name === 'sales-list/view' ? (getPermissions.hasSalesList = true)
+      : perm.name === 'quotations-list/view' ? (getPermissions.hasQuotations = true)
+      : null
     );
     setPermissions(getPermissions);
-  }, [router.query.id]);
+  }, [shopId]);
 
   if (loading)
     return (
