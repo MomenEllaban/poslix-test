@@ -15,23 +15,21 @@ import {
   GridToolbarExport,
 } from '@mui/x-data-grid';
 import type { NextPage } from 'next';
-import { getSession } from 'next-auth/react';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { ChangeEvent, useContext, useEffect, useRef, useState } from 'react';
 import { Button, ButtonGroup } from 'react-bootstrap';
 import Spinner from 'react-bootstrap/Spinner';
 import { ToastContainer } from 'react-toastify';
+import withAuth from 'src/HOCs/withAuth';
 import ShowPriceListModal from 'src/components/dashboard/modal/ShowPriceListModal';
 import LocationModal from 'src/components/pos/modals/LocationModal';
 import AlertDialog from 'src/components/utils/AlertDialog';
+import { useUser } from 'src/context/UserContext';
 import { Toastify } from 'src/libs/allToasts';
 import { createNewData, findAllData } from 'src/services/crud.api';
-import { ROUTES } from 'src/utils/app-routes';
 import { darkModeContext } from '../../../../context/DarkModeContext';
 import styles from './table.module.css';
-import { useUser } from 'src/context/UserContext';
-import withAuth from 'src/HOCs/withAuth';
 
 const Product: NextPage = (props: any) => {
   const { id } = props;

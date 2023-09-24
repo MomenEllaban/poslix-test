@@ -1,7 +1,6 @@
 import { faInfoCircle, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { AdminLayout } from '@layout';
-import { ITokenVerfy } from '@models/common-model';
 import { productTypeData } from '@models/data';
 import DeleteIcon from '@mui/icons-material/Delete';
 import {
@@ -17,7 +16,6 @@ import {
 import Switch from '@mui/material/Switch';
 import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
 import { DataGrid, GridColDef, GridRenderCellParams, GridRowParams } from '@mui/x-data-grid';
-import * as cookie from 'cookie';
 import { deleteObject, getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
 import type { NextPage } from 'next';
 import Link from 'next/link';
@@ -28,48 +26,75 @@ import Spinner from 'react-bootstrap/Spinner';
 import Table from 'react-bootstrap/Table';
 import Select from 'react-select';
 import { ToastContainer } from 'react-toastify';
+import withAuth from 'src/HOCs/withAuth';
 import { UserContext } from 'src/context/UserContext';
 import { Toastify } from 'src/libs/allToasts';
 import { generateUniqueString, handleNumberKeyPress } from 'src/libs/toolsUtils';
-import {
-  getRealWord,
-  hasPermissions,
-  keyValueRules,
-  verifayTokens,
-} from 'src/pages/api/checkUtils';
+import { createNewData, findAllData, updateData } from 'src/services/crud.api';
 import storage from '../../../../../firebaseConfig';
 import NotifiModal from '../../../../components/utils/NotifiModal';
-import { apiDeleteCtr, apiFetchCtr, apiInsertCtr, apiUpdateCtr } from '../../../../libs/dbUtils';
-import { createNewData, findAllData, updateData } from 'src/services/crud.api';
-import withAuth from 'src/HOCs/withAuth';
+import { apiDeleteCtr } from '../../../../libs/dbUtils';
+
+const colourStyles = {
+  control: (style: any, state: any) => ({
+    ...style,
+    borderRadius: '10px',
+    background: '#f5f5f5',
+    height: '50px',
+    borderColor: state.isFocused ? '2px solid #045c54' : '#eaeaea',
+    boxShadow: 'none',
+    '&:hover': {
+      border: '2px solid #045c54 ',
+    },
+  }),
+  menu: (provided: any, state: any) => ({
+    ...provided,
+    borderRadius: '10px',
+    padding: '10px',
+    border: '1px solid #c9ced2',
+  }),
+  option: (provided: any, state: any) => ({
+    ...provided,
+    backgroundColor: state.isSelected ? '#e6efee' : 'white',
+    color: '#2e776f',
+    borderRadius: '10px',
+    '&:hover': {
+      backgroundColor: '#e6efee',
+      color: '#2e776f',
+      borderRadius: '10px',
+    },
+  }),
+};
+
+const initialFormObject = {
+  id: 0,
+  img: '',
+  name: '',
+  productName2: '',
+  type: 'single',
+  sku: '',
+  barcode_type: 'C128',
+  tax_id: null,
+  unit_id: 11,
+  brand: null,
+  category_id: 0,
+  subCat: '',
+  alertQuantity: 0,
+  cost_price: 0,
+  sell_price: 0,
+  is_fabric: false,
+  is_service: false,
+  isSellOverStock: false,
+  isMultiPrice: false,
+  isFifo: false,
+  isTailoring: 0,
+  variations: [{ name: '', name2: '', sku: '', cost: 0, price: 0, isNew: true }],
+  tailoringPrices: [{ name: '', from: 0, to: 0, price: 0 }],
+};
 
 const Product: NextPage = (props: any) => {
   const { shopId, editId, iType } = props;
-  const [formObj, setFormObj] = useState<any>({
-    id: 0,
-    img: '',
-    name: '',
-    productName2: '',
-    type: 'single',
-    sku: '',
-    barcode_type: 'C128',
-    tax_id: null,
-    unit_id: 11,
-    brand: 0,
-    category_id: 0,
-    subCat: '',
-    alertQuantity: 0,
-    cost_price: 0,
-    sell_price: 0,
-    is_fabric: false,
-    is_service: false,
-    isSellOverStock: false,
-    isMultiPrice: false,
-    isFifo: false,
-    isTailoring: 0,
-    variations: [{ name: '', name2: '', sku: '', cost: 0, price: 0, isNew: true }],
-    tailoringPrices: [{ name: '', from: 0, to: 0, price: 0 }],
-  });
+  const [formObj, setFormObj] = useState<any>(initialFormObject);
   const [img, setImg] = useState<any>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
   const [errorForm, setErrorForm] = useState({
@@ -83,36 +108,7 @@ const Product: NextPage = (props: any) => {
     rules: false,
     skuExist: false,
   });
-  const colourStyles = {
-    control: (style: any, state: any) => ({
-      ...style,
-      borderRadius: '10px',
-      background: '#f5f5f5',
-      height: '50px',
-      borderColor: state.isFocused ? '2px solid #045c54' : '#eaeaea',
-      boxShadow: 'none',
-      '&:hover': {
-        border: '2px solid #045c54 ',
-      },
-    }),
-    menu: (provided: any, state: any) => ({
-      ...provided,
-      borderRadius: '10px',
-      padding: '10px',
-      border: '1px solid #c9ced2',
-    }),
-    option: (provided: any, state: any) => ({
-      ...provided,
-      backgroundColor: state.isSelected ? '#e6efee' : 'white',
-      color: '#2e776f',
-      borderRadius: '10px',
-      '&:hover': {
-        backgroundColor: '#e6efee',
-        color: '#2e776f',
-        borderRadius: '10px',
-      },
-    }),
-  };
+
   const [units, setUnits] = useState<{ value: number; label: string }[]>([]);
   const [brands, setBrands] = useState<{ value: number; label: string }[]>([]);
   const [cats, setCats] = useState<{ value: number; label: string }[]>([]);
@@ -225,9 +221,8 @@ const Product: NextPage = (props: any) => {
   async function initDataPage(url) {
     if (url?.length == 2) setIsEdit(true);
     if (url?.length == 2) {
-      console.log('edit', url[1]);
       const res = await findAllData(`products/${url[1]}/show`);
-      console.log(res);
+
       setSelectedProducts(res.data.result.product);
       // setSelectedFabrics(newdata.selectedFabrics);
       const itm = res.data.result.product;
@@ -268,7 +263,6 @@ const Product: NextPage = (props: any) => {
             : [{ name: '', from: 0, to: 0, price: 0 }],
       });
     } else {
-      console.log('add');
       // setAllFabrics(newdata.allFabrics);
       // seTtailoring([{ value: null, label: 'Defualt' }, ...newdata.tailorings]);
     }
@@ -277,10 +271,26 @@ const Product: NextPage = (props: any) => {
     const resUnits = await findAllData(`units`);
     const resTaxes = await findAllData(`taxes/${router.query.id}`);
     // setProducts(newdata.products);
-    setUnits(resUnits.data.result.units.map(unit => {return {...unit, label: unit.name, value: unit.id}}));
-    setBrands(resBrands.data.result.map(brand => {return {...brand, label: brand.name, value: brand.id}}));
-    setCats(resCategories.data.result.map(cat => {return {...cat, label: cat.name, value: cat.id}}));
-    setTaxGroup(resTaxes.data.result.taxes.map(tax => {return {...tax, label: tax.name, value: tax.id}}));
+    setUnits(
+      resUnits.data.result.units.map((unit) => {
+        return { ...unit, label: unit.name, value: unit.id };
+      })
+    );
+    setBrands(
+      resBrands.data.result.map((brand) => {
+        return { ...brand, label: brand.name, value: brand.id };
+      })
+    );
+    setCats(
+      resCategories.data.result.map((cat) => {
+        return { ...cat, label: cat.name, value: cat.id };
+      })
+    );
+    setTaxGroup(
+      resTaxes.data.result.taxes.map((tax) => {
+        return { ...tax, label: tax.name, value: tax.id };
+      })
+    );
     // if (iType != 'Kianvqyqndr')
     //   setProducTypes(producTypes.filter((p) => p.value != 'tailoring_package'));
 
@@ -298,7 +308,7 @@ const Product: NextPage = (props: any) => {
           const percent = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
           setPercent(percent);
         },
-        (err) => console.log(err),
+        (err) => console.error(err),
         async () => {
           await getDownloadURL(uploadTask.snapshot.ref).then((url) => {
             isEdit ? editProduct(url) : insertProduct(url);
@@ -309,8 +319,6 @@ const Product: NextPage = (props: any) => {
   }
 
   async function insertProduct(url: string) {
-    console.log(formObjRef.current);
-    
     const res = await createNewData('products', {
       name: formObjRef.current.name,
       category_id: formObjRef.current.category_id,
@@ -328,32 +336,33 @@ const Product: NextPage = (props: any) => {
       sell_over_stock: formObjRef.current.isSellOverStock,
       never_tax: 0,
       is_fifo: formObjRef.current.isFifo,
-      variations: formObjRef.current === 'single' ? []
-        : formObjRef.current.variations.map(va => {
-          return {
-            name: va.name,
-            sku: va.sku,
-            cost: va.cost,
-            price: va.price,
-            sell_over_stock: formObjRef.current.isSellOverStock,
-            is_selling_multi_price: 0,
-            is_service: formObjRef.current.is_service,
-          }
-        })
-      // img: url,
-    })
+      variations:
+        formObjRef.current === 'single'
+          ? []
+          : formObjRef.current.variations.map((va) => {
+              return {
+                name: va.name,
+                sku: va.sku,
+                cost: va.cost,
+                price: va.price,
+                sell_over_stock: formObjRef.current.isSellOverStock,
+                is_selling_multi_price: 0,
+                is_service: formObjRef.current.is_service,
+              };
+            }),
+      image: url || '',
+    });
     if (res.data.success) {
       Toastify('success', 'Product Successfuly Created..');
       router.push('/shop/' + router.query.id + '/products');
     } else {
-      Toastify('error', "Error");
+      Toastify('error', 'Error');
       // if (code == 100) setErrorForm({ ...errorForm, skuExist: true });
       setIsSaving(false);
     }
   }
   async function editProduct(url = '') {
     const res = await updateData('products', router.query.slug[1], { ...formObjRef.current });
-    console.log(res);
 
     // const { success, msg, code } = await apiUpdateCtr({
     //   type: 'products',
@@ -393,14 +402,16 @@ const Product: NextPage = (props: any) => {
   }
 
   useEffect(() => {
-    if(router.isReady) initDataPage(router.query.slug);
+    if (router.isReady) initDataPage(router.query.slug);
   }, [router.asPath]);
 
   const imageChange = (e: any) => {
     if (e.target.files && e.target.files.length > 0) {
       setImg(e.target.files[0]);
       setPreviewUrl(URL.createObjectURL(e.target.files[0]));
-    } else console.log('na image', e.target.files);
+    } else {
+      //  console.log('na image', e.target.files);
+    }
   };
   const checkboxHandleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.name == 'is_service')
@@ -908,7 +919,7 @@ const Product: NextPage = (props: any) => {
                           if (errors.length == 0) {
                             setIsSaving(true);
                             if (isEdit) img == null ? editProduct() : handleUpload();
-                            else img != null ? handleUpload() : insertProduct('n');
+                            else img != null ? handleUpload() : insertProduct('img');
                           } else Toastify('error', 'Enter Requires Field');
                         }}>
                         {isEdit ? 'Edit' : 'Save'}
