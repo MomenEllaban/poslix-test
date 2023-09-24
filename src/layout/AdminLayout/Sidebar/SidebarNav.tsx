@@ -45,7 +45,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
   const [permiss, setPermiss] = useState(initialPermissions);
   const router = useRouter();
   const [permissions, setPermissions] = useState<any>();
-  
+
   async function intData() {
     const res = await findAllData('permissions/13');
     if (!res) return;
@@ -94,10 +94,9 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
     const permsArr = JSON.parse(localStorage.getItem('permissions'));
     if (!permsArr) return;
     
-    let perms;
-    if(JSON.parse(localStorage.getItem('userdata')).user_type === 'owner')
-      perms = permsArr[0]
-    else permsArr?.filter((loc) => loc.id == shopId)
+    const perms =
+      JSON.parse(localStorage.getItem('userdata')).user_type === 'owner' ?
+      permsArr : permsArr?.filter((loc) => loc.id == shopId);
 
     const getPermissions = { hasPos: false, hasProducts: false, hasPurchases: false, hasTransfers: false,
       hasSuppliers: true, hasExpenses: false, hasPricingGroups: false, hasCustomers: false, hasSalesList: false,
@@ -119,6 +118,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
       : perm.name === 'quotations-list/view' ? (getPermissions.hasQuotations = true)
       : null
     );
+    
     setPermissions(getPermissions);
   }, [shopId]);
 
@@ -193,7 +193,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
         </SidebarNavGroup>
       )}
 
-      {permiss.hasCustomers && (
+      {permissions.hasCustomers && (
         <SidebarNavItem
           icon={faUser}
           href={'/shop/' + shopId + '/pricing'}
@@ -224,7 +224,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
           </SidebarNavItem>
           {/* )} */}
 
-          {permiss.hasOrders &&
+          {permissions.hasOrders &&
             btype == 'Kianvqyqndr' && ( //! why?
               <>
                 {localStorage.setItem('orders', 'true')}
@@ -239,7 +239,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
             )}
         </SidebarNavGroup>
       )}
-      {permiss.hasCustomers && (
+      {permissions.hasCustomers && (
         <SidebarNavItem
           icon={faUser}
           href={'/shop/' + shopId + '/customers'}
@@ -250,9 +250,9 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
         </SidebarNavItem>
       )}
 
-      {(permiss.hasTaxes || permiss.hasDiscount || permiss.hasExpenses) && (
+      {(permissions.hasTaxes || permissions.hasDiscount || permissions.hasExpenses) && (
         <SidebarNavGroup toggleIcon="TbReportSearch" toggleText="Report">
-          {permiss.hasRegister && (
+          {permissions.hasRegister && (
             <SidebarNavItem
               href={'/shop/' + shopId + '/reports/register'}
               sub={true}
@@ -261,7 +261,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
             </SidebarNavItem>
           )}
 
-          {permiss.hasItemSales && (
+          {permissions.hasItemSales && (
             <SidebarNavItem
               href={'/shop/' + shopId + '/reports/SalesReport'}
               sub={true}
@@ -270,7 +270,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
             </SidebarNavItem>
           )}
           {/* Eslam 20  */}
-          {permiss.hasItemSales && (
+          {permissions.hasItemSales && (
             <SidebarNavItem
               href={'/shop/' + shopId + '/reports/ItemsReport'}
               sub={true}
@@ -278,7 +278,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
               Items Report{' '}
             </SidebarNavItem>
           )}
-          {permiss.hasItemSales && (
+          {permissions.hasItemSales && (
             <SidebarNavItem
               href={'/shop/' + shopId + '/reports/StockReport'}
               sub={true}
@@ -286,17 +286,17 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
               Stock Report{' '}
             </SidebarNavItem>
           )}
-          {/* {permiss.hasCategorySales && (
+          {/* {permissions.hasCategorySales && (
             <SidebarNavItem href={'/shop/' + shopId + '/cates'} sub={true} isShown={!!router.query.id}>
               Category Sales
             </SidebarNavItem>
           )} */}
-          {/* {permiss.hasSupplierSales && (
+          {/* {permissions.hasSupplierSales && (
             <SidebarNavItem href={'/shop/' + shopId + '/supplier'} sub={true} isShown={!!router.query.id}>
               Supplier Sales
             </SidebarNavItem>
           )} */}
-          {/* {permiss.hasCurrentStock && (
+          {/* {permissions.hasCurrentStock && (
             <SidebarNavItem
               href={'/shop/' + shopId + '/currentstock'}
               sub={true}
@@ -307,7 +307,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
         </SidebarNavGroup>
       )}
 
-      {permiss.hasAppStore && (
+      {permissions.hasAppStore && (
         <SidebarNavItem
           icon={faCalendarDay}
           href={'/shop/' + shopId + '/appstore'}
@@ -318,9 +318,9 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
         </SidebarNavItem>
       )}
 
-      {(permiss.hasTaxes || permiss.hasAppearance || permiss.hasCats) && (
+      {(permissions.hasTaxes || permissions.hasAppearance || permissions.hasCats) && (
         <SidebarNavGroup toggleIcon="IoSettingsSharp" toggleText="Settings">
-          {permiss.hasTaxes && (
+          {permissions.hasTaxes && (
             <SidebarNavItem
               href={'/shop/' + shopId + '/taxes'}
               sub={true}
@@ -328,7 +328,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
               Taxes
             </SidebarNavItem>
           )}
-          {permiss.hasAppearance && (
+          {permissions.hasAppearance && (
             <SidebarNavItem
               href={'/shop/' + shopId + '/appearance'}
               sub={true}
@@ -336,7 +336,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
               Appearance
             </SidebarNavItem>
           )}
-          {permiss.hasCats && (
+          {permissions.hasCats && (
             <SidebarNavItem
               href={'/shop/' + shopId + '/category'}
               sub={true}
@@ -344,7 +344,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
               Category & Brands
             </SidebarNavItem>
           )}
-          {permiss.hasTaxes && (
+          {permissions.hasTaxes && (
             <SidebarNavItem
               href={'/shop/' + shopId + '/payment'}
               sub={true}
@@ -362,14 +362,14 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
           }
         </SidebarNavGroup>
       )}
-      {permiss.hasPOS && (
+      {permissions.hasPOS && (
         <SidebarNavItem icon={faDesktop} href={'/pos/' + shopId} isShown={!!router.query.id}>
           <MdOutlinePointOfSale className="nav-icon ms-n3" />
           POS
           <small className="ms-auto"></small>
         </SidebarNavItem>
       )}
-      {permiss.hasAppStore && (
+      {permissions.hasAppStore && (
         <SidebarNavItem
           icon={faCalendarDay}
           href={'/digital/' + shopId}
