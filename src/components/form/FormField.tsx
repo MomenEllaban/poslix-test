@@ -7,7 +7,7 @@ export interface FormFieldProps extends React.InputHTMLAttributes<HTMLInputEleme
   name: string;
   type?: string;
   placeholder?: string;
-  register: any;
+  register?: any;
   errors: any;
   textArea?: boolean;
   loading?: boolean;
@@ -46,7 +46,7 @@ const FormField: React.FC<FormFieldProps> = ({
           type={type}
           name={name}
           as={textArea ? 'textarea' : 'input'}
-          {...register(name)}
+          {...(register && { ...register(name) })}
         />
       </InputGroup>
       {isInvalid && <Form.Text className="text-danger">{errors[name]?.message}</Form.Text>}{' '}

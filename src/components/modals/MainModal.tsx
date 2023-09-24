@@ -1,20 +1,16 @@
 'use client';
 import React, { Dispatch, Fragment, SetStateAction } from 'react';
-import { Modal } from 'react-bootstrap';
+import { Modal, ModalProps } from 'react-bootstrap';
 
-const MainModal = ({
-  show,
-  setShow,
-  body,
-  title,
-  footer,
-}: {
+interface IMainModal extends Omit<ModalProps, 'children'> {
   show: boolean;
   setShow: Dispatch<SetStateAction<boolean>>;
   body: React.ReactNode;
-  title: string;
+  title?: string;
   footer?: React.ReactNode;
-}) => {
+}
+
+const MainModal = ({ show, setShow, body, title, footer, ...props }: IMainModal) => {
   const ModalBody = () => (React.isValidElement(body) ? body : <Fragment>{body}</Fragment>);
   const ModalFooter = () =>
     footer ? React.isValidElement(footer) ? footer : <Fragment>{footer}</Fragment> : null;
@@ -22,7 +18,7 @@ const MainModal = ({
   const handleClose = () => setShow(false);
 
   return (
-    <Modal show={show} onHide={handleClose}>
+    <Modal show={show} onHide={handleClose} {...props}>
       <Modal.Header className="poslix-modal-title text-primary text-capitalize" closeButton>
         {title ?? 'Notice !'}
       </Modal.Header>

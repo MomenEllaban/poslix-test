@@ -1,33 +1,20 @@
-import type { NextPage } from 'next';
-import Image from 'next/image';
-import Table from 'react-bootstrap/Table';
-import { AdminLayout } from '@layout';
+import { faEye, faPenToSquare, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import Spinner from 'react-bootstrap/Spinner';
-import { faTrash, faPenToSquare, faPlus, faEye } from '@fortawesome/free-solid-svg-icons';
-import {
-  DataGrid,
-  GridColDef,
-  GridRowParams,
-  GridToolbarColumnsButton,
-  GridToolbarContainer,
-  GridToolbarExport,
-} from '@mui/x-data-grid';
-import { Button, ButtonGroup, Card } from 'react-bootstrap';
-import React, { useState, useEffect } from 'react';
-import { apiFetchCtr } from '../../../../libs/dbUtils';
+import { AdminLayout } from '@layout';
+import { ILocationSettings, ITransferItem } from '@models/common-model';
+import { DataGrid, GridColDef, GridRowParams } from '@mui/x-data-grid';
+import type { NextPage } from 'next';
 import { useRouter } from 'next/router';
-import AlertDialog from 'src/components/utils/AlertDialog';
-import { redirectToLogin } from '../../../../libs/loginlib';
-import { ILocationSettings, IPageRules, ITokenVerfy, ITransferItem } from '@models/common-model';
-import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/checkUtils';
-import * as cookie from 'cookie';
-import ShowPriceListModal from 'src/components/dashboard/modal/ShowPriceListModal';
-import { Toastify } from 'src/libs/allToasts';
+import { useEffect, useState } from 'react';
+import { Button, ButtonGroup } from 'react-bootstrap';
+import Spinner from 'react-bootstrap/Spinner';
 import { ToastContainer } from 'react-toastify';
-import Transfermodal from '../../../../components/pos/modals/Transfermodal';
-import { findAllData } from 'src/services/crud.api';
 import withAuth from 'src/HOCs/withAuth';
+import AlertDialog from 'src/components/utils/AlertDialog';
+import { Toastify } from 'src/libs/allToasts';
+import CustomToolbar from 'src/modules/reports/_components/CustomToolbar';
+import { findAllData } from 'src/services/crud.api';
+
 const Transfer: NextPage = (props: any) => {
   const { shopId, id } = props;
   const myLoader = (img: any) => img.src;
@@ -52,8 +39,8 @@ const Transfer: NextPage = (props: any) => {
   const [isOpenPriceDialog, setIsOpenPriceDialog] = useState(false);
 
   async function initDataPage() {
-    if(router.isReady) {
-      const res = await findAllData(`transfer/${router.query.id}`)
+    if (router.isReady) {
+      const res = await findAllData(`transfer/${router.query.id}`);
       if (!res.data.success || res.data.status === 201) {
         Toastify('error', 'Somthing wrong!!, try agian');
         return;
@@ -79,10 +66,12 @@ const Transfer: NextPage = (props: any) => {
 
   const [permissions, setPermissions] = useState<any>();
   useEffect(() => {
-    const perms = JSON.parse(localStorage.getItem('permissions')).filter(loc => loc.id==router.query.id);
+    const perms = JSON.parse(localStorage.getItem('permissions')).filter(
+      (loc) => loc.id == router.query.id
+    );
     const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
     perms[0]?.permissions.map((perm) =>
-        perm.name.includes('transfers/show')
+      perm.name.includes('transfers/show')
         ? (getPermissions.hasView = true)
         : perm.name.includes('transfers/add')
         ? (getPermissions.hasInsert = true)
@@ -140,8 +129,10 @@ const Transfer: NextPage = (props: any) => {
       flex: 1,
       valueGetter: (params) => {
         let name = '';
-        params.row.products.map(prod => {name += prod.name + ', '})
-        return name
+        params.row.products.map((prod) => {
+          name += prod.name + ', ';
+        });
+        return name;
       },
     },
     // {
@@ -196,14 +187,14 @@ const Transfer: NextPage = (props: any) => {
       ),
     },
   ];
-  function CustomToolbar() {
-    return (
-      <GridToolbarContainer>
-        <GridToolbarExport />
-        <GridToolbarColumnsButton />
-      </GridToolbarContainer>
-    );
-  }
+  // function CustomToolbar() {
+  //   return (
+  //     <GridToolbarContainer>
+  //       <GridToolbarExport />
+  //       <GridToolbarColumnsButton />
+  //     </GridToolbarContainer>
+  //   );
+  // }
   return (
     <>
       <AdminLayout shopId={id}>
@@ -253,8 +244,8 @@ const Transfer: NextPage = (props: any) => {
           </div>
         )}
       </AdminLayout>
-      <Transfermodal
-        shopId={id}
+      <TransferModal
+        shopId={shopId}
         showType={'add'}
         userdata={{}}
         customers={{}}
@@ -267,8 +258,8 @@ const Transfer: NextPage = (props: any) => {
 };
 export default withAuth(Transfer);
 export async function getServerSideProps({ params }) {
-  const { id } = params
+  const { id } = params;
   return {
-    props: {id},
-  }
+    props: { id },
+  };
 }
