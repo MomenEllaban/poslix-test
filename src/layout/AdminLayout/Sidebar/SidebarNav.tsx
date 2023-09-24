@@ -45,8 +45,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
   const [permiss, setPermiss] = useState(initialPermissions);
   const router = useRouter();
   const [permissions, setPermissions] = useState<any>();
-  const [isOwner, setIsOwner] = useState(false)
-
+  
   async function intData() {
     const res = await findAllData('permissions/13');
     if (!res) return;
@@ -94,8 +93,6 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
 
     const permsArr = JSON.parse(localStorage.getItem('permissions'));
     if (!permsArr) return;
-
-    console.log(isOwner);
     
     let perms;
     if(JSON.parse(localStorage.getItem('userdata')).user_type === 'owner')
