@@ -1,24 +1,33 @@
 import ar from 'ar.json';
 import en from 'en.json';
+import { signOut } from 'next-auth/react';
 import Link from 'next/link';
-import Router from 'next/router';
+import Router, { useRouter } from 'next/router';
 import { useLayoutEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from 'src/hooks';
+import { usePosContext } from 'src/modules/pos/_context/PosContext';
 import { selectPos, setPosRegister } from 'src/redux/slices/pos.slice';
 import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
 import CloseRegister from '../modals/CloseRegister';
 import styles from './NavMenu.module.scss';
-import { usePosContext } from 'src/modules/pos/_context/PosContext';
-import { ROUTES } from 'src/utils/app-routes';
 
 const NavMenu: any = ({ shopId }: any) => {
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+
+  const pos = useAppSelector(selectPos);
   const { lang, setLang } = usePosContext();
 
   const [customerIsModal, setCustomerIsModal] = useState<boolean>(false);
-  const pos = useAppSelector(selectPos);
-  const dispatch = useAppDispatch();
+
   const customerModalHandler = (status: any) => {
     setCustomerIsModal(false);
+  };
+
+  const handleLogout = () => {
+    signOut({ redirect: false }).then(() => {
+      router.push('/'); // Redirect to the home page after signing out
+    });
   };
 
   const handleSwitchRegister = () => {
@@ -91,10 +100,10 @@ const NavMenu: any = ({ shopId }: any) => {
             }}>
             <i className="ri-global-fill" /> <span>{lang == ar ? 'EN' : 'العربية'}</span>
           </a>
-          <Link className="nav-link menu-link" href={ROUTES.AUTH}>
+          <button className="nav-link menu-link" type="button" onClick={handleLogout}>
             <i className="ri-logout-circle-line"></i>
             <span data-key="t-dashboards">{lang.pos.navmenu.logout}</span>
-          </Link>
+          </button>
         </div>
       </div>
       <div className={styles.navbar__sizer} />
