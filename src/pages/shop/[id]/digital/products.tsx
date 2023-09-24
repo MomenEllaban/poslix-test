@@ -1,3 +1,4 @@
+import { AdminLayout } from '@layout';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
@@ -340,106 +341,108 @@ const Products: NextPage = () => {
   ];
 
   return (
-    <div className="digital-products-main">
-      <div className="digital-products-header">
-        <h1>Digital Products</h1>
-      </div>
-      <div className="digital-products-container">
-        <div className="digital-products">
-          <div className="margin:0 auto w-100 justify-content-center d-flex">
-            <Box
-              sx={{
-                maxWidth: { xs: '100%', sm: 500, md: 600, lg: 700 },
-                bgcolor: 'background.paper',
-              }}>
-              <Tabs
-                value={value}
-                onChange={handleChange}
-                variant="scrollable"
-                scrollButtons="auto"
-                aria-label="digital-products-filter"
-                sx={{ textTransform: 'none' }}>
-                <Tab
-                  className="filter_btn"
-                  label="all"
-                  value="1"
-                  onClick={(e: any) => {
-                    setType(e.target.innerText);
-                  }}
-                />
-                <Tab
-                  className="filter_btn"
-                  label="Chicken"
-                  value="2"
-                  onClick={(e: any) => {
-                    setType(e.target.innerText);
-                  }}
-                />
-                <Tab
-                  className="filter_btn"
-                  label="ozy"
-                  value="3"
-                  onClick={(e: any) => {
-                    setType(e.target.innerText);
-                  }}
-                />
-                <Tab
-                  className="filter_btn"
-                  label="cozy"
-                  value="4"
-                  onClick={(e: any) => {
-                    setType(e.target.innerText);
-                  }}
-                />
-                <Tab
-                  className="filter_btn"
-                  label="Pasta"
-                  value="5"
-                  onClick={(e: any) => {
-                    setType(e.target.innerText);
-                  }}
-                />
-              </Tabs>
-            </Box>
-          </div>
-
-          <div className="digital-product-list">
-            {type === 'all'
-              ? products.map((product, ind) => <ProductItem product={product} key={ind} />)
-              : products
-                  .filter((product) => product.type == type)
-                  .map((product, ind) => <ProductItem product={product} key={product.id} />)}
-          </div>
+    <AdminLayout>
+      <div className="digital-products-main bg-white">
+        <div className="digital-products-header">
+          <h1>Digital Products</h1>
         </div>
-        <DigitalCart />
-        {matches ? (
-          <div
-            className="digital-cart-small"
-            style={{
-              display: showCart ? 'flex' : 'none',
-              transition: 'all 1.5s ease-in-out',
-              background: getTotal().totalPrice ? '#045c54' : '#909090',
-            }}>
-            <div className="d-flex h-100 align-items-center ">
-              <ShoppingCartIcon />
-              <p className="m-0">Total:{getTotal().totalPrice} OMR</p>
+        <div className="digital-products-container">
+          <div className="digital-products">
+            <div className="margin:0 auto w-100 justify-content-center d-flex">
+              <Box
+                sx={{
+                  maxWidth: { xs: '100%', sm: 500, md: 600, lg: 700 },
+                  bgcolor: 'background.paper',
+                }}>
+                <Tabs
+                  value={value}
+                  onChange={handleChange}
+                  variant="scrollable"
+                  scrollButtons="auto"
+                  aria-label="digital-products-filter"
+                  sx={{ textTransform: 'none' }}>
+                  <Tab
+                    className="filter_btn"
+                    label="all"
+                    value="1"
+                    onClick={(e: any) => {
+                      setType(e.target.innerText);
+                    }}
+                  />
+                  <Tab
+                    className="filter_btn"
+                    label="Chicken"
+                    value="2"
+                    onClick={(e: any) => {
+                      setType(e.target.innerText);
+                    }}
+                  />
+                  <Tab
+                    className="filter_btn"
+                    label="ozy"
+                    value="3"
+                    onClick={(e: any) => {
+                      setType(e.target.innerText);
+                    }}
+                  />
+                  <Tab
+                    className="filter_btn"
+                    label="cozy"
+                    value="4"
+                    onClick={(e: any) => {
+                      setType(e.target.innerText);
+                    }}
+                  />
+                  <Tab
+                    className="filter_btn"
+                    label="Pasta"
+                    value="5"
+                    onClick={(e: any) => {
+                      setType(e.target.innerText);
+                    }}
+                  />
+                </Tabs>
+              </Box>
             </div>
-            <Button className="mobDrawer_btn" onClick={() => handleDrawer(open)}>
-              View Cart
-            </Button>
-          </div>
-        ) : null}
 
-        {matches ? (
-          <MobDrawer
-            toggleDrawer={toggleDrawer}
-            setOpen={setOpen}
-            open={open}
-            setShowCart={setShowCart}
-          />
-        ) : null}
+            <div className="digital-product-list">
+              {type === 'all'
+                ? products.map((product, ind) => <ProductItem product={product} key={ind} />)
+                : products
+                    .filter((product) => product.type == type)
+                    .map((product, ind) => <ProductItem product={product} key={product.id} />)}
+            </div>
+          </div>
+          <DigitalCart />
+          {matches ? (
+            <div
+              className="digital-cart-small"
+              style={{
+                display: showCart ? 'flex' : 'none',
+                transition: 'all 1.5s ease-in-out',
+                background: getTotal().totalPrice ? '#045c54' : '#909090',
+              }}>
+              <div className="d-flex h-100 align-items-center ">
+                <ShoppingCartIcon />
+                <p className="m-0">Total:{getTotal().totalPrice} OMR</p>
+              </div>
+              <Button className="mobDrawer_btn" onClick={() => handleDrawer(open)}>
+                View Cart
+              </Button>
+            </div>
+          ) : null}
+
+          {matches ? (
+            <MobDrawer
+              toggleDrawer={toggleDrawer}
+              setOpen={setOpen}
+              open={open}
+              setShowCart={setShowCart}
+            />
+          ) : null}
+        </div>
       </div>
-    </div>
+    </AdminLayout>
   );
 };
 
