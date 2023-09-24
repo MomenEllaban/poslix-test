@@ -56,7 +56,7 @@ export default function CreateBusinessView() {
       setBusniessTypesList(_businessTypesList);
     },
   });
-  
+
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     setLoading(true);
     (await authApi(session))
@@ -64,12 +64,12 @@ export default function CreateBusinessView() {
       .then(async (res) => {
         const addLoc = await createNewData('business/locations', {
           business_id: res.data.result.id,
-          name: 'Location 1',
+          name: `${data.name} - location 1`,
           state: 'egy',
           currency_id: 35,
           decimal: 1,
-        })
-        if(addLoc.data.success) {
+        });
+        if (addLoc.data.success) {
           Toastify('success', 'Business created successfully');
           router.push('/[username]/business', `/${session?.user?.username}/business`);
         }

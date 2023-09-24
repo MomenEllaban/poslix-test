@@ -1,7 +1,6 @@
 import { faInfoCircle, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { AdminLayout } from '@layout';
-import { ITokenVerfy } from '@models/common-model';
 import { productTypeData } from '@models/data';
 import DeleteIcon from '@mui/icons-material/Delete';
 import {
@@ -17,7 +16,6 @@ import {
 import Switch from '@mui/material/Switch';
 import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
 import { DataGrid, GridColDef, GridRenderCellParams, GridRowParams } from '@mui/x-data-grid';
-import * as cookie from 'cookie';
 import { deleteObject, getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
 import type { NextPage } from 'next';
 import Link from 'next/link';
@@ -28,48 +26,76 @@ import Spinner from 'react-bootstrap/Spinner';
 import Table from 'react-bootstrap/Table';
 import Select from 'react-select';
 import { ToastContainer } from 'react-toastify';
+import withAuth from 'src/HOCs/withAuth';
 import { UserContext } from 'src/context/UserContext';
 import { Toastify } from 'src/libs/allToasts';
 import { generateUniqueString, handleNumberKeyPress } from 'src/libs/toolsUtils';
-import {
-  getRealWord,
-  hasPermissions,
-  keyValueRules,
-  verifayTokens,
-} from 'src/pages/api/checkUtils';
+import { createNewData, findAllData, updateData } from 'src/services/crud.api';
 import storage from '../../../../../firebaseConfig';
 import NotifiModal from '../../../../components/utils/NotifiModal';
-import { apiDeleteCtr, apiFetchCtr, apiInsertCtr, apiUpdateCtr } from '../../../../libs/dbUtils';
-import { createNewData, findAllData, updateData } from 'src/services/crud.api';
-import withAuth from 'src/HOCs/withAuth';
+import { apiDeleteCtr } from '../../../../libs/dbUtils';
+
+const colourStyles = {
+  control: (style: any, state: any) => ({
+    ...style,
+    borderRadius: '10px',
+    background: '#f5f5f5',
+    height: '50px',
+    borderColor: state.isFocused ? '2px solid #045c54' : '#eaeaea',
+    boxShadow: 'none',
+    '&:hover': {
+      border: '2px solid #045c54 ',
+    },
+  }),
+  menu: (provided: any, state: any) => ({
+    ...provided,
+    borderRadius: '10px',
+    padding: '10px',
+    border: '1px solid #c9ced2',
+  }),
+  option: (provided: any, state: any) => ({
+    ...provided,
+    backgroundColor: state.isSelected ? '#e6efee' : 'white',
+    color: '#2e776f',
+    borderRadius: '10px',
+    '&:hover': {
+      backgroundColor: '#e6efee',
+      color: '#2e776f',
+      borderRadius: '10px',
+    },
+  }),
+};
+
+const initialFormObject = {
+  id: 0,
+  img: '',
+  name: '',
+  productName2: '',
+  type: 'single',
+  sku: '',
+  barcode_type: 'C128',
+  tax_id: null,
+  unit_id: 11,
+  brand: null,
+  category_id: 0,
+  subCat: '',
+  alertQuantity: 0,
+  cost_price: 0,
+  sell_price: 0,
+  is_fabric: false,
+  is_service: false,
+  isSellOverStock: false,
+  isMultiPrice: false,
+  isFifo: false,
+  isTailoring: 0,
+  variations: [{ name: '', name2: '', sku: '', cost: 0, price: 0, isNew: true }],
+  tailoringPrices: [{ name: '', from: 0, to: 0, price: 0 }],
+};
 
 const Product: NextPage = (props: any) => {
-  const { shopId, editId, iType } = props;
-  const [formObj, setFormObj] = useState<any>({
-    id: 0,
-    img: '',
-    name: '',
-    productName2: '',
-    type: 'single',
-    sku: '',
-    barcode_type: 'C128',
-    tax_id: null,
-    unit_id: 11,
-    brand: 0,
-    category_id: 0,
-    subCat: '',
-    alertQuantity: 0,
-    cost_price: 0,
-    sell_price: 0,
-    is_fabric: false,
-    is_service: false,
-    isSellOverStock: false,
-    isMultiPrice: false,
-    isFifo: false,
-    isTailoring: 0,
-    variations: [{ name: '', name2: '', sku: '', cost: 0, price: 0, isNew: true }],
-    tailoringPrices: [{ name: '', from: 0, to: 0, price: 0 }],
-  });
+  const { editId, iType } = props;
+
+  const [formObj, setFormObj] = useState<any>(initialFormObject);
   const [img, setImg] = useState<any>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
   const [errorForm, setErrorForm] = useState({
@@ -83,36 +109,7 @@ const Product: NextPage = (props: any) => {
     rules: false,
     skuExist: false,
   });
-  const colourStyles = {
-    control: (style: any, state: any) => ({
-      ...style,
-      borderRadius: '10px',
-      background: '#f5f5f5',
-      height: '50px',
-      borderColor: state.isFocused ? '2px solid #045c54' : '#eaeaea',
-      boxShadow: 'none',
-      '&:hover': {
-        border: '2px solid #045c54 ',
-      },
-    }),
-    menu: (provided: any, state: any) => ({
-      ...provided,
-      borderRadius: '10px',
-      padding: '10px',
-      border: '1px solid #c9ced2',
-    }),
-    option: (provided: any, state: any) => ({
-      ...provided,
-      backgroundColor: state.isSelected ? '#e6efee' : 'white',
-      color: '#2e776f',
-      borderRadius: '10px',
-      '&:hover': {
-        backgroundColor: '#e6efee',
-        color: '#2e776f',
-        borderRadius: '10px',
-      },
-    }),
-  };
+
   const [units, setUnits] = useState<{ value: number; label: string }[]>([]);
   const [brands, setBrands] = useState<{ value: number; label: string }[]>([]);
   const [cats, setCats] = useState<{ value: number; label: string }[]>([]);
@@ -149,6 +146,8 @@ const Product: NextPage = (props: any) => {
   >([]);
   const [percent, setPercent] = useState(0);
   const router = useRouter();
+  const shopId = router.query.id;
+  
   const [show, setShow] = useState(false);
   const [open, setOpen] = useState(false);
   const [open2, setOpen2] = useState(false);
@@ -225,9 +224,8 @@ const Product: NextPage = (props: any) => {
   async function initDataPage(url) {
     if (url?.length == 2) setIsEdit(true);
     if (url?.length == 2) {
-      console.log('edit', url[1]);
       const res = await findAllData(`products/${url[1]}/show`);
-      console.log(res);
+
       setSelectedProducts(res.data.result.product);
       // setSelectedFabrics(newdata.selectedFabrics);
       const itm = res.data.result.product;
@@ -268,7 +266,6 @@ const Product: NextPage = (props: any) => {
             : [{ name: '', from: 0, to: 0, price: 0 }],
       });
     } else {
-      console.log('add');
       // setAllFabrics(newdata.allFabrics);
       // seTtailoring([{ value: null, label: 'Defualt' }, ...newdata.tailorings]);
     }
@@ -277,10 +274,26 @@ const Product: NextPage = (props: any) => {
     const resUnits = await findAllData(`units`);
     const resTaxes = await findAllData(`taxes/${router.query.id}`);
     // setProducts(newdata.products);
-    setUnits(resUnits.data.result.units.map(unit => {return {...unit, label: unit.name, value: unit.id}}));
-    setBrands(resBrands.data.result.map(brand => {return {...brand, label: brand.name, value: brand.id}}));
-    setCats(resCategories.data.result.map(cat => {return {...cat, label: cat.name, value: cat.id}}));
-    setTaxGroup(resTaxes.data.result.taxes.map(tax => {return {...tax, label: tax.name, value: tax.id}}));
+    setUnits(
+      resUnits.data.result.units.map((unit) => {
+        return { ...unit, label: unit.name, value: unit.id };
+      })
+    );
+    setBrands(
+      resBrands.data.result.map((brand) => {
+        return { ...brand, label: brand.name, value: brand.id };
+      })
+    );
+    setCats(
+      resCategories.data.result.map((cat) => {
+        return { ...cat, label: cat.name, value: cat.id };
+      })
+    );
+    setTaxGroup(
+      resTaxes.data.result.taxes.map((tax) => {
+        return { ...tax, label: tax.name, value: tax.id };
+      })
+    );
     // if (iType != 'Kianvqyqndr')
     //   setProducTypes(producTypes.filter((p) => p.value != 'tailoring_package'));
 
@@ -298,7 +311,7 @@ const Product: NextPage = (props: any) => {
           const percent = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
           setPercent(percent);
         },
-        (err) => console.log(err),
+        (err) => console.error(err),
         async () => {
           await getDownloadURL(uploadTask.snapshot.ref).then((url) => {
             isEdit ? editProduct(url) : insertProduct(url);
@@ -309,8 +322,6 @@ const Product: NextPage = (props: any) => {
   }
 
   async function insertProduct(url: string) {
-    console.log(formObjRef.current);
-    
     const res = await createNewData('products', {
       name: formObjRef.current.name,
       category_id: formObjRef.current.category_id,
@@ -328,32 +339,33 @@ const Product: NextPage = (props: any) => {
       sell_over_stock: formObjRef.current.isSellOverStock,
       never_tax: 0,
       is_fifo: formObjRef.current.isFifo,
-      variations: formObjRef.current === 'single' ? []
-        : formObjRef.current.variations.map(va => {
-          return {
-            name: va.name,
-            sku: va.sku,
-            cost: va.cost,
-            price: va.price,
-            sell_over_stock: formObjRef.current.isSellOverStock,
-            is_selling_multi_price: 0,
-            is_service: formObjRef.current.is_service,
-          }
-        })
-      // img: url,
-    })
+      variations:
+        formObjRef.current === 'single'
+          ? []
+          : formObjRef.current.variations.map((va) => {
+              return {
+                name: va.name,
+                sku: va.sku,
+                cost: va.cost,
+                price: va.price,
+                sell_over_stock: formObjRef.current.isSellOverStock,
+                is_selling_multi_price: 0,
+                is_service: formObjRef.current.is_service,
+              };
+            }),
+      image: url || '',
+    });
     if (res.data.success) {
       Toastify('success', 'Product Successfuly Created..');
       router.push('/shop/' + router.query.id + '/products');
     } else {
-      Toastify('error', "Error");
+      Toastify('error', 'Error');
       // if (code == 100) setErrorForm({ ...errorForm, skuExist: true });
       setIsSaving(false);
     }
   }
   async function editProduct(url = '') {
     const res = await updateData('products', router.query.slug[1], { ...formObjRef.current });
-    console.log(res);
 
     // const { success, msg, code } = await apiUpdateCtr({
     //   type: 'products',
@@ -393,14 +405,16 @@ const Product: NextPage = (props: any) => {
   }
 
   useEffect(() => {
-    if(router.isReady) initDataPage(router.query.slug);
+    if (router.isReady) initDataPage(router.query.slug);
   }, [router.asPath]);
 
   const imageChange = (e: any) => {
     if (e.target.files && e.target.files.length > 0) {
       setImg(e.target.files[0]);
       setPreviewUrl(URL.createObjectURL(e.target.files[0]));
-    } else console.log('na image', e.target.files);
+    } else {
+      //  console.log('na image', e.target.files);
+    }
   };
   const checkboxHandleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.name == 'is_service')
@@ -559,458 +573,565 @@ const Product: NextPage = (props: any) => {
   };
 
   return (
-    <>
-      <AdminLayout shopId={shopId}>
-        <ToastContainer />
-        <NotifiModal alertShow={show} alertFun={(e: boolean) => setShow(e)}>
-          {isEdit ? 'Product Successfuly Edited..' : 'Product Successfuly Created..'}
-        </NotifiModal>
-        <div className="row">
-          <div className="mb-4">
-            <Link className="btn btn-primary p-3" href={'/shop/' + router.query.id + '/products'}>
-              Back To List
-            </Link>
-          </div>
+    <AdminLayout shopId={shopId}>
+      <ToastContainer />
+      <NotifiModal alertShow={show} alertFun={(e: boolean) => setShow(e)}>
+        {isEdit ? 'Product Successfuly Edited..' : 'Product Successfuly Created..'}
+      </NotifiModal>
+      <div className="row">
+        <div className="mb-4">
+          <Link className="btn btn-primary p-3" href={'/shop/' + router.query.id + '/products'}>
+            Back To List
+          </Link>
         </div>
-        <Dialog
-          open={openRemoveDialog}
-          onClose={() => {
-            setOpenRemoveDialog(false);
-          }}
-          aria-labelledby="alert-dialog-title"
-          aria-describedby="alert-dialog-description">
-          <DialogTitle id="alert-dialog-title">Delete Item</DialogTitle>
-          <DialogContent>
-            <DialogContentText id="alert-dialog-description">
-              Are you Sure You Want Remove This Item ?
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setOpenRemoveDialog(false)}>Cancel</Button>
-            <Button
-              onClick={() => {
-                if (removeDialogType.type == 'var_items') {
-                  deleteFunction(
-                    removeDialogType.type,
-                    removeDialogType.id,
-                    removeDialogType.index
-                  );
-                } else if (removeDialogType.type == 'tailoring_item') {
-                  const _rows: any = [...selectedFabrics];
-                  _rows.splice(removeDialogType.index, 1);
-                  setSelectedFabrics(_rows);
-                } else if (removeDialogType.type == 'tail_items') {
-                  const _rows: any = [...formObj.tailoringPrices];
-                  _rows.splice(removeDialogType.index, 1);
-                  setFormObj({ ...formObj, tailoringPrices: _rows });
-                } else {
-                  const rows = [...selectedProducts];
-                  const _index = rows.findIndex((it: any) => it.product_id == selecetdId);
-                  if (_index > -1) rows.splice(_index, 1);
-                  setSelectedProducts(rows);
-                }
-                setOpenRemoveDialog(false);
-              }}>
-              Yes
-            </Button>
-          </DialogActions>
-        </Dialog>
-        <Card className="mb-4">
-          <Card.Header className="p-3 bg-white">
-            <h5>{isEdit ? 'Edit Product ' : 'Add New Product'} </h5>
-          </Card.Header>
-          <Card.Body>
-            {!loading ? (
-              <div className="forms-style-parent">
-                <form className="form-style-products">
-                  <div className="products-columns">
-                    <div className="row">
-                      <div className="upload-dots-box">
-                        {img || formObj?.img?.length > 2 ? (
-                          <>
-                            <img src={previewUrl} />
-                            {!isSaving && (
-                              <button
-                                className="btn btn-danger"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  handleRemoveImg(e);
-                                }}>
-                                Remove This Image
-                              </button>
-                            )}
-                          </>
-                        ) : (
-                          <>
-                            <label htmlFor={'product-image'}>
-                              <img src={'/images/dashboard/imageholder.jpg'} />
-                              <br />
-                              Drop Your Image Or <span>Click</span>
-                              <p>Supports : JPG,PNG</p>
-                            </label>
-                          </>
-                        )}
+      </div>
+      <Dialog
+        open={openRemoveDialog}
+        onClose={() => {
+          setOpenRemoveDialog(false);
+        }}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description">
+        <DialogTitle id="alert-dialog-title">Delete Item</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Are you Sure You Want Remove This Item ?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenRemoveDialog(false)}>Cancel</Button>
+          <Button
+            onClick={() => {
+              if (removeDialogType.type == 'var_items') {
+                deleteFunction(removeDialogType.type, removeDialogType.id, removeDialogType.index);
+              } else if (removeDialogType.type == 'tailoring_item') {
+                const _rows: any = [...selectedFabrics];
+                _rows.splice(removeDialogType.index, 1);
+                setSelectedFabrics(_rows);
+              } else if (removeDialogType.type == 'tail_items') {
+                const _rows: any = [...formObj.tailoringPrices];
+                _rows.splice(removeDialogType.index, 1);
+                setFormObj({ ...formObj, tailoringPrices: _rows });
+              } else {
+                const rows = [...selectedProducts];
+                const _index = rows.findIndex((it: any) => it.product_id == selecetdId);
+                if (_index > -1) rows.splice(_index, 1);
+                setSelectedProducts(rows);
+              }
+              setOpenRemoveDialog(false);
+            }}>
+            Yes
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Card className="mb-4">
+        <Card.Header className="p-3 bg-white">
+          <h5>{isEdit ? 'Edit Product ' : 'Add New Product'} </h5>
+        </Card.Header>
+        <Card.Body>
+          {!loading ? (
+            <div className="forms-style-parent">
+              <form className="form-style-products">
+                <div className="products-columns">
+                  <div className="row">
+                    <div className="upload-dots-box">
+                      {img || formObj?.img?.length > 2 ? (
+                        <>
+                          <img src={previewUrl} />
+                          {!isSaving && (
+                            <button
+                              className="btn btn-danger"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleRemoveImg(e);
+                              }}>
+                              Remove This Image
+                            </button>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          <label htmlFor={'product-image'}>
+                            <img src={'/images/dashboard/imageholder.jpg'} />
+                            <br />
+                            Drop Your Image Or <span>Click</span>
+                            <p>Supports : JPG,PNG</p>
+                          </label>
+                        </>
+                      )}
 
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="form-control"
-                          id="product-image"
-                          name="product-image"
-                          hidden
-                          onChange={imageChange}
-                          onClick={(event) => {
-                            event.currentTarget.value = null;
-                          }}
-                        />
-                        {errorForm.img && <p className="p-1 h6 text-danger ">Select Image </p>}
-                        {isSaving && (
-                          <div className="uploader-bar-box">
-                            <p>{percent != 100 ? 'Uploading Image...' : 'Saveing Form Data...'}</p>
-                            <div className="uploader-bar" style={{ width: `${percent}%` }}></div>
-                          </div>
-                        )}
-                      </div>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="form-control"
+                        id="product-image"
+                        name="product-image"
+                        hidden
+                        onChange={imageChange}
+                        onClick={(event) => {
+                          event.currentTarget.value = null;
+                        }}
+                      />
+                      {errorForm.img && <p className="p-1 h6 text-danger ">Select Image </p>}
+                      {isSaving && (
+                        <div className="uploader-bar-box">
+                          <p>{percent != 100 ? 'Uploading Image...' : 'Saveing Form Data...'}</p>
+                          <div className="uploader-bar" style={{ width: `${percent}%` }}></div>
+                        </div>
+                      )}
                     </div>
-                    <br />
-                    {!isSaving && (
-                      <>
-                        {/* name  */}
-                        <div className="field-cover">
-                          <div className="field-section">
-                            <p>
-                              Product/Service Name: <span className="text-danger">*</span>
-                            </p>
-                          </div>
-                          <div className="field-section">
-                            <input
-                              type="text"
-                              className="form-control"
-                              placeholder="Product/Service Name"
-                              value={formObj.name}
-                              onChange={(e) => {
-                                setFormObj({ ...formObj, name: e.target.value });
-                              }}
-                            />
-                            {errorForm.name && (
-                              <p className="p-1 h6 text-danger ">Enter Product name</p>
-                            )}
-                          </div>
-                        </div>
-                        {/* second  */}
-                        <div className="field-cover">
-                          <div className="field-section">
-                            <p>Product/Service Second Name:</p>
-                          </div>
-
-                          <div className="field-section">
-                            <input
-                              type="text"
-                              className="form-control"
-                              placeholder="Product/Service Second Name"
-                              value={formObj.productName2}
-                              onChange={(e) => {
-                                setFormObj({ ...formObj, productName2: e.target.value });
-                              }}
-                            />
-                          </div>
-                        </div>
-                        {/* sku  */}
-                        <div className="field-cover">
-                          <div className="field-section">
-                            <p>
-                              Sku: <span className="text-danger">*</span>
-                            </p>
-                          </div>
-                          <div className="field-section">
-                            <input
-                              type="text"
-                              className="form-control"
-                              placeholder="Sku"
-                              value={formObj.sku}
-                              onChange={(e) => {
-                                setFormObj({ ...formObj, sku: e.target.value });
-                              }}
-                            />
-                            {errorForm.sku && (
-                              <p className="p-1 h6 text-danger ">Enter Product Sku</p>
-                            )}
-                            {errorForm.skuExist && (
-                              <p className="p-1 h6 text-danger ">Enter Product unique Sku</p>
-                            )}
-                          </div>
-                        </div>
-                        {/* Barcode Type  */}
-                        <div className="field-cover">
-                          <div className="field-section">
-                            <p>Barcode Type:</p>
-                          </div>
-                          <div className="field-section">
-                            <Select
-                              styles={colourStyles}
-                              options={barcodes}
-                              value={barcodes.filter((f: any) => {
-                                return f.value == formObj.barcode_type;
-                              })}
-                              onChange={(itm) => {
-                                setFormObj({ ...formObj, barcode_type: itm!.value });
-                              }}
-                            />
-                            {errorForm.barcode_type && (
-                              <p className="p-1 h6 text-danger ">Select One Option</p>
-                            )}
-                          </div>
-                        </div>
-                        {/* Tailoring Type  */}
-                        {iType == 'Kianvqyqndr' && (
-                          <div className="field-cover">
-                            <div className="field-section">
-                              <p>
-                                Tailoring Type: <span className="text-danger">*</span>
-                              </p>
-                            </div>
-
-                            <div className="field-section">
-                              <Select
-                                styles={colourStyles}
-                                options={tailoring}
-                                value={tailoring.filter((f: any) => {
-                                  return f.value == formObj.isTailoring;
-                                })}
-                                onChange={(itm) => {
-                                  setFormObj({ ...formObj, isTailoring: itm!.value });
-                                }}
-                              />
-                            </div>
-                          </div>
-                        )}
-                        {errorForm.isTailoring && (
-                          <p className="p-1 h6 text-danger ">You must select One</p>
-                        )}
-                        {/* Unit */}
-                        <div className="field-cover">
-                          <div className="field-section">
-                            <p>Unit:</p>
-                          </div>
-                          <div className="field-section">
-                            <Select
-                              styles={colourStyles}
-                              options={units}
-                              value={units.filter((f: any) => {
-                                return f.value == formObj.unit_id;
-                              })}
-                              onChange={(itm) => {
-                                setFormObj({ ...formObj, unit_id: itm!.value });
-                              }}
-                            />
-                          </div>
-                        </div>
-                        {/* is Fabric */}
-                        {iType == 'Kianvqyqndr' && (
-                          <div className="field-cover">
-                            <div className="field-section">
-                              <p>Is Fabric:</p>
-                            </div>
-                            <div className="field-section">
-                              <Switch
-                                name={'is_fabric'}
-                                checked={formObj.is_fabric}
-                                onChange={checkboxHandleChange}
-                              />
-                            </div>
-                          </div>
-                        )}
-                        {/* Brand */}
-                        <div className="field-cover">
-                          <div className="field-section">
-                            <p>Brand:</p>
-                          </div>
-                          <div className="field-section">
-                            <Select
-                              styles={colourStyles}
-                              options={brands}
-                              value={brands.find((f: any) => {
-                                return f.value == formObj.brand;
-                              })}
-                              onChange={(itm) => {
-                                setFormObj({ ...formObj, brand: itm!.value });
-                              }}
-                            />
-                          </div>
-                        </div>
-                        {/* Category */}
-                        <div className="field-cover">
-                          <div className="field-section">
-                            <p>
-                              Category: <span className="text-danger">*</span>
-                            </p>
-                          </div>
-                          <div className="field-section">
-                            <Select
-                              styles={colourStyles}
-                              options={cats}
-                              value={cats.find((f: any) => {
-                                return f.value == formObj.category_id;
-                              })}
-                              onChange={(itm) => {
-                                setFormObj({ ...formObj, category_id: itm!.value });
-                              }}
-                            />
-                          </div>
-                        </div>
-                        {/* ُSub Category */}
-                        <div className="field-cover" style={{ display: 'none' }}>
-                          <div className="field-section">
-                            <p>Sub Category:</p>
-                          </div>
-                          <div className="field-section">
-                            <Select styles={colourStyles} />
-                          </div>
-                        </div>
-                      </>
-                    )}
-                    <br />
-                    {!isSaving && (
-                      <button
-                        type="button"
-                        className="btn m-btn btn-primary p-2 "
-                        onClick={(e) => {
-                          e.preventDefault();
-                          errors = [];
-                          if (formObj.name.length == 0) errors.push('error8');
-                          if (formObj.sku.length == 0) errors.push('error7');
-                          if (formObj.barcode_type == '0') errors.push('error6');
-                          if (formObj.type == 'tailoring_package') {
-                            if (formObj.tailoringPrices.length <= 1) errors.push('error5');
-                            if (selectedFabrics.length == 0) errors.push('error1');
-                            if (formObj.tailoringPrices.length <= 1) errors.push('error2');
-                            if (formObj.isTailoring == null || formObj.isTailoring <= 0) {
-                              errors.push('error3');
-                              Toastify(
-                                'error',
-                                ' Error,You must select One Item For Tailoring Type'
-                              );
-                              setErrorForm({ ...errorForm, isTailoring: true });
-                            }
-                          }
-                          setErrorForm({
-                            ...errorForm,
-                            name: formObj.name.length == 0,
-                            sku: formObj.sku.length == 0,
-                            barcode_type: formObj.barcode_type == '0',
-                            fabs:
-                              formObj.type == 'tailoring_package' && selectedFabrics.length == 0,
-                            rules:
-                              formObj.type == 'tailoring_package' &&
-                              formObj.tailoringPrices.length <= 1,
-                          });
-
-                          if (errors.length == 0) {
-                            setIsSaving(true);
-                            if (isEdit) img == null ? editProduct() : handleUpload();
-                            else img != null ? handleUpload() : insertProduct('n');
-                          } else Toastify('error', 'Enter Requires Field');
-                        }}>
-                        {isEdit ? 'Edit' : 'Save'}
-                      </button>
-                    )}
                   </div>
+                  <br />
                   {!isSaving && (
-                    <div className="products-columns">
-                      <div className="first-gap"></div>
-                      {/* is service */}
+                    <>
+                      {/* name  */}
                       <div className="field-cover">
                         <div className="field-section">
                           <p>
-                            Is Service:{' '}
-                            <CustomWidthTooltip
-                              PopperProps={{
-                                disablePortal: true,
-                              }}
-                              placement="right-start"
-                              onClose={handleTooltipClose}
-                              open={open3}
-                              disableFocusListener
-                              disableHoverListener
-                              disableTouchListener
-                              title={
-                                <React.Fragment>
-                                  <Typography color="inherit">Service Product</Typography>
-                                  {'This Product will be as service'}
-                                  <br />
-                                  <em>{'without stock like massage etc..'}</em>
-                                </React.Fragment>
-                              }>
-                              <span onClick={() => handleTooltipOpen('msg')}>
-                                {' '}
-                                <FontAwesomeIcon icon={faInfoCircle} className={'text-primary'} />
-                              </span>
-                            </CustomWidthTooltip>
+                            Product/Service Name: <span className="text-danger">*</span>
                           </p>
                         </div>
                         <div className="field-section">
-                          <Switch
-                            name={'is_service'}
-                            checked={formObj.is_service}
-                            onChange={checkboxHandleChange}
+                          <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Product/Service Name"
+                            value={formObj.name}
+                            onChange={(e) => {
+                              setFormObj({ ...formObj, name: e.target.value });
+                            }}
                           />
+                          {errorForm.name && (
+                            <p className="p-1 h6 text-danger ">Enter Product name</p>
+                          )}
                         </div>
                       </div>
-                      {/* Type */}
+                      {/* second  */}
                       <div className="field-cover">
                         <div className="field-section">
-                          <p>Type:</p>
+                          <p>Product/Service Second Name:</p>
                         </div>
+
                         <div className="field-section">
-                          <Select
-                            isDisabled={isEdit}
-                            styles={colourStyles}
-                            options={producTypes}
-                            value={producTypes.find((f: any) => {
-                              return f.value == formObj.type;
-                            })}
-                            onChange={(itm) => {
-                              setFormObj({ ...formObj, type: itm!.value });
+                          <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Product/Service Second Name"
+                            value={formObj.productName2}
+                            onChange={(e) => {
+                              setFormObj({ ...formObj, productName2: e.target.value });
                             }}
                           />
                         </div>
                       </div>
-                      {/* package content */}
-                      {formObj.type == 'package' && (
-                        <div className="form-group mt-4">
-                          <Select
-                            formatOptionLabel={formatProductsOptions}
-                            styles={colourStyles}
-                            options={products}
-                            onChange={(e) => addPackageProducts(e)}
+                      {/* sku  */}
+                      <div className="field-cover">
+                        <div className="field-section">
+                          <p>
+                            Sku: <span className="text-danger">*</span>
+                          </p>
+                        </div>
+                        <div className="field-section">
+                          <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Sku"
+                            value={formObj.sku}
+                            onChange={(e) => {
+                              setFormObj({ ...formObj, sku: e.target.value });
+                            }}
                           />
-                          <br />
-                          <div style={{ height: 300, width: '100%' }}>
-                            <DataGrid
-                              rows={selectedProducts}
-                              columns={columns}
-                              pageSize={10}
-                              rowsPerPageOptions={[10]}
-                              onCellEditCommit={saveToCell}
+                          {errorForm.sku && (
+                            <p className="p-1 h6 text-danger ">Enter Product Sku</p>
+                          )}
+                          {errorForm.skuExist && (
+                            <p className="p-1 h6 text-danger ">Enter Product unique Sku</p>
+                          )}
+                        </div>
+                      </div>
+                      {/* Barcode Type  */}
+                      <div className="field-cover">
+                        <div className="field-section">
+                          <p>Barcode Type:</p>
+                        </div>
+                        <div className="field-section">
+                          <Select
+                            styles={colourStyles}
+                            options={barcodes}
+                            value={barcodes.filter((f: any) => {
+                              return f.value == formObj.barcode_type;
+                            })}
+                            onChange={(itm) => {
+                              setFormObj({ ...formObj, barcode_type: itm!.value });
+                            }}
+                          />
+                          {errorForm.barcode_type && (
+                            <p className="p-1 h6 text-danger ">Select One Option</p>
+                          )}
+                        </div>
+                      </div>
+                      {/* Tailoring Type  */}
+                      {iType == 'Kianvqyqndr' && (
+                        <div className="field-cover">
+                          <div className="field-section">
+                            <p>
+                              Tailoring Type: <span className="text-danger">*</span>
+                            </p>
+                          </div>
+
+                          <div className="field-section">
+                            <Select
+                              styles={colourStyles}
+                              options={tailoring}
+                              value={tailoring.filter((f: any) => {
+                                return f.value == formObj.isTailoring;
+                              })}
+                              onChange={(itm) => {
+                                setFormObj({ ...formObj, isTailoring: itm!.value });
+                              }}
                             />
                           </div>
                         </div>
                       )}
-                      {/* variable content */}
-                      {formObj.type == 'variable' && (
+                      {errorForm.isTailoring && (
+                        <p className="p-1 h6 text-danger ">You must select One</p>
+                      )}
+                      {/* Unit */}
+                      <div className="field-cover">
+                        <div className="field-section">
+                          <p>Unit:</p>
+                        </div>
+                        <div className="field-section">
+                          <Select
+                            styles={colourStyles}
+                            options={units}
+                            value={units.filter((f: any) => {
+                              return f.value == formObj.unit_id;
+                            })}
+                            onChange={(itm) => {
+                              setFormObj({ ...formObj, unit_id: itm!.value });
+                            }}
+                          />
+                        </div>
+                      </div>
+                      {/* is Fabric */}
+                      {iType == 'Kianvqyqndr' && (
+                        <div className="field-cover">
+                          <div className="field-section">
+                            <p>Is Fabric:</p>
+                          </div>
+                          <div className="field-section">
+                            <Switch
+                              name={'is_fabric'}
+                              checked={formObj.is_fabric}
+                              onChange={checkboxHandleChange}
+                            />
+                          </div>
+                        </div>
+                      )}
+                      {/* Brand */}
+                      <div className="field-cover">
+                        <div className="field-section">
+                          <p>Brand:</p>
+                        </div>
+                        <div className="field-section">
+                          <Select
+                            styles={colourStyles}
+                            options={brands}
+                            value={brands.find((f: any) => {
+                              return f.value == formObj.brand;
+                            })}
+                            onChange={(itm) => {
+                              setFormObj({ ...formObj, brand: itm!.value });
+                            }}
+                          />
+                        </div>
+                      </div>
+                      {/* Category */}
+                      <div className="field-cover">
+                        <div className="field-section">
+                          <p>
+                            Category: <span className="text-danger">*</span>
+                          </p>
+                        </div>
+                        <div className="field-section">
+                          <Select
+                            styles={colourStyles}
+                            options={cats}
+                            value={cats.find((f: any) => {
+                              return f.value == formObj.category_id;
+                            })}
+                            onChange={(itm) => {
+                              setFormObj({ ...formObj, category_id: itm!.value });
+                            }}
+                          />
+                        </div>
+                      </div>
+                      {/* ُSub Category */}
+                      <div className="field-cover" style={{ display: 'none' }}>
+                        <div className="field-section">
+                          <p>Sub Category:</p>
+                        </div>
+                        <div className="field-section">
+                          <Select styles={colourStyles} />
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  <br />
+                  {!isSaving && (
+                    <button
+                      type="button"
+                      className="btn m-btn btn-primary p-2 "
+                      onClick={(e) => {
+                        e.preventDefault();
+                        errors = [];
+                        if (formObj.name.length == 0) errors.push('error8');
+                        if (formObj.sku.length == 0) errors.push('error7');
+                        if (formObj.barcode_type == '0') errors.push('error6');
+                        if (formObj.type == 'tailoring_package') {
+                          if (formObj.tailoringPrices.length <= 1) errors.push('error5');
+                          if (selectedFabrics.length == 0) errors.push('error1');
+                          if (formObj.tailoringPrices.length <= 1) errors.push('error2');
+                          if (formObj.isTailoring == null || formObj.isTailoring <= 0) {
+                            errors.push('error3');
+                            Toastify('error', ' Error,You must select One Item For Tailoring Type');
+                            setErrorForm({ ...errorForm, isTailoring: true });
+                          }
+                        }
+                        setErrorForm({
+                          ...errorForm,
+                          name: formObj.name.length == 0,
+                          sku: formObj.sku.length == 0,
+                          barcode_type: formObj.barcode_type == '0',
+                          fabs: formObj.type == 'tailoring_package' && selectedFabrics.length == 0,
+                          rules:
+                            formObj.type == 'tailoring_package' &&
+                            formObj.tailoringPrices.length <= 1,
+                        });
+
+                        if (errors.length == 0) {
+                          setIsSaving(true);
+                          if (isEdit) img == null ? editProduct() : handleUpload();
+                          else img != null ? handleUpload() : insertProduct('img');
+                        } else Toastify('error', 'Enter Requires Field');
+                      }}>
+                      {isEdit ? 'Edit' : 'Save'}
+                    </button>
+                  )}
+                </div>
+                {!isSaving && (
+                  <div className="products-columns">
+                    <div className="first-gap"></div>
+                    {/* is service */}
+                    <div className="field-cover">
+                      <div className="field-section">
+                        <p>
+                          Is Service:{' '}
+                          <CustomWidthTooltip
+                            PopperProps={{
+                              disablePortal: true,
+                            }}
+                            placement="right-start"
+                            onClose={handleTooltipClose}
+                            open={open3}
+                            disableFocusListener
+                            disableHoverListener
+                            disableTouchListener
+                            title={
+                              <React.Fragment>
+                                <Typography color="inherit">Service Product</Typography>
+                                {'This Product will be as service'}
+                                <br />
+                                <em>{'without stock like massage etc..'}</em>
+                              </React.Fragment>
+                            }>
+                            <span onClick={() => handleTooltipOpen('msg')}>
+                              {' '}
+                              <FontAwesomeIcon icon={faInfoCircle} className={'text-primary'} />
+                            </span>
+                          </CustomWidthTooltip>
+                        </p>
+                      </div>
+                      <div className="field-section">
+                        <Switch
+                          name={'is_service'}
+                          checked={formObj.is_service}
+                          onChange={checkboxHandleChange}
+                        />
+                      </div>
+                    </div>
+                    {/* Type */}
+                    <div className="field-cover">
+                      <div className="field-section">
+                        <p>Type:</p>
+                      </div>
+                      <div className="field-section">
+                        <Select
+                          isDisabled={isEdit}
+                          styles={colourStyles}
+                          options={producTypes}
+                          value={producTypes.find((f: any) => {
+                            return f.value == formObj.type;
+                          })}
+                          onChange={(itm) => {
+                            setFormObj({ ...formObj, type: itm!.value });
+                          }}
+                        />
+                      </div>
+                    </div>
+                    {/* package content */}
+                    {formObj.type == 'package' && (
+                      <div className="form-group mt-4">
+                        <Select
+                          formatOptionLabel={formatProductsOptions}
+                          styles={colourStyles}
+                          options={products}
+                          onChange={(e) => addPackageProducts(e)}
+                        />
+                        <br />
+                        <div style={{ height: 300, width: '100%' }}>
+                          <DataGrid
+                            rows={selectedProducts}
+                            columns={columns}
+                            pageSize={10}
+                            rowsPerPageOptions={[10]}
+                            onCellEditCommit={saveToCell}
+                          />
+                        </div>
+                      </div>
+                    )}
+                    {/* variable content */}
+                    {formObj.type == 'variable' && (
+                      <div className="form-group mt-4">
+                        <Table
+                          className="table table-hover variation"
+                          style={{ maxWidth: '700px' }}>
+                          <thead>
+                            <th>Name</th>
+                            <th>Second Name</th>
+                            <th>sku</th>
+                            <th>cost</th>
+                            <th>price</th>
+                          </thead>
+                          <tbody>
+                            {formObj.variations.map((vr: any, i: number) => {
+                              return (
+                                <tr key={i}>
+                                  <td>
+                                    <input
+                                      type="text"
+                                      name="name"
+                                      className="form-control p-2"
+                                      placeholder="Enter Name"
+                                      value={vr.name}
+                                      onChange={(e) => {
+                                        handleInputChange(e, i);
+                                      }}
+                                    />
+                                  </td>
+                                  <td>
+                                    <input
+                                      type="text"
+                                      name="name2"
+                                      className="form-control p-2"
+                                      placeholder="Enter second Name"
+                                      value={vr.name2}
+                                      onChange={(e) => {
+                                        handleInputChange(e, i);
+                                      }}
+                                    />
+                                  </td>
+                                  <td>
+                                    <input
+                                      type="text"
+                                      name="sku"
+                                      className="form-control p-2"
+                                      placeholder="Enter sku"
+                                      value={vr.sku}
+                                      onChange={(e) => {
+                                        handleInputChange(e, i);
+                                      }}
+                                    />
+                                  </td>
+                                  <td>
+                                    <input
+                                      type="number"
+                                      name="cost"
+                                      min={0}
+                                      className="form-control p-2"
+                                      placeholder="Enter cost"
+                                      value={vr.cost}
+                                      onChange={(e) => {
+                                        handleInputChange(e, i);
+                                      }}
+                                    />
+                                  </td>
+                                  <td>
+                                    <input
+                                      type="number"
+                                      name="price"
+                                      min={0}
+                                      className="form-control p-2"
+                                      placeholder="Enter price"
+                                      value={vr.price}
+                                      onChange={(e) => {
+                                        handleInputChange(e, i);
+                                      }}
+                                    />
+                                  </td>
+                                  <td>
+                                    <ButtonGroup className="mb-2 m-buttons-style">
+                                      <Button onClick={() => handleDeleteVariation(i)}>
+                                        <FontAwesomeIcon icon={faTrash} />
+                                      </Button>
+                                    </ButtonGroup>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </Table>
+                      </div>
+                    )}
+                    {/* Tailoring package content */}
+                    {formObj.type == 'tailoring_package' && iType == 'Kianvqyqndr' && (
+                      <div className="form-group mt-4">
+                        <p>Select Fabrics: *</p>
+                        <Select
+                          styles={colourStyles}
+                          options={allFabrics}
+                          onChange={(e) => addToTailoringPackage(e)}
+                        />
+                        <br />
+                        {errorForm.fabs && (
+                          <p className="p-1 h6 text-danger ">Select One Option at Least</p>
+                        )}
+                        <div style={{ height: 300, width: '100%' }}>
+                          <DataGrid
+                            rows={selectedFabrics}
+                            columns={columnsTailoringPackages}
+                            pageSize={10}
+                            rowsPerPageOptions={[10]}
+                            onCellEditCommit={saveToCell}
+                          />
+                        </div>
+                        <p className="mt-4">Enter The Prices</p>
+                        {errorForm.rules && (
+                          <p className="p-1 h6 text-danger ">Enter The Price Rules</p>
+                        )}
                         <div className="form-group mt-4">
                           <Table
                             className="table table-hover variation"
                             style={{ maxWidth: '700px' }}>
                             <thead>
                               <th>Name</th>
-                              <th>Second Name</th>
-                              <th>sku</th>
-                              <th>cost</th>
+                              <th>From</th>
+                              <th>To</th>
                               <th>price</th>
                             </thead>
                             <tbody>
-                              {formObj.variations.map((vr: any, i: number) => {
+                              {formObj.tailoringPrices.map((vr: any, i: number) => {
                                 return (
                                   <tr key={i}>
                                     <td>
@@ -1021,44 +1142,33 @@ const Product: NextPage = (props: any) => {
                                         placeholder="Enter Name"
                                         value={vr.name}
                                         onChange={(e) => {
-                                          handleInputChange(e, i);
-                                        }}
-                                      />
-                                    </td>
-                                    <td>
-                                      <input
-                                        type="text"
-                                        name="name2"
-                                        className="form-control p-2"
-                                        placeholder="Enter second Name"
-                                        value={vr.name2}
-                                        onChange={(e) => {
-                                          handleInputChange(e, i);
-                                        }}
-                                      />
-                                    </td>
-                                    <td>
-                                      <input
-                                        type="text"
-                                        name="sku"
-                                        className="form-control p-2"
-                                        placeholder="Enter sku"
-                                        value={vr.sku}
-                                        onChange={(e) => {
-                                          handleInputChange(e, i);
+                                          handleInputChangeTailoring(e, i);
                                         }}
                                       />
                                     </td>
                                     <td>
                                       <input
                                         type="number"
-                                        name="cost"
+                                        name="from"
                                         min={0}
                                         className="form-control p-2"
-                                        placeholder="Enter cost"
-                                        value={vr.cost}
+                                        placeholder="Enter Start Length"
+                                        value={vr.from}
                                         onChange={(e) => {
-                                          handleInputChange(e, i);
+                                          handleInputChangeTailoring(e, i);
+                                        }}
+                                      />
+                                    </td>
+                                    <td>
+                                      <input
+                                        type="number"
+                                        name="to"
+                                        min={0}
+                                        className="form-control p-2"
+                                        placeholder="Enter End Length"
+                                        value={vr.to}
+                                        onChange={(e) => {
+                                          handleInputChangeTailoring(e, i);
                                         }}
                                       />
                                     </td>
@@ -1068,16 +1178,16 @@ const Product: NextPage = (props: any) => {
                                         name="price"
                                         min={0}
                                         className="form-control p-2"
-                                        placeholder="Enter price"
+                                        placeholder="Enter Price"
                                         value={vr.price}
                                         onChange={(e) => {
-                                          handleInputChange(e, i);
+                                          handleInputChangeTailoring(e, i);
                                         }}
                                       />
                                     </td>
                                     <td>
                                       <ButtonGroup className="mb-2 m-buttons-style">
-                                        <Button onClick={() => handleDeleteVariation(i)}>
+                                        <Button onClick={() => handleDeleteTailoringPrices(i)}>
                                           <FontAwesomeIcon icon={faTrash} />
                                         </Button>
                                       </ButtonGroup>
@@ -1088,306 +1198,197 @@ const Product: NextPage = (props: any) => {
                             </tbody>
                           </Table>
                         </div>
-                      )}
-                      {/* Tailoring package content */}
-                      {formObj.type == 'tailoring_package' && iType == 'Kianvqyqndr' && (
-                        <div className="form-group mt-4">
-                          <p>Select Fabrics: *</p>
-                          <Select
-                            styles={colourStyles}
-                            options={allFabrics}
-                            onChange={(e) => addToTailoringPackage(e)}
-                          />
-                          <br />
-                          {errorForm.fabs && (
-                            <p className="p-1 h6 text-danger ">Select One Option at Least</p>
-                          )}
-                          <div style={{ height: 300, width: '100%' }}>
-                            <DataGrid
-                              rows={selectedFabrics}
-                              columns={columnsTailoringPackages}
-                              pageSize={10}
-                              rowsPerPageOptions={[10]}
-                              onCellEditCommit={saveToCell}
-                            />
-                          </div>
-                          <p className="mt-4">Enter The Prices</p>
-                          {errorForm.rules && (
-                            <p className="p-1 h6 text-danger ">Enter The Price Rules</p>
-                          )}
-                          <div className="form-group mt-4">
-                            <Table
-                              className="table table-hover variation"
-                              style={{ maxWidth: '700px' }}>
-                              <thead>
-                                <th>Name</th>
-                                <th>From</th>
-                                <th>To</th>
-                                <th>price</th>
-                              </thead>
-                              <tbody>
-                                {formObj.tailoringPrices.map((vr: any, i: number) => {
-                                  return (
-                                    <tr key={i}>
-                                      <td>
-                                        <input
-                                          type="text"
-                                          name="name"
-                                          className="form-control p-2"
-                                          placeholder="Enter Name"
-                                          value={vr.name}
-                                          onChange={(e) => {
-                                            handleInputChangeTailoring(e, i);
-                                          }}
-                                        />
-                                      </td>
-                                      <td>
-                                        <input
-                                          type="number"
-                                          name="from"
-                                          min={0}
-                                          className="form-control p-2"
-                                          placeholder="Enter Start Length"
-                                          value={vr.from}
-                                          onChange={(e) => {
-                                            handleInputChangeTailoring(e, i);
-                                          }}
-                                        />
-                                      </td>
-                                      <td>
-                                        <input
-                                          type="number"
-                                          name="to"
-                                          min={0}
-                                          className="form-control p-2"
-                                          placeholder="Enter End Length"
-                                          value={vr.to}
-                                          onChange={(e) => {
-                                            handleInputChangeTailoring(e, i);
-                                          }}
-                                        />
-                                      </td>
-                                      <td>
-                                        <input
-                                          type="number"
-                                          name="price"
-                                          min={0}
-                                          className="form-control p-2"
-                                          placeholder="Enter Price"
-                                          value={vr.price}
-                                          onChange={(e) => {
-                                            handleInputChangeTailoring(e, i);
-                                          }}
-                                        />
-                                      </td>
-                                      <td>
-                                        <ButtonGroup className="mb-2 m-buttons-style">
-                                          <Button onClick={() => handleDeleteTailoringPrices(i)}>
-                                            <FontAwesomeIcon icon={faTrash} />
-                                          </Button>
-                                        </ButtonGroup>
-                                      </td>
-                                    </tr>
-                                  );
-                                })}
-                              </tbody>
-                            </Table>
-                          </div>
-                        </div>
-                      )}
-                      {/* cost */}
-                      {formObj.type == 'single' && (
-                        <>
-                          <div className="field-cover">
-                            <div className="field-section">
-                              <p>
-                                Cost: <span className="text-danger">*</span>
-                              </p>
-                            </div>
-                            <div className="field-section">
-                              <input
-                                type="text"
-                                className="form-control"
-                                placeholder="Purchase Price"
-                                value={formObj.cost_price}
-                                onKeyPress={handleNumberKeyPress}
-                                onChange={(e) => {
-                                  setFormObj({ ...formObj, cost_price: e.target.value });
-                                }}
-                              />
-                            </div>
-                          </div>
-                          {/* Price */}
-                          <div className="field-cover">
-                            <div className="field-section">
-                              <p>
-                                Price: <span className="text-danger">*</span>
-                              </p>
-                            </div>
-                            <div className="field-section">
-                              <input
-                                type="text"
-                                className="form-control"
-                                placeholder="Sell Price"
-                                value={formObj.sell_price}
-                                onKeyPress={handleNumberKeyPress}
-                                onChange={(e) => {
-                                  setFormObj({ ...formObj, sell_price: e.target.value });
-                                }}
-                              />
-                            </div>
-                          </div>
-                        </>
-                      )}
-                      {/* Alert Quantity */}
-                      {!formObj.is_service && (
+                      </div>
+                    )}
+                    {/* cost */}
+                    {formObj.type == 'single' && (
+                      <>
                         <div className="field-cover">
                           <div className="field-section">
                             <p>
-                              Alert Quantity: <span className="text-danger">*</span>
+                              Cost: <span className="text-danger">*</span>
                             </p>
                           </div>
                           <div className="field-section">
                             <input
-                              type="number"
+                              type="text"
                               className="form-control"
-                              placeholder="Alert Quantity"
-                              value={formObj.alertQuantity}
-                              min={0}
+                              placeholder="Purchase Price"
+                              value={formObj.cost_price}
+                              onKeyPress={handleNumberKeyPress}
                               onChange={(e) => {
-                                setFormObj({ ...formObj, alertQuantity: Number(e.target.value) });
+                                setFormObj({ ...formObj, cost_price: e.target.value });
                               }}
                             />
                           </div>
                         </div>
-                      )}
-                      {formObj.is_service == 0 && (
-                        <>
-                          {/* Sell Over Stock */}
-                          <div className="field-cover">
-                            <div className="field-section">
-                              <p>Sell Over Stock:</p>
-                            </div>
-                            <div className="field-section">
-                              <Switch
-                                name={'sell_over'}
-                                checked={formObj.isSellOverStock}
-                                onChange={checkboxHandleChange}
-                              />
-                            </div>
+                        {/* Price */}
+                        <div className="field-cover">
+                          <div className="field-section">
+                            <p>
+                              Price: <span className="text-danger">*</span>
+                            </p>
                           </div>
-                          {/* Enable Multi Price */}
-                          <div className="field-cover">
-                            <div className="field-section">
-                              <p>
-                                Enable Multi Price:{' '}
-                                <CustomWidthTooltip
-                                  PopperProps={{
-                                    disablePortal: true,
-                                  }}
-                                  placement="right-start"
-                                  onClose={handleTooltipClose}
-                                  open={open2}
-                                  disableFocusListener
-                                  disableHoverListener
-                                  disableTouchListener
-                                  title={
-                                    <React.Fragment>
-                                      <Typography color="inherit">Multi Price</Typography>
-                                      {'A product can have several prices'}
-                                      <br />
-                                      <em>{'It depends on the price of your purchases'}</em>
-                                    </React.Fragment>
-                                  }>
-                                  <span onClick={() => handleTooltipOpen('multi')}>
-                                    {' '}
-                                    <FontAwesomeIcon
-                                      icon={faInfoCircle}
-                                      className={'text-primary'}
-                                    />
-                                  </span>
-                                </CustomWidthTooltip>
-                              </p>
-                            </div>
-                            <div className="field-section">
-                              <Switch
-                                name={'multi_price'}
-                                checked={formObj.isMultiPrice}
-                                onChange={checkboxHandleChange}
-                              />
-                            </div>
+                          <div className="field-section">
+                            <input
+                              type="text"
+                              className="form-control"
+                              placeholder="Sell Price"
+                              value={formObj.sell_price}
+                              onKeyPress={handleNumberKeyPress}
+                              onChange={(e) => {
+                                setFormObj({ ...formObj, sell_price: e.target.value });
+                              }}
+                            />
                           </div>
-                          {/* FIFO OR LIFO */}
-                          <div className="field-cover">
-                            <div className="field-section">
-                              <p>FIFO OR LIFO:</p>
-                            </div>
-                            <div className="field-section">
-                              <Switch
-                                name={'is_fifo'}
-                                checked={formObj.isFifo}
-                                onChange={checkboxHandleChange}
-                              />
-                            </div>
-                          </div>
-                        </>
-                      )}
-                      {/* Custom Tax */}
+                        </div>
+                      </>
+                    )}
+                    {/* Alert Quantity */}
+                    {!formObj.is_service && (
                       <div className="field-cover">
                         <div className="field-section">
                           <p>
-                            Custom Tax:{' '}
-                            <CustomWidthTooltip
-                              PopperProps={{
-                                disablePortal: true,
-                              }}
-                              placement="right-start"
-                              onClose={handleTooltipClose}
-                              open={open}
-                              disableFocusListener
-                              disableHoverListener
-                              disableTouchListener
-                              title={
-                                <React.Fragment>
-                                  <Typography color="inherit">specific Group A Tax</Typography>
-                                  {'You can Choose a specific Group tax For this Product'}
-                                  <br />
-                                  <em>{'For Create Group Tax, go to setting/taxes'}</em>
-                                </React.Fragment>
-                              }>
-                              <span onClick={() => handleTooltipOpen('tax')}>
-                                {' '}
-                                <FontAwesomeIcon icon={faInfoCircle} className={'text-primary'} />
-                              </span>
-                            </CustomWidthTooltip>
+                            Alert Quantity: <span className="text-danger">*</span>
                           </p>
                         </div>
                         <div className="field-section">
-                          <Select
-                            styles={colourStyles}
-                            options={taxGroup}
-                            value={taxGroup.find((f: any) => {
-                              return f.value == formObj.tax_id;
-                            })}
-                            onChange={(itm) => {
-                              setFormObj({ ...formObj, tax_id: itm!.value });
+                          <input
+                            type="number"
+                            className="form-control"
+                            placeholder="Alert Quantity"
+                            value={formObj.alertQuantity}
+                            min={0}
+                            onChange={(e) => {
+                              setFormObj({ ...formObj, alertQuantity: Number(e.target.value) });
                             }}
                           />
                         </div>
                       </div>
+                    )}
+                    {formObj.is_service == 0 && (
+                      <>
+                        {/* Sell Over Stock */}
+                        <div className="field-cover">
+                          <div className="field-section">
+                            <p>Sell Over Stock:</p>
+                          </div>
+                          <div className="field-section">
+                            <Switch
+                              name={'sell_over'}
+                              checked={formObj.isSellOverStock}
+                              onChange={checkboxHandleChange}
+                            />
+                          </div>
+                        </div>
+                        {/* Enable Multi Price */}
+                        <div className="field-cover">
+                          <div className="field-section">
+                            <p>
+                              Enable Multi Price:{' '}
+                              <CustomWidthTooltip
+                                PopperProps={{
+                                  disablePortal: true,
+                                }}
+                                placement="right-start"
+                                onClose={handleTooltipClose}
+                                open={open2}
+                                disableFocusListener
+                                disableHoverListener
+                                disableTouchListener
+                                title={
+                                  <React.Fragment>
+                                    <Typography color="inherit">Multi Price</Typography>
+                                    {'A product can have several prices'}
+                                    <br />
+                                    <em>{'It depends on the price of your purchases'}</em>
+                                  </React.Fragment>
+                                }>
+                                <span onClick={() => handleTooltipOpen('multi')}>
+                                  {' '}
+                                  <FontAwesomeIcon icon={faInfoCircle} className={'text-primary'} />
+                                </span>
+                              </CustomWidthTooltip>
+                            </p>
+                          </div>
+                          <div className="field-section">
+                            <Switch
+                              name={'multi_price'}
+                              checked={formObj.isMultiPrice}
+                              onChange={checkboxHandleChange}
+                            />
+                          </div>
+                        </div>
+                        {/* FIFO OR LIFO */}
+                        <div className="field-cover">
+                          <div className="field-section">
+                            <p>FIFO OR LIFO:</p>
+                          </div>
+                          <div className="field-section">
+                            <Switch
+                              name={'is_fifo'}
+                              checked={formObj.isFifo}
+                              onChange={checkboxHandleChange}
+                            />
+                          </div>
+                        </div>
+                      </>
+                    )}
+                    {/* Custom Tax */}
+                    <div className="field-cover">
+                      <div className="field-section">
+                        <p>
+                          Custom Tax:{' '}
+                          <CustomWidthTooltip
+                            PopperProps={{
+                              disablePortal: true,
+                            }}
+                            placement="right-start"
+                            onClose={handleTooltipClose}
+                            open={open}
+                            disableFocusListener
+                            disableHoverListener
+                            disableTouchListener
+                            title={
+                              <React.Fragment>
+                                <Typography color="inherit">specific Group A Tax</Typography>
+                                {'You can Choose a specific Group tax For this Product'}
+                                <br />
+                                <em>{'For Create Group Tax, go to setting/taxes'}</em>
+                              </React.Fragment>
+                            }>
+                            <span onClick={() => handleTooltipOpen('tax')}>
+                              {' '}
+                              <FontAwesomeIcon icon={faInfoCircle} className={'text-primary'} />
+                            </span>
+                          </CustomWidthTooltip>
+                        </p>
+                      </div>
+                      <div className="field-section">
+                        <Select
+                          styles={colourStyles}
+                          options={taxGroup}
+                          value={taxGroup.find((f: any) => {
+                            return f.value == formObj.tax_id;
+                          })}
+                          onChange={(itm) => {
+                            setFormObj({ ...formObj, tax_id: itm!.value });
+                          }}
+                        />
+                      </div>
                     </div>
-                  )}
-                </form>
-              </div>
-            ) : (
-              <div className="d-flex justify-content-around">
-                <Spinner animation="grow" />
-              </div>
-            )}
-          </Card.Body>
-        </Card>
-      </AdminLayout>
-    </>
+                  </div>
+                )}
+              </form>
+            </div>
+          ) : (
+            <div className="d-flex justify-content-around">
+              <Spinner animation="grow" />
+            </div>
+          )}
+        </Card.Body>
+      </Card>
+    </AdminLayout>
   );
 };
 export default withAuth(Product);

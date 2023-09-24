@@ -41,11 +41,11 @@ export default function LoginView() {
     const res = await signIn('credentials', { redirect: false, ...data })
       .then(async (res) => {
         if (res.error) throw new Error(res.error);
-        const session = await getSession()
-        const again = await createNewData('login', data)
-        localStorage.setItem('permissions', JSON.stringify(again.data.result.user?.locations))
+        const session = await getSession();
+        const again = await createNewData('login', data);
+        localStorage.setItem('permissions', JSON.stringify(again.data.result.user?.locations));
         Toastify('success', 'Login Success');
-        router.push(`/${session.user.username}/business`)
+        router.push(`/${session.user.id}/business`);
       })
       .catch(() => {
         Toastify('error', 'Login Failed');
@@ -124,7 +124,7 @@ export async function getServerSideProps(context) {
   if (session) {
     if (session.user.user_type === 'owner' && session.user.business > 0) {
       return {
-        redirect: { destination: '/' + session.user.username + '/business', permenant: false },
+        redirect: { destination: '/' + session.user.id + '/business', permenant: false },
         props: { session },
       };
     } else if (session.user.user_type === 'user') {

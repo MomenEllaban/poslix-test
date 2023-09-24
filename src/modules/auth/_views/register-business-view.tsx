@@ -12,6 +12,7 @@ import SelectField from 'src/components/form/SelectField';
 import { Toastify } from 'src/libs/allToasts';
 import { createBusinessSchema } from 'src/modules/business/create-business/create-business.schema';
 import { useBusinessTypesList } from 'src/services/business.service';
+import { createNewData } from 'src/services/crud.api';
 import api from 'src/utils/app-api';
 
 type Inputs = {
@@ -62,6 +63,27 @@ export default function RegisterBusinessView() {
         headers: {
           Authorization: `Bearer ${_user.token}`,
         },
+      })
+      .then(async (res) => {
+        const addLoc = await api.post(
+          'business/locations',
+          {
+            business_id: res.data.result.id,
+            name: `${data.name} - location 1`,
+            state: 'egy',
+            currency_id: 35,
+            decimal: 1,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${_user.token}`,
+            },
+          }
+        );
+        if (addLoc.data.success) {
+          Toastify('success', 'Business created successfully');
+          router.push('/[username]/business', `/${session?.user?.username}/business`);
+        }
       })
       .then((res) => {
         Toastify('success', 'Business created successfully');
@@ -142,7 +164,7 @@ export async function getServerSideProps(context) {
   if (session) {
     if (session.user.user_type === 'owner') {
       return {
-        redirect: { destination: `/${session.user.username}/business`, permenant: false },
+        redirect: { destination: `/${session.user.id}/business`, permenant: false },
         props: { session },
       };
     }

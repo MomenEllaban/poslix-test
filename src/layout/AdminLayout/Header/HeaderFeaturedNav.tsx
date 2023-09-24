@@ -1,19 +1,20 @@
-import Link from 'next/link'
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { Nav } from 'react-bootstrap'
-import { getUsername } from 'src/libs/loginlib';
+import { Nav } from 'react-bootstrap';
+import { useUser } from 'src/context/UserContext';
 
 export default function HeaderFeaturedNav() {
+  const { user } = useUser();
+  const [userLevel, setUserLevel] = useState('');
 
-  const [userLevel, setUserLevel] = useState('')
-  const [fullname, setFullname] = useState('')
-  const [path, setPath] = useState('')
+  const [path, setPath] = useState('');
   useEffect(() => {
-    var _lv = localStorage.getItem('levels') || '';
-    setFullname(localStorage.getItem('userfullname') || '');
-    setUserLevel(_lv)
-    setPath('/' + getUsername())
-  }, [])
+    const _lv = localStorage.getItem('levels') || '';
+
+    setUserLevel(_lv);
+    setPath('/' + user.id);
+  }, []);
+
   return (
     <Nav>
       <Nav.Item>
@@ -21,6 +22,6 @@ export default function HeaderFeaturedNav() {
           {userLevel == 'owner' ? <Nav.Link className="p-2">My Businesses</Nav.Link> : ''}
         </Link>
       </Nav.Item>
-    </Nav >
-  )
+    </Nav>
+  );
 }

@@ -12,6 +12,8 @@ import { Toastify } from 'src/libs/allToasts';
 import { useBusinessTypesList, useCurrenciesList } from 'src/services/business.service';
 import { authApi } from 'src/utils/auth-api';
 import styles from './add-location.module.scss';
+import Joi from 'joi';
+import { joiResolver } from '@hookform/resolvers/joi';
 
 type Inputs = {
   name: string;
@@ -24,6 +26,27 @@ type Inputs = {
 interface Props {
   businessId?: string;
 }
+
+const createLocationSchema = Joi.object({
+  name: Joi.string().required().messages({
+    'string.empty': 'Name is required',
+    'any.required': 'Name is required',
+  }),
+  state: Joi.string().required().messages({
+    'string.empty': 'State is required',
+    'any.required': 'State is required',
+  }),
+
+  decimal: Joi.number().required().min(0).messages({
+    'number.min': 'Decimal must be greater than 0',
+    'any.required': 'Decimal is required',
+  }),
+  business_id: Joi.number().required(),
+  currency_id: Joi.number().min(0).required().messages({
+    'number.min': 'Please Select a valid Currency',
+    'any.required': 'Decimal is required',
+  }),
+});
 
 export default function AddBusinessLocationView({ businessId = '0' }: Props) {
   const router = useRouter();
@@ -39,11 +62,12 @@ export default function AddBusinessLocationView({ businessId = '0' }: Props) {
         return { value: itm.id, label: itm.country };
       });
       const _currenciesList = data.result.map((itm: any) => {
-        return { value: itm.id, label: itm.currency };
+        return { value: itm.id, label: itm.code };
       });
 
       setCountries(_countriesList);
       setCurrencies(_currenciesList);
+      setValue('currency_id', _currenciesList[0].value);
     },
   });
 
@@ -54,7 +78,7 @@ export default function AddBusinessLocationView({ businessId = '0' }: Props) {
     setValue,
   } = useForm<Inputs>({
     mode: 'onTouched',
-    // resolver: joiResolver(createBusinessSchema),
+    resolver: joiResolver(createLocationSchema),
     reValidateMode: 'onBlur',
     defaultValues: {
       name: '',
@@ -88,7 +112,7 @@ export default function AddBusinessLocationView({ businessId = '0' }: Props) {
         setLoading(false);
       });
   };
-  const onError = (errors: any, e: any) => console.log(errors, e);
+  const onError = (errors: any, e: any) => console.error(errors, e);
 
   useEffect(() => {
     setValue('business_id', +businessId);

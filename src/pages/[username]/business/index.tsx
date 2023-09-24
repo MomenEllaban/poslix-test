@@ -1,7 +1,6 @@
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { OwnerAdminLayout } from '@layout';
-import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useContext, useEffect } from 'react';
@@ -13,25 +12,25 @@ import BusinessRow from 'src/modules/business/business-list/business-row';
 import { useBusinessList } from 'src/services';
 
 const MyBusinessesPage = () => {
-  const { darkMode } = useContext(darkModeContext);
-  const { data: session } = useSession();
-  const router = useRouter()
-
+  const router = useRouter();
   const { user } = useUser();
+  const { darkMode } = useContext(darkModeContext);
+
   const { businessList, isLoading, error, refetch } = useBusinessList({
-    suspense: !user.username,
+    suspense: !user.id,
   });
-  const username = user?.username;
+
+  const userId = user?.id;
 
   useEffect(() => {
-    refetch()
-  }, [router.asPath])
+    refetch();
+  }, [router.asPath]);
 
   return (
     <OwnerAdminLayout>
       <div className="row">
         <div className="col-md-12">
-          <Link href={`/${username}/business/create`} className="btn btn-primary p-3 mb-3">
+          <Link href={`/${userId}/business/create`} className="btn btn-primary p-3 mb-3">
             <FontAwesomeIcon icon={faPlus} /> Add New Business{' '}
           </Link>
           <Card className={darkMode ? 'dark-mode-body' : ''}>

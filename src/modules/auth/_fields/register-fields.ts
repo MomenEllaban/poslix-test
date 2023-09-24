@@ -1,19 +1,19 @@
 export const registerFields: any[] = [
-  {
-    label: 'First name',
-    name: 'first_name',
-    type: 'text',
-    placeholder: 'Enter First Name',
-    autoComplete: 'off',
-    required: true,
-  },
-  {
-    label: 'Last name',
-    name: 'last_name',
-    type: 'text',
-    placeholder: 'Enter Last Name',
-    autoComplete: 'off',
-  },
+  // {
+  //   label: 'First name',
+  //   name: 'first_name',
+  //   type: 'text',
+  //   placeholder: 'Enter First Name',
+  //   autoComplete: 'off',
+  //   required: true,
+  // },
+  // {
+  //   label: 'Last name',
+  //   name: 'last_name',
+  //   type: 'text',
+  //   placeholder: 'Enter Last Name',
+  //   autoComplete: 'off',
+  // },
   {
     label: 'Phone Number',
     name: 'number',

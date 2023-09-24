@@ -8,9 +8,9 @@ import withAuth from 'src/HOCs/withAuth';
 import AddNewRole from 'src/components/dashboard/AddNewRole';
 import AlertDialog from 'src/components/utils/AlertDialog';
 import { Toastify } from 'src/libs/allToasts';
-import { deleteData, findAllData } from 'src/services/crud.api';
+import { findAllData } from 'src/services/crud.api';
 
-const Roles = ({ username }: any) => {
+const Roles = () => {
   const [stuffs, setStuffs] = useState<IRoles[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAddNew, setIsAddNew] = useState(false);
@@ -23,7 +23,7 @@ const Roles = ({ username }: any) => {
   async function initDataPage() {
     const res = await findAllData('roles/get');
     console.log('roles page', res.data.result);
-    
+
     setStuffs(res.data.result);
     setIsLoading(false);
   }
@@ -42,7 +42,6 @@ const Roles = ({ username }: any) => {
       //   .replaceAll('_d', '_delete')
       //   .replaceAll('_i', '_insert')
       //   .split(',');
-
       // return (
       //   <div className="roles-parent">
       //     {_roles.map((mp) => {
@@ -55,21 +54,21 @@ const Roles = ({ username }: any) => {
   useEffect(() => {
     initDataPage();
   }, []);
-const [show, setShow] =  useState(false)
+  const [show, setShow] = useState(false);
   return (
     <OwnerAdminLayout>
       <AlertDialog
-          alertShow={show}
-          alertFun={(result: boolean, msg: string) => {
-            if (msg.length > 0) Toastify(result ? 'success' : 'error', msg);
-              initDataPage()
-              setSelectedId(-1)
-            setShow(false);
-          }}
-          id={selectedId}
-          url={"roles/delete"}>
-          Are you Sure You Want Delete This Role ?
-        </AlertDialog>
+        alertShow={show}
+        alertFun={(result: boolean, msg: string) => {
+          if (msg.length > 0) Toastify(result ? 'success' : 'error', msg);
+          initDataPage();
+          setSelectedId(-1);
+          setShow(false);
+        }}
+        id={selectedId}
+        url={'roles/delete'}>
+        Are you Sure You Want Delete This Role ?
+      </AlertDialog>
       <button
         className="mb-4 btn btn-primary p-3"
         style={{ width: '150px' }}
@@ -123,14 +122,18 @@ const [show, setShow] =  useState(false)
                                 <Button
                                   onClick={() => {
                                     setSelectedId(role.id);
-                                    setShow(true)
-                                    }}>
+                                    setShow(true);
+                                  }}>
                                   <FontAwesomeIcon icon={faTrash} />
                                 </Button>
                                 <Button
                                   onClick={() => {
                                     setSelectedRole(role.id);
-                                    setSelectedStuff(role.permissions.map((perm) => {return perm.id}));
+                                    setSelectedStuff(
+                                      role.permissions.map((perm) => {
+                                        return perm.id;
+                                      })
+                                    );
                                     setSelectedName(role.name);
                                     setSelectedId(role.id);
                                     setIsAddNew(true);

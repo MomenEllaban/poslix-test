@@ -88,6 +88,29 @@ export default function RegisterView({
       </div>
 
       <div className="p-2 my-2 d-flex gap-3 flex-column">
+        <div className="d-flex flex-row gap-3">
+          {[
+            {
+              label: 'First name',
+              name: 'first_name',
+              type: 'text',
+              placeholder: 'Enter First Name',
+              autoComplete: 'off',
+              required: true,
+              control,
+            },
+            {
+              label: 'Last name',
+              name: 'last_name',
+              type: 'text',
+              placeholder: 'Enter Last Name',
+              autoComplete: 'off',
+              control,
+            },
+          ].map((field) => {
+            return <FormField key={field.name} {...field} register={register} errors={errors} />;
+          })}
+        </div>
         {registerFields.map((field) => {
           if (field.type === 'password')
             return (
@@ -133,7 +156,7 @@ export async function getServerSideProps(context) {
   if (session) {
     if (session.user.user_type === 'owner') {
       return {
-        redirect: { destination: '/' + session.user.username + '/business', permenant: false },
+        redirect: { destination: '/' + session.user.id + '/business', permenant: false },
         props: { session },
       };
     } else {

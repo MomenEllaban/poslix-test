@@ -7,7 +7,7 @@ export interface FormFieldProps extends React.InputHTMLAttributes<HTMLInputEleme
   name: string;
   type?: string;
   placeholder?: string;
-  register: any;
+  register?: any;
   errors: any;
   textArea?: boolean;
   loading?: boolean;
@@ -31,7 +31,7 @@ const FormField: React.FC<FormFieldProps> = ({
   const [value, setValue] = useState(props.defaultValue ?? type === 'number' ? 0 : '');
 
   return (
-    <Form.Group controlId={`form-field-${name}-${formId}`}>
+    <Form.Group controlId={`form-field-${name}-${formId}`} className="w-100">
       <Form.Label className="fw-semibold fs-6">
         {label}
         {required && <span className="text-danger ms-2">*</span>}{' '}
@@ -46,7 +46,7 @@ const FormField: React.FC<FormFieldProps> = ({
           type={type}
           name={name}
           as={textArea ? 'textarea' : 'input'}
-          {...register(name)}
+          {...(register && { ...register(name) })}
         />
       </InputGroup>
       {isInvalid && <Form.Text className="text-danger">{errors[name]?.message}</Form.Text>}{' '}

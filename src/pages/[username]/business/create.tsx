@@ -8,12 +8,12 @@ import { ToastContainer } from 'react-toastify';
 import CreateBusinessView from 'src/modules/business/create-business/create-business-view';
 import { ROUTES } from 'src/utils/app-routes';
 
-export default function CreateBusinessPage({ username }: any) {
+export default function CreateBusinessPage({ userId }: { userId: number }) {
   return (
     <OwnerAdminLayout>
       <div className="row">
         <div className="col-md-12">
-          <Link href={'/' + username + '/business'} className="btn btn-primary p-3 mb-3">
+          <Link href={'/' + userId + '/business'} className="btn btn-primary p-3 mb-3">
             <FontAwesomeIcon icon={faArrowLeft} /> Back to list{' '}
           </Link>
           <Card>
@@ -35,9 +35,9 @@ export async function getServerSideProps(context: any) {
   const session = await getSession({ req: context.req });
   if (!session) return { redirect: { permanent: false, destination: ROUTES.AUTH } };
 
-  const username = session?.user?.username;
+  const userId = session?.user?.id;
 
   return {
-    props: { username },
+    props: { userId },
   };
 }

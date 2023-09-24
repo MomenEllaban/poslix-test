@@ -4,7 +4,7 @@ import en from 'en.json';
 import { ELocalStorageKeys } from 'src/utils/local-storage';
 
 interface IRegister {
-  state: 'open' | 'close' | null;
+  status: 'open' | 'close' | null;
   hand_cash: number;
 }
 
@@ -24,7 +24,7 @@ const initialState: IPosState = {
   isLoading: false,
   handCash: 0,
   register: {
-    state: 'close',
+    status: 'close',
     hand_cash: 0,
   },
 };
