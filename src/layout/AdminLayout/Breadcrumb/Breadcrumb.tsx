@@ -7,6 +7,43 @@ import { UserContext } from 'src/context/UserContext';
 
 /*MOHAMMED MAHER */
 import { darkModeContext } from 'src/context/DarkModeContext';
+import { ILocation } from '@models/auth.types';
+
+const selectStyles = {
+  control: (style: any, state: any) => ({
+    ...style,
+    borderRadius: '10px',
+    background: '#f5f5f5',
+    height: '40px',
+    width: '10rem',
+    zIndex: 999,
+    position: 'relative',
+    outline: state.isFocused ? '2px solid #045c54' : 'none',
+    boxShadow: 'none',
+    '&:hover': {
+      outline: '2px solid #045c54 ',
+    },
+  }),
+  menu: (provided: any, state: any) => ({
+    ...provided,
+    borderRadius: '10px',
+    zIndex: 999,
+    padding: '10px', // Add padding to create space
+    border: '1px solid #c9ced2',
+  }),
+  option: (provided: any, state: any) => ({
+    ...provided,
+    backgroundColor: state.isSelected ? '#e6efee' : 'white',
+    color: '#2e776f',
+    borderRadius: '10px',
+    '&:hover': {
+      backgroundColor: '#e6efee',
+      color: '#2e776f',
+      borderRadius: '10px',
+    },
+    margin: '5px 0', // Add margin to create space between options
+  }),
+};
 
 export default function Breadcrumb(props: any) {
   const { shopId } = props;
@@ -30,7 +67,13 @@ export default function Breadcrumb(props: any) {
     if (linkPath.length > 2) setCurrentPageName(linkPath[2]);
     if (linkPath.length > 3) setIsSlug(true);
     const _locs = JSON.parse(localStorage.getItem('locations') || '[]');
-    setLocations(_locs);
+    setLocations(
+      _locs.map((location: ILocation) => ({
+        ...location,
+        value: location.location_id,
+        label: location.location_name,
+      }))
+    );
     setLocationIndex(
       _locs.findIndex((loc: any) => {
         return loc.value == shopId;
@@ -39,12 +82,13 @@ export default function Breadcrumb(props: any) {
   }, [router.asPath]);
   return (
     <div className="breadcrumb-style bg-white  ">
-      <div className="ineer-breadcrumb-style" style={{ marginRight: '70%' }}>
+      <div className="ineer-breadcrumb-style ms-auto">
         {!isSlug && locations.length > 1 && (
           <Select
-            className={`mt-3 ${darkMode ? 'dark-mode-body' : 'light-mode-body'}`}
+            className={`mt-3 ${darkMode ? 'dark-mode-body' : 'light-mode-body'} w-100`}
             options={locations}
             value={locations[locationIndex]}
+            styles={selectStyles}
             onChange={(itm: any) => {
               setUser(itm);
               redirectToLogin('/shop/' + itm!.value + '/' + currentPageName);

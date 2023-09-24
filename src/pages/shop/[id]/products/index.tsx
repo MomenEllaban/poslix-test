@@ -263,7 +263,7 @@ const Product: NextPage = (props: any) => {
         ]
       );
     else alert('errorr location settings');
-    initDataPage();
+    // initDataPage();
   }, []);
 
   const handleDeleteFuc = (result: boolean, msg: string, section: string) => {
@@ -311,6 +311,10 @@ const Product: NextPage = (props: any) => {
   useEffect(() => {
     if (router.isReady) setShopId(router.query.id.toString());
   }, [router.asPath]);
+
+  useEffect(() => {
+    initDataPage();
+  }, [shopId]);
 
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
