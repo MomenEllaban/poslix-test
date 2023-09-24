@@ -23,6 +23,7 @@ export interface ICart {
     amount: number;
     note: string;
   }[];
+  orderId?: number | null;
 }
 
 const initialState: ICart[] = [];
@@ -107,6 +108,8 @@ const cartSlice = createSlice({
       cart.cartItems = [];
       cart.cartSellTotal = 0;
       cart.cartCostTotal = 0;
+      console.log(cart.orderId)
+      cart.orderId = null
 
       localStorage.setItem('cart', JSON.stringify(state));
       return state;
@@ -127,8 +130,9 @@ const cartSlice = createSlice({
       }
     },
     addMultipleToCart: (state, action) => {
-      const { location_id, products } = action.payload;
+      const { location_id, products, orderId } = action.payload;
       const cart = findOrCreateCart(state, location_id);   
+      cart.orderId = orderId
       products.map((prod) => {
         const existingItem = cart.cartItems.find((item) => item.id === prod.id);
         if (existingItem) {

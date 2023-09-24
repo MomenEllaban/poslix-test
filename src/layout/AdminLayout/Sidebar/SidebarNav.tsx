@@ -362,7 +362,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
           }
         </SidebarNavGroup>
       )}
-      {permissions.hasPOS && (
+      {permissions.hasPos && (
         <SidebarNavItem icon={faDesktop} href={'/pos/' + shopId} isShown={!!router.query.id}>
           <MdOutlinePointOfSale className="nav-icon ms-n3" />
           POS
