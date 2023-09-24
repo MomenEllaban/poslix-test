@@ -1,7 +1,7 @@
 import { IItemReportData, IItemsReport } from '@models/pos.types';
 import classNames from 'classnames';
 import moment from 'moment';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button, Table } from 'react-bootstrap';
 import { MdKeyboardArrowLeft } from 'react-icons/md';
 import { useUser } from 'src/context/UserContext';
@@ -11,13 +11,18 @@ export default function OrderInfoTable({ isOrderDetails, setIsOrderDetails, orde
   const { locationSettings } = useUser();
   const [orderDetails, setOrderDetails] = useState<IItemsReport | null>(null);
   const [orderItems, setOrderItems] = useState<IItemReportData[] | null>(null);
-  const { isLoading } = useGetItemsSalesReport(shopId, orderId, {
+
+  const { isLoading, refetch } = useGetItemsSalesReport(shopId, orderId, {
     onSuccess: (data) => {
       setOrderDetails(data.result);
       setOrderItems(data.result.data);
       console.log(data, 'data');
     },
   });
+
+  useEffect(() => {
+    refetch()
+  }, [isOrderDetails])
 
   return (
     <div
@@ -32,7 +37,7 @@ export default function OrderInfoTable({ isOrderDetails, setIsOrderDetails, orde
             <th scope="col">Contact</th>
             <th scope="col">Price</th>
             <th scope="col">Tax</th>
-
+            <th scope="col">Products</th>
             <th scope="col">Qty</th>
           </tr>
         </thead>
@@ -47,7 +52,7 @@ export default function OrderInfoTable({ isOrderDetails, setIsOrderDetails, orde
             orderItems?.map((item) => (
               <tr key={item.order_id}>
                 <th scope="row" style={{ fontSize: '0.7rem' }}>
-                  {item.order_id}                  <br />                  {moment(item.date).format('DD/MM/YYYY')}
+                  {item.order_id}<br />{moment(item.date).format('DD/MM/YYYY')}
                 </th>
                 <td>
                   {item.contact_first_name} {item.contact_last_name}
@@ -60,6 +65,7 @@ export default function OrderInfoTable({ isOrderDetails, setIsOrderDetails, orde
                   {(+(item.tax ?? 0)).toFixed(locationSettings.location_decimal_places)}{' '}
                   {locationSettings.currency_name}
                 </td>
+                <td>{item.products.map((prod) => {return prod.name + ', '})}</td>
                 <td>{(+(item?.qty ?? 0)).toFixed(0)}</td>
               </tr>
             ))}
@@ -83,7 +89,10 @@ export default function OrderInfoTable({ isOrderDetails, setIsOrderDetails, orde
       </Table>
       <Button
         variant="primary"
-        onClick={() => setIsOrderDetails(false)}
+        onClick={() => {
+          setOrderItems(null)
+          setIsOrderDetails(false)
+        }}
         className="d-flex flex-row gap-3 justify-content-center align-items-center">
         <MdKeyboardArrowLeft size="20" /> Go Back to the list
       </Button>

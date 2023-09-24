@@ -122,7 +122,7 @@ export default function HoldOrdersModal({ shopId, lang }: any) {
         variant="info">
         {lang.cartComponent.orders}
       </Button>
-      <Modal show={isShowOrdersModal} onHide={handleClose}>
+      <Modal show={isShowOrdersModal} onHide={handleClose} size="lg">
         <Modal.Header className="poslix-modal-title text-primary text-capitalize" closeButton>
           Orders
         </Modal.Header>

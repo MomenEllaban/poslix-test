@@ -93,7 +93,6 @@ const Home: NextPage = ({ shopId: _id }: any) => {
   const StepRender = useCallback(() => {
     if (isLoading) return <PosLoader />;
 
-    console.log(pos.register);
     if (pos?.register?.status === 'open') return <PosCart shopId={shopId} />;
 
     return <OpenRegisterView shopId={shopId} setShopId={setShopId} setIsLoading={setIsLoading} />;

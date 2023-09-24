@@ -14,6 +14,7 @@ import { useReactToPrint } from 'react-to-print';
 import FormField from 'src/components/form/FormField';
 import SelectField from 'src/components/form/SelectField';
 import MainModal from 'src/components/modals/MainModal';
+import { useProducts } from 'src/context/ProductContext';
 import { useUser } from 'src/context/UserContext';
 import { useAppDispatch, useAppSelector } from 'src/hooks';
 import { clearCart, selectCartByLocation } from 'src/redux/slices/cart.slice';
@@ -44,6 +45,8 @@ export default function PaymentCheckoutModal({ show, setShow, shopId, invoiceTyp
   });
   const selectCartForLocation = selectCartByLocation(shopId);
   const cart = useAppSelector(selectCartForLocation); // current location order
+  const { customers } = useProducts();
+  const currentCustomer = customers?.filter((c) => c.value === cart?.customer_id) ?? [];
 
   const totalDiscount =
     cart?.cartDiscountType === 'percentage'
@@ -59,7 +62,6 @@ export default function PaymentCheckoutModal({ show, setShow, shopId, invoiceTyp
   const totalAmount = totalNoTax + totalTax - totalDiscount;
 
   useEffect(() => {
-    console.log(totalAmount, paidAmount);
     setValue(`payment.0.amount`, totalAmount.toString())
     setPaidAmount({ '0': totalAmount })
   }, [totalAmount])
@@ -155,7 +157,7 @@ export default function PaymentCheckoutModal({ show, setShow, shopId, invoiceTyp
                 {invoiceDetails.txtCustomer}{' '}
                 {invoiceDetails.isMultiLang && invoiceDetails.txtCustomer2}
               </div>
-              <div>{customer.label}</div>
+              <div>{currentCustomer.length > 0 ? currentCustomer[0].label : customer.label}</div>
             </div>
             <div className="flex justify-between">
               <div>
@@ -305,7 +307,7 @@ export default function PaymentCheckoutModal({ show, setShow, shopId, invoiceTyp
               </div>
               <div className="right_up_of_table">
                 <div>Billed To</div>
-                <div>{customer.label}</div>
+                <div>{currentCustomer.length > 0 ? currentCustomer[0].label : customer.label}</div>
                 {/* <span>Billed To</span> */}
               </div>
             </div>

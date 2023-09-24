@@ -53,7 +53,7 @@ export default function CustomerDataSelect({
           <Select
             isLoading={customers.length === 0}
             styles={selectStyle}
-            isDisabled={isOrderEdit > 0 || (cart?.customer_id > 0 && cart.cartItems.length > 0)}
+            isDisabled={isOrderEdit > 0 || (cart?.customer_id > 0 && cart.cartItems.length > 0) || cart?.orderId > 0}
             options={[{ value: '1', label: 'walk-in customer', isNew: false }, ...customers]}
             onChange={(choice: any) => {
               setCustomer({

@@ -41,7 +41,6 @@ export default function OrdersTable({ lang, shopId, searchQuery = '', closeModal
       keys: ['id', 'contact_name'],
     });
     const result = fuse.search(searchQuery);
-    console.log(result);
     if (searchQuery) orderlistPaginated = result.map((r) => r.item);
 
     return orderlistPaginated?.slice(0, visibleItems).map((item, idx) => {
@@ -68,7 +67,9 @@ export default function OrdersTable({ lang, shopId, searchQuery = '', closeModal
                 variant="outline-info"
                 onClick={async () => {
                   const res = await findAllData(`sales/${item.id}`)
-                  dispatch(addMultipleToCart({ location_id: shopId, products: res.data.result.products }));
+                  dispatch(addMultipleToCart({
+                    location_id: shopId, products: res.data.result.products, orderId: item.id, customerId: item.contact_id
+                  }));
                   closeModal()
                 }}>
                 <MdAutorenew />

@@ -143,7 +143,9 @@ export default function SalesListTable(props: any) {
                   val: row.id,
                 });
                 const res = await findAllData(`sales/${row.id}`)
-                dispatch(addMultipleToCart({ location_id: router.query.id, products: res.data.result.products, orderId: row.id }));
+                dispatch(addMultipleToCart({
+                  location_id: router.query.id, products: res.data.result.products, orderId: row.id, customerId: row.contact_id
+                }));
                 router.push('/pos/' + router.query.id);
               }}>
               <FontAwesomeIcon icon={faPenToSquare} />
