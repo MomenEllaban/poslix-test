@@ -435,6 +435,8 @@ export default function SalesList(props: any) {
   const [permissions, setPermissions] = useState<any>();
 
   useEffect(() => {
+    localStorage.getItem('currentQuotation') ? localStorage.removeItem('currentQuotation') : null
+    
     const perms = JSON.parse(localStorage.getItem('permissions')).filter(loc => loc.id==router.query.id)
     const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
     perms[0]?.permissions?.map((perm) =>

@@ -52,7 +52,7 @@ import { ToastContainer } from 'react-toastify';
 import { Toastify } from 'src/libs/allToasts';
 import { createNewData, findAllData } from 'src/services/crud.api';
 const AddQuotations: NextPage = (props: any) => {
-  const { shopId, editId } = props;
+  const { id, slug } = props;
 
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
     // @ts-ignore
@@ -81,7 +81,7 @@ const AddQuotations: NextPage = (props: any) => {
     total_expense: 0,
     discount_type: 'fixed',
     discount_amount: 0,
-    purchaseStatus: '',
+    status: '',
     paymentStatus: '',
     paid_amount: 0,
     total_discount: 0,
@@ -98,7 +98,7 @@ const AddQuotations: NextPage = (props: any) => {
     paymentStatus: false,
     paymentType: false,
     paymentDate: false,
-    purchaseStatus: false,
+    status: false,
   });
   const selectStyle = {
     control: (style: any) => ({ ...style, color: '#db3333', borderRadius: '10px' }),
@@ -375,10 +375,17 @@ const AddQuotations: NextPage = (props: any) => {
     }
   }
 
+  useEffect(() => {
+    const currentQuot = localStorage.getItem('currentQuotation') ?
+      JSON.parse(localStorage.getItem('currentQuotation') || '[]') : null;
+    setFormObj({...formObj, ...currentQuot})
+    setSelectProducts([...currentQuot.quotation_list_lines])
+  }, [suppliers])
+
   async function insertPurchase() {
     const quotationData = {
       customer_id: formObj.customer_id,
-      status: formObj.purchaseStatus,
+      status: formObj.status,
       paymentStatus: formObj.paymentStatus,
       paymentDate: formObj.paymentDate,
       paymentType: formObj.paymentType,
@@ -400,7 +407,7 @@ const AddQuotations: NextPage = (props: any) => {
     const { success } = await apiUpdateCtr({
       type: 'transactions',
       subType: 'editPurchase',
-      shopId,
+      id,
       data: {
         totalOrder: formObjRef.current,
         lines: selectProducts,
@@ -413,27 +420,24 @@ const AddQuotations: NextPage = (props: any) => {
       return;
     }
     Toastify('success', 'Purchase Successfully Edited..');
-    router.push('/shop/' + shopId + '/purchases');
+    router.push('/shop/' + id + '/purchases');
   }
   var errors = [];
   useEffect(() => {
-    const current = localStorage.getItem('currentQuotation') ? 
-      JSON.parse(localStorage.getItem('currentQuotation') || '[]') : null;
-    console.log(current)
-    if(current) setFormObj({...formObj, ...current})
     var _locs = JSON.parse(localStorage.getItem('locations') || '[]');
     if (_locs.toString().length > 10)
       setLocationSettings(
         _locs[
           _locs.findIndex((loc: any) => {
-            return loc.value == shopId;
+            return loc.value == id;
           })
         ]
       );
     else alert('errorr location settings');
 
-    initDataPage(current ? "1" : "0");
+    initDataPage(slug[0] === 'edit' ? "1" : "0");
   }, [router.asPath]);
+  
 
   function getPriority(type: string, subTotal: number): number {
     switch (type) {
@@ -777,7 +781,7 @@ const AddQuotations: NextPage = (props: any) => {
 
   return (
     <>
-      <AdminLayout shopId={shopId}>
+      <AdminLayout shopId={id}>
         {isOpenVariationDialog && (
           <VariationModal
             selectedProductForVariation={selectedProductForVariation}
@@ -822,7 +826,7 @@ const AddQuotations: NextPage = (props: any) => {
         <div className="mb-4">
           <button
             className="btn m-btn btn-primary p-3"
-            onClick={() => router.push('/shop/' + shopId + '/quotations')}>
+            onClick={() => router.push('/shop/' + id + '/quotations')}>
             <FontAwesomeIcon icon={faArrowAltCircleLeft} /> Back To List{' '}
           </button>
         </div>
@@ -849,7 +853,8 @@ const AddQuotations: NextPage = (props: any) => {
                         <Select
                           styles={selectStyle}
                           options={suppliers}
-                          value={suppliers.filter((sp) => sp.value == formObj.customer_id)}
+                          value={formObj ?
+                            suppliers.filter((sp) => sp.value == formObj.customer_id) : null}
                           onChange={(itm) => {
                             setFormObj({ ...formObj, customer_id: itm!.value });
                           }}
@@ -900,20 +905,20 @@ const AddQuotations: NextPage = (props: any) => {
                           styles={colourStyles}
                           options={purchaseStatus}
                           value={purchaseStatus.filter((f: any) => {
-                            return f.value == formObj.purchaseStatus;
+                            return f.value == formObj.status;
                           })}
                           onChange={(itm) => {
-                            setFormObj({ ...formObj, purchaseStatus: itm!.value });
+                            setFormObj({ ...formObj, status: itm!.value });
                           }}
                         />
-                        {errorForm.purchaseStatus && (
+                        {errorForm.status && (
                           <p className="p-1 h6 text-danger ">Select One Item</p>
                         )}
                       </div>
                     </div>
                   </div>
 
-                  {formObj.purchaseStatus != 'draft' && formObj.purchaseStatus != '' && (
+                  {formObj.status != 'draft' && formObj.status != '' && (
                     <div className="row">
                       <div className="col-md-3">
                         <div className="form-group">
@@ -1290,8 +1295,8 @@ const AddQuotations: NextPage = (props: any) => {
                     errors = [];
                     if (formObj.customer_id == 0) errors.push('error');
                     if (selectProducts.length == 0) errors.push('error');
-                    if (formObj.purchaseStatus.length <= 2) errors.push('error');
-                    if (formObj.purchaseStatus != 'draft') {
+                    if (formObj.status.length <= 2) errors.push('error');
+                    if (formObj.status != 'draft') {
                       if (formObj.paymentStatus.length <= 2) errors.push('error');
                       if ((formObj.paymentDate + '').length <= 2) errors.push('error2');
                       if (formObj.paymentType.length <= 2) errors.push('error');
@@ -1302,7 +1307,7 @@ const AddQuotations: NextPage = (props: any) => {
                     setErrorForm({
                       ...errorForm,
                       customer_id: formObj.customer_id == 0,
-                      purchaseStatus: formObj.purchaseStatus.length <= 2,
+                      status: formObj.status.length <= 2,
                       paymentDate: (formObj.paymentDate + '').length <= 2,
                       paymentStatus: formObj.paymentStatus.length <= 2,
                       paymentType: formObj.paymentType.length <= 2,
@@ -1328,3 +1333,10 @@ const AddQuotations: NextPage = (props: any) => {
   );
 };
 export default AddQuotations;
+export async function getServerSideProps({ params }) {
+  const { id, slug } = params
+  console.log(slug)
+  return {
+    props: {id, slug},
+  }
+}
