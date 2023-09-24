@@ -318,7 +318,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
         </SidebarNavItem>
       )}
 
-      {(permissions.hasTaxes || permissions.hasAppearance || permissions.hasCats) && (
+      {(permissions.hasTaxes || permissions.hasAppearance || permissions.Categories) && (
         <SidebarNavGroup toggleIcon="IoSettingsSharp" toggleText="Settings">
           {permissions.hasTaxes && (
             <SidebarNavItem
@@ -336,7 +336,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
               Appearance
             </SidebarNavItem>
           )}
-          {permissions.hasCats && (
+          {permissions.hasCategories && (
             <SidebarNavItem
               href={'/shop/' + shopId + '/category'}
               sub={true}
@@ -369,7 +369,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
           <small className="ms-auto"></small>
         </SidebarNavItem>
       )}
-      {permissions.hasAppStore && (
+      {permiss.hasAppStore && (
         <SidebarNavItem
           icon={faCalendarDay}
           href={'/digital/' + shopId}

@@ -108,7 +108,7 @@ export default function PaymentCheckoutModal({ show, setShow, shopId, invoiceTyp
       discount_amount: cart?.cartDiscount,
       tax_type: cart?.cartTaxType,
       tax_amount: cart?.cartTax,
-      related_invoice_id: cart.orderId,
+      related_invoice_id: cart.orderId > 0 ? cart.orderId : null,
       cart: cart?.cartItems.map((product) => ({
         product_id: product?.product_id,
         qty: product?.quantity,
