@@ -37,7 +37,7 @@ const Product: NextPage = (props: any) => {
   const { id } = props;
   const [shopId, setShopId] = useState('');
   const myLoader = (img: any) => img.src;
-  const {locationSettings,setLocationSettings }=useUser()
+  const { locationSettings, setLocationSettings } = useUser();
   const dataGridRef = useRef(null);
   const router = useRouter();
   const [products, setProducts] = useState<
@@ -60,7 +60,6 @@ const Product: NextPage = (props: any) => {
   const { darkMode } = useContext(darkModeContext);
 
   const columns: GridColDef[] = [
-
     {
       field: 'id',
       headerName: '#',
@@ -122,7 +121,7 @@ const Product: NextPage = (props: any) => {
           );
       },
     },
- 
+
     {
       field: 'category',
       headerName: 'Category',
@@ -183,11 +182,11 @@ const Product: NextPage = (props: any) => {
     fileRef.current.click();
   };
   const importFileHandler = async (e: ChangeEvent<HTMLInputElement>) => {
-    const formData = new FormData()
-    formData.append('file', e.target.files[0])
-    const res = await createNewData(`products/${router.query.id}/import`, formData)
+    const formData = new FormData();
+    formData.append('file', e.target.files[0]);
+    const res = await createNewData(`products/${router.query.id}/import`, formData);
     if (res.data.success) initDataPage();
-    else Toastify("error", "Something went wrong, please try again.");
+    else Toastify('error', 'Something went wrong, please try again.');
   };
   function CustomToolbar() {
     const [isHovered, setIsHovered] = useState(false);
@@ -209,7 +208,6 @@ const Product: NextPage = (props: any) => {
         <input style={{ display: 'none' }} ref={fileRef} type="file" onChange={importFileHandler} />
         {/* /////////// */}
         <GridToolbarColumnsButton />
-     
       </GridToolbarContainer>
     );
   }
@@ -228,7 +226,16 @@ const Product: NextPage = (props: any) => {
   }
   const [permissions, setPermissions] = useState<any>();
   useEffect(() => {
-    const perms = JSON.parse(localStorage.getItem('permissions')).filter(loc => loc.id==router.query.id)
+    const localPermissions = localStorage.getItem('permissions');
+    if (!localPermissions) return;
+
+    const permsArr = JSON.parse(localStorage.getItem('permissions'));
+    if (!permsArr) return;
+
+    const perms = JSON.parse(localStorage.getItem('permissions'))?.filter(
+      (loc) => loc.id == router.query.id
+    );
+
     const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
     perms[0]?.permissions?.map((perm) =>
       perm.name.includes('products/show')
@@ -243,7 +250,7 @@ const Product: NextPage = (props: any) => {
     );
 
     setPermissions(getPermissions);
-  }, [router.asPath])
+  }, [router.asPath]);
   useEffect(() => {
     const _locs = JSON.parse(localStorage.getItem('locations') || '[]');
     setLocations(_locs);
@@ -383,7 +390,6 @@ const Product: NextPage = (props: any) => {
                 onSelectionModelChange={(ids: any) => onRowsSelectionHandler(ids)}
                 onCellClick={handleCellClick}
                 components={{ Toolbar: CustomToolbar }}
-
               />
             </div>
           </>
@@ -408,8 +414,8 @@ export default withAuth(Product);
  *
  */
 export async function getServerSideProps({ params }) {
-  const { id } = params
+  const { id } = params;
   return {
-    props: {id},
-  }
+    props: { id },
+  };
 }

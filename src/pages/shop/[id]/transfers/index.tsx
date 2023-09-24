@@ -10,6 +10,7 @@ import { Button, ButtonGroup } from 'react-bootstrap';
 import Spinner from 'react-bootstrap/Spinner';
 import { ToastContainer } from 'react-toastify';
 import withAuth from 'src/HOCs/withAuth';
+import TransferModal from 'src/components/pos/modals/TransferModal';
 import AlertDialog from 'src/components/utils/AlertDialog';
 import { Toastify } from 'src/libs/allToasts';
 import CustomToolbar from 'src/modules/reports/_components/CustomToolbar';
