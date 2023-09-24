@@ -52,7 +52,7 @@ export default function RegisterPage() {
     localStorage.setItem(ELocalStorageKeys.USER_LOCATIONS, JSON.stringify(locations));
     if (user.user_type === 'user') {
       router.push('/shop/' + result[0].id);
-    } else router.push('/' + user.username + '/business');
+    } else router.push('/' + user.id + '/business');
   }
 
   useEffect(() => {

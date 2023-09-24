@@ -15,17 +15,17 @@ import { useBusinessList } from 'src/services';
 const MyBusinessesPage = () => {
   const { darkMode } = useContext(darkModeContext);
   const { data: session } = useSession();
-  const router = useRouter()
+  const router = useRouter();
 
   const { user } = useUser();
   const { businessList, isLoading, error, refetch } = useBusinessList({
-    suspense: !user.username,
+    suspense: !user.id,
   });
-  const username = user?.username;
+  const username = user?.id;
 
   useEffect(() => {
-    refetch()
-  }, [router.asPath])
+    refetch();
+  }, [router.asPath]);
 
   return (
     <OwnerAdminLayout>

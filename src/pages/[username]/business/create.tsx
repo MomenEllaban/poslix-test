@@ -35,7 +35,7 @@ export async function getServerSideProps(context: any) {
   const session = await getSession({ req: context.req });
   if (!session) return { redirect: { permanent: false, destination: ROUTES.AUTH } };
 
-  const username = session?.user?.username;
+  const username = session?.user?.id;
 
   return {
     props: { username },

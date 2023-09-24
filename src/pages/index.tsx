@@ -24,7 +24,7 @@ export async function getServerSideProps(context) {
   if (session) {
     if (session.user.user_type === 'owner') {
       return {
-        redirect: { destination: '/' + session.user.username + '/business', permenant: false },
+        redirect: { destination: '/' + session.user.id + '/business', permenant: false },
         props: { session },
       };
     } else {
