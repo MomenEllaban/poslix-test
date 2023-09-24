@@ -372,7 +372,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
       {permiss.hasAppStore && (
         <SidebarNavItem
           icon={faCalendarDay}
-          href={'/digital/' + shopId}
+          href={`/shop/${shopId}/digital/`}
           isShown={!!router.query.id}>
           <BsMenuButtonWideFill className="nav-icon ms-n3" />
           Digital Menu

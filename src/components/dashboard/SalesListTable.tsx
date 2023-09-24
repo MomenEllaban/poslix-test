@@ -1,46 +1,38 @@
-import React, { useContext, useState, useEffect } from 'react';
+import { faDollarSign, faEye, faPenToSquare, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { IpaymentRow } from '@models/common-model';
+import { Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import {
   DataGrid,
   GridColDef,
   GridRowParams,
+  GridToolbarColumnsButton,
   GridToolbarContainer,
   GridToolbarExport,
-  GridToolbarColumnsButton,
   GridToolbarQuickFilter,
 } from '@mui/x-data-grid';
-import { AdminLayout } from '@layout';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faTrash,
-  faPenToSquare,
-  faPlus,
-  faEye,
-  faDollarSign,
-} from '@fortawesome/free-solid-svg-icons';
-import { Button, ButtonGroup } from 'react-bootstrap';
 import { useRouter } from 'next/router';
-import AlertDialog from 'src/components/utils/AlertDialog';
-import { apiFetch, apiFetchCtr } from 'src/libs/dbUtils';
-import { Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
-import { ILocationSettings, IpaymentRow } from '@models/common-model';
-import { UserContext, useUser } from 'src/context/UserContext';
+import React, { useEffect, useRef, useState } from 'react';
+import { Button, ButtonGroup } from 'react-bootstrap';
 import { useReactToPrint } from 'react-to-print';
-import { Toastify } from 'src/libs/allToasts';
 import { ToastContainer } from 'react-toastify';
+import { useRecoilState } from 'recoil';
+import AlertDialog from 'src/components/utils/AlertDialog';
+import { useUser } from 'src/context/UserContext';
+import { useAppDispatch } from 'src/hooks';
+import { Toastify } from 'src/libs/allToasts';
+import { cartJobType } from 'src/recoil/atoms';
+import { addMultipleToCart } from 'src/redux/slices/cart.slice';
+import { findAllData } from 'src/services/crud.api';
 import { convertDateStringToDateAndTime } from '../../models/data';
 import SalesPaymentModal from '../pos/modals/SalesPaymentModal';
-import { cartJobType } from 'src/recoil/atoms';
-import { useRecoilState } from 'recoil';
-import { findAllData } from 'src/services/crud.api';
-import { useAppDispatch } from 'src/hooks';
-import { addMultipleToCart, addToCart } from 'src/redux/slices/cart.slice';
 
-export default function SalesListTable(props: any) {
-  const { shopId, rules, salesList } = props;
+export default function SalesListTable({ shopId, rules, salesList }: any) {
   const dispatch = useAppDispatch();
-  const {locationSettings,setLocationSettings }=useUser()
+  const componentRef = useRef(null);
 
- 
+  const { locationSettings, setLocationSettings } = useUser();
+
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const handleClose = () => {
     setAnchorEl(null);
@@ -51,11 +43,11 @@ export default function SalesListTable(props: any) {
   const [selectRow, setSelectRow] = useState<any>({});
   const [, setJobType] = useRecoilState(cartJobType);
   const [lines, setLines] = useState<any>([]);
-  
+
   const [show, setShow] = useState(false);
   const [edit, setEdit] = useState(false);
   const [isLoadItems, setIsLoadItems] = useState(false);
-  
+
   const [showViewPopUp, setShowViewPopUp] = useState(false);
   const [handleSearchTxt, setHandleSearchTxt] = useState('');
   const [invoiceDetails, setInvoiceDetails] = useState<any>({});
@@ -63,12 +55,12 @@ export default function SalesListTable(props: any) {
   const [paymentModalData, setPaymentModalData] = useState({});
 
   const checkPrintType = async () => {
-    const res = await findAllData(`appearance/${router.query.id}`)
-    setInvoiceDetails(res.data.result)
-  }
+    const res = await findAllData(`appearance/${router.query.id}`);
+    setInvoiceDetails(res.data.result);
+  };
 
   useEffect(() => {
-   checkPrintType()
+    checkPrintType();
   }, []);
   //table columns
   const columns: GridColDef[] = [
@@ -81,22 +73,18 @@ export default function SalesListTable(props: any) {
       field: 'sub_total',
       headerName: 'Final Total ',
       flex: 1,
-      renderCell: ({ row }: Partial<GridRowParams>) => (
-        <>{Number(+row.sub_total).toFixed(locationSettings?.location_decimal_places)}</>
-      ),
+      renderCell: ({ row }: Partial<GridRowParams>) =>
+        Number(+row.sub_total).toFixed(locationSettings?.location_decimal_places),
     },
     { field: 'payed', headerName: 'Amount paid', flex: 1 },
     {
       flex: 1,
       field: 'TotalDue',
       headerName: 'Total Due ',
-      renderCell: ({ row }: Partial<GridRowParams>) => (
-        <>
-          {Number(+row.sub_total - +row.payed) > 0
-            ? Number(+row.sub_total - +row.payed).toFixed(locationSettings?.location_decimal_places)
-            : 0}
-        </>
-      ),
+      renderCell: ({ row }: Partial<GridRowParams>) =>
+        Number(+row.sub_total - +row.payed) > 0
+          ? Number(+row.sub_total - +row.payed).toFixed(locationSettings?.location_decimal_places)
+          : 0,
     },
     {
       flex: 1,
@@ -104,24 +92,12 @@ export default function SalesListTable(props: any) {
       headerName: 'Status',
       renderCell: ({ row }: Partial<GridRowParams>) => {
         if (row.due === 0) {
-          return (
-            <>
-              <div className="sty_Paid">Paid</div>
-            </>
-          );
-        } else if (row.due === row.sub_total) {
-          return (
-            <>
-              <div className="sty_n_Paid">Not Paid</div>
-            </>
-          );
-        } else {
-          return (
-            <>
-              <div className="sty_p_Paid">Partially Paid</div>
-            </>
-          );
+          return <div className="sty_Paid">Paid</div>;
         }
+        if (row.due === row.sub_total) {
+          return <div className="sty_n_Paid">Not Paid</div>;
+        }
+        return <div className="sty_p_Paid">Partially Paid</div>;
       },
     },
     {
@@ -166,11 +142,7 @@ export default function SalesListTable(props: any) {
               <FontAwesomeIcon icon={faEye} />
             </Button>
             <Button
-              className={`${
-                Number(+row.due) > 0
-                  ? 'opacity-100 pe-auto'
-                  : 'opacity-50 pe-none'
-              }`}
+              className={`${Number(+row.due) > 0 ? 'opacity-100 pe-auto' : 'opacity-50 pe-none'}`}
               onClick={() => {
                 if (Number(+row.due) > 0) {
                   setPaymentModalShow(true);
@@ -178,9 +150,7 @@ export default function SalesListTable(props: any) {
                     ...row,
                     totalDue:
                       Number(+row.due) > 0
-                        ? Number(+row.due).toFixed(
-                            locationSettings?.location_decimal_places
-                          )
+                        ? Number(+row.due).toFixed(locationSettings?.location_decimal_places)
                         : 0,
                   });
                 }
@@ -195,7 +165,6 @@ export default function SalesListTable(props: any) {
     },
   ];
 
-  const componentRef = React.useRef(null);
   class ComponentToPrint extends React.PureComponent {
     render() {
       if (!selectRow) return;
@@ -266,12 +235,17 @@ export default function SalesListTable(props: any) {
                   {invoiceDetails.txtTax} {invoiceDetails.isMultiLang && invoiceDetails.txtTax2}
                 </td>
                 <td></td>
-                <td>{(+selectRow.sub_total * +lines[0]?.pivot.tax_amount / 100).toFixed(locationSettings?.location_decimal_places)}</td>
+                <td>
+                  {((+selectRow.sub_total * +lines[0]?.pivot.tax_amount) / 100).toFixed(
+                    locationSettings?.location_decimal_places
+                  )}
+                </td>
               </tr>
               <tr className="net-amount">
                 <td></td>
                 <td>
-                  {invoiceDetails.txtDiscount}{'Discount'}
+                  {invoiceDetails.txtDiscount}
+                  {'Discount'}
                   {invoiceDetails.isMultiLang && invoiceDetails.txtDiscount2}
                 </td>
                 <td></td>
@@ -284,7 +258,9 @@ export default function SalesListTable(props: any) {
                 </td>
                 <td></td>
                 <td className="txt-bold">
-                  {Number(selectRow.sub_total - +selectRow?.discount).toFixed(locationSettings?.location_decimal_places)}
+                  {Number(selectRow.sub_total - +selectRow?.discount).toFixed(
+                    locationSettings?.location_decimal_places
+                  )}
                 </td>
               </tr>
             </thead>
@@ -467,7 +443,7 @@ export default function SalesListTable(props: any) {
       );
     }
   }
-  
+
   // init sales data
   async function initDataPage() {
     // const { success, newdata } = await apiFetchCtr({
@@ -484,12 +460,12 @@ export default function SalesListTable(props: any) {
 
   const getItems = async (id: number) => {
     setIsLoadItems(true);
-    const res = await findAllData(`sales/${id}`)
+    const res = await findAllData(`sales/${id}`);
     if (res.data.success) {
       setLines(res.data.result.products);
       setIsLoadItems(false);
     }
-  }
+  };
 
   useEffect(() => {
     var _locs = JSON.parse(localStorage.getItem('locations') || '[]');
@@ -588,26 +564,28 @@ export default function SalesListTable(props: any) {
         <ComponentToPrint2 ref={componentRef2} />
       </div>
       <div className="page-content-style card">
-        <h5>Salse List</h5>
-        {salesList.data && <DataGrid
-          className="datagrid-style"
-          sx={{
-            '.MuiDataGrid-columnSeparator': {
-              display: 'none',
-            },
-            '&.MuiDataGrid-root': {
-              border: 'none',
-            },
-          }}
-          rows={salesList.data}
-          columns={columns}
-          initialState={{
-            columns: { columnVisibilityModel: { mobile: false } },
-          }}
-          pageSize={10}
-          rowsPerPageOptions={[10]}
-          components={{ Toolbar: CustomToolbar }}
-        />}
+        <h5>Sales List</h5>
+        {salesList.data && (
+          <DataGrid
+            className="datagrid-style"
+            sx={{
+              '.MuiDataGrid-columnSeparator': {
+                display: 'none',
+              },
+              '&.MuiDataGrid-root': {
+                border: 'none',
+              },
+            }}
+            rows={salesList.data}
+            columns={columns}
+            initialState={{
+              columns: { columnVisibilityModel: { mobile: false } },
+            }}
+            pageSize={10}
+            rowsPerPageOptions={[10]}
+            components={{ Toolbar: CustomToolbar }}
+          />
+        )}
       </div>
       {/* FOR VIEW ELEMENT */}
       <Dialog open={showViewPopUp} fullWidth={true} className="poslix-modal" onClose={handleClose}>
@@ -709,32 +687,35 @@ export default function SalesListTable(props: any) {
                     <div>Amount</div>
                     {edit && <div></div>}
                   </div>
-                  {lines.length > 0 && lines?.map((line: any, index: number) => {
-                    return (
-                      <div className="header-items under_items" key={index}>
-                        <div>{line.name}</div>
-                        <div>
-                          {edit ? (
-                            <input
-                              type="text"
-                              className="form-control"
-                              value={Number(+line.pivot.qty).toFixed(0)}
-                            />
-                          ) : (
-                            Number(+line.pivot.qty).toFixed(0)
+                  {lines.length > 0 &&
+                    lines?.map((line: any, index: number) => {
+                      return (
+                        <div className="header-items under_items" key={index}>
+                          <div>{line.name}</div>
+                          <div>
+                            {edit ? (
+                              <input
+                                type="text"
+                                className="form-control"
+                                value={Number(+line.pivot.qty).toFixed(0)}
+                              />
+                            ) : (
+                              Number(+line.pivot.qty).toFixed(0)
+                            )}
+                          </div>
+                          <div>
+                            {Number(+line.pivot.qty * +line.pivot.price).toFixed(
+                              locationSettings?.location_decimal_places
+                            )}
+                          </div>
+                          {edit && (
+                            <div>
+                              <b>x</b>
+                            </div>
                           )}
                         </div>
-                        <div>
-                          {Number(+line.pivot.qty * +line.pivot.price).toFixed(locationSettings?.location_decimal_places)}
-                        </div>
-                        {edit && (
-                          <div>
-                            <b>x</b>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
                   <div className="header-titles under_items" style={{ marginTop: '20px' }}>
                     <div></div>
                     <div>Total</div>

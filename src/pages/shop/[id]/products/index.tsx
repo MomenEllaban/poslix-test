@@ -295,6 +295,7 @@ const Product: NextPage = (props: any) => {
 
     setPermissions(getPermissions);
   }, [router.asPath]);
+
   useEffect(() => {
     const _locs = JSON.parse(localStorage.getItem('locations') || '[]');
     setLocations(_locs);
@@ -307,7 +308,6 @@ const Product: NextPage = (props: any) => {
         ]
       );
     else alert('errorr location settings');
-    // initDataPage();
   }, []);
 
   const handleDeleteFuc = (result: boolean, msg: string, section: string) => {
