@@ -448,7 +448,7 @@ const Product: NextPage = (props: any) => {
             onClick={() => router.push('/shop/' + shopId + '/products/add')}>
             <FontAwesomeIcon icon={faPlus} /> Add New Product{' '}
           </button>
-          <TextField label="search name/sku" variant="filled" onChange={handleSearch} />
+          {/* <TextField label="search name/sku" variant="filled" onChange={handleSearch} /> */}
         </div>
       )}
 

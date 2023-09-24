@@ -8,8 +8,12 @@ import { useResizeDetector } from 'react-resize-detector';
 import { UserContext } from 'src/context/UserContext';
 import { darkModeContext } from '../../context/DarkModeContext';
 import SidebarOverlay from './Sidebar/SidebarOverlay';
+import { useRouter } from 'next/router';
 
-export default function AdminLayout({ children, shopId }: any) {
+export default function AdminLayout({ children, shopId: _shopId }: any) {
+  const router = useRouter();
+  const shopId = (router.query.id ?? 0) as number;
+
   /*MOHAMMED MAHER */
   const { darkMode } = useContext(darkModeContext);
 

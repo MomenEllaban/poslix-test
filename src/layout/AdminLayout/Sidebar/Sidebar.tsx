@@ -49,6 +49,7 @@ export default function Sidebar({ isShow, isShowMd, isOwner, shopId }: ISidebarP
       </div>
 
       <div className="sidebar-nav flex-fill">
+
         {isOwner ? <OwnerSidebarNav /> : <SidebarNav shopId={shopId} />}
       </div>
 
