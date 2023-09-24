@@ -66,7 +66,7 @@ const AddQuotations: NextPage = (props: any) => {
   });
   const [formObj, setFormObj] = useState({
     id: 0,
-    supplier_id: 0,
+    customer_id: 0,
     location_id: 0,
     currency_id: 0,
     currency_symbol: '',
@@ -93,7 +93,7 @@ const AddQuotations: NextPage = (props: any) => {
     morePaid: false,
     paid: false,
     products: false,
-    supplier_id: false,
+    customer_id: false,
     taxInclu: false,
     paymentStatus: false,
     paymentType: false,
@@ -344,7 +344,7 @@ const AddQuotations: NextPage = (props: any) => {
         //   setFormObj({
         //     ...formObj,
         //     id: Number(id),
-        //     supplier_id: itm.contact_id,
+        //     customer_id: itm.contact_id,
         //     currency_id: itm.currency_id,
         //     currency_rate: crate,
         //     currency_symbol: '',
@@ -377,7 +377,7 @@ const AddQuotations: NextPage = (props: any) => {
 
   async function insertPurchase() {
     const quotationData = {
-      customer_id: formObj.supplier_id,
+      customer_id: formObj.customer_id,
       status: formObj.purchaseStatus,
       paymentStatus: formObj.paymentStatus,
       paymentDate: formObj.paymentDate,
@@ -417,6 +417,10 @@ const AddQuotations: NextPage = (props: any) => {
   }
   var errors = [];
   useEffect(() => {
+    const current = localStorage.getItem('currentQuotation') ? 
+      JSON.parse(localStorage.getItem('currentQuotation') || '[]') : null;
+    console.log(current)
+    if(current) setFormObj({...formObj, ...current})
     var _locs = JSON.parse(localStorage.getItem('locations') || '[]');
     if (_locs.toString().length > 10)
       setLocationSettings(
@@ -428,7 +432,7 @@ const AddQuotations: NextPage = (props: any) => {
       );
     else alert('errorr location settings');
 
-    initDataPage(editId);
+    initDataPage(current ? "1" : "0");
   }, [router.asPath]);
 
   function getPriority(type: string, subTotal: number): number {
@@ -671,8 +675,6 @@ const AddQuotations: NextPage = (props: any) => {
   }, [jobType]);
   //product add / update
   const addToProductQuotations = (e: any) => {
-    console.log('test');
-    
     if (e.type == 'variable') {
       setSelectedProductForVariation({
         product_id: e.product_id,
@@ -847,12 +849,12 @@ const AddQuotations: NextPage = (props: any) => {
                         <Select
                           styles={selectStyle}
                           options={suppliers}
-                          value={suppliers.filter((sp) => sp.value == formObj.supplier_id)}
+                          value={suppliers.filter((sp) => sp.value == formObj.customer_id)}
                           onChange={(itm) => {
-                            setFormObj({ ...formObj, supplier_id: itm!.value });
+                            setFormObj({ ...formObj, customer_id: itm!.value });
                           }}
                         />
-                        {errorForm.supplier_id && (
+                        {errorForm.customer_id && (
                           <p className="p-1 h6 text-danger ">Select a Supplier</p>
                         )}
                       </div>
@@ -1286,7 +1288,7 @@ const AddQuotations: NextPage = (props: any) => {
                   onClick={(e) => {
                     e.preventDefault();
                     errors = [];
-                    if (formObj.supplier_id == 0) errors.push('error');
+                    if (formObj.customer_id == 0) errors.push('error');
                     if (selectProducts.length == 0) errors.push('error');
                     if (formObj.purchaseStatus.length <= 2) errors.push('error');
                     if (formObj.purchaseStatus != 'draft') {
@@ -1299,7 +1301,7 @@ const AddQuotations: NextPage = (props: any) => {
 
                     setErrorForm({
                       ...errorForm,
-                      supplier_id: formObj.supplier_id == 0,
+                      customer_id: formObj.customer_id == 0,
                       purchaseStatus: formObj.purchaseStatus.length <= 2,
                       paymentDate: (formObj.paymentDate + '').length <= 2,
                       paymentStatus: formObj.paymentStatus.length <= 2,

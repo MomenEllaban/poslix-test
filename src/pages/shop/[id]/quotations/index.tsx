@@ -105,23 +105,27 @@ export default function SalesList(props: any) {
       renderCell: ({ row }: Partial<GridRowParams>) => (
         <>
           <ButtonGroup className="mb-2 m-buttons-style">
-            <Button onClick={() => {}}>
+            <Button onClick={() => {
+              localStorage.setItem('currentQuotation', JSON.stringify(row))
+               router.push('/shop/' + shopId + '/quotations/edit');
+            }}>
               <FontAwesomeIcon icon={faPenToSquare} />
             </Button>
-            {permissions.hasDelete && (
-              <Button onClick={() => {}}>
-                <FontAwesomeIcon icon={faTrash} />
-              </Button>
-            )}
+            <Button onClick={() => {
+              setSelectId(row.id);
+              setShow(true);
+            }}>
+              <FontAwesomeIcon icon={faTrash} />
+            </Button>
             <Button onClick={() => {}}>
               <FontAwesomeIcon icon={faEye} />
             </Button>
-            <Button onClick={() => {}}>
+            {/* <Button onClick={() => {}}>
               <FontAwesomeIcon icon={faCheck} />
             </Button>
             <Button onClick={() => {}}>
               <FontAwesomeIcon icon={faXmark} />
-            </Button>
+            </Button> */}
           </ButtonGroup>
         </>
       ),
@@ -507,9 +511,7 @@ export default function SalesList(props: any) {
         alertFun={handleDeleteFuc}
         shopId={id}
         id={selectId}
-        type="transactions"
-        subType="deleteSale"
-        products={sales}>
+        url="quotations-list">
         Are you Sure You Want Delete This Item ?
       </AlertDialog>
       {
