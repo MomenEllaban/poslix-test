@@ -31,7 +31,7 @@ const FormField: React.FC<FormFieldProps> = ({
   const [value, setValue] = useState(props.defaultValue ?? type === 'number' ? 0 : '');
 
   return (
-    <Form.Group controlId={`form-field-${name}-${formId}`}>
+    <Form.Group controlId={`form-field-${name}-${formId}`} className="w-100">
       <Form.Label className="fw-semibold fs-6">
         {label}
         {required && <span className="text-danger ms-2">*</span>}{' '}
