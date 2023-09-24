@@ -20,7 +20,17 @@ async function refreshAccessToken(token: string) {
 }
 
 export const authOptions: NextAuthOptions = {
-  // Configure one or more authentication providers
+  logger: {
+    debug(code, ...message) {
+      console.log(code, message);
+    },
+    error(code, ...message) {
+      console.error(code, message);
+    },
+    warn(code, ...message) {
+      console.warn(code, message);
+    },
+  }, // Configure one or more authentication providers
   providers: [
     CredentialsProvider({
       name: 'laravel-backend',
@@ -40,8 +50,9 @@ export const authOptions: NextAuthOptions = {
         >(`${process.env.API_BASE}login`, { email, password });
 
         if (data.result) {
+          const { locations, ...res } = data.result.user as any;
           const user = {
-            ...data.result.user,
+            ...res,
             token: data.result.authorization.token,
             business: (data.result as any).business,
           };
