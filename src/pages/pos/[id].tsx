@@ -1,6 +1,6 @@
 import { ICustomer, ITax } from '@models/pos.types';
 import type { NextPage } from 'next';
-import { useCallback, useLayoutEffect, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import 'remixicon/fonts/remixicon.css';
 import withAuth from 'src/HOCs/withAuth';
 import { useProducts } from 'src/context/ProductContext';
@@ -19,6 +19,7 @@ import {
   useProductsList,
   useTaxesList,
 } from 'src/services/pos.service';
+import api from 'src/utils/app-api';
 import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
 
 interface IRegister {
@@ -92,15 +93,36 @@ const Home: NextPage = ({ shopId: _id }: any) => {
   const StepRender = useCallback(() => {
     if (isLoading) return <PosLoader />;
 
-    if (pos?.register?.state === 'open') return <PosCart shopId={shopId} />;
+    console.log(pos.register);
+    if (pos?.register?.status === 'open') return <PosCart shopId={shopId} />;
 
     return <OpenRegisterView shopId={shopId} setShopId={setShopId} setIsLoading={setIsLoading} />;
   }, [isLoading, pos, shopId, setIsLoading, dispatch]);
 
-  useLayoutEffect(() => {
-    const registerObject = getLocalStorage<IRegister>(ELocalStorageKeys.POS_REGISTER_STATE);
-    dispatch(setPosRegister(registerObject));
-  }, []);
+  // useLayoutEffect(() => {
+  // const registerObject = getLocalStorage<IRegister>(ELocalStorageKeys.POS_REGISTER_STATE);
+  //   dispatch(setPosRegister(registerObject));
+  // }, []);
+
+  const handleCheckRegister = () => {
+    setIsLoading(true);
+    api
+      .get(`reports/latest-register/${shopId}?all_data=1`)
+      .then(({ data }) => {
+        return data.result.data[0];
+      })
+      .then((registerObject) => {
+        dispatch(setPosRegister(registerObject));
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    handleCheckRegister();
+  }, [_id]);
+
   return (
     <PosLayout>
       <StepRender />

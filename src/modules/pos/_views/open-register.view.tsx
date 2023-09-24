@@ -11,13 +11,14 @@ import { useAppDispatch } from 'src/hooks';
 import { setPosRegister } from 'src/redux/slices/pos.slice';
 import { createNewData } from 'src/services/crud.api';
 
-export function OpenRegisterView({ setShopId, shopId, setIsLoading }) {
+export function OpenRegisterView({ setShopId, shopId: _shopId, setIsLoading }) {
   const router = useRouter();
+  const shopId = router.query.id ?? 0;
   const [cusLocs, setCusLocs] = useState([]);
   const [locations, setLocations] = useState([]);
   const { cashHand, setCashHand } = usePosContext();
   const dispatch = useAppDispatch();
-  const [currentShopId, setCurrentShopId] = useState(shopId)
+  const [currentShopId, setCurrentShopId] = useState(shopId);
 
   const { isLoading } = useBusinessList({
     onSuccess: (data) => {
@@ -39,16 +40,24 @@ export function OpenRegisterView({ setShopId, shopId, setIsLoading }) {
 
   async function openRegister() {
     setIsLoading(true);
-    const res = await createNewData(`/registration/${currentShopId}/open`, { hand_cash: +cashHand })
-    if(res.data.success) {
+    const res = await createNewData(`/registration/${currentShopId}/open`, {
+      hand_cash: +cashHand,
+    });
+    if (res.data.success) {
       Toastify('success', res.data.result.message);
-      dispatch(setPosRegister({state: 'open', hand_cash: +cashHand}));
-      localStorage.setItem(ELocalStorageKeys.POS_REGISTER_STATE,
-        JSON.stringify({state: 'open', hand_cash: +cashHand}));
+      dispatch(setPosRegister({ state: 'open', hand_cash: +cashHand }));
+      localStorage.setItem(
+        ELocalStorageKeys.POS_REGISTER_STATE,
+        JSON.stringify({ state: 'open', hand_cash: +cashHand })
+      );
       router.replace(`/pos/${currentShopId}`);
     } else alert('error..Try Again');
     setIsLoading(false);
   }
+
+  useEffect(() => {
+    setCurrentShopId(router.query.id);
+  }, [router.asPath]);
 
   useEffect(() => {
     const locs = getLocalStorage<any[]>(ELocalStorageKeys.CUSTOEMR_LOCATIONS) ?? [];
@@ -65,55 +74,55 @@ export function OpenRegisterView({ setShopId, shopId, setIsLoading }) {
       <img className="logo" src="/images/logo1.png" />
       <p>You have Open Register First!</p>
       <div className="col-lg-4 mb-3">
-          <label>Bussnies</label>
-          <select
-            className="form-select"
-            disabled={isLoading || !cusLocs?.length}
-            defaultValue={0}
-            onChange={handleBussinesChange}>
-            { cusLocs?.length == 0 ? (
+        <label>Bussnies</label>
+        <select
+          className="form-select"
+          disabled={isLoading || !cusLocs?.length}
+          defaultValue={0}
+          onChange={handleBussinesChange}>
+          {cusLocs?.length == 0 ? (
+            <option value={0} disabled>
+              Loading...
+            </option>
+          ) : (
+            <>
               <option value={0} disabled>
-                Loading...
+                Select Bussnies
               </option>
-            ) : (
-              <>
-                <option value={0} disabled>
-                  Select Bussnies
+              {cusLocs?.map((el) => (
+                <option key={el.id} value={el.id}>
+                  {el.name}
                 </option>
-                {cusLocs?.map((el) => (
-                  <option key={el.id} value={el.id}>
-                    {el.name}
-                  </option>
-                ))}
-              </>
-            )}
-          </select>
-        </div>
-        <div className="col-lg-4 mb-3">
-          <label>Location</label>
-          <select
-            disabled={isLoading || !locations?.length}
-            defaultValue={0}
-            className="form-select"
-            onChange={handleLocationChange}>
-            {locations?.length == 0 ? (
+              ))}
+            </>
+          )}
+        </select>
+      </div>
+      <div className="col-lg-4 mb-3">
+        <label>Location</label>
+        <select
+          disabled={isLoading || !locations?.length}
+          defaultValue={0}
+          className="form-select"
+          onChange={handleLocationChange}>
+          {locations?.length == 0 ? (
+            <option value={0} disabled>
+              Loading...
+            </option>
+          ) : (
+            <>
               <option value={0} disabled>
-                Loading...
+                Select Location
               </option>
-            ) : (
-              <>
-                <option value={0} disabled>
-                  Select Location
+              {locations?.map((el) => (
+                <option key={el.location_id} value={el.location_id}>
+                  {el.location_name}
                 </option>
-                {locations?.map((el) => (
-                  <option key={el.location_id} value={el.location_id}>
-                    {el.location_name}
-                  </option>
-                ))}
-              </>
-            )}
-          </select>
-        </div>
+              ))}
+            </>
+          )}
+        </select>
+      </div>
       <div className="col-lg-4 mb-3">
         <input
           type="number"
