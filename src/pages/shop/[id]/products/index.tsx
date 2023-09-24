@@ -13,23 +13,61 @@ import {
   GridToolbarColumnsButton,
   GridToolbarContainer,
   GridToolbarExport,
+  GridToolbarQuickFilter,
 } from '@mui/x-data-grid';
 import type { NextPage } from 'next';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
-import { ChangeEvent, useContext, useEffect, useRef, useState } from 'react';
+import { ChangeEvent, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { Button, ButtonGroup } from 'react-bootstrap';
 import Spinner from 'react-bootstrap/Spinner';
 import { ToastContainer } from 'react-toastify';
 import withAuth from 'src/HOCs/withAuth';
 import ShowPriceListModal from 'src/components/dashboard/modal/ShowPriceListModal';
+import ConfirmationModal from 'src/components/modals/confirmation-modal/ConfirmationModal';
 import LocationModal from 'src/components/pos/modals/LocationModal';
-import AlertDialog from 'src/components/utils/AlertDialog';
 import { useUser } from 'src/context/UserContext';
 import { Toastify } from 'src/libs/allToasts';
 import { createNewData, findAllData } from 'src/services/crud.api';
+import api from 'src/utils/app-api';
 import { darkModeContext } from '../../../../context/DarkModeContext';
 import styles from './table.module.css';
+
+// const CustomToolbar = ({
+//   importFileClickHandler,
+//   importFileHandler,
+//   fileRef,
+//   setShowDeleteSelected,
+//   isLoading
+// }) => {
+//   const [isHovered, setIsHovered] = useState(false);
+
+//   const divStyle = {
+//     background: isHovered ? '#99CC66' : '#779933',
+//     padding: '4px',
+//     display: 'flex',
+//     alignItems: 'center',
+//     borderRadius: '12px',
+//     marginRight: '0.5rem',
+//     transition: 'background-color 0.3s',
+//   };
+//   return (
+//     <GridToolbarContainer className="d-flex align-items-center">
+//       <GridToolbarExport />
+//       {/* mohamed elsayed */}
+//       <MButton onClick={importFileClickHandler}>Import</MButton>
+//       <input style={{ display: 'none' }} ref={fileRef} type="file" onChange={importFileHandler} />
+//       {/* /////////// */}
+
+//       <GridToolbarColumnsButton />
+//       <MButton onClick={() => setShowDeleteSelected(true)}>Delete Selected</MButton>
+
+//       {!isLoading && permissions.hasInsert && (
+//         <TextField label="search name/sku" variant="filled" onChange={handleSearch} />
+//       )}
+//     </GridToolbarContainer>
+//   );
+// };
 
 const Product: NextPage = (props: any) => {
   const { id } = props;
@@ -56,7 +94,9 @@ const Product: NextPage = (props: any) => {
   const [lastPage, setLastPage] = useState();
   const [totalRows, setTotalRows] = useState();
   const { darkMode } = useContext(darkModeContext);
+  const [permissions, setPermissions] = useState<any>();
 
+  const [showDeleteSelected, setShowDeleteSelected] = useState(false);
   const columns: GridColDef[] = [
     {
       field: 'id',
@@ -186,6 +226,7 @@ const Product: NextPage = (props: any) => {
     if (res.data.success) initDataPage();
     else Toastify('error', 'Something went wrong, please try again.');
   };
+
   function CustomToolbar() {
     const [isHovered, setIsHovered] = useState(false);
 
@@ -205,12 +246,17 @@ const Product: NextPage = (props: any) => {
         <MButton onClick={importFileClickHandler}>Import</MButton>
         <input style={{ display: 'none' }} ref={fileRef} type="file" onChange={importFileHandler} />
         {/* /////////// */}
+
         <GridToolbarColumnsButton />
+        <MButton onClick={() => setShowDeleteSelected(true)}>Delete Selected</MButton>
+
+        <GridToolbarQuickFilter />
       </GridToolbarContainer>
     );
   }
+
   async function initDataPage() {
-    setIsLoading(false);
+    setIsLoading(true);
     if (router.isReady) {
       const res = await findAllData(`products/${router.query.id}?all_data=1`);
       if (!res.data.success) {
@@ -221,8 +267,8 @@ const Product: NextPage = (props: any) => {
       setFilteredProducts(res.data.result);
       setIsLoading(false);
     }
+    setIsLoading(false);
   }
-  const [permissions, setPermissions] = useState<any>();
   useEffect(() => {
     const localPermissions = localStorage.getItem('permissions');
     if (!localPermissions) return;
@@ -318,90 +364,126 @@ const Product: NextPage = (props: any) => {
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
   const isMediumScreen = useMediaQuery(theme.breakpoints.between('md', 'lg'));
   const getRowClassName = () => styles.rowStyling;
-  return (
-    <>
-      <AdminLayout shopId={id}>
-        <ToastContainer />
-        <AlertDialog
-          alertShow={show}
-          alertFun={handleDeleteFuc}
-          shopId={id}
-          id={selectId}
-          url={'products'}>
-          Are you Sure You Want Delete This Item?
-        </AlertDialog>
-        <AlertDialog
-          alertShow={showDeleteAll}
-          alertFun={handleDeleteFuc}
-          shopId={id}
-          id={selectedItems}
-          type="products"
-          subType="deleteProducts">
-          Are you Sure You Want Delete The Selected Items?
-        </AlertDialog>
-        <ShowPriceListModal
-          shopId={id}
-          productId={selectId}
-          type={type}
-          isOpenPriceDialog={isOpenPriceDialog}
-          setIsOpenPriceDialog={() => setIsOpenPriceDialog(false)}
-        />
-        <LocationModal
-          showDialog={locationModal}
-          setShowDialog={setLocationModal}
-          locations={locations}
-          data={selectedItems}
-          setData={setSelectedItems}
-          shopId={id}
-          value={locations.findIndex((loc: any) => {
-            return loc.value == id;
-          })}
-        />
-        {/* start */}
-        {!isLoading && permissions.hasInsert && (
-          <div className="mb-2 flex items-center justify-between">
-            <button
-              className="btn btn-primary p-3"
-              onClick={() => router.push('/shop/' + shopId + '/products/add')}>
-              <FontAwesomeIcon icon={faPlus} /> Add New Product{' '}
-            </button>
-            <TextField label="search name/sku" variant="filled" onChange={handleSearch} />
-          </div>
-        )}
 
-        {!isLoading ? (
-          <>
-            <div className="page-content-style card">
-              <h5>Product List</h5>
-              <DataGrid
-                ref={dataGridRef}
-                checkboxSelection
-                className="datagrid-style"
-                sx={{
-                  '.MuiDataGrid-columnSeparator': {
-                    display: 'none',
-                  },
-                  '&.MuiDataGrid-root': {
-                    border: 'none',
-                  },
-                }}
-                rows={filteredProducts}
-                columns={columns}
-                pageSize={10}
-                rowsPerPageOptions={[10]}
-                onSelectionModelChange={(ids: any) => onRowsSelectionHandler(ids)}
-                onCellClick={handleCellClick}
-                components={{ Toolbar: CustomToolbar }}
-              />
-            </div>
-          </>
-        ) : (
-          <div className="d-flex justify-content-around">
-            <Spinner animation="grow" />
+  const handleDeleteMultiProducts = () => {
+    setIsLoading(true);
+    api
+      .delete('/products/delete', {
+        params: {
+          product_ids: [...selectedItems],
+        },
+      })
+      .then(() => {
+        initDataPage();
+        Toastify('success', 'Item deleted successfully!');
+      })
+      .catch(() => {
+        Toastify('error', 'Something went wrong!, try again later..');
+      })
+      .finally(() => {
+        setShowDeleteSelected(false);
+        setIsLoading(false);
+      });
+  };
+
+  const handleDeleteSingleProduct = () => {
+    setIsLoading(true);
+    api
+      .delete('/products/delete', {
+        params: {
+          product_ids: [selectId],
+        },
+      })
+      .then(() => {
+        initDataPage();
+        Toastify('success', 'Item deleted successfully!');
+      })
+      .catch(() => {
+        Toastify('error', 'Something went wrong!, try again later..');
+      })
+      .finally(() => {
+        setShow(false);
+        setIsLoading(false);
+      });
+  };
+  return (
+    <AdminLayout shopId={id}>
+      <ToastContainer />
+      <ConfirmationModal
+        show={show}
+        onClose={() => setShow(false)}
+        onConfirm={handleDeleteSingleProduct}
+        message="Are you sure to delete this item?"
+      />
+      <ConfirmationModal
+        show={showDeleteSelected}
+        onClose={() => setShowDeleteSelected(false)}
+        onConfirm={handleDeleteMultiProducts}
+        message="Are you sure to delete the items?"
+      />
+
+      <ShowPriceListModal
+        shopId={id}
+        productId={selectId}
+        type={type}
+        isOpenPriceDialog={isOpenPriceDialog}
+        setIsOpenPriceDialog={() => setIsOpenPriceDialog(false)}
+      />
+      <LocationModal
+        showDialog={locationModal}
+        setShowDialog={setLocationModal}
+        locations={locations}
+        data={selectedItems}
+        setData={setSelectedItems}
+        shopId={id}
+        value={locations.findIndex((loc: any) => {
+          return loc.value == id;
+        })}
+      />
+      {/* start */}
+      {!isLoading && permissions.hasInsert && (
+        <div className="mb-2 flex items-center justify-between">
+          <button
+            className="btn btn-primary p-3"
+            onClick={() => router.push('/shop/' + shopId + '/products/add')}>
+            <FontAwesomeIcon icon={faPlus} /> Add New Product{' '}
+          </button>
+          <TextField label="search name/sku" variant="filled" onChange={handleSearch} />
+        </div>
+      )}
+
+      {!isLoading ? (
+        <>
+          <div className="page-content-style card">
+            <h5>Product List</h5>
+            <DataGrid
+              ref={dataGridRef}
+              checkboxSelection
+              className="datagrid-style"
+              sx={{
+                '.MuiDataGrid-columnSeparator': {
+                  display: 'none',
+                },
+                '&.MuiDataGrid-root': {
+                  border: 'none',
+                },
+              }}
+              rows={filteredProducts}
+              columns={columns}
+              pageSize={10}
+              rowsPerPageOptions={[10]}
+              onSelectionModelChange={(ids: any) => onRowsSelectionHandler(ids)}
+              onCellClick={handleCellClick}
+              components={{ Toolbar: CustomToolbar }}
+            />
           </div>
-        )}
-      </AdminLayout>
-    </>
+        </>
+      ) : (
+        <div className="d-flex justify-content-around">
+          <Spinner animation="grow" />
+        </div>
+      )}
+    </AdminLayout>
   );
 };
 
