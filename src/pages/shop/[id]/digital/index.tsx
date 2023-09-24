@@ -1,15 +1,16 @@
 import { faInstagram, faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { AdminLayout } from '@layout';
 import { NextPage } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Container } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
 import withAuth from 'src/HOCs/withAuth';
 import img1 from './logo1.png';
 
 const Digital: NextPage = ({ shopId }: any) => {
   return (
-    <Container>
+    <AdminLayout shopId={shopId}>
       <div className="page-content-style justfy-center">
         <Image src={img1} alt={'logo'} />
         <h2>Poslix @poslix.com</h2>
@@ -25,7 +26,7 @@ const Digital: NextPage = ({ shopId }: any) => {
           <FontAwesomeIcon className="icon-clicable" icon={faInstagram} />
         </div>
       </div>
-    </Container>
+    </AdminLayout>
   );
 };
 

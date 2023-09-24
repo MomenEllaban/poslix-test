@@ -16,7 +16,7 @@ const selectStyles = {
     background: '#f5f5f5',
     height: '40px',
     width: '10rem',
-    zIndex: 999,
+    zIndex: 998,
     position: 'relative',
     outline: state.isFocused ? '2px solid #045c54' : 'none',
     boxShadow: 'none',
@@ -27,7 +27,7 @@ const selectStyles = {
   menu: (provided: any, state: any) => ({
     ...provided,
     borderRadius: '10px',
-    zIndex: 999,
+    zIndex: 998,
     padding: '10px', // Add padding to create space
     border: '1px solid #c9ced2',
   }),
