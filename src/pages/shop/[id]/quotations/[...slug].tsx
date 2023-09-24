@@ -50,7 +50,7 @@ import { cartJobType } from 'src/recoil/atoms';
 import { useRecoilState } from 'recoil';
 import { ToastContainer } from 'react-toastify';
 import { Toastify } from 'src/libs/allToasts';
-import { createNewData, findAllData } from 'src/services/crud.api';
+import { createNewData, findAllData, updateData } from 'src/services/crud.api';
 const AddQuotations: NextPage = (props: any) => {
   const { id, slug } = props;
 
@@ -404,23 +404,25 @@ const AddQuotations: NextPage = (props: any) => {
     router.push('/shop/' + router.query.id + '/quotations');
   }
   async function editPurchase() {
-    const { success } = await apiUpdateCtr({
-      type: 'transactions',
-      subType: 'editPurchase',
-      id,
-      data: {
-        totalOrder: formObjRef.current,
-        lines: selectProducts,
-        expenses: selectedExpends,
-        taxes: selectedTaxes,
-      },
-    });
-    if (!success) {
-      Toastify('error', 'Has Error ,Check You Inputs Try Again');
+    const quotationData = {
+      customer_id: formObj.customer_id,
+      status: formObj.status,
+      paymentStatus: formObj.paymentStatus,
+      paymentDate: formObj.paymentDate,
+      paymentType: formObj.paymentType,
+      location_id: router.query.id,
+      quotationsLines: selectProducts.map(prod => {
+        return {product_id: prod.id, qty: prod.quantity}
+      })
+    }
+      console.log(quotationData)
+    const res = await updateData('quotations-list', formObj.id, quotationData)
+    if (!res.data.success) {
+      alert('Has Error ,try Again');
       return;
     }
-    Toastify('success', 'Purchase Successfully Edited..');
-    router.push('/shop/' + id + '/purchases');
+    Toastify('success', 'Purchase Successfully Created..');
+    router.push('/shop/' + router.query.id + '/quotations');
   }
   var errors = [];
   useEffect(() => {
