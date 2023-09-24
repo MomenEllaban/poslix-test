@@ -13,7 +13,7 @@ export default function OwnerSidebarNav({ username2 }: any) {
   useEffect(() => {
     var _username: any = router.query.username;
     if (typeof _username != undefined) setUsername(_username);
-  }, [router]);
+  }, [router.asPath]);
 
   return (
     <ul className="list-unstyled">
