@@ -1,7 +1,6 @@
-import { faEye, faPenToSquare, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faPenToSquare, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { AdminLayout } from '@layout';
-import { ILocationSettings } from '@models/common-model';
 import {
   DataGrid,
   GridColDef,
@@ -12,7 +11,7 @@ import {
 } from '@mui/x-data-grid';
 import type { NextPage } from 'next';
 import { useRouter } from 'next/router';
-import {  useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button, ButtonGroup } from 'react-bootstrap';
 import Spinner from 'react-bootstrap/Spinner';
 import { ToastContainer } from 'react-toastify';
@@ -21,18 +20,23 @@ import AlertDialog from 'src/components/utils/AlertDialog';
 import { Toastify } from 'src/libs/allToasts';
 import { findAllData } from 'src/services/crud.api';
 import PrinterModal from '../../../../components/pos/modals/PrinterModal';
-import { ProductContext } from '../../../../context/ProductContext';
 
 const Printers: NextPage = (props: any) => {
   const { shopId, rules } = props;
 
   // const [locationSettings, setLocationSettings] = useState<ILocationSettings>({});
   const router = useRouter();
- 
-  
-  const [printersList, setPrinters] = useState<{ id: number; name: string; ip: string; print_type: string;status:string,connection:string }[]>(
-    []
-  );
+
+  const [printersList, setPrinters] = useState<
+    {
+      id: number;
+      name: string;
+      ip: string;
+      print_type: string;
+      status: string;
+      connection: string;
+    }[]
+  >([]);
   const [show, setShow] = useState(false);
   const [selectId, setSelectId] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -46,12 +50,12 @@ const Printers: NextPage = (props: any) => {
   async function initDataPage() {
     if (router.query.id) {
       const res = await findAllData(`print-settings/${router.query.id}`);
-      console.log(res,"res");
+      console.log(res, 'res');
       if (res.data.status !== 200) {
         Toastify('error', 'Somthing wrong!!, try agian');
         return;
       }
-      console.log(res.data.result,"object");
+      console.log(res.data.result, 'object');
       setPrinters([res.data.result]);
     }
     setIsLoading(false);
@@ -60,15 +64,17 @@ const Printers: NextPage = (props: any) => {
     setPrinterIsModal(false);
     initDataPage();
   };
-console.log(router.query.id,printersList);
+  console.log(router.query.id, printersList);
   const columns: GridColDef[] = [
     { field: 'id', headerName: '#', minWidth: 50 },
-    {field: 'name',headerName: 'Printer Name',flex: 1,},
+    { field: 'name', headerName: 'Printer Name', flex: 1 },
     { field: 'ip', headerName: 'IP', flex: 1 },
     { field: 'status', headerName: 'printer status', flex: 1 },
     { field: 'print_type', headerName: 'Printer Type', flex: 1 },
     { field: 'connection', headerName: 'connection method', flex: 1 },
-    {field: 'action',headerName: 'Action ',
+    {
+      field: 'action',
+      headerName: 'Action ',
       sortable: false,
       disableExport: true,
       flex: 1,
@@ -91,17 +97,15 @@ console.log(router.query.id,printersList);
                 <FontAwesomeIcon icon={faPenToSquare} />
               </Button>
             )}
-           
-              <Button
-                onClick={(event) => {
-                  event.stopPropagation();
-                  setSelectId(row.id);
-                  setShow(true);
-                }}>
-                <FontAwesomeIcon icon={faTrash} />
-              </Button>
-            
-        
+
+            <Button
+              onClick={(event) => {
+                event.stopPropagation();
+                setSelectId(row.id);
+                setShow(true);
+              }}>
+              <FontAwesomeIcon icon={faTrash} />
+            </Button>
           </ButtonGroup>
         </>
       ),
@@ -115,7 +119,6 @@ console.log(router.query.id,printersList);
       </GridToolbarContainer>
     );
   }
-
 
   useEffect(() => {
     initDataPage();
