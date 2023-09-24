@@ -32,7 +32,7 @@ const NavMenu: any = ({ shopId }: any) => {
 
   const handleSwitchRegister = () => {
     // if open ==> close ... if close ==> open
-    if (pos.register.state === 'open') {
+    if (pos.register.status === 'open') {
       setCustomerIsModal(true);
     } else {
       dispatch(
