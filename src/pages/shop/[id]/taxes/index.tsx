@@ -63,63 +63,61 @@ const Taxes: NextPage = (props: any) => {
   const [permissions, setPermissions] = useState<any>();
 
   async function initDataPage() {
-    if (router.query.id && permissions) {
-      const res = await findAllData(`taxes/${router.query.id}`);
-      const newData = res.data.result.taxes;
-      setTaxesList(res.data.result.taxes.filter((t) => t.tax_type !== 'group'));
-      if (res.data.success) {
-        if (permissions.hasInsert) {
-          newData.push({
-            id: 0,
-            name: '',
-            amount: 0,
-            type: '',
-            is_primary: false,
-            tax_type: 'primary',
-            isNew: 1,
-          });
-          newData.push({
-            id: 0,
-            name: '',
-            amount: 0,
-            type: '',
-            is_primary: false,
-            tax_type: 'excise',
-            isNew: 1,
-          });
-          newData.push({
-            id: 0,
-            name: '',
-            amount: 0,
-            type: '',
-            amountType: 'percentage',
-            is_primary: false,
-            tax_type: 'service',
-            isNew: 1,
-          });
-        }
-        setTaxs(
-          newData.filter((p: ITax) => {
-            return p.tax_type == 'primary';
-          })
-        );
-        setTaxsExcise(
-          newData.filter((p: ITax) => {
-            return p.tax_type == 'excise';
-          })
-        );
-        setTaxsService(
-          newData.filter((p: ITax) => {
-            return p.tax_type == 'service';
-          })
-        );
-        setTaxesGroup(
-          newData.filter((p: ITax) => {
-            return p.tax_type == 'group';
-          })
-        );
-        setIsLoading(false);
+    const res = await findAllData(`taxes/${id}`);
+    const newData = res.data.result.taxes;
+    setTaxesList(res.data.result.taxes.filter((t) => t.tax_type !== 'group'));
+    if (res.data.success) {
+      if (permissions?.hasInsert) {
+        newData.push({
+          id: 0,
+          name: '',
+          amount: 0,
+          type: '',
+          is_primary: false,
+          tax_type: 'primary',
+          isNew: 1,
+        });
+        newData.push({
+          id: 0,
+          name: '',
+          amount: 0,
+          type: '',
+          is_primary: false,
+          tax_type: 'excise',
+          isNew: 1,
+        });
+        newData.push({
+          id: 0,
+          name: '',
+          amount: 0,
+          type: '',
+          amountType: 'percentage',
+          is_primary: false,
+          tax_type: 'service',
+          isNew: 1,
+        });
       }
+      setTaxs(
+        newData.filter((p: ITax) => {
+          return p.tax_type == 'primary';
+        })
+      );
+      setTaxsExcise(
+        newData.filter((p: ITax) => {
+          return p.tax_type == 'excise';
+        })
+      );
+      setTaxsService(
+        newData.filter((p: ITax) => {
+          return p.tax_type == 'service';
+        })
+      );
+      setTaxesGroup(
+        newData.filter((p: ITax) => {
+          return p.tax_type == 'group';
+        })
+      );
+      setIsLoading(false);
     }
   }
   async function addUpdateTaxs(rows: ITax[]) {
@@ -283,23 +281,26 @@ const Taxes: NextPage = (props: any) => {
   };
 
   useEffect(() => {
-    const perms = JSON.parse(localStorage.getItem('permissions'));
+    const perms = JSON.parse(localStorage.getItem('permissions')).filter(loc => loc.id==id);
     const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
-    perms.tax.map((perm) =>
-      perm.name.includes('GET')
+    perms[0]?.permissions.map((perm) =>
+      perm.name.includes('taxes/view')
         ? (getPermissions.hasView = true)
-        : perm.name.includes('POST')
+        : perm.name.includes('taxes/add')
         ? (getPermissions.hasInsert = true)
-        : perm.name.includes('PUT')
+        : perm.name.includes('taxes/update')
         ? (getPermissions.hasEdit = true)
-        : perm.name.includes('DELETE')
+        : perm.name.includes('taxes/delete')
         ? (getPermissions.hasDelete = true)
         : null
     );
 
     setPermissions(getPermissions);
+  }, []);
+
+  useEffect(() => {
     initDataPage();
-  }, [router.asPath]);
+  }, [permissions])
   return (
     <>
       <AdminLayout shopId={id}>

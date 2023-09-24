@@ -22,13 +22,11 @@ const Roles = () => {
 
   async function initDataPage() {
     const res = await findAllData('roles/get');
-    console.log('roles page', res.data.result);
-
     setStuffs(res.data.result);
     setIsLoading(false);
   }
 
-  function showPropryRoles_test(roles: string) {
+  function showSetOfRoles(roles: any) {
     if (roles === 'no') {
       return (
         <div className="roles-parent-no-peri">
@@ -36,19 +34,16 @@ const Roles = () => {
         </div>
       );
     } else {
-      // const _roles = roles
-      //   .replaceAll('_r', '_read')
-      //   .replaceAll('_e', '_edit')
-      //   .replaceAll('_d', '_delete')
-      //   .replaceAll('_i', '_insert')
-      //   .split(',');
-      // return (
-      //   <div className="roles-parent">
-      //     {_roles.map((mp) => {
-      //       return mp.length > 0 && <div>{mp}</div>;
-      //     })}
-      //   </div>
-      // );
+      console.log(roles);
+      return (
+        <div className="roles-parent">
+          {roles.map((role) => {
+            console.log(role);
+            
+            return <div>{role.name}</div>;
+          })}
+        </div>
+      );
     }
   }
   useEffect(() => {
@@ -116,7 +111,7 @@ const Roles = () => {
                           <tr>
                             <th scope="row">{i + 1}</th>
                             <th>{role.name}</th>
-                            <td>{showPropryRoles_test(role.permissions)}</td>
+                            <td>{showSetOfRoles(role.permissions)}</td>
                             <td>
                               <ButtonGroup className="mb-2 m-buttons-style">
                                 <Button

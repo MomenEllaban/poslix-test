@@ -30,7 +30,6 @@ function LocationUpdateForm({ businessId, location }) {
       const _currenciesList = data.result.map((itm: any) => {
         return { value: itm.id, label: `${itm.country} (${itm.code})` };
       });
-console.log(currenciesList);
       setCurrenciesList(_currenciesList);
     },
   });
@@ -166,7 +165,9 @@ console.log(currenciesList);
                     <th scope="row"></th>
                     <td>{user.first_name}</td>
                     <td>
-                      {user.role ? user.role : 'No Permissions'}
+                      {user?.locations[0]?.roles[0] ?
+                        user?.locations[0].roles[0]?.name
+                        : 'No Permissions'}
                     </td>
                     <td>
                       <ButtonGroup className="mb-2 m-buttons-style">

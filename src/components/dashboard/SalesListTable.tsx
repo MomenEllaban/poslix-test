@@ -342,7 +342,7 @@ export default function SalesListTable(props: any) {
             </div>
             <div className="right_up_of_table">
               <div>Billed To</div>
-              <div>{selectRow.customer_name}</div>
+              <div>{selectRow.contact_name}</div>
               {/* <span>Billed To</span> */}
             </div>
           </div>
