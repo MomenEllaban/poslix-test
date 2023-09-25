@@ -10,7 +10,7 @@ export default function BusinessRow({ business }) {
   const { user } = useUser();
   const router = useRouter();
 
-  const username = user?.username;
+  const userId = user?.id;
 
   return (
     <Fragment>
@@ -23,13 +23,13 @@ export default function BusinessRow({ business }) {
           <ButtonGroup className="mb-2 m-buttons-style">
             <Button
               onClick={() => {
-                router.push(`/${username}/business/${business.id}/settings`);
+                router.push(`/${userId}/business/${business.id}/settings`);
               }}>
               <FontAwesomeIcon icon={faGear} />
             </Button>
             <Button
               onClick={() => {
-                router.push(`/${username}/business/${business.id}/add`);
+                router.push(`/${userId}/business/${business.id}/add`);
               }}>
               <FontAwesomeIcon icon={faPlus} /> Add New Location
             </Button>
@@ -37,7 +37,12 @@ export default function BusinessRow({ business }) {
         </td>
       </tr>
       {business.locations.map((location) => (
-        <LocationRow key={location.location_id} location={location} locations={business.locations} businessId={business.id} />
+        <LocationRow
+          key={location.location_id}
+          location={location}
+          locations={business.locations}
+          businessId={business.id}
+        />
       ))}
     </Fragment>
   );
