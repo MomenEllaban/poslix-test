@@ -51,7 +51,7 @@ const MyBusinessesPage = () => {
                   </thead>
                   <tbody>
                     {businessList.map((business) => (
-                      <BusinessRow key={business.id} business={business} />
+                      <BusinessRow list={businessList} key={business.id} business={business} />
                     ))}
                   </tbody>
                 </Table>

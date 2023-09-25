@@ -10,7 +10,7 @@ import api from 'src/utils/app-api';
 import { useSWRConfig } from 'swr';
 import LocationRow from './location-row';
 
-export default function BusinessRow({ business }) {
+export default function BusinessRow({ business, list = [] }) {
   const { user } = useUser();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -18,6 +18,9 @@ export default function BusinessRow({ business }) {
   const { mutate } = useSWRConfig();
 
   const userId = user?.id;
+
+  const idx = list.findIndex((item) => item.id === business.id);
+  console.log(idx);
 
   const handleDeleteBusiness = () => {
     setLoading(true);
@@ -50,7 +53,17 @@ export default function BusinessRow({ business }) {
               }}>
               <FontAwesomeIcon icon={faGear} />
             </Button>
-            <Button className="text-danger" onClick={() => setShowConfirmation(true)}>
+            <Button
+              // active={idx > 1 || list.length >= 2}
+              disabled={idx === 0 || list.length < 2}
+              className="text-danger"
+              onClick={() => {
+                if (list.length < 2)
+                  return Toastify('error', 'You cannot delete the only business exist!');
+                if (idx < 1) return Toastify('error', 'You cannot delete the first business!');
+
+                setShowConfirmation(true);
+              }}>
               <FontAwesomeIcon icon={faTrash} />
             </Button>
             <Button
