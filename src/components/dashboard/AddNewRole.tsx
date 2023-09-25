@@ -14,7 +14,6 @@ import {
   faChartPie,
   faLayerGroup,
 } from '@fortawesome/free-solid-svg-icons';
-import { redirectToLogin } from '../../libs/loginlib';
 import { userDashboard } from '@models/common-model';
 import Select, { StylesConfig } from 'react-select';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
@@ -27,98 +26,7 @@ const AddNewRole = (props: any) => {
   const [pages, setPages] = useState<
     { value: string; label: string; stuffs: object[]; icon?: IconProp   }[]
   >([]);
-  // const pages2 = [
-  //   { value: 'split', label: 'Sales List', stuffs: [], icon: faChartPie },
-  //   {
-  //     value: 'sales',
-  //     label: 'Sales',
-  //     stuffs: [
-  //       { label: 'View', value: 'view', isChoose: false },
-  //       { label: 'Edit', value: 'edit' },
-  //       { label: 'Delete', value: 'delete' },
-  //       { label: 'Insert', value: 'insert' },
-  //     ],
-  //   },
-  //   {
-  //     value: 'quotations',
-  //     label: 'Quotations',
-  //     stuffs: [
-  //       { label: 'View', value: 'view', isChoose: false },
-  //       { label: 'Edit', value: 'edit' },
-  //       { label: 'Delete', value: 'delete' },
-  //       { label: 'Insert', value: 'insert' },
-  //     ],
-  //   },
-  //   { value: 'split', label: 'setup', stuffs: [], icon: faLayerGroup },
-  //   {
-  //     value: 'products',
-  //     label: 'Products',
-  //     stuffs: [
-  //       { label: 'View', value: 'view', isChoose: false },
-  //       { label: 'Edit', value: 'edit' },
-  //       { label: 'Delete', value: 'delete' },
-  //       { label: 'Insert', value: 'insert' },
-  //     ],
-  //   },
-  //   {
-  //     value: 'purchases',
-  //     label: 'Purchases',
-  //     stuffs: [
-  //       { label: 'View', value: 'view' },
-  //       { label: 'Edit', value: 'edit' },
-  //       { label: 'Delete', value: 'delete' },
-  //       { label: 'Insert', value: 'insert' },
-  //     ],
-  //   },
-  //   {
-  //     value: 'category',
-  //     label: 'Category & Brands',
-  //     stuffs: [
-  //       { label: 'View', value: 'view' },
-  //       { label: 'Edit', value: 'edit' },
-  //       { label: 'Delete', value: 'delete' },
-  //       { label: 'Insert', value: 'insert' },
-  //     ],
-  //   },
-  //   { value: 'split', label: 'Settings', stuffs: [], icon: faGear },
-  //   {
-  //     value: 'taxes',
-  //     label: 'Taxes',
-  //     stuffs: [
-  //       { label: 'View', value: 'view' },
-  //       { label: 'Insert & Edit', value: 'insert' },
-  //       { label: 'Delete', value: 'delete' },
-  //     ],
-  //   },
-  //   {
-  //     value: 'discounts',
-  //     label: 'Discount',
-  //     stuffs: [
-  //       { label: 'View', value: 'view' },
-  //       { label: 'Edit', value: 'edit' },
-  //       { label: 'Delete', value: 'delete' },
-  //       { label: 'Insert', value: 'insert' },
-  //     ],
-  //   },
-  //   {
-  //     value: 'expanses',
-  //     label: 'Expenses',
-  //     stuffs: [
-  //       { label: 'View', value: 'view' },
-  //       { label: 'Insert & Edit', value: 'insert' },
-  //       { label: 'Delete', value: 'delete' },
-  //     ],
-  //   },
-  //   { value: 'split', label: 'POS Screen', stuffs: [], icon: faDesktop },
-  //   {
-  //     value: 'POS',
-  //     label: 'POS',
-  //     stuffs: [
-  //       { label: 'Orders', value: 'orders' },
-  //       { label: 'payment', value: 'payment' },
-  //     ],
-  //   },
-  // ];
+
   async function insertUpdateUsers() {
     let res;
     if (selectedRole > -1)
@@ -135,7 +43,6 @@ const AddNewRole = (props: any) => {
     props.initPage()
   }
   function handelChange(checked: boolean, value: string, name: string) {
-    console.log(checked, value, name);
     const perms = [...permissions]
     if(checked && perms.indexOf(value) < 0)
       perms.push(value)
@@ -159,13 +66,13 @@ const AddNewRole = (props: any) => {
           if(currentField.length > 0) {
             finalRes = {...finalRes, [field]: {...finalRes[field], others: [...currentField]}}
             console.log('currentField',currentField, finalRes);
-            
           }
           finalRes = {...finalRes, [field]: {...finalRes[field], [role]: [...res.data.result[field][role]]}}
         }
         else currentField.push({...res.data.result[field][role]})
       })
     })
+    delete finalRes.tailoring
     console.log(finalRes);
     
     setFields(finalRes)
@@ -174,8 +81,6 @@ const AddNewRole = (props: any) => {
   useEffect(() => {
     initPageData()
     if (props.index > -1) {
-      console.log(props.selectedRole);
-      
       setSelectedRole(props.selectedRole);
       setRoles(props.selectedStuff);
       setPermissions(props.selectedStuff)

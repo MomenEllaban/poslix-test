@@ -34,12 +34,10 @@ const Roles = () => {
         </div>
       );
     } else {
-      console.log(roles);
+      const newRoles = roles.filter(role => !role.name.includes('tailor'))
       return (
         <div className="roles-parent">
-          {roles.map((role) => {
-            console.log(role);
-            
+          {newRoles.map((role) => {
             return <div>{role.name}</div>;
           })}
         </div>
