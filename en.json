@@ -24,14 +24,17 @@
       "orders": "Orders",
       "saveOrder": "Save Order",
       "checkout": "Check Out",
+      "difference": "Difference",
       "orderModal": {
+        "search": "Search by Customer Name or Invoice Number",
         "hold": "Hold",
         "holdName": "Hold Name",
         "action": "Action",
         "order": "Order",
         "customer": "Customer",
         "mobile": "Mobile",
-        "price": "Price"
+        "price": "Price",
+        "noItems": "No Items in hold"
       }
     },
     "itemList": {

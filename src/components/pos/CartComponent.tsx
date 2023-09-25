@@ -26,7 +26,6 @@ import { OrderCalcs } from './utils/OrderCalcs';
 import { OrdersFooter } from './_components/orders-footer/OrdersFooter';
 
 export default function OrdersComponent(props: any) {
-  console.log('OrdersComponent');
   const { shopId, lang, direction } = props;
   const { locationSettings, tailoringSizes, invoicDetails, tailoringExtras } = useUser();
   const { products, customers, taxes, taxGroups, variations, packageItems } = useProducts();

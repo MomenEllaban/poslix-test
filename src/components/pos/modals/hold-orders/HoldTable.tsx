@@ -7,7 +7,7 @@ export default function HoldTable({ lang, items, remove, restore }) {
       return (
         <tr>
           <td colSpan={3} className="text-center">
-            No Items in hold
+            {lang.cartComponent.orderModal.noItems}
           </td>
         </tr>
       );

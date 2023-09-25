@@ -24,14 +24,17 @@
       "orders": "الطلبات",
       "saveOrder": "حفظ الطلب",
       "checkout": "الدفع",
+      "difference": "الفرق",
       "orderModal": {
+        "search": "ابحث ب اسم العميل او رقم الفاتورة",
         "hold": "حجز",
         "holdName": "اسم الحجز",
         "action": "العمليات",
         "order": "طلب",
         "customer": "عميل",
         "mobile": "الهاتف",
-        "price": "السعر"
+        "price": "السعر",
+        "noItems": "لا يوجد"
       }
     },
     "itemList": {

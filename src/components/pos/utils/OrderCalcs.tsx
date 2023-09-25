@@ -127,7 +127,7 @@ export const OrderCalcs = ({
                 <div></div>
               </div>
               <div className="py-1 calcs-details-col">
-                <div>Difference</div>
+                <div>{lang.cartComponent.difference}</div>
                 <div>
                   {(+totalAmount -
                     cart.lastTotal

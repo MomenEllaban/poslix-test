@@ -12,6 +12,7 @@ import { IHold } from '../../../../models/common-model';
 import { cartJobType } from '../../../../recoil/atoms';
 import HoldTable from './HoldTable';
 import OrdersTable from './OrdersTable';
+import { usePosContext } from 'src/modules/pos/_context/PosContext';
 
 export default function HoldOrdersModal({ shopId, lang }: any) {
   const dispatch = useAppDispatch();
@@ -32,6 +33,8 @@ export default function HoldOrdersModal({ shopId, lang }: any) {
 
   const removeHoldItem = (item: any) => {
     const _holdItems = [...holdItems];
+    const { isRtl } = usePosContext();
+
     const _newHoldItems = _holdItems.filter((hold) => hold.id !== item.id);
     setHoldItems(_newHoldItems);
     localStorage.setItem(`holdItems[${shopId}]`, JSON.stringify(_newHoldItems));
@@ -124,12 +127,12 @@ export default function HoldOrdersModal({ shopId, lang }: any) {
       </Button>
       <Modal show={isShowOrdersModal} onHide={handleClose} size="lg">
         <Modal.Header className="poslix-modal-title text-primary text-capitalize" closeButton>
-          Orders
+          {lang.cartComponent.orders}
         </Modal.Header>
         <Modal.Body>
           <InputGroup className="mb-3">
             <Form.Control
-              placeholder="Search by Customer Name or Invoice Number"
+              placeholder={lang.cartComponent.orderModal.search}
               aria-label="Text input with dropdown button"
               onChange={handleFiltered}
             />
@@ -160,7 +163,7 @@ export default function HoldOrdersModal({ shopId, lang }: any) {
         </Modal.Body>
         <Modal.Footer>
           <a className="btn btn-link link-success fw-medium" onClick={handleClose}>
-            <i className="ri-close-line me-1 align-middle" /> Close
+            <i className="ri-close-line me-1 align-middle" /> {lang.navmenu.close}
           </a>
         </Modal.Footer>
       </Modal>
