@@ -5,17 +5,21 @@ import { Modal, ModalProps } from 'react-bootstrap';
 interface IMainModal extends Omit<ModalProps, 'children'> {
   show: boolean;
   setShow: Dispatch<SetStateAction<boolean>>;
+  onClose?: () => void;
   body: React.ReactNode;
   title?: string;
   footer?: React.ReactNode;
 }
 
-const MainModal = ({ show, setShow, body, title, footer, ...props }: IMainModal) => {
+const MainModal = ({ show, setShow, onClose, body, title, footer, ...props }: IMainModal) => {
   const ModalBody = () => (React.isValidElement(body) ? body : <Fragment>{body}</Fragment>);
   const ModalFooter = () =>
     footer ? React.isValidElement(footer) ? footer : <Fragment>{footer}</Fragment> : null;
 
-  const handleClose = () => setShow(false);
+  const handleClose = () => {
+    setShow(false);
+    onClose?.();
+  };
 
   return (
     <Modal show={show} onHide={handleClose} {...props}>

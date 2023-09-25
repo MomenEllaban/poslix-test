@@ -28,6 +28,7 @@ export default function BusinessRow({ business, list = [] }) {
       .then(() => {
         Toastify('success', 'Business deleted successfully!');
         mutate('/business'); //this is the key of the business
+        setShowConfirmation(false);
       })
       .catch(() => {
         Toastify('error', 'Something went wrong!');
@@ -53,7 +54,6 @@ export default function BusinessRow({ business, list = [] }) {
               <FontAwesomeIcon icon={faGear} />
             </Button>
             <Button
-              // active={idx > 1 || list.length >= 2}
               disabled={idx === 0 || list.length < 2}
               className="text-danger"
               onClick={() => {

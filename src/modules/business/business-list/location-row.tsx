@@ -23,6 +23,7 @@ export default function LocationRow({ location, locations, businessId }) {
       .then(() => {
         Toastify('success', 'Location deleted successfully!');
         mutate('/business'); //this is the key of the business
+        setShowConfirmation(false);
       })
       .catch(() => {
         Toastify('error', 'Something went wrong!');

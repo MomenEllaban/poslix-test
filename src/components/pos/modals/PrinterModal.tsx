@@ -26,7 +26,7 @@ console.log(showType,"showType");
   const handleEditprinter = (data: any) => {
     // userdata==id
     api
-      .put('/print-settings/' + userdata.value,{},{params:{...data,location_id:140}} )
+      .put('/print-settings/' + userdata.value,{},{params:{...data,location_id:shopId}} )
       .then((res) => res.data.result)
       .then((res) => {
         Toastify('success', 'Successfully Update');
@@ -38,7 +38,7 @@ console.log(showType,"showType");
 
   const handleAddprinter = (data: any) => {
     console.log(shopId)
-    api.post('/print-settings/', {...data,location_id:140})
+    api.post('/print-settings/', {...data,location_id:shopId})
       .then((res) => res.data.result)
       .then((res) => {
         Toastify('success', 'Successfully Created');
@@ -105,6 +105,7 @@ console.log(showType,"showType");
       <Modal show={open} onHide={handleClose}>
         <Modal.Header className="poslix-modal-title text-primary text-capitalize" closeButton>
           {showType + ' printer'}
+          
         </Modal.Header>
         <Modal.Body>
           <Box sx={{ display: 'flex', justifyContent: 'center', margin: '20px' }}>
@@ -117,6 +118,7 @@ console.log(showType,"showType");
     <Modal show={open} onHide={handleClose}>
       <Modal.Header className="poslix-modal-title text-primary text-capitalize" closeButton>
         {showType + ' printer'}
+        shopId={shopId}
       </Modal.Header>
       <Modal.Body>
         <Form noValidate onSubmit={handleSubmit(onSubmit, onError)}>
@@ -152,7 +154,7 @@ console.log(showType,"showType");
               <SelectField
               label="connection method"
               name="connection"
-              options={[{value: "Method1",label:"Method1"},{value: "Method2",label:"Method2"}]} // Pass the business types options
+              options={[{value: "Wifi",label:"Wifi"},{value: "USB",label:"USB"},{value: "Bluetooth",label:"Bluetooth"}]} // Pass the business types options
               register={register}
               errors={errors}
               required
