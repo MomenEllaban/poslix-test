@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Button, Modal } from 'react-bootstrap';
+import { Button, Modal, Spinner } from 'react-bootstrap';
 
 interface ConfirmationModalProps {
   show: boolean;
   message: string;
+  loading?: boolean;
   onClose: () => void;
   onConfirm: () => void;
 }
@@ -11,6 +12,7 @@ interface ConfirmationModalProps {
 const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   show,
   message,
+  loading = false,
   onClose,
   onConfirm,
 }) => {
@@ -23,10 +25,11 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         <p>{message}</p>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={onClose}>
+        <Button active={!loading} variant="secondary" onClick={onClose}>
           Cancel
         </Button>
-        <Button variant="danger" onClick={onConfirm}>
+        <Button active={!loading} variant="danger" onClick={onConfirm}>
+          {loading && <Spinner size="sm" className="me-2" />}
           Confirm
         </Button>
       </Modal.Footer>
