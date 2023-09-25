@@ -165,9 +165,7 @@ function LocationUpdateForm({ businessId, location }) {
                     <th scope="row"></th>
                     <td>{user.first_name}</td>
                     <td>
-                      {user?.locations[0]?.roles[0] ?
-                        user?.locations[0].roles[0]?.name
-                        : 'No Permissions'}
+                      {user?.locations.filter(loc => loc.id === location.location_id)[0]?.roles[0]?.name ?? 'No Permissions'}
                     </td>
                     <td>
                       <ButtonGroup className="mb-2 m-buttons-style">
