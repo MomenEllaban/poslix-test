@@ -111,8 +111,10 @@ const cartSlice = createSlice({
       cart.cartCostTotal = 0;
       console.log(cart.orderId)
       cart.orderId = null
+      cart.lastTotal = null
 
       localStorage.setItem('cart', JSON.stringify(state));
+      localStorage.removeItem('currentQuotation')
       return state;
     },
     decreaseItemQuantity: (state, action) => {
