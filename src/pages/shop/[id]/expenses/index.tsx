@@ -127,7 +127,7 @@ const Expenses: NextPage = (props: any) => {
       hasEdit: false,
       hasDelete: false,
     };
-    perms.inventory.expenses.map((perm) =>
+    perms[0].permissions.map((perm) =>
       perm.name.includes('expenses/show')
         ? (getPermissions.hasView = true)
         : perm.name.includes('expenses/add')
@@ -139,7 +139,7 @@ const Expenses: NextPage = (props: any) => {
         : null
     );
 
-    perms.inventory['expense-category'].map((perm) =>
+    perms[0].permissions.map((perm) =>
       perm.name.includes('expense-category/show')
       ? (getCatPermissions.hasCategories = true)
       : perm.name.includes('expense-category/show')
@@ -166,7 +166,7 @@ const Expenses: NextPage = (props: any) => {
       }
       const catRes = await findAllData(`expenses-categories/${router.query.id}`);
       if (catRes.data.success) {
-        catPermissions.hasInsert && catRes.data.result.push({ id: 0, name: '', isNew: true });
+        catPermissions?.hasInsert && catRes.data.result.push({ id: 0, name: '', isNew: true });
         setCategories(catRes.data.result);
       }
       setIsLoading(false);
@@ -227,7 +227,7 @@ const Expenses: NextPage = (props: any) => {
   useEffect(() => {
     initDataPage();
     getCategories();
-  }, [router.asPath]);
+  }, [router.asPath, catPermissions]);
 
   const handleDeleteFuc = (result: boolean, msg: string, section: string) => {
     initDataPage();

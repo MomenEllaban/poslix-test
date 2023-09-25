@@ -26,10 +26,10 @@ const AddNewExpeness = (props: any) => {
       const res = await createNewData(`expenses/${router.query.id}`, formObj)
       console.log(res);
       if (res.data.success || res.data.status == 201) {
-        Toastify('success', 'successfully Creat');
+        Toastify('success', 'Successfully created');
         let _rows = [...rows];
         _rows.push({
-          id: res.data.result,
+          id: res.data.error.id,
           name: formObj.name,
           category: formObj.category_id,
           amount: formObj.amount,
