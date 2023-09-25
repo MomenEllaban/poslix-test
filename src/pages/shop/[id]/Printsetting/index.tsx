@@ -40,6 +40,8 @@ const Printers: NextPage = (props: any) => {
   const [show, setShow] = useState(false);
   const [selectId, setSelectId] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [locatiooID, setLocatiooID] = useState(shopId);
+
   const [showType, setShowType] = useState(String);
   const [printer, setPrinter] = useState<{
     value: string;
@@ -49,14 +51,22 @@ const Printers: NextPage = (props: any) => {
   const [printerIsModal, setPrinterIsModal] = useState<boolean>(false);
   async function initDataPage() {
     if (router.query.id) {
+      try{
       const res = await findAllData(`print-settings/${router.query.id}`);
-      console.log(res, 'res');
+      if (res.data.status == 404) {
+        Toastify('error', 'not found');
+        return false ;
+      }
       if (res.data.status !== 200) {
         Toastify('error', 'Somthing wrong!!, try agian');
-        return;
+
+        return false ;
       }
-      console.log(res.data.result, 'object');
       setPrinters([res.data.result]);
+  }catch(e){
+setPrinters([])
+  }
+     
     }
     setIsLoading(false);
   }
@@ -69,7 +79,10 @@ const Printers: NextPage = (props: any) => {
     { field: 'id', headerName: '#', minWidth: 50 },
     { field: 'name', headerName: 'Printer Name', flex: 1 },
     { field: 'ip', headerName: 'IP', flex: 1 },
-    { field: 'status', headerName: 'printer status', flex: 1 },
+    { field: 'status', headerName: 'printer status', flex: 1,renderCell({ row }){
+     
+      return  row.status==1?"on":"off"
+   } },
     { field: 'print_type', headerName: 'Printer Type', flex: 1 },
     { field: 'connection', headerName: 'connection method', flex: 1 },
     {
@@ -122,6 +135,7 @@ const Printers: NextPage = (props: any) => {
 
   useEffect(() => {
     initDataPage();
+    setLocatiooID(router.query.id)
   }, [router.asPath]);
 
   const handleDeleteFuc = (result: boolean, msg: string, section: string) => {
@@ -139,7 +153,7 @@ const Printers: NextPage = (props: any) => {
           alertFun={handleDeleteFuc}
           shopId={shopId}
           id={selectId}
-          url={'printers'}>
+          url={'print-settings'}>
           Are you Sure You Want Delete This printer ?
         </AlertDialog>
         {!isLoading && (
@@ -184,15 +198,14 @@ const Printers: NextPage = (props: any) => {
         )}
       </AdminLayout>
       <PrinterModal
-        shopId={shopId}
+        shopId={locatiooID}
         printersList={printersList}
         id={selectId}
         showType={showType}
         userdata={printer}
         printers={printersList}
         statusDialog={printerIsModal}
-        openDialog={printerModalHandler}
-      />
+        openDialog={printerModalHandler} />
     </>
   );
 };
