@@ -99,8 +99,9 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
       permsArr : permsArr?.filter((loc) => loc.id == shopId);
 
     const getPermissions = { hasPos: false, hasProducts: false, hasPurchases: false, hasTransfers: false,
-      hasSuppliers: true, hasExpenses: false, hasPricingGroups: false, hasCustomers: false, hasSalesList: false,
-      hasQuotations: false, hasCategories: false, hasBrands: false, hasTaxes: false, hasAppearance: false};
+      hasSuppliers: false, hasExpenses: false, hasPricingGroups: false, hasCustomers: false, hasSalesList: false,
+      hasQuotations: false, hasCategories: false, hasBrands: false, hasTaxes: false, hasAppearance: false,
+      hasRegisterReport: false, hasSalesReport: false, hasItemsReport: false, hasStockReport: false };
     
     perms[0]?.permissions?.map((perm) =>
       perm.name === 'products/view' ? (getPermissions.hasProducts = true)
@@ -108,6 +109,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
       : perm.name === 'transfers/view' ? (getPermissions.hasTransfers = true)
       : perm.name === 'expenses/view' ? (getPermissions.hasExpenses = true)
       : perm.name === 'customers/view' ? (getPermissions.hasCustomers = true)
+      : perm.name === 'suppliers/view' ? (getPermissions.hasSuppliers = true)
       : perm.name === 'open/register' ? (getPermissions.hasPos = true)
       : perm.name === 'categories/view' ? (getPermissions.hasCategories = true)
       : perm.name === 'brands/view' ? (getPermissions.hasBrands = true)
@@ -116,6 +118,10 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
       : perm.name === 'pricinggroup/view' ? (getPermissions.hasPricingGroups = true)
       : perm.name === 'sales-list/view' ? (getPermissions.hasSalesList = true)
       : perm.name === 'quotations-list/view' ? (getPermissions.hasQuotations = true)
+      : perm.name === 'open-close' ? (getPermissions.hasRegisterReport = true)
+      : perm.name === 'sales' ? (getPermissions.hasSalesReport = true)
+      : perm.name === 'item-sales' ? (getPermissions.hasItemsReport = true)
+      : perm.name === 'stock' ? (getPermissions.hasStockReport = true)
       : null
     );
     
@@ -252,7 +258,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
 
       {(permissions.hasTaxes || permissions.hasDiscount || permissions.hasExpenses) && (
         <SidebarNavGroup toggleIcon="TbReportSearch" toggleText="Report">
-          {permissions.hasRegister && (
+          {permissions.hasRegisterReport && (
             <SidebarNavItem
               href={'/shop/' + shopId + '/reports/register'}
               sub={true}
@@ -261,7 +267,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
             </SidebarNavItem>
           )}
 
-          {permissions.hasItemSales && (
+          {permissions.hasSalesReport && (
             <SidebarNavItem
               href={'/shop/' + shopId + '/reports/SalesReport'}
               sub={true}
@@ -270,7 +276,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
             </SidebarNavItem>
           )}
           {/* Eslam 20  */}
-          {permissions.hasItemSales && (
+          {permissions.hasItemsReport && (
             <SidebarNavItem
               href={'/shop/' + shopId + '/reports/ItemsReport'}
               sub={true}
@@ -278,7 +284,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
               Items Report{' '}
             </SidebarNavItem>
           )}
-          {permissions.hasItemSales && (
+          {permissions.hasStockReport && (
             <SidebarNavItem
               href={'/shop/' + shopId + '/reports/StockReport'}
               sub={true}

@@ -55,7 +55,6 @@ const AddNewRole = (props: any) => {
   const [permissions, setPermissions] = useState([])
   const initPageData = async () => {
     const res = await findAllData('permissions');
-    console.log('role slug page', res.data.result);
     let finalRes: any = {}
     Object.keys(res.data.result).forEach(field => {
       let currentField: any = []
@@ -65,7 +64,6 @@ const AddNewRole = (props: any) => {
         else if(Array.isArray(res.data.result[field][role])){
           if(currentField.length > 0) {
             finalRes = {...finalRes, [field]: {...finalRes[field], others: [...currentField]}}
-            console.log('currentField',currentField, finalRes);
           }
           finalRes = {...finalRes, [field]: {...finalRes[field], [role]: [...res.data.result[field][role]]}}
         }
@@ -73,8 +71,6 @@ const AddNewRole = (props: any) => {
       })
     })
     delete finalRes.tailoring
-    console.log(finalRes);
-    
     setFields(finalRes)
   }
 
