@@ -227,7 +227,6 @@ const Product: NextPage = (props: any) => {
       if (url?.length == 2) setIsEdit(true);
       if (url?.length == 2) {
         const res = await findAllData(`products/${url[1]}/show`);
-        console.log(res.data.result);
 
         setSelectedProducts(res.data.result);
         // setSelectedFabrics(newdata.selectedFabrics);
@@ -373,7 +372,7 @@ const Product: NextPage = (props: any) => {
   async function editProduct(url = '') {
     const { productName2, tax_id, ...form } = formObjRef.current as TFormObject;
     const _form = formObjRef.current;
-    console.log(formObjRef.current);
+
     const _data =
       // : IPayload
       {
@@ -406,7 +405,7 @@ const Product: NextPage = (props: any) => {
       const res = await updateData('products', router.query.slug[1], _data);
       Toastify('success', 'Product updated successfully!');
     } catch (e) {
-      console.log(e.response.data.error);
+      console.warn(e.response.data.error);
       Toastify('error', 'Something went wrong, please check your inputs!');
     } finally {
     }
