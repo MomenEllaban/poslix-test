@@ -1,6 +1,6 @@
 import { ITax } from '@models/pos.types';
 import EditIcon from '@mui/icons-material/Edit';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useUser } from 'src/context/UserContext';
 import { useAppDispatch, useAppSelector } from 'src/hooks';
 import { selectCartByLocation, setCartTax } from 'src/redux/slices/cart.slice';
@@ -29,19 +29,17 @@ export const OrderCalcs = ({
 
   const [isDiscountModalOpen, setIsDiscountModalOpen] = useState(false);
 
-  useTaxesList(shopId, {
-    onSuccess(data) {
-      const _tax: ITax = data?.result?.taxes?.find((tax: ITax) => tax?.is_primary === 1);
-      console.log(_tax);
-      dispatch(
-        setCartTax({ tax: _tax?.amount ?? 0, location_id: shopId, type: _tax?.type ?? 'fixed' })
-      );
-    },
-    onError() {
-      console.log('error');
-      
-    }
-  });
+  const [taxList, setTaxList] = useState<any>()
+  const { taxesList } = useTaxesList(shopId);
+  useEffect(() => {
+    setTaxList(taxesList?.taxes)
+    console.log(taxesList)
+    const _tax: ITax = taxesList?.taxes?.find((tax: ITax) => tax?.is_primary === 1);
+    console.log(_tax);
+    dispatch(
+      setCartTax({ tax: _tax?.amount ?? 0, location_id: shopId, type: _tax?.type ?? 'fixed' })
+    );
+  }, [taxesList])
 
   const totalDiscount =
     cart?.cartDiscountType === 'percentage'
@@ -117,7 +115,7 @@ export const OrderCalcs = ({
           </div>
         </div>
 
-        {orderEditDetails?.isEdit &&
+        {cart?.orderId &&
           +(
             __WithDiscountFeature__total +
             (totalAmount - totalNoTax) -
@@ -131,10 +129,8 @@ export const OrderCalcs = ({
               <div className="py-1 calcs-details-col">
                 <div>Difference</div>
                 <div>
-                  {(
-                    __WithDiscountFeature__total +
-                    (totalAmount - totalNoTax) -
-                    orderEditDetails?.total_price
+                  {(+totalAmount -
+                    cart.lastTotal
                   ).toFixed(locationSettings?.location_decimal_places)}{' '}
                   <span style={{ fontSize: '10px' }}>{locationSettings?.currency_code}</span>
                 </div>

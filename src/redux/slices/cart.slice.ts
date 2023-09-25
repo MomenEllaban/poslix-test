@@ -24,6 +24,7 @@ export interface ICart {
     note: string;
   }[];
   orderId?: number | null;
+  lastTotal?: any;
 }
 
 const initialState: ICart[] = [];
@@ -130,9 +131,10 @@ const cartSlice = createSlice({
       }
     },
     addMultipleToCart: (state, action) => {
-      const { location_id, products, orderId, customerId } = action.payload;
+      const { location_id, products, orderId, customerId, lastTotal } = action.payload;
       const cart = findOrCreateCart(state, location_id);   
       cart.orderId = orderId
+      cart.lastTotal = lastTotal
       cart.customer_id = customerId
       products.map((prod) => {
         const existingItem = cart.cartItems.find((item) => item.id === prod.id);

@@ -121,7 +121,8 @@ export default function SalesListTable({ shopId, rules, salesList }: any) {
                 });
                 const res = await findAllData(`sales/${row.id}`)
                 dispatch(addMultipleToCart({
-                  location_id: router.query.id, products: res.data.result.products, orderId: row.id, customerId: row.contact_id
+                  location_id: router.query.id, products: res.data.result.products,
+                  orderId: row.id, customerId: row.contact_id, lastTotal: row.sub_total
                 }));
                 router.push('/pos/' + router.query.id);
               }}>

@@ -174,7 +174,7 @@ const posService = {
 
   /*******************/
   getTaxes: async (location_id: string | number) =>
-    api.get<any, TServiceResponse<ITaxes>, any>(`/taxes/${location_id}`).then((data) => data.data),
+    api.get<any, TServiceResponse<any>, any>(`/taxes/${location_id}`).then((data) => data.data),
   getTax: async (id: string) =>
     api
       .get<any, TServiceResponse<{ tax: ITax }>, any>(`/taxes/${id}/show`)
@@ -453,7 +453,7 @@ export const useGetBrand = (id: string, config?: SWRConfiguration) => {
 };
 
 export const useTaxesList = (location_id: string | number, config?: SWRConfiguration) => {
-  const { data, error, isLoading, mutate } = useSWR(
+  const { data, error, isLoading, mutate, } = useSWR(
     config?.suspense ? null : `/taxes/${location_id}`,
     () => posService.getTaxes(location_id),
     { ...config }
