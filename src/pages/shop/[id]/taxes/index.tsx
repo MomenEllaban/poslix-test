@@ -48,7 +48,7 @@ const Taxes: NextPage = (props: any) => {
   const [taxesGroup, setTaxesGroup] = useState<ITax[]>([]);
   const [show, setShow] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
-  const [itemDetails, setItemDetails] = useState<ITax[]>([]);
+  const [itemDetails, setItemDetails] = useState<any>([]);
   const [groupModal, setGroupModal] = useState(false);
   const [selectId, setSelectId] = useState(0);
   const [selectType, setSelectType] = useState('');
