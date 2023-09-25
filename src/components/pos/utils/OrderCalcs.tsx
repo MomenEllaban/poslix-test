@@ -37,6 +37,10 @@ export const OrderCalcs = ({
         setCartTax({ tax: _tax?.amount ?? 0, location_id: shopId, type: _tax?.type ?? 'fixed' })
       );
     },
+    onError() {
+      console.log('error');
+      
+    }
   });
 
   const totalDiscount =
