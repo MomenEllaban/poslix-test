@@ -13,6 +13,8 @@ const VariationModal = (props: any) => {
     setIsOpenVariationDialog,
     variations,
   } = props;
+  console.log(variations)
+
   const [, setJobType] = useRecoilState(cartJobType);
   const style = {
     minWidth: '500px',
@@ -37,7 +39,6 @@ const VariationModal = (props: any) => {
               <div className="packitems-container">
                 {variations &&
                   variations
-                    .filter((vt: any) => vt.product_id == selectedProductForVariation.product_id)
                     .map((vr: any, idx: number) => {
                       console.log(vr);
                       return (
@@ -45,18 +46,18 @@ const VariationModal = (props: any) => {
                           key={idx}
                           className="packitems-var"
                           onClick={() => {
-                            handleClick(vr.variation_id);
+                            handleClick(vr.id);
                           }}>
                           <div className="var-name">{vr.name}</div>
                           <div className="var-price">
                             {vr.total_qty > 0
                               ? Number(vr.price).toFixed(3)
-                              : Number(vr.variation_price).toFixed(3)}{' '}
+                              : Number(vr.price).toFixed(3)}{' '}
                             {locationSettings?.currency_code}
                           </div>
-                          <div className="var-remaining-qty">
+                          {/* <div className="var-remaining-qty">
                             {Number(vr.total_qty).toFixed(0)} Remaining
-                          </div>
+                          </div> */}
                           <div className="item-icons">
                             {vr.sell_over_stock == 1 && (
                               <div className="inner-icon">

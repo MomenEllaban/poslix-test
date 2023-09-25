@@ -52,8 +52,8 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
   const router = useRouter();
   const formObjRef = useRef<any>();
 
-  const [suppliers, setSuppliers] = useState<{ value: number; label: string }[]>([
-    { value: 0, label: 'walk in supplier' },
+  const [suppliers, setSuppliers] = useState<any[]>([
+    { supplier_id: 0, id: 0, value: 0, label: 'walk in supplier' },
   ]);
 
   const [currencies, setCurrencies] = useState<
@@ -66,7 +66,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
     {
       onSuccess: (data) => {
         const _suppliers = data.map((item) => ({ ...item, label: item.name, value: item.id }));
-        setSuppliers([{ value: 0, label: 'walk in supplier' }, ..._suppliers]);
+        setSuppliers([{ supplier_id: 0, id: 0, value: 0, label: 'walk in supplier' }, ..._suppliers]);
       },
     }
   );
@@ -157,7 +157,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
       // setSuppliers([...itm?.suppliers, { label: 'Walk-in Supplier', value: 1 }]);
       setCurrencies(itm?.currencies);
       setExpends(itm?.expenses);
-      setAllVariations(itm?.allVariations);
+      setAllVariations(itm?.variations);
       if (itm?.purchase?.length > 0) {
         if (itm?.selected_lines.length > 0) {
           var _rows: any = [],
@@ -250,30 +250,27 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
       location_id: +shopId, //  "required|numeric",
       status: formObj.purchaseStatus, //  "required|string:in:draft,partially_received,processing,received,cancelled",
       payment_status: formObj.paymentStatus, //  "required|string:in:credit,partially_paid,paid,due",
-      supplier_id: formObj.supplier_id,
+      supplier_id: formObj.supplier_id ?? 0,
       payment_type: formObj.paymentType,
-      cart: [...selectProducts.map((item) => ({ ...item, qty: item.quantity }))],
+      currency_id: formObj.currency_id,
+      cart: [...selectProducts.map((item) => ({ ...item, qty: item.quantity, note: "" }))],
+      expense: {
+        amount: null,
+        category: {
+          id: 35
+        }
+      },
+      notes: ""
     };
-    console.log(formObj);
-    api.post(`/purchase/${shopId}`, data);
-
-    // const { success } = await apiInsertCtr({
-    //   type: 'transactions',
-    //   subType: 'addPurchase',
-    //   shopId,
-    //   data: {
-    //     totalOrder: formObjRef.current,
-    //     lines: selectProducts,
-    //     expenses: selectedExpends,
-    //     taxes: selectedTaxes,
-    //   },
-    // });
-    // if (!success) {
-    //   alert('Has Error ,try Again');
-    //   return;
-    // }
-    // Toastify('success', 'Purchase Successfully Created..');
-    // router.push('/shop/' + shopId + '/purchases');
+    api.post(`/purchase/${shopId}`, data)
+    .then((res) => {
+      if (!res.data.success) {
+        alert('Has Error ,try Again');
+        return;
+      }
+      Toastify('success', 'Purchase Successfully Created..');
+      router.push('/shop/' + shopId + '/purchases');
+    });
   }
   async function editPurchase() {
     const { success } = await apiUpdateCtr({
@@ -516,20 +513,20 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
   useEffect(() => {
     if (jobType.req == 4) {
       allVariations.map((varItm: any, index: number) => {
-        if (varItm.variation_id == jobType.val) {
-          const found = selectProducts.some((el) => el.variation_id == varItm.variation_id);
+        if (varItm.id == jobType.val) {
+          const found = selectProducts.some((el) => el.id == varItm.id);
           if (!found) {
             setSelectProducts([
               ...selectProducts,
               {
                 id: +Number(varItm.product_id) + Math.floor(Math.random() * 1200),
-                product_id: varItm.product_id,
-                variation_id: varItm.variation_id,
+                product_id: varItm.parent_id,
+                variation_id: varItm.id,
                 name: selectedProductForVariation.product_name + ' ' + varItm.name,
                 quantity: 1,
-                price: varItm.variation_price,
-                cost: varItm.variation_cost,
-                lineTotal: parseFloat(varItm.variation_cost),
+                price: varItm.price,
+                cost: varItm.cost,
+                lineTotal: parseFloat(varItm.cost),
                 taxAmount: 0,
                 costType: 0,
                 isNew: true,
@@ -550,6 +547,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
         is_service: 0,
         product_name: e.name,
       });
+      setAllVariations(e.variations)
       setIsOpenVariationDialog(true);
       return;
     }
@@ -1161,7 +1159,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                 onClick={(e) => {
                   e.preventDefault();
                   errors = [];
-                  if (formObj.supplier_id == 0) errors.push('supplier id');
+                  if (formObj.supplier_id < 0) errors.push('supplier id');
                   if (selectProducts.length == 0) errors.push('selected products');
                   if (formObj.purchaseStatus.length <= 2) errors.push('purchaseStatus less than 2');
                   if (formObj.purchaseStatus != 'draft') {
