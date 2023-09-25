@@ -34,37 +34,9 @@ import { createNewData, findAllData, updateData } from 'src/services/crud.api';
 import storage from '../../../../../firebaseConfig';
 import NotifiModal from '../../../../components/utils/NotifiModal';
 import { apiDeleteCtr } from '../../../../libs/dbUtils';
+import { productDetailsColourStyles } from 'src/modules/products/styles';
 
-const colourStyles = {
-  control: (style: any, state: any) => ({
-    ...style,
-    borderRadius: '10px',
-    background: '#f5f5f5',
-    height: '50px',
-    borderColor: state.isFocused ? '2px solid #045c54' : '#eaeaea',
-    boxShadow: 'none',
-    '&:hover': {
-      border: '2px solid #045c54 ',
-    },
-  }),
-  menu: (provided: any, state: any) => ({
-    ...provided,
-    borderRadius: '10px',
-    padding: '10px',
-    border: '1px solid #c9ced2',
-  }),
-  option: (provided: any, state: any) => ({
-    ...provided,
-    backgroundColor: state.isSelected ? '#e6efee' : 'white',
-    color: '#2e776f',
-    borderRadius: '10px',
-    '&:hover': {
-      backgroundColor: '#e6efee',
-      color: '#2e776f',
-      borderRadius: '10px',
-    },
-  }),
-};
+const colourStyles = productDetailsColourStyles;
 
 const initialFormObject: TFormObject = {
   id: 0,
@@ -92,9 +64,7 @@ const initialFormObject: TFormObject = {
   tailoringPrices: [{ name: '', from: 0, to: 0, price: 0 }],
 };
 
-const Product: NextPage = (props: any) => {
-  const { editId, iType } = props;
-
+const Product: NextPage = ({ editId, iType }: any) => {
   const [formObj, setFormObj] = useState<any>(initialFormObject);
   const [img, setImg] = useState<any>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
