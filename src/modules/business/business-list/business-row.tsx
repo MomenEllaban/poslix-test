@@ -20,7 +20,6 @@ export default function BusinessRow({ business, list = [] }) {
   const userId = user?.id;
 
   const idx = list.findIndex((item) => item.id === business.id);
-  console.log(idx);
 
   const handleDeleteBusiness = () => {
     setLoading(true);
