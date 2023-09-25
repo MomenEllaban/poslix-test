@@ -25,6 +25,7 @@ export interface ICart {
   }[];
   orderId?: number | null;
   lastTotal?: any;
+  lastDue?: any;
 }
 
 const initialState: ICart[] = [];
@@ -112,6 +113,7 @@ const cartSlice = createSlice({
       console.log(cart.orderId)
       cart.orderId = null
       cart.lastTotal = null
+      cart.lastDue = null
 
       localStorage.setItem('cart', JSON.stringify(state));
       localStorage.removeItem('currentQuotation')
@@ -133,11 +135,13 @@ const cartSlice = createSlice({
       }
     },
     addMultipleToCart: (state, action) => {
-      const { location_id, products, orderId, customerId, lastTotal } = action.payload;
+      const { location_id, products, orderId, customerId, lastTotal, lastDue } = action.payload;
       const cart = findOrCreateCart(state, location_id);   
       cart.orderId = orderId
       cart.lastTotal = lastTotal
+      cart.lastDue = lastDue
       cart.customer_id = customerId
+      console.log(orderId)
       products.map((prod) => {
         const existingItem = cart.cartItems.find((item) => item.id === prod.id);
         if (existingItem) {

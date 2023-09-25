@@ -69,7 +69,8 @@ export default function OrdersTable({ lang, shopId, searchQuery = '', closeModal
                   const res = await findAllData(`sales/${item.id}`)
                   dispatch(addMultipleToCart({
                     location_id: shopId, products: res.data.result.products,
-                    orderId: item.id, customerId: item.contact_id, lastTotal: item.sub_total
+                    orderId: item.id, customerId: item.contact_id, lastTotal: item.sub_total,
+                    lastDue: +item.due
                   }));
                   closeModal()
                 }}>

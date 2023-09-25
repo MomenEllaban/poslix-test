@@ -64,7 +64,12 @@ export default function PaymentCheckoutModal({
       : +(cart?.cartTax ?? 0);
 
   const totalNoTax = +(cart?.cartSellTotal ?? 0) + +(cart?.shipping ?? 0);
-  const totalAmount = totalNoTax + totalTax - totalDiscount;
+  const [totalAmount, setTotalAmount] = useState<any>(totalNoTax + totalTax - totalDiscount)
+  
+  useEffect(() => {
+    if(cart?.orderId > 0)
+    setTotalAmount(totalNoTax + totalTax - totalDiscount - +cart.lastTotal + +cart.lastDue)
+  }, [cart?.orderId])
 
   useEffect(() => {
     setValue(`payment.0.amount`, totalAmount.toString());
@@ -126,8 +131,6 @@ export default function PaymentCheckoutModal({
     api
       .post('/checkout', checkoutData)
       .then((res) => {
-        console.log(res.data);
-        console.log(res.data.result.payment);
         setPrintReceipt(res.data.result);
         setPrint(true);
         setShow(false);
@@ -354,7 +357,7 @@ export default function PaymentCheckoutModal({
                     Sub Total
                   </td>
                   <td>
-                    {Number(__WithDiscountFeature__total + +printReceipt?.total_price).toFixed(
+                    {Number(+printReceipt?.total_price - +printReceipt?.discount_amount).toFixed(
                       locationSettings?.location_decimal_places
                     )}
                   </td>
@@ -364,7 +367,7 @@ export default function PaymentCheckoutModal({
                     Total
                   </td>
                   <td className="txt_bold_invoice">
-                    {Number(__WithDiscountFeature__total + +printReceipt?.total_price).toFixed(
+                    {Number(+printReceipt?.total_price - +printReceipt?.discount_amount).toFixed(
                       locationSettings?.location_decimal_places
                     )}
                   </td>
@@ -437,34 +440,43 @@ export default function PaymentCheckoutModal({
                 <h5 className="fw-bold">
                   <span style={{ width: '6rem', display: 'inline-block' }}>Amount: </span>
                   <span>
-                    {totalNoTax?.toFixed(locationSettings?.location_decimal_places) ?? ''}{' '}
+                    {cart?.orderId ? totalNoTax - cart.lastTotal : totalNoTax?.toFixed(locationSettings?.location_decimal_places) ?? ''}{' '}
                   </span>
-                  <span>{locationSettings?.currency_name ?? ''}</span>
+                  <span>{locationSettings?.currency_code ?? ''}</span>
                 </h5>
                 <h6 className="fw-normal">
                   <span style={{ width: '6rem', display: 'inline-block' }}>Taxes: </span>+{' '}
                   <span>{totalTax?.toFixed(locationSettings?.location_decimal_places) ?? ''} </span>
-                  <span>{locationSettings?.currency_name ?? ''}</span>
+                  <span>{locationSettings?.currency_code ?? ''}</span>
                 </h6>
                 <h6 className="fw-normal">
                   <span style={{ width: '6rem', display: 'inline-block' }}>Discount:</span>-{' '}
                   <span>
                     {totalDiscount?.toFixed(locationSettings?.location_decimal_places) ?? ''}{' '}
                   </span>
-                  <span>{locationSettings?.currency_name ?? ''}</span>
+                  <span>{locationSettings?.currency_code ?? ''}</span>
                 </h6>
+                {cart?.orderId && 
+                  <h6 className="fw-normal">
+                    <span style={{ width: '6rem', display: 'inline-block' }}>Old: </span>+{' '}
+                    <span>
+                      {cart.lastDue?.toFixed(locationSettings?.location_decimal_places) ?? ''}{' '}
+                    </span>
+                    <span>{locationSettings?.currency_code ?? ''}</span>
+                  </h6>
+                }
                 <h6 className="fw-semibold">
                   <span style={{ width: '6rem', display: 'inline-block' }}>Total: </span>
                   <span>
                     {totalAmount?.toFixed(locationSettings?.location_decimal_places) ?? ''}{' '}
                   </span>
-                  <span>{locationSettings?.currency_name ?? ''}</span>
+                  <span>{locationSettings?.currency_code ?? ''}</span>
                 </h6>
               </Row>
             </Stack>
             <Form
               noValidate
-              hidden={cart?.cartItems?.length === 0 || !locationSettings?.currency_name}
+              hidden={cart?.cartItems?.length === 0 || !locationSettings?.currency_code}
               onSubmit={handleSubmit(onSubmit)}
               id="hook-form">
               <Row>
@@ -610,7 +622,7 @@ export default function PaymentCheckoutModal({
           <div
             style={{
               display:
-                cart?.cartItems?.length === 0 || !locationSettings?.currency_name
+                cart?.cartItems?.length === 0 || !locationSettings?.currency_code
                   ? 'hidden'
                   : 'flex',
               gap: '1rem',

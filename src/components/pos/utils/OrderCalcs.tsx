@@ -25,7 +25,7 @@ export const OrderCalcs = ({
   const { locationSettings } = useUser();
 
   const selectCartForLocation = selectCartByLocation(shopId);
-  const cart = useAppSelector(selectCartForLocation); // current location order  
+  const cart = useAppSelector(selectCartForLocation);
 
   const [isDiscountModalOpen, setIsDiscountModalOpen] = useState(false);
 
@@ -33,9 +33,7 @@ export const OrderCalcs = ({
   const { taxesList } = useTaxesList(shopId);
   useEffect(() => {
     setTaxList(taxesList?.taxes)
-    console.log(taxesList)
     const _tax: ITax = taxesList?.taxes?.find((tax: ITax) => tax?.is_primary === 1);
-    console.log(_tax);
     dispatch(
       setCartTax({ tax: _tax?.amount ?? 0, location_id: shopId, type: _tax?.type ?? 'fixed' })
     );
@@ -116,11 +114,6 @@ export const OrderCalcs = ({
         </div>
 
         {cart?.orderId &&
-          +(
-            __WithDiscountFeature__total +
-            (totalAmount - totalNoTax) -
-            orderEditDetails?.total_price
-          ).toFixed(locationSettings?.location_decimal_places) != 0 && (
             <div className="calcs-details-row">
               <div className="py-1 calcs-details-col">
                 <div></div>
@@ -128,16 +121,13 @@ export const OrderCalcs = ({
               </div>
               <div className="py-1 calcs-details-col">
                 <div>{lang.cartComponent.difference}</div>
-                <div>
-                  {(+totalAmount -
-                    cart.lastTotal
-                  ).toFixed(locationSettings?.location_decimal_places)}{' '}
+                <div>{(+totalAmount - +cart.lastTotal + +cart.lastDue)
+                  .toFixed(locationSettings?.location_decimal_places)}{' '}
                   <span style={{ fontSize: '10px' }}>{locationSettings?.currency_code}</span>
                 </div>
               </div>
             </div>
-          )}
-
+          }
         <EditDiscountModal
           shopId={shopId}
           show={isDiscountModalOpen}
