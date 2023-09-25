@@ -43,6 +43,7 @@ export default function SalesListTable({ shopId, rules, salesList }: any) {
   const [selectRow, setSelectRow] = useState<any>({});
   const [, setJobType] = useRecoilState(cartJobType);
   const [lines, setLines] = useState<any>([]);
+  const [salesRep, setSalesRep] = useState<any>([]);
 
   const [show, setShow] = useState(false);
   const [edit, setEdit] = useState(false);
@@ -462,6 +463,7 @@ export default function SalesListTable({ shopId, rules, salesList }: any) {
     setIsLoadItems(true);
     const res = await findAllData(`sales/${id}`);
     if (res.data.success) {
+      setSalesRep(res.data.result)
       setLines(res.data.result.products);
       setIsLoadItems(false);
     }
@@ -608,10 +610,10 @@ export default function SalesListTable({ shopId, rules, salesList }: any) {
                       <input
                         type="text"
                         className="form-control"
-                        value={convertDateStringToDateAndTime(selectRow.date)}
+                        value={new Date(salesRep?.created_at).toLocaleString()}
                       />
                     ) : (
-                      <p>{convertDateStringToDateAndTime(selectRow.date)}</p>
+                      <p>{new Date(salesRep?.created_at).toLocaleString()}</p>
                     )}
                   </div>
                   <div className="top-detials-item pe-2">
@@ -704,7 +706,7 @@ export default function SalesListTable({ shopId, rules, salesList }: any) {
                             )}
                           </div>
                           <div>
-                            {Number(+line.pivot.qty * +line.pivot.price).toFixed(
+                            {Number(+line.pivot.price).toFixed(
                               locationSettings?.location_decimal_places
                             )}
                           </div>

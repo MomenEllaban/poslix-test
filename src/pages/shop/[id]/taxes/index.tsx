@@ -227,17 +227,13 @@ const Taxes: NextPage = (props: any) => {
   async function showDetailsHandle(id: number) {
     setSelectId(id);
     setIsLoadingDetails(true);
-    const { success, newdata } = await apiFetchCtr({
-      fetch: 'taxes',
-      subType: 'getGroupItems',
-      id,
-      shopId,
-    });
-    if (!success) {
+    const res = await findAllData(`taxes/${id}/show`)
+    if (!res.data.success) {
       Toastify('error', 'Has Error ,try Again');
       return;
     }
-    setItemDetails(newdata);
+    console.log(res.data.result.tax)
+    setItemDetails(res.data.result.tax);
     setIsLoadingDetails(false);
     setShowDetails(true);
   }
@@ -332,7 +328,7 @@ const Taxes: NextPage = (props: any) => {
             </thead>
             <tbody>
               {!isLoadingDetails &&
-                itemDetails.map((ex: any, i: number) => {
+                itemDetails?.tax_group?.map((ex: any, i: number) => {
                   return (
                     <tr key={i}>
                       <td>{ex.name}</td>
