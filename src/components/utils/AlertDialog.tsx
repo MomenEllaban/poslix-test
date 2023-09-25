@@ -6,8 +6,9 @@ import { deleteData } from 'src/services/crud.api';
 
 export default function AlertDialog(props: any) {
     const { url, id, shopId, type, subType, section } = props
+    console.log(url,"api/print-settings/1")
     const handleClose = () => props.alertFun(false, '');
-    async function deleteProd() {
+    async function deletePrint() {
         const res = await deleteData(url, id)
         console.log(res.data.result.status);
         
@@ -18,7 +19,7 @@ export default function AlertDialog(props: any) {
 
     }
     const actionHandle = () => {
-        deleteProd();
+        deletePrint();
     }
     return (
         <>
