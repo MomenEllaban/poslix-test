@@ -1,21 +1,20 @@
+import { faArrowAltCircleLeft, faEdit } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { type IUserBusiness } from '@models/auth.types';
+import { Button } from '@mui/material';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { ButtonGroup, Card, Form, Table, Tabs } from 'react-bootstrap';
 import Tab from 'react-bootstrap/Tab';
 import { useForm } from 'react-hook-form';
-import FormField from 'src/components/form/FormField';
-import styles from './business-settings.module.scss';
-import UpdateBusinessSettings from 'src/pages/[username]/business/[id]/settings';
-import businessService, { useCurrenciesList } from 'src/services/business.service';
-import { Toastify } from 'src/libs/allToasts';
-import { useSWRConfig } from 'swr';
-import SelectField from 'src/components/form/SelectField';
-import { createNewData, findAllData } from 'src/services/crud.api';
-import { Button } from '@mui/material';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowAltCircleLeft, faEdit } from '@fortawesome/free-solid-svg-icons';
 import Select from 'react-select';
+import FormField from 'src/components/form/FormField';
+import SelectField from 'src/components/form/SelectField';
+import { Toastify } from 'src/libs/allToasts';
+import businessService, { useCurrenciesList } from 'src/services/business.service';
+import { createNewData, findAllData } from 'src/services/crud.api';
+import { useSWRConfig } from 'swr';
+import styles from './business-settings.module.scss';
 
 function LocationUpdateForm({ businessId, location }) {
   const [showAddUser, setShowAddUser] = useState(false);
@@ -34,24 +33,24 @@ function LocationUpdateForm({ businessId, location }) {
     },
   });
 
-  const [users, setUsers] = useState<any>([])
-  const [roles, setRoles] = useState<any>([])
+  const [users, setUsers] = useState<any>([]);
+  const [roles, setRoles] = useState<any>([]);
   const initPageData = async () => {
-    const usersRes = await findAllData('users')
+    const usersRes = await findAllData('users');
     const newUsers = usersRes.data.result.map((user) => {
-      return {...user, label: user.first_name, value: user.id}
-    })
-    setUsers([...newUsers])
-    const rolesRes = await findAllData('roles/get')
+      return { ...user, label: user.first_name, value: user.id };
+    });
+    setUsers([...newUsers]);
+    const rolesRes = await findAllData('roles/get');
     const newRoles = rolesRes.data.result.map((role) => {
-      return {...role, label: role.name, value: role.id}
-    })
-    setRoles([...newRoles])
-  }
+      return { ...role, label: role.name, value: role.id };
+    });
+    setRoles([...newRoles]);
+  };
 
   useEffect(() => {
-    initPageData()
-  }, [])
+    initPageData();
+  }, []);
 
   const {
     register: locationRegister,
@@ -87,129 +86,137 @@ function LocationUpdateForm({ businessId, location }) {
 
   const asignRoleToUser = async () => {
     console.log('hello', selectedUserId, selectedRoles, location);
-    const res = await createNewData('roles/assign', {user_id: selectedUserId, role_id: selectedRoles[0].value, location_id: location.location_id})
-    if(res.data.success) {
+    const res = await createNewData('roles/assign', {
+      user_id: selectedUserId,
+      role_id: selectedRoles[0].value,
+      location_id: location.location_id,
+    });
+    if (res.data.success) {
       Toastify('success', 'Updated sucessfully');
       setShowAddUser(false);
     } else {
       Toastify('error', 'Has Error ,try Again');
     }
-  }
+  };
   const onLocationError = (errors: any, e: any) => console.error(errors, e);
   return (
     <>
-      {!showAddUser &&  <>
-        <Form
-          key={`${location.location_id}-form--location`}
-          noValidate
-          onSubmit={handleLocationSubmit(onLocationSubmit, onLocationError)}
-          className={styles.form}>
-          <FormField
-            required
-            name="name"
-            type="text"
-            label="Location Name"
-            placeholder="Enter Location Name"
-            errors={locationErrors}
-            register={locationRegister}
-          />
-          <SelectField
-            label="Currency"
-            name="currency_id"
-            options={currenciesList}
-            register={locationRegister}
-            errors={locationErrors}
-            required
-            loading={currenciesLoading}
-          />
-          <FormField
-            required
-            name="decimal"
-            type="number"
-            label="Decimal Places"
-            placeholder="Enter Decimal Places"
-            errors={locationErrors}
-            register={locationRegister}
-          />
+      {!showAddUser && (
+        <>
+          <Form
+            key={`${location.location_id}-form--location`}
+            noValidate
+            onSubmit={handleLocationSubmit(onLocationSubmit, onLocationError)}
+            className={styles.form}>
+            <FormField
+              required
+              name="name"
+              type="text"
+              label="Location Name"
+              placeholder="Enter Location Name"
+              errors={locationErrors}
+              register={locationRegister}
+            />
+            <SelectField
+              label="Currency"
+              name="currency_id"
+              options={currenciesList}
+              register={locationRegister}
+              errors={locationErrors}
+              required
+              loading={currenciesLoading}
+            />
+            <FormField
+              required
+              name="decimal"
+              type="number"
+              label="Decimal Places"
+              placeholder="Enter Decimal Places"
+              errors={locationErrors}
+              register={locationRegister}
+            />
 
-          <button className="btn-login mt-auto" type="submit" disabled={loading}>
-            {!!loading && (
-              <Image
-                alt="loading"
-                width={25}
-                height={25}
-                className="login-loading"
-                src={'/images/loading.gif'}
-              />
-            )}
-            Update Location Settings
-          </button>
-        </Form>
-        <div className="row">
-          <h4>User Stuff</h4>
-          <br />
-          <br />
-          <Table className="">
-            <thead className="thead-dark">
-              <tr>
-                <th style={{ width: '6%' }}>#</th>
-                <th>User Name</th>
-                <th>Roles</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.length > 0 && users.map((user, i) => {
-                return (
-                  <tr key={i}>
-                    <th scope="row"></th>
-                    <td>{user.first_name}</td>
-                    <td>
-                      {user?.locations.filter(loc => loc.id === location.location_id)[0]?.roles[0]?.name ?? 'No Permissions'}
-                    </td>
-                    <td>
-                      <ButtonGroup className="mb-2 m-buttons-style">
-                        <Button
-                          onClick={() => {
-                            // var _rows = pages;
-                            var isNew = user.roles ? false : true
-                            //   businessUsers.findIndex(
-                            //     (ee) =>
-                            //       ee.value == user.value && ee.locationId == shopId
-                            //   ) > -1;
-                            // var _stuf = (
-                            //   businessUsers.find(
-                            //     (ee) =>
-                            //       ee.value == user.value && ee.locationId == shopId
-                            //   )?.stuff_ids || ' '
-                            // ).split(',');
-                            // var _myStuffs = roles.filter((rl) => {
-                            //   return _stuf.includes(rl.value + '');
-                            // });
-                            user.roles ? setSelectedRoles(user.role) : null;
-                            // for (let ix = 0; ix < _rows.length; ix++) {
-                            //     _stuf = businessUsers.find((ee) => ee.value == user.value && ee.locationId == shopId)?.stuff || ' ';
-                            //     _rows[ix].isChoosed_r = (',' + _stuf).indexOf(',' + _rows[ix].label + '_r,') != -1 ? true : false
-                            //     _rows[ix].isChoosed_e = (',' + _stuf).indexOf(',' + _rows[ix].label + '_e,') != -1 ? true : false
-                            //     _rows[ix].isChoosed_d = (',' + _stuf).indexOf(',' + _rows[ix].label + '_d,') != -1 ? true : false
-                            //     _rows[ix].isChoosed_i = (',' + _stuf).indexOf(',' + _rows[ix].label + '_i,') != -1 ? true : false
-                            // }
-                            // setPages(_rows);
-                            setSelectedUserId(user.id);
-                            setIsEditedStuff(isNew);
-                            setShowAddUser(true);
-                          }}>
-                          <FontAwesomeIcon icon={faEdit} />
-                        </Button>
-                      </ButtonGroup>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </Table>
-        </div>
-      </>}
+            <button className="btn-login mt-auto" type="submit" disabled={loading}>
+              {!!loading && (
+                <Image
+                  alt="loading"
+                  width={25}
+                  height={25}
+                  className="login-loading"
+                  src={'/images/loading.gif'}
+                />
+              )}
+              Update Location Settings
+            </button>
+          </Form>
+          <div className="row">
+            <h4>User Stuff</h4>
+            <br />
+            <br />
+            <Table className="">
+              <thead className="thead-dark">
+                <tr>
+                  <th style={{ width: '6%' }}>#</th>
+                  <th>User Name</th>
+                  <th>Roles</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.length > 0 &&
+                  users.map((user, i) => {
+                    return (
+                      <tr key={i}>
+                        <th scope="row"></th>
+                        <td>{user.first_name}</td>
+                        <td>
+                          {user?.locations.filter((loc) => loc.id === location.location_id)[0]
+                            ?.roles[0]?.name ?? 'No Permissions'}
+                        </td>
+                        <td>
+                          <ButtonGroup className="mb-2 m-buttons-style">
+                            <Button
+                              onClick={() => {
+                                // var _rows = pages;
+                                var isNew = user.roles ? false : true;
+                                //   businessUsers.findIndex(
+                                //     (ee) =>
+                                //       ee.value == user.value && ee.locationId == shopId
+                                //   ) > -1;
+                                // var _stuf = (
+                                //   businessUsers.find(
+                                //     (ee) =>
+                                //       ee.value == user.value && ee.locationId == shopId
+                                //   )?.stuff_ids || ' '
+                                // ).split(',');
+                                // var _myStuffs = roles.filter((rl) => {
+                                //   return _stuf.includes(rl.value + '');
+                                // });
+                                user.roles ? setSelectedRoles(user.role) : null;
+                                // for (let ix = 0; ix < _rows.length; ix++) {
+                                //     _stuf = businessUsers.find((ee) => ee.value == user.value && ee.locationId == shopId)?.stuff || ' ';
+                                //     _rows[ix].isChoosed_r = (',' + _stuf).indexOf(',' + _rows[ix].label + '_r,') != -1 ? true : false
+                                //     _rows[ix].isChoosed_e = (',' + _stuf).indexOf(',' + _rows[ix].label + '_e,') != -1 ? true : false
+                                //     _rows[ix].isChoosed_d = (',' + _stuf).indexOf(',' + _rows[ix].label + '_d,') != -1 ? true : false
+                                //     _rows[ix].isChoosed_i = (',' + _stuf).indexOf(',' + _rows[ix].label + '_i,') != -1 ? true : false
+                                // }
+                                // setPages(_rows);
+                                setSelectedUserId(user.id);
+                                setIsEditedStuff(isNew);
+                                setShowAddUser(true);
+                              }}>
+                              <FontAwesomeIcon icon={faEdit} />
+                            </Button>
+                          </ButtonGroup>
+                        </td>
+                      </tr>
+                    );
+                  })}
+              </tbody>
+            </Table>
+          </div>
+        </>
+      )}
       {showAddUser && (
         <form className="user-stuff-form">
           <button
@@ -273,13 +280,7 @@ function LocationUpdateForm({ businessId, location }) {
   );
 }
 
-export default function BusinessSettingsView({
-  username,
-  business,
-}: {
-  business: IUserBusiness;
-  username: string;
-}) {
+export default function BusinessSettingsView({ business }: { business: IUserBusiness }) {
   const { mutate } = useSWRConfig();
 
   const [key, setKey] = useState<string | number>(0);

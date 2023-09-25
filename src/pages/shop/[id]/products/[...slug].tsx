@@ -34,39 +34,11 @@ import { createNewData, findAllData, updateData } from 'src/services/crud.api';
 import storage from '../../../../../firebaseConfig';
 import NotifiModal from '../../../../components/utils/NotifiModal';
 import { apiDeleteCtr } from '../../../../libs/dbUtils';
+import { productDetailsColourStyles } from 'src/modules/products/styles';
 
-const colourStyles = {
-  control: (style: any, state: any) => ({
-    ...style,
-    borderRadius: '10px',
-    background: '#f5f5f5',
-    height: '50px',
-    borderColor: state.isFocused ? '2px solid #045c54' : '#eaeaea',
-    boxShadow: 'none',
-    '&:hover': {
-      border: '2px solid #045c54 ',
-    },
-  }),
-  menu: (provided: any, state: any) => ({
-    ...provided,
-    borderRadius: '10px',
-    padding: '10px',
-    border: '1px solid #c9ced2',
-  }),
-  option: (provided: any, state: any) => ({
-    ...provided,
-    backgroundColor: state.isSelected ? '#e6efee' : 'white',
-    color: '#2e776f',
-    borderRadius: '10px',
-    '&:hover': {
-      backgroundColor: '#e6efee',
-      color: '#2e776f',
-      borderRadius: '10px',
-    },
-  }),
-};
+const colourStyles = productDetailsColourStyles;
 
-const initialFormObject = {
+const initialFormObject: TFormObject = {
   id: 0,
   img: '',
   name: '',
@@ -92,9 +64,7 @@ const initialFormObject = {
   tailoringPrices: [{ name: '', from: 0, to: 0, price: 0 }],
 };
 
-const Product: NextPage = (props: any) => {
-  const { editId, iType } = props;
-
+const Product: NextPage = ({ editId, iType }: any) => {
   const [formObj, setFormObj] = useState<any>(initialFormObject);
   const [img, setImg] = useState<any>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
@@ -114,7 +84,7 @@ const Product: NextPage = (props: any) => {
   const [brands, setBrands] = useState<{ value: number; label: string }[]>([]);
   const [cats, setCats] = useState<{ value: number; label: string }[]>([]);
   const [tailoring, seTtailoring] = useState<{ value: number; label: string }[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [taxGroup, setTaxGroup] = useState<{ value: number; label: string }[]>([]);
@@ -147,7 +117,7 @@ const Product: NextPage = (props: any) => {
   const [percent, setPercent] = useState(0);
   const router = useRouter();
   const shopId = router.query.id;
-  
+
   const [show, setShow] = useState(false);
   const [open, setOpen] = useState(false);
   const [open2, setOpen2] = useState(false);
@@ -222,82 +192,87 @@ const Product: NextPage = (props: any) => {
   prevUrlRef.current = previewUrl;
 
   async function initDataPage(url) {
-    if (url?.length == 2) setIsEdit(true);
-    if (url?.length == 2) {
-      const res = await findAllData(`products/${url[1]}/show`);
+    setLoading(true);
+    try {
+      if (url?.length == 2) setIsEdit(true);
+      if (url?.length == 2) {
+        const res = await findAllData(`products/${url[1]}/show`);
 
-      setSelectedProducts(res.data.result.product);
-      // setSelectedFabrics(newdata.selectedFabrics);
-      const itm = res.data.result.product;
-      setPreviewUrl(itm.image);
+        setSelectedProducts(res.data.result);
+        // setSelectedFabrics(newdata.selectedFabrics);
+        const itm = res.data.result;
+        setPreviewUrl(itm?.image);
 
-      setFormObj({
-        ...formObj,
-        id: itm.id,
-        img: itm.image,
-        type: itm.type,
-        name: itm.name,
-        productName2: itm.subproductname,
-        location_id: itm.location_id,
-        unit_id: itm.unit_id,
-        brand: itm.brand_id,
-        sku: itm.sku,
-        sell_over_stock: itm.sell_over_stock == 1,
-        barcode_type: itm.barcode_type,
-        category_id: itm.category_id,
-        cost_price: Number(itm.cost_price).toFixed(locationSettings?.location_decimal_places),
-        sell_price: Number(itm.sell_price).toFixed(locationSettings?.location_decimal_places),
-        alertQuantity: Number(itm.alert_quantity),
-        tax_id: itm.never_tax == 1 ? -1 : itm.tax,
-        is_service: itm.is_service == 1,
-        is_fabric: itm.is_fabric == 1,
-        isMultiPrice: itm.is_selling_multi_price == 1,
-        isFifo: itm.is_fifo == 1,
-        never_tax: itm.never_tax,
-        variations: [
-          ...res.data.result.product.variations,
-          { name: '', name2: '', sku: '', cost: 0, price: 0, isNew: true },
-        ],
-        isTailoring:
-          itm.type == 'tailoring_package' ? itm.tailoring_type_id : itm.is_tailoring == 1,
-        tailoringPrices:
-          itm.prices_json != undefined && (itm.prices_json + '').length > 8
-            ? [...JSON.parse(itm.prices_json), { name: '', from: 0, to: 0, price: 0 }]
-            : [{ name: '', from: 0, to: 0, price: 0 }],
-      });
-    } else {
-      // setAllFabrics(newdata.allFabrics);
-      // seTtailoring([{ value: null, label: 'Defualt' }, ...newdata.tailorings]);
+        setFormObj({
+          ...formObj,
+          id: itm.id,
+          img: itm?.image,
+          type: itm.type,
+          name: itm.name,
+          productName2: itm.subproductname,
+          location_id: itm.location_id,
+          unit_id: itm.unit_id,
+          brand: itm.brand_id,
+          sku: itm.sku,
+          sell_over_stock: itm.sell_over_stock == 1,
+          barcode_type: itm.barcode_type,
+          category_id: itm.category_id,
+          cost_price: Number(itm.cost_price).toFixed(locationSettings?.location_decimal_places),
+          sell_price: Number(itm.sell_price).toFixed(locationSettings?.location_decimal_places),
+          alertQuantity: Number(itm.alert_quantity),
+          tax_id: itm.never_tax == 1 ? -1 : itm.tax,
+          is_service: itm.is_service == 1,
+          is_fabric: itm.is_fabric == 1,
+          isMultiPrice: itm.is_selling_multi_price == 1,
+          isFifo: itm.is_fifo == 1,
+          never_tax: itm.never_tax,
+          variations: [
+            ...res.data.result.variations,
+            { name: '', name2: '', sku: '', cost: 0, price: 0, isNew: true },
+          ],
+          isTailoring:
+            itm.type == 'tailoring_package' ? itm.tailoring_type_id : itm.is_tailoring == 1,
+          tailoringPrices:
+            itm.prices_json != undefined && (itm.prices_json + '').length > 8
+              ? [...JSON.parse(itm.prices_json), { name: '', from: 0, to: 0, price: 0 }]
+              : [{ name: '', from: 0, to: 0, price: 0 }],
+        });
+      } else {
+        // setAllFabrics(newdata.allFabrics);
+        // seTtailoring([{ value: null, label: 'Defualt' }, ...newdata.tailorings]);
+      }
+      const resCategories = await findAllData(`categories/${router.query.id}`);
+      const resBrands = await findAllData(`brands/${router.query.id}`);
+      const resUnits = await findAllData(`units`);
+      const resTaxes = await findAllData(`taxes/${router.query.id}`);
+      // setProducts(newdata.products);
+      setUnits(
+        resUnits.data.result.units.map((unit) => {
+          return { ...unit, label: unit.name, value: unit.id };
+        })
+      );
+      setBrands(
+        resBrands.data.result.map((brand) => {
+          return { ...brand, label: brand.name, value: brand.id };
+        })
+      );
+      setCats(
+        resCategories.data.result.map((cat) => {
+          return { ...cat, label: cat.name, value: cat.id };
+        })
+      );
+      setTaxGroup(
+        resTaxes.data.result.taxes.map((tax) => {
+          return { ...tax, label: tax.name, value: tax.id };
+        })
+      );
+      // if (iType != 'Kianvqyqndr')
+      //   setProducTypes(producTypes.filter((p) => p.value != 'tailoring_package'));
+    } catch (e) {
+      Toastify('error', 'Something went wrong, please try again later!');
+    } finally {
+      setLoading(false);
     }
-    const resCategories = await findAllData(`categories/${router.query.id}`);
-    const resBrands = await findAllData(`brands/${router.query.id}`);
-    const resUnits = await findAllData(`units`);
-    const resTaxes = await findAllData(`taxes/${router.query.id}`);
-    // setProducts(newdata.products);
-    setUnits(
-      resUnits.data.result.units.map((unit) => {
-        return { ...unit, label: unit.name, value: unit.id };
-      })
-    );
-    setBrands(
-      resBrands.data.result.map((brand) => {
-        return { ...brand, label: brand.name, value: brand.id };
-      })
-    );
-    setCats(
-      resCategories.data.result.map((cat) => {
-        return { ...cat, label: cat.name, value: cat.id };
-      })
-    );
-    setTaxGroup(
-      resTaxes.data.result.taxes.map((tax) => {
-        return { ...tax, label: tax.name, value: tax.id };
-      })
-    );
-    // if (iType != 'Kianvqyqndr')
-    //   setProducTypes(producTypes.filter((p) => p.value != 'tailoring_package'));
-
-    setLoading(false);
   }
 
   async function handleUpload() {
@@ -365,24 +340,46 @@ const Product: NextPage = (props: any) => {
     }
   }
   async function editProduct(url = '') {
-    const res = await updateData('products', router.query.slug[1], { ...formObjRef.current });
+    const { productName2, tax_id, ...form } = formObjRef.current as TFormObject;
+    const _form = formObjRef.current;
 
-    // const { success, msg, code } = await apiUpdateCtr({
-    //   type: 'products',
-    //   subType: 'editProduct',
-    //   shopId,
-    //   img: url.length > 2 ? url : formObj.img,
-    //   data: formObjRef.current,
-    //   selectedProducts,
-    //   selectedFabrics,
-    // });
-    // if (success) {
-    //   Toastify('success', 'Product Successfuly Edited..');
-    //   router.push('/shop/' + shopId + '/products');
-    // } else {
-    //   Toastify('error', msg);
-    //   if (code == 100) setErrorForm({ ...errorForm, skuExist: true });
-    // }
+    const _data =
+      // : IPayload
+      {
+        location_id: +shopId,
+        unit_id: _form.unit_id,
+        category_id: _form.category_id,
+        brand_id: _form.brand_id,
+
+        name: _form.name,
+        subproductname: _form.productName2,
+        image: url,
+
+        type: _form.type,
+
+        is_service: _form.is_service,
+        is_fabric: _form.is_fabric,
+        is_fifo: parseInt(_form.is_fifo), // Convert to boolean
+
+        never_tax: _form.never_tax,
+
+        alert_quantity: +_form.alert_quantity, // Convert to number
+        sku: _form.sku,
+
+        barcode_type: _form.barcode_type,
+        sell_price: parseFloat(_form.sell_price), // Convert to number
+        cost_price: parseFloat(_form.cost_price), // Convert to number
+        sell_over_stock: parseInt(_form.sell_over_stock), // Convert to boolean
+      };
+    try {
+      const res = await updateData('products', router.query.slug[1], _data);
+      Toastify('success', 'Product updated successfully!');
+    } catch (e) {
+      console.warn(e.response.data.error);
+      Toastify('error', 'Something went wrong, please check your inputs!');
+    } finally {
+    }
+
     setIsSaving(false);
   }
   async function deleteFunction(delType = '', id = 0, index: number) {
@@ -631,8 +628,8 @@ const Product: NextPage = (props: any) => {
         <Card.Body>
           {!loading ? (
             <div className="forms-style-parent">
-              <form className="form-style-products">
-                <div className="products-columns">
+              <form className="form-style-products flex-wrap justify-content-center">
+                <div className="products-columns ">
                   <div className="row">
                     <div className="upload-dots-box">
                       {img || formObj?.img?.length > 2 ? (
@@ -879,46 +876,6 @@ const Product: NextPage = (props: any) => {
                     </>
                   )}
                   <br />
-                  {!isSaving && (
-                    <button
-                      type="button"
-                      className="btn m-btn btn-primary p-2 "
-                      onClick={(e) => {
-                        e.preventDefault();
-                        errors = [];
-                        if (formObj.name.length == 0) errors.push('error8');
-                        if (formObj.sku.length == 0) errors.push('error7');
-                        if (formObj.barcode_type == '0') errors.push('error6');
-                        if (formObj.type == 'tailoring_package') {
-                          if (formObj.tailoringPrices.length <= 1) errors.push('error5');
-                          if (selectedFabrics.length == 0) errors.push('error1');
-                          if (formObj.tailoringPrices.length <= 1) errors.push('error2');
-                          if (formObj.isTailoring == null || formObj.isTailoring <= 0) {
-                            errors.push('error3');
-                            Toastify('error', ' Error,You must select One Item For Tailoring Type');
-                            setErrorForm({ ...errorForm, isTailoring: true });
-                          }
-                        }
-                        setErrorForm({
-                          ...errorForm,
-                          name: formObj.name.length == 0,
-                          sku: formObj.sku.length == 0,
-                          barcode_type: formObj.barcode_type == '0',
-                          fabs: formObj.type == 'tailoring_package' && selectedFabrics.length == 0,
-                          rules:
-                            formObj.type == 'tailoring_package' &&
-                            formObj.tailoringPrices.length <= 1,
-                        });
-
-                        if (errors.length == 0) {
-                          setIsSaving(true);
-                          if (isEdit) img == null ? editProduct() : handleUpload();
-                          else img != null ? handleUpload() : insertProduct('img');
-                        } else Toastify('error', 'Enter Requires Field');
-                      }}>
-                      {isEdit ? 'Edit' : 'Save'}
-                    </button>
-                  )}
                 </div>
                 {!isSaving && (
                   <div className="products-columns">
@@ -1377,6 +1334,50 @@ const Product: NextPage = (props: any) => {
                         />
                       </div>
                     </div>
+                    <button
+                      type="button"
+                      style={{
+                        height: 'fit-content',
+                      }}
+                      disabled={isSaving}
+                      className="btn m-btn btn-primary p-2"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (isSaving) return Toastify('warning', 'There is a current process');
+
+                        errors = [];
+                        if (formObj.name.length == 0) errors.push('error8');
+                        if (formObj.sku.length == 0) errors.push('error7');
+                        if (formObj.barcode_type == '0') errors.push('error6');
+                        if (formObj.type == 'tailoring_package') {
+                          if (formObj.tailoringPrices.length <= 1) errors.push('error5');
+                          if (selectedFabrics.length == 0) errors.push('error1');
+                          if (formObj.tailoringPrices.length <= 1) errors.push('error2');
+                          if (formObj.isTailoring == null || formObj.isTailoring <= 0) {
+                            errors.push('error3');
+                            Toastify('error', ' Error,You must select One Item For Tailoring Type');
+                            setErrorForm({ ...errorForm, isTailoring: true });
+                          }
+                        }
+                        setErrorForm({
+                          ...errorForm,
+                          name: formObj.name.length == 0,
+                          sku: formObj.sku.length == 0,
+                          barcode_type: formObj.barcode_type == '0',
+                          fabs: formObj.type == 'tailoring_package' && selectedFabrics.length == 0,
+                          rules:
+                            formObj.type == 'tailoring_package' &&
+                            formObj.tailoringPrices.length <= 1,
+                        });
+
+                        if (errors.length == 0) {
+                          setIsSaving(true);
+                          if (isEdit) img == null ? editProduct() : handleUpload();
+                          else img != null ? handleUpload() : insertProduct('img');
+                        } else Toastify('error', 'Enter Requires Field');
+                      }}>
+                      {isEdit ? 'Edit' : 'Save'}
+                    </button>
                   </div>
                 )}
               </form>
@@ -1392,3 +1393,88 @@ const Product: NextPage = (props: any) => {
   );
 };
 export default withAuth(Product);
+
+interface IPayload {
+  name: string; // required|string
+  subproductname?: string;
+  category_id: number; // required|numeric
+  location_id: number; // required|numeric
+  type: 'single' | 'package' | 'variable' | 'tailoring_package'; // required|string:in:single,package,variable,tailoring_package
+  is_service: boolean; // required|boolean
+  is_fabric: boolean; // required|boolean
+  unit_id: number; // required|exists:units,id
+  never_tax?: boolean; // required|boolean
+  alert_quantity?: number; // nullable|numeric
+  sku: string; // required|string
+  barcode_type: 'C128' | 'C39' | 'C93' | 'EAN8' | 'EAN13' | 'UPCA' | 'UPCE'; // required|string:in:C128,C39,C93,EAN8,EAN13,UPCA,UPCE
+  sell_price: number; // required|numeric
+  cost_price: number; // required|numeric
+  sell_over_stock?: boolean; // nullable|boolean
+  is_fifo?: boolean; // nullable|boolean
+  packages?: IPackage[]; // nullable|array
+  variations?: IVariation[]; // nullable|array
+  image?: string;
+  qty_over_sold?: number;
+  brand_id?: number;
+}
+
+interface Price {
+  name: string;
+  from: string;
+  to: string;
+  price: string;
+}
+
+interface IPackage {
+  prices_json: Price[]; // nullable|string
+  tailoring_type_id?: number; // nullable|exists:tailoring_types,id
+  fabric_ids?: number[]; // nullable|array
+}
+
+interface IVariation {
+  name?: string; // nullable|string
+  sku?: string; // nullable|string
+  cost?: number; // nullable|numeric
+  price?: number; // nullable|numeric
+  sell_over_stock?: boolean; // nullable|boolean
+  is_selling_multi_price?: number; // nullable|numeric
+  is_service?: boolean; // nullable|boolean
+}
+
+type TFormObject = {
+  id: number;
+  img: string;
+  name: string;
+  productName2: string;
+  type: 'single' | 'package' | 'variable' | 'tailoring_package';
+  sku: string;
+  barcode_type: 'C128' | 'C39' | 'C93' | 'EAN8' | 'EAN13' | 'UPCA' | 'UPCE';
+  tax_id: number;
+  unit_id: number;
+  brand: string;
+  category_id: number;
+  subCat: string;
+  alertQuantity: number;
+  cost_price: number;
+  sell_price: number;
+  is_fabric: boolean;
+  is_service: boolean;
+  isSellOverStock: boolean;
+  isMultiPrice: boolean;
+  isFifo: boolean;
+  isTailoring: number;
+  variations: {
+    name: string;
+    name2: string;
+    sku: string;
+    cost: number;
+    price: number;
+    isNew: boolean;
+  }[];
+  tailoringPrices: {
+    name: string;
+    from: number;
+    to: number;
+    price: number;
+  }[];
+};
