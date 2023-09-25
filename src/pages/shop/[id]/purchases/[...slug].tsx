@@ -1,28 +1,10 @@
-import type { NextPage } from 'next';
-import Select from 'react-select';
-import { useRouter } from 'next/router';
+import { faArrowAltCircleLeft } from '@fortawesome/free-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { AdminLayout } from '@layout';
-import { Card } from 'react-bootstrap';
-import React, { useState, useEffect, useRef } from 'react';
-import { apiFetchCtr, apiInsertCtr, apiUpdateCtr } from 'src/libs/dbUtils';
-import DatePicker from 'react-datepicker';
-import Form from 'react-bootstrap/Form';
-import 'react-datepicker/dist/react-datepicker.css';
-import {
-  ILocationSettings,
-  IPurchaseExpndes,
-  IpurchaseProductItem,
-  ITokenVerfy,
-} from 'src/models/common-model';
-import { TableExpeseRows, TableTaxRows } from 'src/components/utils/ExpendsRow';
-import * as cookie from 'cookie';
-import {
-  getRealWord,
-  hasPermissions,
-  keyValueRules,
-  verifayTokens,
-} from 'src/pages/api/checkUtils';
-import { DataGrid, GridColDef, GridRowParams } from '@mui/x-data-grid';
+import { ICurrency, IProduct } from '@models/pos.types';
+import EditIcon from '@mui/icons-material/Edit';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import {
   Button,
   Dialog,
@@ -33,86 +15,90 @@ import {
   Divider,
   Grid,
 } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import EditIcon from '@mui/icons-material/Edit';
-import { purchaseStatusDataAdd, paymentStatusData, paymentTypeData } from '../../../../models/data';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowAltCircleLeft } from '@fortawesome/free-regular-svg-icons';
-import VariationModal from 'src/components/pos/modals/VariationModal';
-import { cartJobType } from 'src/recoil/atoms';
-import { useRecoilState } from 'recoil';
+import { DataGrid } from '@mui/x-data-grid';
+import type { NextPage } from 'next';
+import { useRouter } from 'next/router';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Card } from 'react-bootstrap';
+import Form from 'react-bootstrap/Form';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import Select from 'react-select';
 import { ToastContainer } from 'react-toastify';
-import { Toastify } from 'src/libs/allToasts';
-import { findAllData } from 'src/services/crud.api';
+import { useRecoilState } from 'recoil';
 import withAuth from 'src/HOCs/withAuth';
-const AddPurchase: NextPage = (props: any) => {
-  const { shopId, editId } = props;
+import VariationModal from 'src/components/pos/modals/VariationModal';
+import { TableExpeseRows, TableTaxRows } from 'src/components/utils/ExpendsRow';
+import { useUser } from 'src/context/UserContext';
+import { Toastify } from 'src/libs/allToasts';
+import { apiInsertCtr, apiUpdateCtr } from 'src/libs/dbUtils';
+import { IPurchaseExpndes, IpurchaseProductItem } from 'src/models/common-model';
+import {
+  purchasesColourStyles,
+  purchasesColumns,
+  purchasesInitFormError,
+  purchasesInitFormObj,
+  purchasesInitPurchaseDetails,
+  purchasesSelectStyle,
+} from 'src/modules/purchases/_utils';
+import { cartJobType } from 'src/recoil/atoms';
+import { useCurrenciesList } from 'src/services/business.service';
+import { findAllData } from 'src/services/crud.api';
+import api from 'src/utils/app-api';
+import useSWR from 'swr';
+import { paymentStatusData, paymentTypeData, purchaseStatusDataAdd } from '../../../../models/data';
 
-  const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
-    // @ts-ignore
-    value: 0,
-    label: '',
-    currency_decimal_places: 0,
-    currency_code: '',
-    currency_id: 0,
-    currency_rate: 1,
-    currency_symbol: '',
-  });
-  const [formObj, setFormObj] = useState({
-    id: 0,
-    supplier_id: 0,
-    location_id: 0,
-    currency_id: 0,
-    currency_symbol: '',
-    currency_code: '',
-    currency_rate: 0,
-    total_price: 0,
-    ref_no: '',
-    date: new Date(),
-    taxs: 0,
-    subTotal_price: 0,
-    total_tax: 0,
-    total_expense: 0,
-    discount_type: 'fixed',
-    discount_amount: 0,
-    purchaseStatus: '',
-    paymentStatus: '',
-    paid_amount: 0,
-    total_discount: 0,
-    paymentType: '',
-    paymentDate: new Date(),
-    payment_id: 0,
-  });
-  const [errorForm, setErrorForm] = useState({
-    morePaid: false,
-    paid: false,
-    products: false,
-    supplier_id: false,
-    taxInclu: false,
-    paymentStatus: false,
-    paymentType: false,
-    paymentDate: false,
-    purchaseStatus: false,
-  });
-  const selectStyle = {
-    control: (style: any) => ({ ...style, color: '#db3333', borderRadius: '10px' }),
-  };
-  const [suppliers, setSuppliers] = useState<{ value: number; label: string }[]>([]);
-  const [purchaseDetails, setPurchaseDetails] = useState<
-    { label: string; value: string; priority: number }[]
-  >([
-    { label: 'Discount :', value: 'discount', priority: 1 },
-    { label: 'Total Expenses :', value: 'expense', priority: 2 },
-    { label: 'Taxes :', value: 'taxes', priority: 3 },
+const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
+  const router = useRouter();
+  const formObjRef = useRef<any>();
+
+  const [suppliers, setSuppliers] = useState<{ value: number; label: string }[]>([
+    { value: 0, label: 'walk in supplier' },
   ]);
+
   const [currencies, setCurrencies] = useState<
     { value: number; label: string; symbol: string; exchange_rate: number; code: string }[]
   >([]);
-  const [loading, setLoading] = useState(true);
-  const [isEditSort, setIsEditSort] = useState(false);
+
+  const { isLoading: isSupplierLoading } = useSWR(
+    ['suppliers', shopId],
+    () => api.get(`/suppliers/${shopId}?all_data=1`).then(({ data }) => data.result),
+    {
+      onSuccess: (data) => {
+        const _suppliers = data.map((item) => ({ ...item, label: item.name, value: item.id }));
+        setSuppliers([{ value: 0, label: 'walk in supplier' }, ..._suppliers]);
+      },
+    }
+  );
+  const { isLoading: isProductsLoading } = useSWR(
+    ['products', shopId],
+    () => api.get(`/products/${shopId}?all_data=1`).then(({ data }) => data.result),
+    {
+      onSuccess: (data) => {
+        const _products = data.map((item) => ({ ...item, label: item.name, value: item.id }));
+        setProducts([..._products]);
+      },
+    }
+  );
+  const { isLoading: isCurrenciesLoading } = useCurrenciesList(null, {
+    onSuccess(data, key, config) {
+      const _currenciesList = data.result.map((itm: ICurrency) => {
+        return { value: itm.id, label: `${itm.currency} (${itm.code})` };
+      });
+
+      setCurrencies(_currenciesList);
+    },
+  });
+
+  const { locationSettings, setLocationSettings } = useUser();
+
+  const [formObj, setFormObj] = useState(purchasesInitFormObj);
+  const [errorForm, setErrorForm] = useState(purchasesInitFormError);
+  const [purchaseDetails, setPurchaseDetails] = useState(purchasesInitPurchaseDetails);
+
   const [isEdit, setIsEdit] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [isEditSort, setIsEditSort] = useState(false);
   const [vatInColumn, setVatInColumn] = useState(false);
   const [isOpenVariationDialog, setIsOpenVariationDialog] = useState(false);
   const [selectedProductForVariation, setSelectedProductForVariation] = useState<{
@@ -151,102 +137,6 @@ const AddPurchase: NextPage = (props: any) => {
       setSelectProducts([..._datas]);
     }
   };
-
-  const columns: GridColDef[] = [
-    { field: 'name', headerName: 'Product Name', minWidth: 200 },
-    {
-      field: 'cost',
-      headerName: 'Cost',
-      colSpan: 1,
-      minWidth: 350,
-      editable: true,
-      type: 'number',
-      renderCell: ({ row }: Partial<GridRowParams>) => (
-        <>
-          <div>{row.cost}</div>
-          {locationSettings?.currency_id != formObj.currency_id && (
-            <div className="purchase-converted-cost">
-              {(formObj.currency_rate * row.cost).toFixed(
-                locationSettings?.location_decimal_places
-              )}{' '}
-              <span style={{ opacity: '0.5', fontSize: '10px' }}>
-                {' '}
-                {locationSettings?.currency_code}
-              </span>
-            </div>
-          )}
-          {row.cost < row.notifyExpensePrice && (
-            <div
-              className={row.costType == 1 ? 'purchase-label active-label' : 'purchase-label'}
-              id="use-expends"
-              onClick={() => onCostClick('useExpnds', row.product_id, row.variation_id)}>
-              <span>EXP</span> {row.notifyExpensePrice}
-            </div>
-          )}
-          {row.cost < row.notifyTaxPrice && (
-            <div
-              className={row.costType == 2 ? 'purchase-label active-label' : 'purchase-label'}
-              id="use-tax"
-              onClick={() => onCostClick('useTax', row.product_id, row.variation_id)}>
-              <span> TX</span> {row.notifyTaxPrice}
-            </div>
-          )}
-          {row.notifyExpensePrice > 0 && row.notifyTaxPrice > 0 && (
-            <div
-              className={row.costType == 3 ? 'purchase-label active-label' : 'purchase-label'}
-              id="use-tax"
-              onClick={() => onCostClick('useTotal', row.product_id, row.variation_id)}>
-              <span> Total</span> {row.notifyTotalPrice}
-            </div>
-          )}
-        </>
-      ),
-    },
-    { field: 'price', headerName: 'Price', minWidth: 150, editable: true, type: 'number' },
-    { field: 'quantity', headerName: 'Qty', minWidth: 150, editable: true, type: 'number' },
-    { field: 'vat', headerName: 'VAT %', minWidth: 150, editable: true, type: 'number' },
-    {
-      field: 'lineTotal',
-      headerName: 'Line Total',
-      minWidth: 100,
-      type: 'number',
-      renderCell: ({ row }: Partial<GridRowParams>) => (
-        <>
-          <div>
-            {locationSettings?.currency_id == formObj.currency_id
-              ? Number(row.cost * row.quantity).toFixed(locationSettings?.location_decimal_places)
-              : (formObj.currency_rate * row.cost).toFixed(
-                  locationSettings?.location_decimal_places
-                )}
-          </div>
-        </>
-      ),
-    },
-    {
-      field: 'action',
-      headerName: 'Action',
-      minWidth: 100,
-      sortable: false,
-      disableExport: true,
-      renderCell: ({ row }: Partial<GridRowParams>) => (
-        <>
-          <Button
-            variant="outlined"
-            onClick={() => {
-              setSelecetdId({ product_id: row.product_id, variation_id: row.variation_id });
-              setOpenRemoveDialog(true);
-            }}>
-            <DeleteIcon />
-          </Button>
-        </>
-      ),
-    },
-  ];
-
-  const colourStyles = { control: (style: any) => ({ ...style, borderRadius: '10px' }) };
-  const router = useRouter();
-  var formObjRef = useRef<any>();
-  formObjRef.current = formObj;
 
   const formatProductsOptions = (products: any) => (
     <div>
@@ -355,23 +245,35 @@ const AddPurchase: NextPage = (props: any) => {
   }
 
   async function insertPurchase() {
-    const { success } = await apiInsertCtr({
-      type: 'transactions',
-      subType: 'addPurchase',
-      shopId,
-      data: {
-        totalOrder: formObjRef.current,
-        lines: selectProducts,
-        expenses: selectedExpends,
-        taxes: selectedTaxes,
-      },
-    });
-    if (!success) {
-      alert('Has Error ,try Again');
-      return;
-    }
-    Toastify('success', 'Purchase Successfully Created..');
-    router.push('/shop/' + shopId + '/purchases');
+    const data = {
+      // ...formObj,
+      location_id: +shopId, //  "required|numeric",
+      status: formObj.purchaseStatus, //  "required|string:in:draft,partially_received,processing,received,cancelled",
+      payment_status: formObj.paymentStatus, //  "required|string:in:credit,partially_paid,paid,due",
+      supplier_id: formObj.supplier_id,
+      payment_type: formObj.paymentType,
+      cart: [...selectProducts.map((item) => ({ ...item, qty: item.quantity }))],
+    };
+    console.log(formObj);
+    api.post(`/purchase/${shopId}`, data);
+
+    // const { success } = await apiInsertCtr({
+    //   type: 'transactions',
+    //   subType: 'addPurchase',
+    //   shopId,
+    //   data: {
+    //     totalOrder: formObjRef.current,
+    //     lines: selectProducts,
+    //     expenses: selectedExpends,
+    //     taxes: selectedTaxes,
+    //   },
+    // });
+    // if (!success) {
+    //   alert('Has Error ,try Again');
+    //   return;
+    // }
+    // Toastify('success', 'Purchase Successfully Created..');
+    // router.push('/shop/' + shopId + '/purchases');
   }
   async function editPurchase() {
     const { success } = await apiUpdateCtr({
@@ -640,10 +542,11 @@ const AddPurchase: NextPage = (props: any) => {
     }
   }, [jobType]);
   //product add / update
-  const addToProductQuotations = (e: any) => {
+  const addToProductQuotations = (e: IProduct & { value: number; label: string }) => {
     if (e.type == 'variable') {
       setSelectedProductForVariation({
-        product_id: e.product_id,
+        ...e,
+        product_id: e.id,
         is_service: 0,
         product_name: e.name,
       });
@@ -655,14 +558,14 @@ const AddPurchase: NextPage = (props: any) => {
       setSelectProducts([
         ...selectProducts,
         {
-          id: e.product_id,
-          product_id: e.product_id,
+          ...e,
+          product_id: e.id,
           variation_id: 0,
           name: e.name,
           quantity: 1,
-          price: e.sell_price,
-          cost: e.cost_price,
-          lineTotal: e.cost_price,
+          price: +e.sell_price,
+          cost: +e.cost_price,
+          lineTotal: +e.cost_price,
           taxAmount: 0,
           costType: 0,
           isNew: true,
@@ -741,553 +644,565 @@ const AddPurchase: NextPage = (props: any) => {
     setSelectProducts(_rows);
   }
 
+  const columns = useMemo(
+    () =>
+      purchasesColumns({
+        locationSettings,
+        formObj,
+        onCostClick,
+        setSelecetdId,
+        setOpenRemoveDialog,
+      }),
+    [locationSettings, formObj]
+  );
+  formObjRef.current = formObj;
+
   return (
-    <>
-      <AdminLayout shopId={shopId}>
-        {isOpenVariationDialog && (
-          <VariationModal
-            selectedProductForVariation={selectedProductForVariation}
-            isOpenVariationDialog={isOpenVariationDialog}
-            setIsOpenVariationDialog={setIsOpenVariationDialog}
-            variations={allVariations}
-          />
-        )}
-        <ToastContainer />
-        <Dialog
-          open={openRemoveDialog}
-          onClose={() => {
-            setOpenRemoveDialog(false);
-          }}
-          aria-labelledby="alert-dialog-title"
-          aria-describedby="alert-dialog-description">
-          <DialogTitle id="alert-dialog-title">Remove Product</DialogTitle>
-          <DialogContent>
-            <DialogContentText id="alert-dialog-description">
-              Are you Sure You Want Remove This Item ?
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setOpenRemoveDialog(false)}>Cancel</Button>
-            <Button
-              onClick={() => {
-                const rows = [...selectProducts];
-                const _index = rows.findIndex(
-                  (it: any) =>
-                    it.product_id == selecetdId.product_id &&
-                    it.variation_id == selecetdId.variation_id
-                );
-                if (_index > -1) rows.splice(_index, 1);
-                setSelectProducts(rows);
-                setOpenRemoveDialog(false);
-                setSelectedExpends([...selectedExpends]);
-              }}>
-              Yes
-            </Button>
-          </DialogActions>
-        </Dialog>
-        <div className="mb-4">
-          <button
-            className="btn m-btn btn-primary p-3"
-            onClick={() => router.push('/shop/' + shopId + '/purchases')}>
-            <FontAwesomeIcon icon={faArrowAltCircleLeft} /> Back To List{' '}
-          </button>
-        </div>
-        {loading ? (
+    <AdminLayout shopId={shopId}>
+      {isOpenVariationDialog && (
+        <VariationModal
+          selectedProductForVariation={selectedProductForVariation}
+          isOpenVariationDialog={isOpenVariationDialog}
+          setIsOpenVariationDialog={setIsOpenVariationDialog}
+          variations={allVariations}
+        />
+      )}
+      <ToastContainer />
+      <Dialog
+        open={openRemoveDialog}
+        onClose={() => {
+          setOpenRemoveDialog(false);
+        }}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description">
+        <DialogTitle id="alert-dialog-title">Remove Product</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Are you Sure You Want Remove This Item ?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenRemoveDialog(false)}>Cancel</Button>
+          <Button
+            onClick={() => {
+              const rows = [...selectProducts];
+              const _index = rows.findIndex(
+                (it: any) =>
+                  it.product_id == selecetdId.product_id &&
+                  it.variation_id == selecetdId.variation_id
+              );
+              if (_index > -1) rows.splice(_index, 1);
+              setSelectProducts(rows);
+              setOpenRemoveDialog(false);
+              setSelectedExpends([...selectedExpends]);
+            }}>
+            Yes
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <div className="mb-4">
+        <button
+          className="btn m-btn btn-primary p-3"
+          onClick={() => router.push('/shop/' + shopId + '/purchases')}>
+          <FontAwesomeIcon icon={faArrowAltCircleLeft} /> Back To List{' '}
+        </button>
+      </div>
+      {loading ? (
+        <Card className="mb-4">
+          <Card.Header className="p-3 bg-white">
+            <h5>Loading</h5>
+          </Card.Header>
+        </Card>
+      ) : (
+        <>
           <Card className="mb-4">
             <Card.Header className="p-3 bg-white">
-              <h5>Loading</h5>
+              <h5>{isEdit ? 'Edit Purchase ' : 'Add Purchase'}</h5>
             </Card.Header>
-          </Card>
-        ) : (
-          <>
-            <Card className="mb-4">
-              <Card.Header className="p-3 bg-white">
-                <h5>{isEdit ? 'Edit Purchase ' : 'Add Purchase'}</h5>
-              </Card.Header>
-              <Card.Body>
-                <div className="form-style2">
+            <Card.Body>
+              <div className="form-style2">
+                <div className="row">
+                  <div className="col-md-3">
+                    <div className="form-group2">
+                      <label>
+                        Supplier : <span className="text-danger">*</span>
+                      </label>
+                      <Select
+                        isLoading={isSupplierLoading}
+                        styles={purchasesSelectStyle}
+                        options={suppliers}
+                        value={suppliers.filter((sp) => sp.value == formObj.supplier_id)}
+                        onChange={(itm) => {
+                          setFormObj({ ...formObj, supplier_id: itm.value });
+                        }}
+                      />
+                      {errorForm.supplier_id && (
+                        <p className="p-1 h6 text-danger ">Select a Supplier</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="col-md-3">
+                    <div className="form-group2">
+                      <label>Reference No :</label>
+                      <input
+                        type="text"
+                        className="form-control p-2"
+                        placeholder="Reference No"
+                        value={formObj.ref_no}
+                        onChange={(e) => {
+                          setFormObj({ ...formObj, ref_no: e.target.value });
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div className="col-md-3">
+                    <div className="form-group2">
+                      <label>Purchase Date :</label>
+                      <DatePicker
+                        className="form-control p-2"
+                        selected={formObj.date}
+                        onChange={(date: Date) => setFormObj({ ...formObj, date: date })}
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="row">
+                  <div className="col-md-3" style={{ display: 'none' }}>
+                    <div className="form-group">
+                      <label>Document : </label>
+                      <input type="file" accept="image/*" className="form-control" />
+                    </div>
+                  </div>
+                  <div className="col-md-3">
+                    <div className="form-group">
+                      <label>
+                        Purchase Status: <span className="text-danger">*</span>
+                      </label>
+                      <Select
+                        styles={purchasesColourStyles}
+                        options={purchaseStatus}
+                        value={purchaseStatus.filter((f: any) => {
+                          return f.value == formObj.purchaseStatus;
+                        })}
+                        onChange={(itm) => {
+                          setFormObj({ ...formObj, purchaseStatus: itm!.value });
+                        }}
+                      />
+                      {errorForm.purchaseStatus && (
+                        <p className="p-1 h6 text-danger ">Select One Item</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {formObj.purchaseStatus != 'draft' && formObj.purchaseStatus != '' && (
                   <div className="row">
                     <div className="col-md-3">
-                      <div className="form-group2">
+                      <div className="form-group">
                         <label>
-                          Supplier : <span className="text-danger">*</span>
+                          Payment Status: <span className="text-danger">*</span>
                         </label>
                         <Select
-                          styles={selectStyle}
-                          options={suppliers}
-                          value={suppliers.filter((sp) => sp.value == formObj.supplier_id)}
+                          styles={purchasesColourStyles}
+                          options={paymentStatus}
+                          value={paymentStatus.filter((f: any) => {
+                            return f.value == formObj.paymentStatus;
+                          })}
                           onChange={(itm) => {
-                            setFormObj({ ...formObj, supplier_id: itm!.value });
+                            setFormObj({
+                              ...formObj,
+                              paymentStatus: itm!.value,
+                              paid_amount:
+                                itm!.value == 'paid' || itm!.value == 'credit'
+                                  ? formObj.total_price
+                                  : 0,
+                            });
                           }}
                         />
-                        {errorForm.supplier_id && (
-                          <p className="p-1 h6 text-danger ">Select a Supplier</p>
+                        {errorForm.paymentStatus && (
+                          <p className="p-1 h6 text-danger ">Select One Item</p>
                         )}
                       </div>
                     </div>
+                    {formObj.paymentStatus == 'partially_paid' && (
+                      <div className="col-md-3">
+                        <div className="form-group2">
+                          <label>Paid Amount :</label>
+                          <input
+                            type="text"
+                            className="form-control p-2"
+                            placeholder="Paid Amount"
+                            value={formObj.paid_amount}
+                            onChange={(e) => {
+                              setFormObj({ ...formObj, paid_amount: +e.target.value });
+                            }}
+                          />
+                          {errorForm.paid && <p className="p-1 h6 text-danger ">Enter A Amount</p>}
+                        </div>
+                      </div>
+                    )}
+                    {formObj.paymentStatus != 'due' && (
+                      <div className="col-md-3">
+                        <div className="form-group2">
+                          <label>Payment Date :</label>
+                          <DatePicker
+                            className="form-control p-2"
+                            selected={formObj.paymentDate}
+                            onChange={(date: Date) => setFormObj({ ...formObj, paymentDate: date })}
+                          />
+                          {errorForm.paymentDate && (
+                            <p className="p-1 h6 text-danger ">Enter Payment Date From Calander</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
                     <div className="col-md-3">
                       <div className="form-group2">
-                        <label>Reference No :</label>
-                        <input
-                          type="text"
-                          className="form-control p-2"
-                          placeholder="Reference No"
-                          value={formObj.ref_no}
-                          onChange={(e) => {
-                            setFormObj({ ...formObj, ref_no: e.target.value });
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <div className="col-md-3">
-                      <div className="form-group2">
-                        <label>Purchase Date :</label>
-                        <DatePicker
-                          className="form-control p-2"
-                          selected={formObj.date}
-                          onChange={(date: Date) => setFormObj({ ...formObj, date: date })}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="row">
-                    <div className="col-md-3" style={{ display: 'none' }}>
-                      <div className="form-group">
-                        <label>Document : </label>
-                        <input type="file" accept="image/*" className="form-control" />
-                      </div>
-                    </div>
-                    <div className="col-md-3">
-                      <div className="form-group">
-                        <label>
-                          Purchase Status: <span className="text-danger">*</span>
-                        </label>
+                        <label>Payment Type :</label>
                         <Select
-                          styles={colourStyles}
-                          options={purchaseStatus}
-                          value={purchaseStatus.filter((f: any) => {
-                            return f.value == formObj.purchaseStatus;
+                          styles={purchasesColourStyles}
+                          options={paymentTypes}
+                          value={paymentTypes.filter((f: any) => {
+                            return f.value == formObj.paymentType;
                           })}
                           onChange={(itm) => {
-                            setFormObj({ ...formObj, purchaseStatus: itm!.value });
+                            setFormObj({ ...formObj, paymentType: itm!.value });
                           }}
                         />
-                        {errorForm.purchaseStatus && (
+                        {errorForm.paymentType && (
                           <p className="p-1 h6 text-danger ">Select One Item</p>
                         )}
                       </div>
                     </div>
                   </div>
-
-                  {formObj.purchaseStatus != 'draft' && formObj.purchaseStatus != '' && (
-                    <div className="row">
-                      <div className="col-md-3">
-                        <div className="form-group">
-                          <label>
-                            Payment Status: <span className="text-danger">*</span>
-                          </label>
-                          <Select
-                            styles={colourStyles}
-                            options={paymentStatus}
-                            value={paymentStatus.filter((f: any) => {
-                              return f.value == formObj.paymentStatus;
-                            })}
-                            onChange={(itm) => {
-                              setFormObj({
-                                ...formObj,
-                                paymentStatus: itm!.value,
-                                paid_amount:
-                                  itm!.value == 'paid' || itm!.value == 'credit'
-                                    ? formObj.total_price
-                                    : 0,
-                              });
-                            }}
-                          />
-                          {errorForm.paymentStatus && (
-                            <p className="p-1 h6 text-danger ">Select One Item</p>
-                          )}
-                        </div>
-                      </div>
-                      {formObj.paymentStatus == 'partially_paid' && (
-                        <div className="col-md-3">
-                          <div className="form-group2">
-                            <label>Paid Amount :</label>
-                            <input
-                              type="text"
-                              className="form-control p-2"
-                              placeholder="Paid Amount"
-                              value={formObj.paid_amount}
-                              onChange={(e) => {
-                                setFormObj({ ...formObj, paid_amount: +e.target.value });
-                              }}
-                            />
-                            {errorForm.paid && (
-                              <p className="p-1 h6 text-danger ">Enter A Amount</p>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                      {formObj.paymentStatus != 'due' && (
-                        <div className="col-md-3">
-                          <div className="form-group2">
-                            <label>Payment Date :</label>
-                            <DatePicker
-                              className="form-control p-2"
-                              selected={formObj.paymentDate}
-                              onChange={(date: Date) =>
-                                setFormObj({ ...formObj, paymentDate: date })
-                              }
-                            />
-                            {errorForm.paymentDate && (
-                              <p className="p-1 h6 text-danger ">
-                                Enter Payment Date From Calander
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                      <div className="col-md-3">
-                        <div className="form-group2">
-                          <label>Payment Type :</label>
-                          <Select
-                            styles={colourStyles}
-                            options={paymentTypes}
-                            value={paymentTypes.filter((f: any) => {
-                              return f.value == formObj.paymentType;
-                            })}
-                            onChange={(itm) => {
-                              setFormObj({ ...formObj, paymentType: itm!.value });
-                            }}
-                          />
-                          {errorForm.paymentType && (
-                            <p className="p-1 h6 text-danger ">Select One Item</p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </Card.Body>
-            </Card>
-            <div className="row">
-              <div className="col-md-3">
-                <div className="form-group">
-                  <Select
-                    styles={selectStyle}
-                    options={currencies}
-                    value={currencies?.filter((f: any) => {
-                      return f.value == formObj.currency_id;
-                    })}
-                    onChange={(itm) => {
-                      setFormObj({
-                        ...formObj,
-                        currency_code: itm!.code,
-                        currency_rate: itm!.exchange_rate,
-                        currency_id: itm!.value,
-                      });
-                    }}
-                  />
-                </div>
+                )}
               </div>
-              <div className="col-md-3" style={{ display: 'none' }}>
-                <div className="form-group">
-                  <button
-                    type="button"
-                    className="btn m-btn btn-primary p-2"
-                    onClick={() => {
-                      setVatInColumn(!vatInColumn);
-                    }}>
-                    {vatInColumn ? 'VAT In Table' : 'In Order Only'}
-                  </button>
-                </div>
+            </Card.Body>
+          </Card>
+          <div className="row">
+            <div className="col-md-3">
+              <div className="form-group">
+                <Select
+                  isLoading={isCurrenciesLoading}
+                  styles={purchasesSelectStyle}
+                  options={currencies}
+                  value={currencies?.filter((f: any) => {
+                    return f.value == formObj.currency_id;
+                  })}
+                  onChange={(itm) => {
+                    setFormObj({
+                      ...formObj,
+                      currency_code: itm!.code,
+                      currency_rate: itm!.exchange_rate,
+                      currency_id: itm!.value,
+                    });
+                  }}
+                />
               </div>
             </div>
-
-            <Card className="mb-4">
-              <Card.Header className="p-3 bg-white">
-                <Select
-                  formatOptionLabel={formatProductsOptions}
-                  styles={colourStyles}
-                  options={products}
-                  onChange={(e) => addToProductQuotations(e)}
-                />
-                {errorForm.products && (
-                  <p className="p-1 h6 text-danger ">Select One Product at Least</p>
-                )}
-              </Card.Header>
-              <Card.Body>
-                <div style={{ height: 300, width: '100%' }}>
-                  <DataGrid
-                    rows={selectProducts}
-                    columns={columns}
-                    pageSize={10}
-                    rowsPerPageOptions={[10]}
-                    onCellEditCommit={saveToCell}
-                    columnVisibilityModel={{
-                      vat: vatInColumn,
-                    }}
-                  />
-                </div>
-                <Grid container spacing={2} className="mt-3 d-flex justify-content-end">
-                  <Grid item xs={6} textAlign="left">
-                    <table className="m-table-expends">
-                      <tbody>
-                        <TableExpeseRows
-                          rowsData={selectedExpendsEdit}
-                          curencise={currencies}
-                          selData={selectedExpendsEdit}
-                          deleteTableRows={deleteTableRows}
-                          handleChange={handleChange}
-                        />
-                        <TableExpeseRows
-                          rowsData={expends}
-                          curencise={currencies}
-                          selData={selectedExpends}
-                          deleteTableRows={deleteTableRows}
-                          handleChange={handleChange}
-                        />
-                        <tr>
-                          <td colSpan={3}>
-                            <button
-                              onClick={() => addTableRows()}
-                              className="btn m-btn btn-primary p-2"
-                              style={{ borderRadius: '0px' }}>
-                              {' '}
-                              + Add Shipping Expends
-                            </button>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <div className="purchase-items">
-                      <div className="purchase-item">
-                        <p className="puchase-arrow" style={{ width: '100px' }}></p>
-                        <div className="purchase-text">
-                          <p></p>
-                          <p>
-                            <Button
-                              variant="outlined"
-                              onClick={() => {
-                                setIsEditSort(!isEditSort);
-                              }}>
-                              <EditIcon />
-                            </Button>
-                          </p>
-                        </div>
-                      </div>
-                      <div className="purchase-item">
-                        {isEditSort && <p className="puchase-arrow" style={{ width: '100px' }}></p>}
-                        <div className="purchase-text">
-                          <p>items</p>
-                          <p>
-                            {selectProducts.length}{' '}
-                            <span style={{ opacity: '0.5' }}> [{total_qty}]</span>{' '}
-                          </p>
-                        </div>
-                      </div>
-                      <Divider flexItem></Divider>
-                      <div className="purchase-item">
-                        {isEditSort && <p className="puchase-arrow" style={{ width: '100px' }}></p>}
-                        <div className="purchase-text">
-                          <p>Sub Total</p>
-                          <p>
-                            {Number(formObj.subTotal_price).toFixed(
-                              locationSettings?.location_decimal_places
-                            )}{' '}
-                            <span style={{ opacity: '0.5' }}>
-                              {' '}
-                              {locationSettings?.currency_code}
-                            </span>{' '}
-                          </p>
-                        </div>
-                      </div>
-                      <Divider flexItem></Divider>
-                      {purchaseDetails.map((pd: any, i: number) => {
-                        return (
-                          <>
-                            <div key={i} className="purchase-item">
-                              {isEditSort && (
-                                <p className="puchase-arrow" style={{ width: '100px' }}>
-                                  {isEditSort && i != 0 && (
-                                    <Button variant="outlined" onClick={() => sortHandler(i, 'u')}>
-                                      <KeyboardArrowUpIcon />
-                                    </Button>
-                                  )}
-                                  {isEditSort && purchaseDetails.length - 1 != i && (
-                                    <Button variant="outlined" onClick={() => sortHandler(i, 'd')}>
-                                      <KeyboardArrowDownIcon />
-                                    </Button>
-                                  )}
-                                </p>
-                              )}
-                              <div className="purchase-text">
-                                <p>{pd.label}</p>
-                                {pd.value == 'discount' && (
-                                  <div className="d-flex">
-                                    <div className="px-3">
-                                      <Form.Select
-                                        style={{ width: '130px' }}
-                                        onChange={(e) => {
-                                          setFormObj({ ...formObj, discount_type: e.target.value });
-                                        }}>
-                                        <option value={'fixed'}>Fixed</option>
-                                        <option value={'percent'}>Percent %</option>
-                                      </Form.Select>
-                                    </div>
-                                    <div>
-                                      <Form.Control
-                                        size="sm"
-                                        type="number"
-                                        min={0}
-                                        value={formObj.discount_amount}
-                                        onChange={(e) => {
-                                          setFormObj({
-                                            ...formObj,
-                                            discount_amount: +e.target.value,
-                                          });
-                                        }}
-                                      />
-                                    </div>
-                                    <p>&nbsp;</p>
-                                    <p className="fixed-width">
-                                      {formObj.total_discount.toFixed(
-                                        locationSettings?.location_decimal_places
-                                      )}{' '}
-                                    </p>
-                                  </div>
-                                )}
-                                {pd.value == 'expense' && (
-                                  <p>
-                                    {formObj.total_expense.toFixed(
-                                      locationSettings?.location_decimal_places
-                                    )}
-                                  </p>
-                                )}
-                                {pd.value == 'taxes' && !vatInColumn && (
-                                  <div>
-                                    <table className="m-table-expends">
-                                      <tbody>
-                                        <TableTaxRows
-                                          rowsData={selectedTaxes}
-                                          curencise={currencies}
-                                          deleteTableRows={deleteRowTaxes}
-                                          handleChange={handlerRowTaxes}
-                                        />
-                                        <tr>
-                                          <td colSpan={3}>
-                                            <button
-                                              onClick={() => addTableRows('taxes')}
-                                              className="btn m-btn btn-primary p-2"
-                                              style={{ borderRadius: '0px' }}>
-                                              {' '}
-                                              + Add Taxe(s)
-                                            </button>
-                                          </td>
-                                        </tr>
-                                      </tbody>
-                                    </table>
-                                    <p className="fixed-width">
-                                      {formObj.total_tax}%(
-                                      {((formObj.total_tax / 100) * formObj.subTotal_price).toFixed(
-                                        locationSettings?.location_decimal_places
-                                      )}
-                                      )
-                                    </p>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                            <Divider flexItem></Divider>
-                          </>
-                        );
-                      })}
-                      <div className="purchase-item">
-                        {isEditSort && <p className="puchase-arrow" style={{ width: '100px' }}></p>}
-                        <div className="purchase-text">
-                          <p>Total</p>
-                          <p>
-                            {Number(formObj.total_price).toFixed(
-                              locationSettings?.location_decimal_places
-                            )}
-                            <span style={{ opacity: '0.5', fontSize: '10px' }}>
-                              {' '}
-                              {locationSettings?.currency_code}
-                            </span>
-                          </p>
-                        </div>
-                        <div className="purchase-text">
-                          <p>Total Paid</p>
-                          <p>
-                            {formObj.paid_amount.toFixed(locationSettings?.location_decimal_places)}
-                            <span style={{ opacity: '0.5', fontSize: '10px' }}>
-                              {' '}
-                              {locationSettings?.currency_code}
-                            </span>
-                          </p>
-                        </div>
-                        <div className="purchase-text">
-                          <p>Total Remaining</p>
-                          <p>
-                            {(formObj.total_price - formObj.paid_amount).toFixed(
-                              locationSettings?.location_decimal_places
-                            )}
-                            <span style={{ opacity: '0.5', fontSize: '10px' }}>
-                              {' '}
-                              {locationSettings?.currency_code}
-                            </span>
-                          </p>
-                        </div>
-                        {errorForm.morePaid && (
-                          <p className="p-1 h6 text-danger ">Error! ,Enter Right Amount</p>
-                        )}
-                      </div>
-                    </div>
-                  </Grid>
-                </Grid>
+            <div className="col-md-3" style={{ display: 'none' }}>
+              <div className="form-group">
                 <button
                   type="button"
                   className="btn m-btn btn-primary p-2"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    errors = [];
-                    if (formObj.supplier_id == 0) errors.push('error');
-                    if (selectProducts.length == 0) errors.push('error');
-                    if (formObj.purchaseStatus.length <= 2) errors.push('error');
-                    if (formObj.purchaseStatus != 'draft') {
-                      if (formObj.paymentStatus.length <= 2) errors.push('error');
-                      if ((formObj.paymentDate + '').length <= 2) errors.push('error2');
-                      if (formObj.paymentType.length <= 2) errors.push('error');
-                    }
-                    if (formObj.paymentStatus == 'partially_paid' && formObj.paid_amount < 0.5)
-                      errors.push('error');
-
-                    setErrorForm({
-                      ...errorForm,
-                      supplier_id: formObj.supplier_id == 0,
-                      purchaseStatus: formObj.purchaseStatus.length <= 2,
-                      paymentDate: (formObj.paymentDate + '').length <= 2,
-                      paymentStatus: formObj.paymentStatus.length <= 2,
-                      paymentType: formObj.paymentType.length <= 2,
-                      products: selectProducts.length == 0,
-                      paid: formObj.paymentStatus == 'partially_paid' && formObj.paid_amount < 0.5,
-                      morePaid: formObj.paid_amount > formObj.total_price,
-                    });
-
-                    if (errors.length == 0) {
-                      if (isEdit) editPurchase();
-                      else insertPurchase();
-                    } else Toastify('error', 'Enter Requires Field');
+                  onClick={() => {
+                    setVatInColumn(!vatInColumn);
                   }}>
-                  {isEdit ? 'Edit' : 'Save'}
+                  {vatInColumn ? 'VAT In Table' : 'In Order Only'}
                 </button>
-              </Card.Body>
-            </Card>
-          </>
-        )}
-      </AdminLayout>
-    </>
+              </div>
+            </div>
+          </div>
+
+          <Card className="mb-4">
+            <Card.Header className="p-3 bg-white">
+              <Select
+                formatOptionLabel={formatProductsOptions}
+                isLoading={isProductsLoading}
+                styles={purchasesColourStyles}
+                options={products}
+                onChange={(e) => addToProductQuotations(e)}
+              />
+              {errorForm.products && (
+                <p className="p-1 h6 text-danger ">Select One Product at Least</p>
+              )}
+            </Card.Header>
+            <Card.Body>
+              <div style={{ height: 300, width: '100%' }}>
+                <DataGrid
+                  rows={selectProducts}
+                  columns={columns}
+                  pageSize={10}
+                  rowsPerPageOptions={[10]}
+                  onCellEditCommit={saveToCell}
+                  columnVisibilityModel={{
+                    vat: vatInColumn,
+                  }}
+                />
+              </div>
+              <Grid container spacing={2} className="mt-3 d-flex justify-content-end">
+                <Grid item xs={6} textAlign="left">
+                  <table className="m-table-expends">
+                    <tbody>
+                      <TableExpeseRows
+                        rowsData={selectedExpendsEdit}
+                        curencise={currencies}
+                        selData={selectedExpendsEdit}
+                        deleteTableRows={deleteTableRows}
+                        handleChange={handleChange}
+                      />
+                      <TableExpeseRows
+                        rowsData={expends}
+                        curencise={currencies}
+                        selData={selectedExpends}
+                        deleteTableRows={deleteTableRows}
+                        handleChange={handleChange}
+                      />
+                      <tr>
+                        <td colSpan={3}>
+                          <button
+                            onClick={() => addTableRows()}
+                            className="btn m-btn btn-primary p-2"
+                            style={{ borderRadius: '0px' }}>
+                            {' '}
+                            + Add Shipping Expends
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </Grid>
+                <Grid item xs={6}>
+                  <div className="purchase-items">
+                    <div className="purchase-item">
+                      <p className="puchase-arrow" style={{ width: '100px' }}></p>
+                      <div className="purchase-text">
+                        <p></p>
+                        <p>
+                          <Button
+                            variant="outlined"
+                            onClick={() => {
+                              setIsEditSort(!isEditSort);
+                            }}>
+                            <EditIcon />
+                          </Button>
+                        </p>
+                      </div>
+                    </div>
+                    <div className="purchase-item">
+                      {isEditSort && <p className="puchase-arrow" style={{ width: '100px' }}></p>}
+                      <div className="purchase-text">
+                        <p>items</p>
+                        <p>
+                          {selectProducts.length}{' '}
+                          <span style={{ opacity: '0.5' }}> [{total_qty}]</span>{' '}
+                        </p>
+                      </div>
+                    </div>
+                    <Divider flexItem></Divider>
+                    <div className="purchase-item">
+                      {isEditSort && <p className="puchase-arrow" style={{ width: '100px' }}></p>}
+                      <div className="purchase-text">
+                        <p>Sub Total</p>
+                        <p>
+                          {Number(formObj.subTotal_price).toFixed(
+                            locationSettings?.location_decimal_places
+                          )}{' '}
+                          <span style={{ opacity: '0.5' }}> {locationSettings?.currency_code}</span>{' '}
+                        </p>
+                      </div>
+                    </div>
+                    <Divider flexItem></Divider>
+                    {purchaseDetails.map((pd: any, i: number) => {
+                      return (
+                        <>
+                          <div key={i} className="purchase-item">
+                            {isEditSort && (
+                              <p className="puchase-arrow" style={{ width: '100px' }}>
+                                {isEditSort && i != 0 && (
+                                  <Button variant="outlined" onClick={() => sortHandler(i, 'u')}>
+                                    <KeyboardArrowUpIcon />
+                                  </Button>
+                                )}
+                                {isEditSort && purchaseDetails.length - 1 != i && (
+                                  <Button variant="outlined" onClick={() => sortHandler(i, 'd')}>
+                                    <KeyboardArrowDownIcon />
+                                  </Button>
+                                )}
+                              </p>
+                            )}
+                            <div className="purchase-text">
+                              <p>{pd.label}</p>
+                              {pd.value == 'discount' && (
+                                <div className="d-flex">
+                                  <div className="px-3">
+                                    <Form.Select
+                                      style={{ width: '130px' }}
+                                      onChange={(e) => {
+                                        setFormObj({ ...formObj, discount_type: e.target.value });
+                                      }}>
+                                      <option value={'fixed'}>Fixed</option>
+                                      <option value={'percent'}>Percent %</option>
+                                    </Form.Select>
+                                  </div>
+                                  <div>
+                                    <Form.Control
+                                      size="sm"
+                                      type="number"
+                                      min={0}
+                                      value={formObj.discount_amount}
+                                      onChange={(e) => {
+                                        setFormObj({
+                                          ...formObj,
+                                          discount_amount: +e.target.value,
+                                        });
+                                      }}
+                                    />
+                                  </div>
+                                  <p>&nbsp;</p>
+                                  <p className="fixed-width">
+                                    {formObj.total_discount.toFixed(
+                                      locationSettings?.location_decimal_places
+                                    )}{' '}
+                                  </p>
+                                </div>
+                              )}
+                              {pd.value == 'expense' && (
+                                <p>
+                                  {formObj.total_expense.toFixed(
+                                    locationSettings?.location_decimal_places
+                                  )}
+                                </p>
+                              )}
+                              {pd.value == 'taxes' && !vatInColumn && (
+                                <div>
+                                  <table className="m-table-expends">
+                                    <tbody>
+                                      <TableTaxRows
+                                        rowsData={selectedTaxes}
+                                        curencise={currencies}
+                                        deleteTableRows={deleteRowTaxes}
+                                        handleChange={handlerRowTaxes}
+                                      />
+                                      <tr>
+                                        <td colSpan={3}>
+                                          <button
+                                            onClick={() => addTableRows('taxes')}
+                                            className="btn m-btn btn-primary p-2"
+                                            style={{ borderRadius: '0px' }}>
+                                            {' '}
+                                            + Add Taxe(s)
+                                          </button>
+                                        </td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                                  <p className="fixed-width">
+                                    {formObj.total_tax}%(
+                                    {((formObj.total_tax / 100) * formObj.subTotal_price).toFixed(
+                                      locationSettings?.location_decimal_places
+                                    )}
+                                    )
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <Divider flexItem></Divider>
+                        </>
+                      );
+                    })}
+                    <div className="purchase-item">
+                      {isEditSort && <p className="puchase-arrow" style={{ width: '100px' }}></p>}
+                      <div className="purchase-text">
+                        <p>Total</p>
+                        <p>
+                          {Number(formObj.total_price).toFixed(
+                            locationSettings?.location_decimal_places
+                          )}
+                          <span style={{ opacity: '0.5', fontSize: '10px' }}>
+                            {' '}
+                            {locationSettings?.currency_code}
+                          </span>
+                        </p>
+                      </div>
+                      <div className="purchase-text">
+                        <p>Total Paid</p>
+                        <p>
+                          {formObj.paid_amount.toFixed(locationSettings?.location_decimal_places)}
+                          <span style={{ opacity: '0.5', fontSize: '10px' }}>
+                            {' '}
+                            {locationSettings?.currency_code}
+                          </span>
+                        </p>
+                      </div>
+                      <div className="purchase-text">
+                        <p>Total Remaining</p>
+                        <p>
+                          {(formObj.total_price - formObj.paid_amount).toFixed(
+                            locationSettings?.location_decimal_places
+                          )}
+                          <span style={{ opacity: '0.5', fontSize: '10px' }}>
+                            {' '}
+                            {locationSettings?.currency_code}
+                          </span>
+                        </p>
+                      </div>
+                      {errorForm.morePaid && (
+                        <p className="p-1 h6 text-danger ">Error! ,Enter Right Amount</p>
+                      )}
+                    </div>
+                  </div>
+                </Grid>
+              </Grid>
+              <button
+                type="button"
+                className="btn m-btn btn-primary p-2"
+                onClick={(e) => {
+                  e.preventDefault();
+                  errors = [];
+                  if (formObj.supplier_id == 0) errors.push('supplier id');
+                  if (selectProducts.length == 0) errors.push('selected products');
+                  if (formObj.purchaseStatus.length <= 2) errors.push('purchaseStatus less than 2');
+                  if (formObj.purchaseStatus != 'draft') {
+                    if (formObj.paymentStatus.length <= 2) errors.push('paymentStatus less than 2');
+                    if ((formObj.paymentDate + '').length <= 2) errors.push('payment error');
+                    if (formObj.paymentType.length <= 2) errors.push('payment type');
+                  }
+                  if (formObj.paymentStatus == 'partially_paid' && formObj.paid_amount < 0.5)
+                    errors.push(' partially paid');
+
+                  setErrorForm({
+                    ...errorForm,
+                    supplier_id: formObj.supplier_id == 0,
+                    purchaseStatus: formObj.purchaseStatus.length <= 2,
+                    paymentDate: (formObj.paymentDate + '').length <= 2,
+                    paymentStatus: formObj.paymentStatus.length <= 2,
+                    paymentType: formObj.paymentType.length <= 2,
+                    products: selectProducts.length == 0,
+                    paid: formObj.paymentStatus == 'partially_paid' && formObj.paid_amount < 0.5,
+                    morePaid: formObj.paid_amount > formObj.total_price,
+                  });
+                  console.log(errors);
+                  if (errors.length == 0) {
+                    if (isEdit) editPurchase();
+                    else insertPurchase();
+                  } else Toastify('error', 'Enter Requires Field');
+                }}>
+                {isEdit ? 'Edit' : 'Save'}
+              </button>
+            </Card.Body>
+          </Card>
+        </>
+      )}
+    </AdminLayout>
   );
 };
 export default withAuth(AddPurchase);
+
+export async function getServerSideProps({ params, query }) {
+  const { id } = params;
+  return {
+    props: { id, shopId: query.id },
+  };
+}

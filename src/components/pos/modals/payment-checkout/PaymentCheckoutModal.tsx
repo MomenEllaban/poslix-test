@@ -20,8 +20,13 @@ import { useAppDispatch, useAppSelector } from 'src/hooks';
 import { clearCart, selectCartByLocation } from 'src/redux/slices/cart.slice';
 import api from 'src/utils/app-api';
 
-export default function PaymentCheckoutModal({ show, setShow, shopId, invoiceType, invoiceDetails }) {
-  
+export default function PaymentCheckoutModal({
+  show,
+  setShow,
+  shopId,
+  invoiceType,
+  invoiceDetails,
+}) {
   const dispatch = useAppDispatch();
   const { locationSettings, tailoringSizes, tailoringExtras } = useUser();
   const componentRef = React.useRef(null);
@@ -30,10 +35,10 @@ export default function PaymentCheckoutModal({ show, setShow, shopId, invoiceTyp
     label: string;
     isNew: boolean;
   }>({ value: '1', label: 'walk-in customer', isNew: false });
-  const [printReceipt, setPrintReceipt] = useState<any>()
-  const [print, setPrint] = useState<boolean>(false)
+  const [printReceipt, setPrintReceipt] = useState<any>();
+  const [print, setPrint] = useState<boolean>(false);
   const [__WithDiscountFeature__total, set__WithDiscountFeature__total] = useState<number>(0);
-  
+
   const [remaining, setRemaining] = useState<number>(0);
 
   const [lastEdited, setLastEdited] = useState<number>(0);
@@ -62,9 +67,9 @@ export default function PaymentCheckoutModal({ show, setShow, shopId, invoiceTyp
   const totalAmount = totalNoTax + totalTax - totalDiscount;
 
   useEffect(() => {
-    setValue(`payment.0.amount`, totalAmount.toString())
-    setPaidAmount({ '0': totalAmount })
-  }, [totalAmount])
+    setValue(`payment.0.amount`, totalAmount.toString());
+    setPaidAmount({ '0': totalAmount });
+  }, [totalAmount]);
 
   const paymentTypes = useMemo(
     () =>
@@ -110,6 +115,7 @@ export default function PaymentCheckoutModal({ show, setShow, shopId, invoiceTyp
       discount_amount: cart?.cartDiscount,
       tax_type: cart?.cartTaxType,
       tax_amount: cart?.cartTax,
+
       related_invoice_id: cart.orderId > 0 ? cart.orderId : null,
       cart: cart?.cartItems.map((product) => ({
         product_id: product?.product_id,
@@ -122,9 +128,9 @@ export default function PaymentCheckoutModal({ show, setShow, shopId, invoiceTyp
       .then((res) => {
         console.log(res.data);
         console.log(res.data.result.payment);
-        setPrintReceipt(res.data.result)
-        setPrint(true)
-        setShow(false)
+        setPrintReceipt(res.data.result);
+        setPrint(true);
+        setShow(false);
       })
       .then(() => {
         dispatch(clearCart({ location_id: shopId }));
@@ -136,14 +142,13 @@ export default function PaymentCheckoutModal({ show, setShow, shopId, invoiceTyp
   }, [paidAmount]);
 
   useEffect(() => {
-    if(printReceipt && print)
-      handlePrint()
-  }, [printReceipt])
+    if (printReceipt && print) handlePrint();
+  }, [printReceipt]);
 
   class ComponentToPrint extends React.PureComponent {
     render() {
       return invoiceType === 'receipt' ? (
-        <div className="bill" style={{width: '100%'}}>
+        <div className="bill" style={{ width: '100%' }}>
           <div className="brand-logo">
             <img src={invoiceDetails.logo} />
           </div>
@@ -200,17 +205,25 @@ export default function PaymentCheckoutModal({ show, setShow, shopId, invoiceTyp
                 </td>
                 <td></td>
                 <td>
-                  {(+printReceipt?.total_price * +printReceipt?.products[0].pivot.tax_amount / 100).toFixed(locationSettings?.location_decimal_places)}
+                  {(
+                    (+printReceipt?.total_price * +printReceipt?.products[0].pivot.tax_amount) /
+                    100
+                  ).toFixed(locationSettings?.location_decimal_places)}
                 </td>
               </tr>
               <tr className="net-amount">
                 <td></td>
                 <td>
-                  {invoiceDetails.txtDiscount}{'Discount'}
+                  {invoiceDetails.txtDiscount}
+                  {'Discount'}
                   {invoiceDetails.isMultiLang && invoiceDetails.txtDiscount2}
                 </td>
                 <td></td>
-                <td>{(+printReceipt?.discount_amount).toFixed(locationSettings?.location_decimal_places)}</td>
+                <td>
+                  {(+printReceipt?.discount_amount).toFixed(
+                    locationSettings?.location_decimal_places
+                  )}
+                </td>
               </tr>
               <tr className="net-amount">
                 <td></td>
@@ -222,7 +235,7 @@ export default function PaymentCheckoutModal({ show, setShow, shopId, invoiceTyp
                   {/* {Number(__WithDiscountFeature__total + (totalAmount - printReceipt.totalPrice)).toFixed(
                     locationSettings?.location_decimal_places
                   )} */}
-                  {Number((+printReceipt?.total_price - +printReceipt?.discount_amount)).toFixed(
+                  {Number(+printReceipt?.total_price - +printReceipt?.discount_amount).toFixed(
                     locationSettings?.location_decimal_places
                   )}
                 </td>
@@ -363,8 +376,8 @@ export default function PaymentCheckoutModal({ show, setShow, shopId, invoiceTyp
                   <td className="txt_bold_invoice">
                     {Number(
                       __WithDiscountFeature__total +
-                        (+printReceipt?.total_price) -
-                        (+printReceipt?.payment[0].amount)
+                        +printReceipt?.total_price -
+                        +printReceipt?.payment[0].amount
                     ) > 0
                       ? Number(
                           __WithDiscountFeature__total +
@@ -405,7 +418,7 @@ export default function PaymentCheckoutModal({ show, setShow, shopId, invoiceTyp
 
   const handlePrint = useReactToPrint({
     content: () => componentRef.current,
-    onAfterPrint: () => setPrint(false)
+    onAfterPrint: () => setPrint(false),
   });
 
   return (

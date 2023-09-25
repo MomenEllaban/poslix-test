@@ -162,7 +162,9 @@ const Purchases: NextPage = (props: any) => {
 
   const [permissions, setPermissions] = useState<any>();
   useEffect(() => {
-    const perms = JSON.parse(localStorage.getItem('permissions')).filter(loc => loc.id==router.query.id);
+    const perms = JSON.parse(localStorage.getItem('permissions')).filter(
+      (loc) => loc.id == router.query.id
+    );
     const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
     perms[0]?.permissions.map((perm) =>
       perm.name.includes('purchases/add')
@@ -275,9 +277,9 @@ const Purchases: NextPage = (props: any) => {
   );
 };
 export default withAuth(Purchases);
-export async function getServerSideProps({ params }) {
-  const { id } = params
+export async function getServerSideProps({ params, query }) {
+  const { id } = params;
   return {
-    props: {id},
-  }
+    props: { id, shopId: query.id },
+  };
 }
