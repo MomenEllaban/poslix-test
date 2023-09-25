@@ -896,6 +896,9 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                     });
                   }}
                 />
+                {errorForm.currency_id && (
+                  <p className="p-1 h6 text-danger ">Select a Currency</p>
+                )}
               </div>
             </div>
             <div className="col-md-3" style={{ display: 'none' }}>
@@ -1159,8 +1162,9 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                 onClick={(e) => {
                   e.preventDefault();
                   errors = [];
-                  if (formObj.supplier_id < 0) errors.push('supplier id');
+                  if (formObj.supplier_id == 0) errors.push('supplier id');
                   if (selectProducts.length == 0) errors.push('selected products');
+                  if (formObj.currency_id == 0 || formObj.currency_id == undefined) errors.push('currency id');
                   if (formObj.purchaseStatus.length <= 2) errors.push('purchaseStatus less than 2');
                   if (formObj.purchaseStatus != 'draft') {
                     if (formObj.paymentStatus.length <= 2) errors.push('paymentStatus less than 2');
@@ -1170,9 +1174,12 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                   if (formObj.paymentStatus == 'partially_paid' && formObj.paid_amount < 0.5)
                     errors.push(' partially paid');
 
+                    console.log(formObj.currency_id);
+                    
                   setErrorForm({
                     ...errorForm,
                     supplier_id: formObj.supplier_id == 0,
+                    currency_id: formObj.currency_id == 0 || formObj.currency_id == undefined,
                     purchaseStatus: formObj.purchaseStatus.length <= 2,
                     paymentDate: (formObj.paymentDate + '').length <= 2,
                     paymentStatus: formObj.paymentStatus.length <= 2,

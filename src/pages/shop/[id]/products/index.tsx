@@ -186,14 +186,14 @@ const Product: NextPage = (props: any) => {
       renderCell: ({ row }: Partial<GridRowParams>) => (
         <>
           <ButtonGroup className="mb-2 m-buttons-style">
-            {permissions.hasEdit && (
+            {/* {permissions.hasEdit && (
               <Button
                 onClick={() => {
                   router.push('/shop/' + shopId + '/products/edit/' + row.id);
                 }}>
                 <FontAwesomeIcon icon={faPenToSquare} />
               </Button>
-            )}
+            )} */}
             {permissions.hasDelete && (
               <Button
                 onClick={() => {

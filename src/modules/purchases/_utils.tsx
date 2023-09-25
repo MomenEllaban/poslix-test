@@ -38,6 +38,7 @@ export const purchasesInitFormError = {
   paymentType: false,
   paymentDate: false,
   purchaseStatus: false,
+  currency_id: false,
 };
 
 export const purchasesInitPurchaseDetails: { label: string; value: string; priority: number }[] = [
