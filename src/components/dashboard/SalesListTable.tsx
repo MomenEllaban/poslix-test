@@ -170,7 +170,7 @@ export default function SalesListTable({ shopId, rules, salesList }: any) {
     render() {
       if (!selectRow) return;
       return (
-        <div className="bill" style={{ width: '100%' }}>
+        <div className="bill">
           <div className="brand-logo">
             <img src={invoiceDetails.logo} />
           </div>
