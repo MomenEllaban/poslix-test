@@ -101,43 +101,34 @@ const Home = (props: any) => {
   });
 
   async function initData() {
-    const { success, data } = await apiFetchCtr({
-      fetch: 'dashboard',
-      subType: 'initDash',
-      shopId,
-    });
-    if (!success) {
-      Toastify('error', 'Error in loading, Try Again');
-      return;
-    }
     setIsLoading(false);
-    setProfitMonthLabels(data.months_name);
-    setProfitMonthValues(data.profit_months);
-    setFacrtors(data.factors_lsit);
-    setBox1Price(data.profit_sales);
-    setBox2Price(data.profit_expense);
-    setBox3Price(data.purchases);
-    setBox4Price(data.count_contacts);
-    if (data.upPro != null && data.upPro.length > 0)
-      setTopProdcuts({
-        labels: data.upPro.map((item: any) => item.name),
-        values: data.upPro.map((item: any) => item.total_qty_sold),
-      });
-    else
-      setTopProdcuts({
-        labels: [0, 0, 0, 0, 0, 0, 0],
-        values: [0, 0, 0, 0, 0, 0, 0],
-      });
-    if (data.downPro != null && data.downPro.length > 0)
-      setTopProdcutsDown({
-        labels: data.downPro.map((item: any) => item.name),
-        values: data.downPro.map((item: any) => item.total_qty_sold),
-      });
-    else
-      setTopProdcutsDown({
-        labels: [0, 0, 0, 0, 0, 0, 0],
-        values: [0, 0, 0, 0, 0, 0, 0],
-      });
+    // setProfitMonthLabels(data.months_name);
+    // setProfitMonthValues(data.profit_months);
+    // setFacrtors(data.factors_lsit);
+    // setBox1Price(data.profit_sales);
+    // setBox2Price(data.profit_expense);
+    // setBox3Price(data.purchases);
+    // setBox4Price(data.count_contacts);
+    // if (data.upPro != null && data.upPro.length > 0)
+    //   setTopProdcuts({
+    //     labels: data.upPro.map((item: any) => item.name),
+    //     values: data.upPro.map((item: any) => item.total_qty_sold),
+    //   });
+    // else
+    //   setTopProdcuts({
+    //     labels: [0, 0, 0, 0, 0, 0, 0],
+    //     values: [0, 0, 0, 0, 0, 0, 0],
+    //   });
+    // if (data.downPro != null && data.downPro.length > 0)
+    //   setTopProdcutsDown({
+    //     labels: data.downPro.map((item: any) => item.name),
+    //     values: data.downPro.map((item: any) => item.total_qty_sold),
+    //   });
+    // else
+    //   setTopProdcutsDown({
+    //     labels: [0, 0, 0, 0, 0, 0, 0],
+    //     values: [0, 0, 0, 0, 0, 0, 0],
+    //   });
   }
   useEffect(() => {
     initData();

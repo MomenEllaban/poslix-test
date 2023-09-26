@@ -45,7 +45,8 @@ export default function LoginView() {
         const again = await createNewData('login', data);
         localStorage.setItem('permissions', JSON.stringify(again.data.result.user?.locations));
         Toastify('success', 'Login Success');
-        router.push(`/${session.user.id}/business`);
+        if(session.user.user_type === "owner") router.push(`/${session.user.id}/business`);
+        else router.push(`/shop/${again.data.result.user?.locations[0].id}`);
       })
       .catch(() => {
         Toastify('error', 'Login Failed');

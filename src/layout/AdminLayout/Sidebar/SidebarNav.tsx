@@ -46,47 +46,6 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
   const router = useRouter();
   const [permissions, setPermissions] = useState<any>();
 
-  async function intData() {
-    const res = await findAllData('permissions/13');
-    if (!res) return;
-
-    // let { success, newdata } = await apiFetch({ fetch: 'checkwt' });
-    // if (newdata.types == undefined || newdata.types.length == 0) success = false;
-    if (
-      res.data.result.name == 'owner' ||
-      true //! this is a turn around
-    ) {
-      const newPermissions = {
-        ...permiss,
-        ...initialTruePermissions,
-      };
-      setPermiss({ ...newPermissions });
-      // localStorage.setItem('roles', JSON.stringify(newPermissions))
-
-      setLoading(false);
-    } else {
-      let _stuf = '';
-      // newdata.rules[shopId].forEach((dd: any) => (_stuf += dd.stuff));
-      setPermiss({
-        ...permiss,
-        hasProducts: _stuf.includes('products/'),
-        hasCats: _stuf.includes('category/'),
-        hasTaxes: _stuf.includes('taxes/'),
-        hasPurchases: _stuf.includes('purchases/'),
-        hasSalesList: _stuf.includes('sales/'),
-        hasPOS: _stuf.includes('pos/'),
-        hasDiscount: _stuf.includes('discounts/'),
-        hasExpenses: _stuf.includes('expanses/'),
-        hasTailoring: _stuf.includes('tailoring/'),
-        hasOrders: _stuf.includes('orders/'),
-      });
-      setLoading(false);
-    }
-  }
-  useEffect(() => {
-    intData();
-  }, [shopId]);
-
   useEffect(() => {
     const localPermissions = localStorage.getItem('permissions');
     if (!localPermissions) return;
@@ -101,8 +60,8 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
     const getPermissions = { hasPos: false, hasProducts: false, hasPurchases: false, hasTransfers: false,
       hasSuppliers: false, hasExpenses: false, hasPricingGroups: false, hasCustomers: false, hasSalesList: false,
       hasQuotations: false, hasCategories: false, hasBrands: false, hasTaxes: false, hasAppearance: false,
-      hasRegisterReport: false, hasSalesReport: false, hasItemsReport: false, hasStockReport: false };
-    
+      hasRegisterReport: false, hasSalesReport: false, hasItemsReport: false, hasStockReport: false, hasAppStore: true };
+
     perms[0]?.permissions?.map((perm) =>
       perm.name === 'products/view' ? (getPermissions.hasProducts = true)
       : perm.name === 'purchases/view' ? (getPermissions.hasPurchases = true)
@@ -126,6 +85,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
     );
     
     setPermissions(getPermissions);
+    setLoading(false)
   }, [shopId]);
 
   if (loading)
@@ -375,7 +335,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
           <small className="ms-auto"></small>
         </SidebarNavItem>
       )}
-      {permiss.hasAppStore && (
+      {permissions.hasAppStore && (
         <SidebarNavItem
           icon={faCalendarDay}
           href={`/shop/${shopId}/digital/`}
