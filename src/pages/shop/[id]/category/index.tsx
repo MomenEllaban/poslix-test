@@ -111,7 +111,9 @@ const Category = ({ id }: any) => {
             <Tab eventKey="categories" title="Categories">
               <Card>
                 <Card.Header className="p-3 bg-white">
-                  <h5>Category List</h5>
+                  <h5>
+                    
+                  </h5>
                 </Card.Header>
                 <Card.Body className="table-responsive text-nowrap">
                   {!isloading ? (

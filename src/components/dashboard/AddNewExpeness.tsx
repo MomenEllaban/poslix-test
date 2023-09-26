@@ -1,14 +1,24 @@
+import { IExpenseList } from '@models/common-model';
+import { ICategory } from '@models/pos.types';
+import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { apiInsertCtr, apiUpdateCtr } from 'src/libs/dbUtils';
-import { IExpenseList, IPayment } from '@models/common-model';
+import DatePicker from 'react-datepicker';
 import Select from 'react-select';
 import { Toastify } from 'src/libs/allToasts';
-import DatePicker from 'react-datepicker';
-import { createNewData, updateData } from 'src/services/crud.api';
-import { useRouter } from 'next/router';
+import { createNewData, findAllData, updateData } from 'src/services/crud.api';
+import useSWR from 'swr';
 
-const AddNewExpeness = (props: any) => {
-  const { shopId, setExpensesList, rows, cats, setIsAddExpense, selectId } = props;
+const AddNewExpeness = ({
+  shopId,
+  setExpensesList,
+  rows,
+
+  setIsAddExpense,
+  selectId,
+}: any) => {
+  const router = useRouter();
+  const [cats, setCategories] = useState<ICategory[]>([]);
+
   const [formObj, setFormObj] = useState<IExpenseList>({
     id: 0,
     expense_id: 0,
@@ -17,13 +27,26 @@ const AddNewExpeness = (props: any) => {
     date: new Date(),
     category_id: '',
   });
-  const [cateData, setCateData] = useState<{ id: number; name: string; value: number }[]>([]);
+  const [cateData, setCateData] = useState<{ id: number; label: string; value: number }[]>([]);
   const [errorForm, setErrorForm] = useState({ expense_id: false, name: false, amount: false });
   const colourStyles = { control: (style: any) => ({ ...style, borderRadius: '10px' }) };
-  const router = useRouter()
+  const { isLoading, mutate } = useSWR(
+    !!shopId ? `expenses-categories/${shopId}` : null,
+
+    findAllData,
+    {
+      revalidateOnFocus: true,
+
+      onSuccess: ({ data }, key, config) => {
+        const _categories = data.result;
+
+        setCategories(_categories);
+      },
+    }
+  );
   async function addExpense() {
-    if(router.query.id){      
-      const res = await createNewData(`expenses/${router.query.id}`, formObj)
+    if (router.query.id) {
+      const res = await createNewData(`expenses/${router.query.id}`, formObj);
       console.log(res);
       if (res.data.success || res.data.status == 201) {
         Toastify('success', 'Successfully created');
@@ -42,8 +65,8 @@ const AddNewExpeness = (props: any) => {
   }
   async function editEpense() {
     console.log(formObj);
-    
-    const res = await updateData('expenses', selectId, formObj)
+
+    const res = await updateData('expenses', selectId, formObj);
     if (res.data.success) {
       let _i = rows.findIndex((rw: any) => rw.id == selectId);
       if (_i > -1) {
@@ -54,13 +77,14 @@ const AddNewExpeness = (props: any) => {
         _rows[_i].date = formObj.date;
         setExpensesList(_rows);
       }
-  
+
       setIsAddExpense(false);
     }
   }
   var errors = [];
   useEffect(() => {
-    setCateData(cats.filter((c) => c.id !== 0).map((c) => ({ label: c.name, value: c.id })));
+    const _categoriesData = cats?.map((c) => ({ id: c.id, label: c.name, value: c.id }));
+    setCateData(_categoriesData);
     if (selectId > 0) {
       let _i = rows.findIndex((rw: any) => rw.id == selectId);
       if (_i > -1)
@@ -73,7 +97,7 @@ const AddNewExpeness = (props: any) => {
           name: rows[_i].name,
         });
     }
-  }, []);
+  }, [cats]);
 
   return (
     <>
@@ -87,9 +111,8 @@ const AddNewExpeness = (props: any) => {
               <Select
                 styles={colourStyles}
                 options={cateData}
-                value={cateData.filter((f: any) => {
-                  if (f.value == formObj.expense_id) return { label: f.name, value: f.id };
-                })}
+                isLoading={isLoading}
+                value={cateData.filter((f: any) => +f.value === +formObj.expense_id)}
                 onChange={(itm: any) => {
                   setFormObj({ ...formObj, expense_id: itm!.value, category_id: itm!.value });
                 }}
