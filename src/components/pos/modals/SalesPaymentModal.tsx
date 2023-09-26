@@ -60,7 +60,7 @@ const SalesPaymentModal = (props: any) => {
       minWidth: '150px',
       maxHeight: '10px',
     }),
-    menu: (base: any) => ({ ...base, fontSize: '12p x' }),
+    menu: (base: any) => ({ ...base, fontSize: '12px' }),
   };
   const [paymentMethods] = useState(paymentTypeData);
   const { products, setProducts, variations, setVariations } = useContext(ProductContext);

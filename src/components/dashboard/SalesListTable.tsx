@@ -60,6 +60,11 @@ export default function SalesListTable({ shopId, rules, salesList }: any) {
     setInvoiceDetails(res.data.result);
   };
 
+  const handleCompletePrint = (id) => {
+    setSelectRow(salesList.data.filter(row => row.id == id)[0])
+    handlePrint()
+  }
+
   useEffect(() => {
     checkPrintType();
   }, []);
@@ -148,7 +153,8 @@ export default function SalesListTable({ shopId, rules, salesList }: any) {
               className={`${Number(+row.due) > 0 ? 'opacity-100 pe-auto' : 'opacity-50 pe-none'}`}
               onClick={() => {
                 if (Number(+row.due) > 0) {
-                  setPaymentModalShow(true);
+                  getItems(row.id);
+                  setSelectRow(row)
                   setPaymentModalData({
                     ...row,
                     totalDue:
@@ -156,6 +162,7 @@ export default function SalesListTable({ shopId, rules, salesList }: any) {
                         ? Number(+row.due).toFixed(locationSettings?.location_decimal_places)
                         : 0,
                   });
+                  setPaymentModalShow(true);
                 }
               }}>
               <FontAwesomeIcon icon={faDollarSign} />
