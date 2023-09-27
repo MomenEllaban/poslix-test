@@ -184,9 +184,8 @@ const Product: NextPage = (props: any) => {
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) => (
-        <>
-          <ButtonGroup className="mb-2 m-buttons-style">
-            {/* {permissions.hasEdit && (
+        <ButtonGroup className="mb-2 m-buttons-style">
+          {/* {permissions.hasEdit && (
               <Button
                 onClick={() => {
                   router.push('/shop/' + shopId + '/products/edit/' + row.id);
@@ -194,23 +193,19 @@ const Product: NextPage = (props: any) => {
                 <FontAwesomeIcon icon={faPenToSquare} />
               </Button>
             )} */}
-            {permissions.hasDelete && (
-              <Button
-                onClick={() => {
-                  setSelectId(row.id);
-                  setShow(true);
-                }}>
-                <FontAwesomeIcon icon={faTrash} />
-              </Button>
-            )}
+          {permissions.hasDelete && (
             <Button
               onClick={() => {
-                router.push('/shop/' + shopId + '/products/barcodes/');
+                setSelectId(row.id);
+                setShow(true);
               }}>
-              <FontAwesomeIcon icon={faBarcode} />
+              <FontAwesomeIcon icon={faTrash} />
             </Button>
-          </ButtonGroup>
-        </>
+          )}
+          <Button onClick={() => router.push('/shop/' + shopId + '/products/barcodes/')}>
+            <FontAwesomeIcon icon={faBarcode} />
+          </Button>
+        </ButtonGroup>
       ),
     },
   ];

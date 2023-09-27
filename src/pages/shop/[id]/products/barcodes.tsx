@@ -1,43 +1,36 @@
-import type { NextPage } from 'next';
-import { AdminLayout } from '@layout';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import Spinner from 'react-bootstrap/Spinner';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
-import { Button, ButtonGroup, Form } from 'react-bootstrap';
-import React, { useState, useEffect } from 'react';
-import Select from 'react-select';
-import { apiFetchCtr } from '../../../../libs/dbUtils';
-import { useRouter } from 'next/router';
-import AlertDialog from 'src/components/utils/AlertDialog';
-import { ILocationSettings, ITokenVerfy } from '@models/common-model';
-import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/checkUtils';
-import * as cookie from 'cookie';
-import { Toastify } from 'src/libs/allToasts';
-import { ToastContainer } from 'react-toastify';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { AdminLayout } from '@layout';
+import { IProduct } from '@models/pos.types';
 import { DataGrid, GridColDef, GridRowParams } from '@mui/x-data-grid';
-import BarcodeGenerator from 'src/components/dashboard/BarcodeGenerator';
+import type { GetServerSideProps, NextPage } from 'next';
+import { useRouter } from 'next/router';
+import React, { useEffect, useState } from 'react';
+import { Button, ButtonGroup, Form } from 'react-bootstrap';
+import Spinner from 'react-bootstrap/Spinner';
+import Select from 'react-select';
 import { useReactToPrint } from 'react-to-print';
-import VariationModal from 'src/components/pos/modals/VariationModal';
+import { ToastContainer } from 'react-toastify';
 import { useRecoilState } from 'recoil';
-import { cartJobType } from 'src/recoil/atoms';
 import withAuth from 'src/HOCs/withAuth';
+import BarcodeGenerator from 'src/components/dashboard/BarcodeGenerator';
+import VariationModal from 'src/components/pos/modals/VariationModal';
+import AlertDialog from 'src/components/utils/AlertDialog';
+import { useUser } from 'src/context/UserContext';
+import { Toastify } from 'src/libs/allToasts';
+import BarcodeToPrint from 'src/modules/barcode/_components/BarcodeToPrint';
+import { barcodeSelectStyles } from 'src/modules/barcode/_utils/barcode-select-styles';
+import { cartJobType } from 'src/recoil/atoms';
+import { apiFetchCtr } from '../../../../libs/dbUtils';
+import api from 'src/utils/app-api';
+import { ILocation } from '@models/auth.types';
+import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
 
-const Barcodes: NextPage = (props: any) => {
-  const { shopId, rules } = props;
-  const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
-    // @ts-ignore
-    value: 0,
-    label: '',
-    currency_decimal_places: 0,
-    currency_code: '',
-    currency_id: 0,
-    currency_rate: 1,
-    currency_symbol: '',
-  });
+const Barcodes: NextPage = ({ shopId, rules }: any) => {
   const router = useRouter();
-  const [products, setProducts] = useState<
-    { id: number; name: string; sku: string; type: string; qty: number }[]
-  >([]);
+
+  const { locationSettings, setLocationSettings } = useUser();
+  const [products, setProducts] = useState<IProduct[]>([]);
   const [options, setOptions] = useState<{
     name: boolean;
     category: boolean;
@@ -67,36 +60,6 @@ const Barcodes: NextPage = (props: any) => {
   const [isOpenVariationDialog, setIsOpenVariationDialog] = useState(false);
   const [allVariations, setAllVariations] = useState([]);
   const [jobType] = useRecoilState(cartJobType);
-  const colourStyles = {
-    control: (style: any, state: any) => ({
-      ...style,
-      borderRadius: '10px',
-      background: '#f5f5f5',
-      height: '50px',
-      borderColor: state.isFocused ? '2px solid #045c54' : '#eaeaea',
-      boxShadow: 'none',
-      '&:hover': {
-        border: '2px solid #045c54 ',
-      },
-    }),
-    menu: (provided: any, state: any) => ({
-      ...provided,
-      borderRadius: '10px',
-      padding: '10px',
-      border: '1px solid #c9ced2',
-    }),
-    option: (provided: any, state: any) => ({
-      ...provided,
-      backgroundColor: state.isSelected ? '#e6efee' : 'white',
-      color: '#2e776f',
-      borderRadius: '10px',
-      '&:hover': {
-        backgroundColor: '#e6efee',
-        color: '#2e776f',
-        borderRadius: '10px',
-      },
-    }),
-  };
 
   const columns: GridColDef[] = [
     { field: 'id', minWidth: 50 },
@@ -113,50 +76,49 @@ const Barcodes: NextPage = (props: any) => {
       sortable: false,
       disableExport: true,
       renderCell: ({ row }: Partial<GridRowParams>) => (
-        <>
-          <ButtonGroup className="mb-2 m-buttons-style">
-            <Button
-              onClick={() => {
-                const rows = [...selectedProducts];
-                const _index = rows.findIndex((it: any) => it.product_id == row.product_id);
-                if (_index > -1) rows.splice(_index, 1);
-                setSelectedProducts(rows);
-              }}>
-              <FontAwesomeIcon icon={faTrash} />
-            </Button>
-          </ButtonGroup>
-        </>
+        <ButtonGroup className="mb-2 m-buttons-style">
+          <Button
+            onClick={() => {
+              const rows = [...selectedProducts];
+              const _index = rows.findIndex((it: any) => it.product_id == row.product_id);
+              if (_index > -1) rows.splice(_index, 1);
+              setSelectedProducts(rows);
+            }}>
+            <FontAwesomeIcon icon={faTrash} />
+          </Button>
+        </ButtonGroup>
       ),
     },
   ];
   async function initDataPage() {
-    const { success, data } = await apiFetchCtr({
-      fetch: 'products',
-      subType: 'initBarcodePage',
-      shopId,
-    });
-    if (!success) {
-      Toastify('error', 'Somthing wrong!!, try agian');
-      return;
+    try {
+      const data: IProduct[] = await api
+        .get(`products/${shopId}?all_data=1`)
+        .then(({ data }) => data.result);
+
+      const _products = data.map((product) => ({
+        ...product,
+        label: product.name,
+        value: product.id,
+      }));
+      setProducts(_products);
+      // setAllVariations(data.variations);
+    } catch (e) {
+      setProducts([]);
+    } finally {
+      setIsLoading(false);
     }
-    setProducts(data.products);
-    setAllVariations(data.variations);
-    setIsLoading(false);
   }
 
   useEffect(() => {
-    var _locs = JSON.parse(localStorage.getItem('locations') || '[]');
-    if (_locs.toString().length > 10)
-      setLocationSettings(
-        _locs[
-          _locs.findIndex((loc: any) => {
-            return loc.value == shopId;
-          })
-        ]
-      );
-    else alert('errorr location settings');
+    if (!shopId) return;
+
+    const locations: ILocation[] = getLocalStorage(ELocalStorageKeys.LOCATIONS);
+    const currentLocation = locations.find((location) => +location.location_id === +shopId);
+    setLocationSettings(currentLocation ?? locationSettings);
+
     initDataPage();
-  }, [router.asPath]);
+  }, [shopId]);
 
   const handleDeleteFuc = (result: boolean, msg: string, section: string) => {
     if (result) {
@@ -181,7 +143,8 @@ const Barcodes: NextPage = (props: any) => {
   const addPackageProducts = (e: any) => {
     if (e.type == 'variable') {
       setSelectedProductForVariation({
-        product_id: e.product_id,
+        ...e,
+        product_id: e.id,
         is_service: 0,
         product_name: e.name,
       });
@@ -193,7 +156,7 @@ const Barcodes: NextPage = (props: any) => {
       setSelectedProducts([
         ...selectedProducts,
         {
-          id: e.product_id,
+          ...e,
           product_id: e.product_id,
           variation_id: 0,
           name: e.name,
@@ -205,206 +168,172 @@ const Barcodes: NextPage = (props: any) => {
       ]);
     else Toastify('error', 'already exists in list');
   };
-  useEffect(() => {
-    if (jobType.req == 4) {
-      // when Select Variation From PopUp
+  // useEffect(() => {
+  //   if (jobType.req == 4) {
+  //     // when Select Variation From PopUp
 
-      allVariations.map((varItm: any, index: number) => {
-        if (varItm.variation_id == jobType.val) {
-          const found = selectedProducts.some((el) => el.variation_id == varItm.variation_id);
-          if (!found)
-            setSelectedProducts([
-              ...selectedProducts,
-              {
-                id: +Number(varItm.product_id) + Math.floor(Math.random() * 1200),
-                product_id: varItm.product_id,
-                variation_id: varItm.variation_id,
-                name: selectedProductForVariation.product_name + ' ' + varItm.name,
-                quantity: 1,
-                price: varItm.variation_price,
-                sku: varItm.sku,
-                category: 'no set',
-              },
-            ]);
-          else Toastify('error', 'already exists in list');
-        }
-      });
-    }
-  }, [jobType]);
-  const generateItems = () => {
-    return (
-      <div>
-        {selectedProducts.map((sp) => {
-          const items = [];
-          for (let i = 0; i < sp.quantity; i++) {
-            items.push(
-              <div key={`${sp.sku}-${i}`} style={{ height: '120px' }}>
-                {options.businessName && (
-                  <h6 style={{ textAlign: 'center', fontSize: '20px' }}>
-                    {locationSettings.location_name}
-                  </h6>
-                )}
-                {options.name && (
-                  <h6 style={{ textAlign: 'center', fontSize: '20px' }}>{sp.name}</h6>
-                )}
-                {options.price && (
-                  <h6 style={{ textAlign: 'center', fontSize: '20px' }}>
-                    {Number(sp.price).toFixed(locationSettings?.location_decimal_places)}{' '}
-                    {locationSettings?.currency_code}
-                  </h6>
-                )}
-                {options.category && (
-                  <h6 style={{ textAlign: 'center', fontSize: '20px' }}>{sp.category}</h6>
-                )}
-                <div style={{ textAlign: 'center' }}>
-                  <BarcodeGenerator sku={sp.sku} />
-                </div>
-              </div>
-            );
-          }
-          return items;
-        })}
-      </div>
-    );
-  };
+  //   //   allVariations.map((varItm: any, index: number) => {
+  //   //     if (varItm.variation_id == jobType.val) {
+  //   //       const found = selectedProducts.some((el) => el.variation_id == varItm.variation_id);
+  //   //       if (!found)
+  //   //         setSelectedProducts([
+  //   //           ...selectedProducts,
+  //   //           {
+  //   //             id: +Number(varItm.product_id) + Math.floor(Math.random() * 1200),
+  //   //             product_id: varItm.product_id,
+  //   //             variation_id: varItm.variation_id,
+  //   //             name: selectedProductForVariation.product_name + ' ' + varItm.name,
+  //   //             quantity: 1,
+  //   //             price: varItm.variation_price,
+  //   //             sku: varItm.sku,
+  //   //             category: 'no set',
+  //   //           },
+  //   //         ]);
+  //   //       else Toastify('error', 'already exists in list');
+  //   //     }
+  //   //   });
+  //   // }
+  // }, [jobType]);
+
   //start
   const componentRef = React.useRef(null);
-  class ComponentToPrint extends React.PureComponent {
-    render() {
-      return generateItems();
-    }
-  }
 
   const handlePrint = useReactToPrint({
     content: () => componentRef.current,
   });
   return (
-    <>
-      <AdminLayout shopId={shopId}>
-        <ToastContainer />
-        {isOpenVariationDialog && (
-          <VariationModal
-            selectedProductForVariation={selectedProductForVariation}
-            isOpenVariationDialog={isOpenVariationDialog}
-            setIsOpenVariationDialog={setIsOpenVariationDialog}
-            variations={allVariations}
-          />
-        )}
-        <AlertDialog
-          alertShow={show}
-          alertFun={handleDeleteFuc}
-          shopId={shopId}
-          id={selectId}
-          type="products"
-          subType="deleteProduct">
-          Are you Sure You Want Delete This Item ?
-        </AlertDialog>
-        {!isLoading ? (
-          <>
-            <div className="page-content-style card">
-              <h5>Barcode Generator</h5>
-              <h5>
-                Step1: <span style={{ color: '#cdc8c8' }}>Selecet Products</span>
-              </h5>
-              <Select
-                styles={colourStyles}
-                options={products}
-                onChange={(e) => addPackageProducts(e)}
-              />
-              <DataGrid
-                className="datagrid-style"
-                sx={{
-                  '.MuiDataGrid-columnSeparator': {
-                    display: 'none',
-                  },
-                  '&.MuiDataGrid-root': {
-                    border: 'none',
-                  },
-                }}
-                rows={selectedProducts}
-                columns={columns}
-                pageSize={10}
-                onCellEditCommit={saveToCell}
-                columnVisibilityModel={{ id: false }}
-                rowsPerPageOptions={[10]}
-              />
-              <h5>
-                Step2: <span style={{ color: '#cdc8c8' }}>Options</span>
-              </h5>
-              <div className="invoice-settings-body" style={{ maxWidth: '500px' }}>
-                <div className="invoice-settings-item">
-                  <div>Business Name</div>
-                  <div>
-                    <Form.Check
-                      type="switch"
-                      className="custom-switch"
-                      onChange={(e) => {
-                        setOptions({ ...options, businessName: e.target.checked });
-                      }}
-                    />
-                  </div>
-                </div>
-                <div className="invoice-settings-item">
-                  <div>Product Name</div>
-                  <div>
-                    <Form.Check
-                      type="switch"
-                      className="custom-switch"
-                      onChange={(e) => {
-                        setOptions({ ...options, name: e.target.checked });
-                      }}
-                    />
-                  </div>
-                </div>
-                <div className="invoice-settings-item">
-                  <div>Price</div>
-                  <div>
-                    <Form.Check
-                      type="switch"
-                      className="custom-switch"
-                      onChange={(e) => {
-                        setOptions({ ...options, price: e.target.checked });
-                      }}
-                    />
-                  </div>
-                </div>
-                <div className="invoice-settings-item">
-                  <div>Category</div>
-                  <div>
-                    <Form.Check
-                      type="switch"
-                      className="custom-switch"
-                      onChange={(e) => {
-                        setOptions({ ...options, category: e.target.checked });
-                      }}
-                    />
-                  </div>
+    <AdminLayout shopId={shopId}>
+      <ToastContainer />
+      {isOpenVariationDialog && (
+        <VariationModal
+          selectedProductForVariation={selectedProductForVariation}
+          isOpenVariationDialog={isOpenVariationDialog}
+          setIsOpenVariationDialog={setIsOpenVariationDialog}
+          variations={allVariations}
+        />
+      )}
+      <AlertDialog
+        alertShow={show}
+        alertFun={handleDeleteFuc}
+        shopId={shopId}
+        id={selectId}
+        type="products"
+        subType="deleteProduct">
+        Are you Sure You Want Delete This Item ?
+      </AlertDialog>
+      {!isLoading ? (
+        <>
+          <div className="page-content-style card">
+            <h5>Barcode Generator</h5>
+            <h5>
+              Step1: <span style={{ color: '#cdc8c8' }}>Selecet Products</span>
+            </h5>
+            <Select
+              styles={barcodeSelectStyles}
+              options={products}
+              onChange={(e) => addPackageProducts(e)}
+            />
+            <DataGrid
+              className="datagrid-style"
+              sx={{
+                '.MuiDataGrid-columnSeparator': {
+                  display: 'none',
+                },
+                '&.MuiDataGrid-root': {
+                  border: 'none',
+                },
+              }}
+              rows={selectedProducts}
+              columns={columns}
+              pageSize={10}
+              onCellEditCommit={saveToCell}
+              columnVisibilityModel={{ id: false }}
+              rowsPerPageOptions={[10]}
+            />
+            <h5>
+              Step2: <span style={{ color: '#cdc8c8' }}>Options</span>
+            </h5>
+            <div className="invoice-settings-body" style={{ maxWidth: '500px' }}>
+              <div className="invoice-settings-item">
+                <div>Business Name</div>
+                <div>
+                  <Form.Check
+                    type="switch"
+                    className="custom-switch"
+                    onChange={(e) => {
+                      setOptions({ ...options, businessName: e.target.checked });
+                    }}
+                  />
                 </div>
               </div>
-              <button
-                type="button"
-                className="btn btn-primary p-2"
-                onClick={handlePrint}
-                style={{ width: '100%', maxWidth: '500px', marginTop: '10px' }}>
-                Show
-              </button>
+              <div className="invoice-settings-item">
+                <div>Product Name</div>
+                <div>
+                  <Form.Check
+                    type="switch"
+                    className="custom-switch"
+                    onChange={(e) => {
+                      setOptions({ ...options, name: e.target.checked });
+                    }}
+                  />
+                </div>
+              </div>
+              <div className="invoice-settings-item">
+                <div>Price</div>
+                <div>
+                  <Form.Check
+                    type="switch"
+                    className="custom-switch"
+                    onChange={(e) => {
+                      setOptions({ ...options, price: e.target.checked });
+                    }}
+                  />
+                </div>
+              </div>
+              <div className="invoice-settings-item">
+                <div>Category</div>
+                <div>
+                  <Form.Check
+                    type="switch"
+                    className="custom-switch"
+                    onChange={(e) => {
+                      setOptions({ ...options, category: e.target.checked });
+                    }}
+                  />
+                </div>
+              </div>
             </div>
-          </>
-        ) : (
-          <div className="d-flex justify-content-around">
-            <Spinner animation="grow" />
+            <button
+              type="button"
+              className="btn btn-primary p-2"
+              onClick={handlePrint}
+              style={{ width: '100%', maxWidth: '500px', marginTop: '10px' }}>
+              Show
+            </button>
           </div>
-        )}
-        {
-          <div style={{ display: 'none' }}>
-            <ComponentToPrint ref={componentRef} />
-          </div>
-        }
-        <div style={{ display: 'none' }} className="page-content-style card">
-          <div className="barcode-print-container"></div>
+        </>
+      ) : (
+        <div className="d-flex justify-content-around">
+          <Spinner animation="grow" />
         </div>
-      </AdminLayout>
-    </>
+      )}
+      {
+        <div style={{ display: 'none' }}>
+          <BarcodeToPrint options={options} selected={selectedProducts} ref={componentRef} />
+        </div>
+      }
+      <div style={{ display: 'none' }} className="page-content-style card">
+        <div className="barcode-print-container"></div>
+      </div>
+    </AdminLayout>
   );
 };
 export default withAuth(Barcodes);
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {
+      shopId: context.query.id,
+    },
+  };
+};
