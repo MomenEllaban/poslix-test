@@ -52,40 +52,76 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
 
     const permsArr = JSON.parse(localStorage.getItem('permissions'));
     if (!permsArr) return;
-    
-    const perms =
-      JSON.parse(localStorage.getItem('userdata')).user_type === 'owner' ?
-      permsArr : permsArr?.filter((loc) => loc.id == shopId);
 
-    const getPermissions = { hasPos: false, hasProducts: false, hasPurchases: false, hasTransfers: false,
-      hasSuppliers: false, hasExpenses: false, hasPricingGroups: false, hasCustomers: false, hasSalesList: false,
-      hasQuotations: false, hasCategories: false, hasBrands: false, hasTaxes: false, hasAppearance: false,
-      hasRegisterReport: false, hasSalesReport: false, hasItemsReport: false, hasStockReport: false, hasAppStore: true };
+    const perms =
+      JSON.parse(localStorage.getItem('userdata')).user_type === 'owner'
+        ? permsArr
+        : permsArr?.filter((loc) => loc.id == shopId);
+
+    const getPermissions = {
+      hasPos: false,
+      hasProducts: false,
+      hasPurchases: false,
+      hasTransfers: false,
+      hasSuppliers: false,
+      hasExpenses: false,
+      hasPricingGroups: false,
+      hasCustomers: false,
+      hasSalesList: false,
+      hasQuotations: false,
+      hasCategories: false,
+      hasBrands: false,
+      hasTaxes: false,
+      hasAppearance: false,
+      hasRegisterReport: false,
+      hasSalesReport: false,
+      hasItemsReport: false,
+      hasStockReport: false,
+      hasAppStore: true,
+    };
 
     perms[0]?.permissions?.map((perm) =>
-      perm.name === 'products/view' ? (getPermissions.hasProducts = true)
-      : perm.name === 'purchases/view' ? (getPermissions.hasPurchases = true)
-      : perm.name === 'transfers/view' ? (getPermissions.hasTransfers = true)
-      : perm.name === 'expenses/view' ? (getPermissions.hasExpenses = true)
-      : perm.name === 'customers/view' ? (getPermissions.hasCustomers = true)
-      : perm.name === 'suppliers/view' ? (getPermissions.hasSuppliers = true)
-      : perm.name === 'open/register' ? (getPermissions.hasPos = true)
-      : perm.name === 'categories/view' ? (getPermissions.hasCategories = true)
-      : perm.name === 'brands/view' ? (getPermissions.hasBrands = true)
-      : perm.name === 'taxes/view' ? (getPermissions.hasTaxes = true)
-      : perm.name === 'appearance/view' ? (getPermissions.hasAppearance = true)
-      : perm.name === 'pricinggroup/view' ? (getPermissions.hasPricingGroups = true)
-      : perm.name === 'sales-list/view' ? (getPermissions.hasSalesList = true)
-      : perm.name === 'quotations-list/view' ? (getPermissions.hasQuotations = true)
-      : perm.name === 'open-close' ? (getPermissions.hasRegisterReport = true)
-      : perm.name === 'sales' ? (getPermissions.hasSalesReport = true)
-      : perm.name === 'item-sales' ? (getPermissions.hasItemsReport = true)
-      : perm.name === 'stock' ? (getPermissions.hasStockReport = true)
-      : null
+      perm.name === 'products/view'
+        ? (getPermissions.hasProducts = true)
+        : perm.name === 'purchases/view'
+        ? (getPermissions.hasPurchases = true)
+        : perm.name === 'transfers/view'
+        ? (getPermissions.hasTransfers = true)
+        : perm.name === 'expenses/view'
+        ? (getPermissions.hasExpenses = true)
+        : perm.name === 'customers/view'
+        ? (getPermissions.hasCustomers = true)
+        : perm.name === 'suppliers/view'
+        ? (getPermissions.hasSuppliers = true)
+        : perm.name === 'open/register'
+        ? (getPermissions.hasPos = true)
+        : perm.name === 'categories/view'
+        ? (getPermissions.hasCategories = true)
+        : perm.name === 'brands/view'
+        ? (getPermissions.hasBrands = true)
+        : perm.name === 'taxes/view'
+        ? (getPermissions.hasTaxes = true)
+        : perm.name === 'appearance/view'
+        ? (getPermissions.hasAppearance = true)
+        : perm.name === 'pricinggroup/view'
+        ? (getPermissions.hasPricingGroups = true)
+        : perm.name === 'sales-list/view'
+        ? (getPermissions.hasSalesList = true)
+        : perm.name === 'quotations-list/view'
+        ? (getPermissions.hasQuotations = true)
+        : perm.name === 'open-close'
+        ? (getPermissions.hasRegisterReport = true)
+        : perm.name === 'sales'
+        ? (getPermissions.hasSalesReport = true)
+        : perm.name === 'item-sales'
+        ? (getPermissions.hasItemsReport = true)
+        : perm.name === 'stock'
+        ? (getPermissions.hasStockReport = true)
+        : null
     );
-    
+
     setPermissions(getPermissions);
-    setLoading(false)
+    setLoading(false);
   }, [shopId]);
 
   if (loading)
@@ -129,7 +165,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
               href={'/shop/' + shopId + '/transfers'}
               sub={true}
               isShown={!!router.query.id}>
-              Transfers
+              Transfers <span className="opacity-75 ms-3">(soon)</span>
             </SidebarNavItem>
           )}
           {permissions.hasSuppliers && (
@@ -165,7 +201,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
           href={'/shop/' + shopId + '/pricing'}
           isShown={!!router.query.id}>
           <Money className="nav-icon ms-n3" />
-          Pricing Groups
+          Pricing Groups<span className="opacity-75 ms-3">(soon)</span>
           <small className="ms-auto"></small>
         </SidebarNavItem>
       )}
@@ -279,7 +315,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
           href={'/shop/' + shopId + '/appstore'}
           isShown={!!router.query.id}>
           <BiStore className="nav-icon ms-n3" />
-          App Store
+          App Store <span className="opacity-75 ms-3">(soon)</span>
           <small className="ms-auto"></small>
         </SidebarNavItem>
       )}
@@ -341,7 +377,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
           href={`/shop/${shopId}/digital/`}
           isShown={!!router.query.id}>
           <BsMenuButtonWideFill className="nav-icon ms-n3" />
-          Digital Menu
+          Digital Menu <span className="opacity-75 ms-3">(soon)</span>
           <small className="ms-auto"></small>
         </SidebarNavItem>
       )}
