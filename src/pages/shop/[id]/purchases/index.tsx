@@ -58,7 +58,12 @@ const Purchases: NextPage = (props: any) => {
 
   const columns: GridColDef[] = [
     { field: 'id', headerName: '#', minWidth: 50 },
-    { field: 'supplier', headerName: 'Supplier', flex: 0.5 },
+    {
+      field: 'supplier',
+      headerName: 'Supplier',
+      renderCell: ({ row }: Partial<GridRowParams>) => row.supplier?.name || 'walk-in supplier',
+      flex: 0.55,
+    },
     {
       field: 'status',
       headerName: 'Stock Status',
