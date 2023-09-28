@@ -433,6 +433,11 @@ fieldset:disabled .btn {
   border-radius: 4px;
   color: #145f08;
   cursor: pointer;
+  &.paid-other {
+    background: #c9d060;
+
+    color: #5e5f08;
+  }
 }
 
 .purchase-converted-cost {
