@@ -6,6 +6,7 @@ import { addToCart } from 'src/redux/slices/cart.slice';
 import api from 'src/utils/app-api';
 import PackageItemsModal from '../../modals/package-item/PackageItemsModal';
 import { ResultItemRow } from '../result-item-row/ResultItemRow';
+import { usePosContext } from 'src/modules/pos/_context/PosContext';
 
 export default function ProductSearch({ shopId }) {
   const dispatch = useAppDispatch();
@@ -14,6 +15,9 @@ export default function ProductSearch({ shopId }) {
   const [isProductModalOpen, setIsProductModalOpen] = useState<boolean>(false);
   const [productVariations, setProductVariations] = useState<IProduct['variations'] | null>([]);
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
+
+  const { lang: _lang } = usePosContext();
+  const lang = _lang?.pos;
 
   const handleProductSearch = async (inputValue: string) => {
     const result = await api
@@ -68,7 +72,7 @@ export default function ProductSearch({ shopId }) {
             setIsMenuOpen(false);
           }, 200);
         }}
-        placeholder="Search Product ..."
+        placeholder={lang.productSearch.searchProduct}
         loadOptions={handleProductSearch}
         value={null}
       />

@@ -6,6 +6,7 @@ import { useAppDispatch, useAppSelector } from 'src/hooks';
 import { Toastify } from 'src/libs/allToasts';
 import { selectCartByLocation, setCartCustomer } from 'src/redux/slices/cart.slice';
 import CustomerModal from '../modals/CustomerModal';
+import { usePosContext } from 'src/modules/pos/_context/PosContext';
 
 const selectStyle = {
   control: (style: any) => ({
@@ -42,6 +43,9 @@ export default function CustomerDataSelect({
 
   const customerModalHandler = (status: any) => setCustomerIsModal(false);
 
+  const { lang: _lang } = usePosContext();
+  const lang = _lang?.pos;
+
   useEffect(() => {
     if (customer?.isNew) setCustomerIsModal(true);
   }, [customer]);
@@ -53,7 +57,11 @@ export default function CustomerDataSelect({
           <Select
             isLoading={customers.length === 0}
             styles={selectStyle}
-            isDisabled={isOrderEdit > 0 || (cart?.customer_id > 0 && cart.cartItems.length > 0) || cart?.orderId > 0}
+            isDisabled={
+              isOrderEdit > 0 ||
+              (cart?.customer_id > 0 && cart.cartItems.length > 0) ||
+              cart?.orderId > 0
+            }
             options={[{ value: '1', label: 'walk-in customer', isNew: false }, ...customers]}
             onChange={(choice: any) => {
               setCustomer({
@@ -67,7 +75,7 @@ export default function CustomerDataSelect({
                 })
               );
             }}
-            placeholder="Select Customer..."
+            placeholder={lang.customerData.selectCustomer}
             value={
               currentCustomer ||
               (isOrderEdit > 0 ? { label: orderEditDetails.name, value: '111' } : customer)

@@ -16,10 +16,10 @@ export const OrdersFooter = ({ orderEditDetails, details, shopId, lang }) => {
   const dispatch = useAppDispatch();
   const selectCartForLocation = selectCartByLocation(shopId);
   const cart = useAppSelector(selectCartForLocation); // current location order
-  
-  const router = useRouter()
-  const [invoiceType, setInvoiceType] = useState('receipt')
-  const [invoiceDetails, setInvoiceDetails] = useState<any>({})
+
+  const router = useRouter();
+  const [invoiceType, setInvoiceType] = useState('receipt');
+  const [invoiceDetails, setInvoiceDetails] = useState<any>({});
 
   const [clearCartModal, setClearCartModal] = useState<boolean>(false);
 
@@ -34,20 +34,19 @@ export const OrdersFooter = ({ orderEditDetails, details, shopId, lang }) => {
     setClearCartModal(false);
   };
 
-
   const checkPrintType = async () => {
-    const res2 = await findAllData(`appearance/${router.query.id}`)
-    setInvoiceDetails(res2.data.result)
-    const res = await findAllData(`print-settings/${router.query.id}`)
-    setInvoiceType(res.data.result.printtype)
-  }
+    const res2 = await findAllData(`appearance/${router.query.id}`);
+    setInvoiceDetails(res2.data.result);
+    const res = await findAllData(`print-settings/${router.query.id}`);
+    setInvoiceType(res.data.result.printtype);
+  };
   useEffect(() => {
     try {
-      if(router.isReady) checkPrintType()
+      if (router.isReady) checkPrintType();
     } catch (error) {
       console.log(error);
     }
-  }, [router.asPath])
+  }, [router.asPath]);
 
   return (
     <>
@@ -100,10 +99,15 @@ export const OrdersFooter = ({ orderEditDetails, details, shopId, lang }) => {
         show={clearCartModal}
         onConfirm={handleCartClear}
         onClose={() => setClearCartModal(false)}
-        message="Are you sure you want to clear cart?"
+        message={lang.cartComponent.clearMessage}
       />
-      <PaymentCheckoutModal shopId={shopId} show={paymentModalShow} setShow={setPaymentModalShow}
-        invoiceType={invoiceType} invoiceDetails={invoiceDetails} />
+      <PaymentCheckoutModal
+        shopId={shopId}
+        show={paymentModalShow}
+        setShow={setPaymentModalShow}
+        invoiceType={invoiceType}
+        invoiceDetails={invoiceDetails}
+      />
     </>
   );
 };

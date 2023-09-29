@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Button, Modal, Spinner } from 'react-bootstrap';
+import { usePosContext } from 'src/modules/pos/_context/PosContext';
 
 interface ConfirmationModalProps {
   show: boolean;
@@ -16,21 +17,24 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   onClose,
   onConfirm,
 }) => {
+  const { lang: _lang } = usePosContext();
+  const lang = _lang?.pos;
+
   return (
     <Modal show={show} onHide={onClose}>
       <Modal.Header closeButton>
-        <Modal.Title>Confirmation</Modal.Title>
+        <Modal.Title>{lang.confirmationModal.confirmation}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <p>{message}</p>
       </Modal.Body>
       <Modal.Footer>
         <Button active={!loading} variant="secondary" onClick={onClose}>
-          Cancel
+          {lang.confirmationModal.cancel}
         </Button>
         <Button active={!loading} variant="danger" onClick={onConfirm}>
           {loading && <Spinner size="sm" className="me-2" />}
-          Confirm
+          {lang.confirmationModal.confirm}
         </Button>
       </Modal.Footer>
     </Modal>

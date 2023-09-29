@@ -13,6 +13,7 @@ import { useSWRConfig } from 'swr';
 import { useProducts } from '../../../context/ProductContext';
 import { apiUpdateCtr } from '../../../libs/dbUtils';
 import { findAllData } from 'src/services/crud.api';
+import { usePosContext } from 'src/modules/pos/_context/PosContext';
 
 const customerTemplate = {
   id: 0,
@@ -33,8 +34,11 @@ const CustomerModal = (props: any) => {
   const [open, setOpen] = useState(false);
   const [moreInfo, setMoreInfo] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [pricingGroups, setPricingGroups] = useState([])
-  const [currentPricingGroup, setCurrentPricingGroup] = useState<number | null>()
+  const [pricingGroups, setPricingGroups] = useState([]);
+  const [currentPricingGroup, setCurrentPricingGroup] = useState<number | null>();
+
+  const { lang: _lang } = usePosContext();
+  const lang = _lang?.pos;
 
   const [customerInfo, setCustomerInfo] = useState(customerTemplate);
   const { customers, setCustomers } = useProducts();
@@ -57,7 +61,7 @@ const CustomerModal = (props: any) => {
 
   const handleEditCustomer = (data: any) => {
     api
-      .put('/customers/' + userdata.value, {...data, price_groups_id: currentPricingGroup})
+      .put('/customers/' + userdata.value, { ...data, price_groups_id: currentPricingGroup })
       .then((res) => res.data.result)
       .then((res) => {
         mutate('/customers/' + router.query.id);
@@ -81,7 +85,7 @@ const CustomerModal = (props: any) => {
 
   const handleAddCustomer = (data: any) => {
     api
-      .post('/customers/' + router.query.id, {...data, price_groups_id: currentPricingGroup})
+      .post('/customers/' + router.query.id, { ...data, price_groups_id: currentPricingGroup })
       .then((res) => res.data.result)
       .then((res) => {
         mutate('/customers/' + router.query.id);
@@ -108,7 +112,7 @@ const CustomerModal = (props: any) => {
   const onError = (errors: any, e: any) => console.log(errors, e);
 
   const handleClose = () => {
-    setCurrentPricingGroup(null)
+    setCurrentPricingGroup(null);
     setOpen(false);
     openDialog(false);
   };
@@ -126,7 +130,7 @@ const CustomerModal = (props: any) => {
           if (!value) value = '';
           setValue(key, value);
         });
-        if(selCustomer.price_groups_id) setCurrentPricingGroup(selCustomer.price_groups_id)
+        if (selCustomer.price_groups_id) setCurrentPricingGroup(selCustomer.price_groups_id);
       })
       .catch(() => {
         Toastify('error', 'has error, Try Again...');
@@ -153,14 +157,18 @@ const CustomerModal = (props: any) => {
   }, [open]);
 
   const getPricingGroups = async () => {
-    const res = await findAllData(`pricing-group/${router.query.id}`)
-    if(res?.data?.success)
-      setPricingGroups([...res.data.result.data.map(pg => {return {...pg, label: pg.name, value: pg.id}})])
-  }
+    const res = await findAllData(`pricing-group/${router.query.id}`);
+    if (res?.data?.success)
+      setPricingGroups([
+        ...res.data.result.data.map((pg) => {
+          return { ...pg, label: pg.name, value: pg.id };
+        }),
+      ]);
+  };
 
   useEffect(() => {
-    if(router.query.id) getPricingGroups()
-  }, [router.asPath])
+    if (router.query.id) getPricingGroups();
+  }, [router.asPath]);
 
   if (isLoading)
     return (
@@ -189,16 +197,16 @@ const CustomerModal = (props: any) => {
                 required
                 type="text"
                 name="first_name"
-                label="First Name"
-                placeholder="First Name"
+                label={lang.CustomerModal.firstName}
+                placeholder={lang.CustomerModal.firstName}
                 errors={errors}
                 register={register}
               />
               <FormField
                 type="text"
                 name="last_name"
-                label="Last Name"
-                placeholder="Last Name"
+                label={lang.CustomerModal.lastName}
+                placeholder={lang.CustomerModal.lastName}
                 errors={errors}
                 register={register}
               />
@@ -206,31 +214,30 @@ const CustomerModal = (props: any) => {
                 required
                 type="text"
                 name="mobile"
-                label="Mobile"
-                placeholder="Enter customer mobile number"
+                label={lang.CustomerModal.mobile}
+                placeholder={lang.CustomerModal.enterMobile}
                 errors={errors}
                 register={register}
               />
               <div className="col-lg-6 mb-3">
-                <label>Pricing Group</label>
+                <label>{lang.CustomerModal.pricingGroup}</label>
                 <select
                   className="form-select"
                   name="pricing_group"
-                  placeholder="Enter customer pricing group"
+                  placeholder={lang.CustomerModal.enterPrice}
                   defaultValue={0}
                   value={currentPricingGroup ? currentPricingGroup : null}
-                  onChange={(e) => setCurrentPricingGroup(+e.target.value)}
-                  >
-                    <option value={0} disabled>
-                      Select Pricing Group
-                    </option>
-                    {pricingGroups.map((el, i) => {
-                      return (
-                        <option key={el.id} value={el.id}>
-                          {el.name}
-                        </option>
-                      );
-                    })}
+                  onChange={(e) => setCurrentPricingGroup(+e.target.value)}>
+                  <option value={0} disabled>
+                    {lang.CustomerModal.selectPrice}
+                  </option>
+                  {pricingGroups.map((el, i) => {
+                    return (
+                      <option key={el.id} value={el.id}>
+                        {el.name}
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
             </fieldset>
@@ -241,7 +248,8 @@ const CustomerModal = (props: any) => {
                 onClick={() => {
                   setMoreInfo(!moreInfo);
                 }}>
-                {moreInfo ? 'Less ' : 'More '} Information{' '}
+                {moreInfo ? `${lang.CustomerModal.less} ` : `${lang.CustomerModal.more} `}{' '}
+                {lang.CustomerModal.information}{' '}
                 <i className={`ri-arrow-${moreInfo ? 'up' : 'down'}-s-line ps-1`} />
               </Button>
             </div>
@@ -252,8 +260,8 @@ const CustomerModal = (props: any) => {
                   <FormField
                     type="text"
                     name="address_line_1"
-                    label="Address line 1"
-                    placeholder="Enter Address line 1"
+                    label={lang.CustomerModal.addressLine1}
+                    placeholder={lang.CustomerModal.enterAddressLine1}
                     errors={errors}
                     register={register}
                   />
@@ -263,8 +271,8 @@ const CustomerModal = (props: any) => {
                   <FormField
                     type="text"
                     name="address_line_2"
-                    label="Address line 2"
-                    placeholder="Enter Address line 2"
+                    label={lang.CustomerModal.addressLine2}
+                    placeholder={lang.CustomerModal.enterAddressLine2}
                     errors={errors}
                     register={register}
                   />
@@ -274,8 +282,8 @@ const CustomerModal = (props: any) => {
                   <FormField
                     type="text"
                     name="country"
-                    label="Country"
-                    placeholder="Enter Country"
+                    label={lang.CustomerModal.hassan}
+                    placeholder={lang.CustomerModal.enterCountry}
                     errors={errors}
                     register={register}
                   />
@@ -284,8 +292,8 @@ const CustomerModal = (props: any) => {
                   <FormField
                     type="text"
                     name="state"
-                    label="State"
-                    placeholder="Enter State"
+                    label={lang.CustomerModal.state}
+                    placeholder={lang.CustomerModal.enterState}
                     errors={errors}
                     register={register}
                   />
@@ -294,8 +302,8 @@ const CustomerModal = (props: any) => {
                   <FormField
                     type="text"
                     name="city"
-                    label="City"
-                    placeholder="Enter City"
+                    label={lang.CustomerModal.city}
+                    placeholder={lang.CustomerModal.enterCity}
                     errors={errors}
                     register={register}
                   />
@@ -305,8 +313,8 @@ const CustomerModal = (props: any) => {
                   <FormField
                     type="text"
                     name="zip_code"
-                    label="Zip Code"
-                    placeholder="Enter Zip Code"
+                    label={lang.CustomerModal.zipCode}
+                    placeholder={lang.CustomerModal.enterZipCode}
                     errors={errors}
                     register={register}
                   />
@@ -315,8 +323,8 @@ const CustomerModal = (props: any) => {
                 <FormField
                   type="text"
                   name="shipping_address"
-                  label="Shipping Address"
-                  placeholder="Enter Shipping Address"
+                  label={lang.CustomerModal.shippingAddress}
+                  placeholder={lang.CustomerModal.enterShippingAddress}
                   errors={errors}
                   register={register}
                 />
@@ -325,7 +333,7 @@ const CustomerModal = (props: any) => {
           </Modal.Body>
           <Modal.Footer>
             <a className="btn btn-link link-success fw-medium" onClick={() => handleClose()}>
-              <i className="ri-close-line me-1 align-middle" /> Close
+              <i className="ri-close-line me-1 align-middle" /> {lang.CustomerModal.close}
             </a>{' '}
             {showType != 'show' && (
               <Button type="submit" className="text-capitalize" onClick={() => {}}>
