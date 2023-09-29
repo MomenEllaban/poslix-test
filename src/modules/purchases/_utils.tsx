@@ -2,6 +2,7 @@ import { GridColDef, GridRowParams } from '@mui/x-data-grid';
 import { Button } from 'react-bootstrap';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { ILocationSettings } from '@models/common-model';
+import { BiEdit } from 'react-icons/bi';
 
 export const purchasesInitFormObj = {
   id: 0,
@@ -118,7 +119,20 @@ export const purchasesColumns: ({
     ),
   },
   { field: 'price', headerName: 'Price', minWidth: 150, editable: true, type: 'number' },
-  { field: 'quantity', headerName: 'Qty', minWidth: 150, editable: true, type: 'number' },
+  {
+    field: 'quantity',
+    headerName: 'Qty',
+    renderHeader(params) {
+      return (
+        <div className="d-flex w-100 flex-row gap-3 align-items-center justify-content-center">
+          Qty <BiEdit />
+        </div>
+      );
+    },
+    minWidth: 150,
+    editable: true,
+    type: 'number',
+  },
   { field: 'vat', headerName: 'VAT %', minWidth: 150, editable: true, type: 'number' },
   {
     field: 'lineTotal',

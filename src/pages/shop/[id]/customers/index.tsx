@@ -19,6 +19,7 @@ import { findAllData } from 'src/services/crud.api';
 import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
 import Customermodal from '../../../../components/pos/modals/CustomerModal';
 import { useProducts } from '../../../../context/ProductContext';
+import { PosProvider } from 'src/modules/pos/_context/PosContext';
 
 interface ISelectionCustomer extends Partial<ICustomer> {
   value: string;
@@ -122,7 +123,7 @@ const Customers: NextPage = ({ id }: any) => {
   }, [shopId]);
 
   return (
-    <>
+    <PosProvider>
       <AdminLayout shopId={id}>
         <ToastContainer />
         <AlertDialog
@@ -182,7 +183,7 @@ const Customers: NextPage = ({ id }: any) => {
         statusDialog={customerIsModal}
         openDialog={customerModalHandler}
       />
-    </>
+    </PosProvider>
   );
 };
 
