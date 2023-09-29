@@ -1,6 +1,7 @@
 import { faArrowAltCircleLeft } from '@fortawesome/free-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { AdminLayout } from '@layout';
+import { ILocation } from '@models/auth.types';
 import { ICurrency, IProduct } from '@models/pos.types';
 import EditIcon from '@mui/icons-material/Edit';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
@@ -18,7 +19,7 @@ import {
 import { DataGrid } from '@mui/x-data-grid';
 import type { NextPage } from 'next';
 import { useRouter } from 'next/router';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useDebugValue, useEffect, useMemo, useRef, useState } from 'react';
 import { Card } from 'react-bootstrap';
 import Form from 'react-bootstrap/Form';
 import DatePicker from 'react-datepicker';
@@ -31,7 +32,7 @@ import VariationModal from 'src/components/pos/modals/VariationModal';
 import { TableExpeseRows, TableTaxRows } from 'src/components/utils/ExpendsRow';
 import { useUser } from 'src/context/UserContext';
 import { Toastify } from 'src/libs/allToasts';
-import { apiInsertCtr, apiUpdateCtr } from 'src/libs/dbUtils';
+import { apiUpdateCtr } from 'src/libs/dbUtils';
 import { IPurchaseExpndes, IpurchaseProductItem } from 'src/models/common-model';
 import {
   purchasesColourStyles,
@@ -45,50 +46,21 @@ import { cartJobType } from 'src/recoil/atoms';
 import { useCurrenciesList } from 'src/services/business.service';
 import { findAllData } from 'src/services/crud.api';
 import api from 'src/utils/app-api';
-import useSWR from 'swr';
+import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
 import { paymentStatusData, paymentTypeData, purchaseStatusDataAdd } from '../../../../models/data';
+
+interface ICurrencySelect extends ICurrency {
+  value: number;
+  label: string;
+}
 
 const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
   const router = useRouter();
   const formObjRef = useRef<any>();
 
   const [suppliers, setSuppliers] = useState<any[]>([
-    { supplier_id: 0, id: 0, value: 0, label: 'walk in supplier' },
+    { supplier_id: 0, id: 0, value: 0, label: 'walk-in supplier' },
   ]);
-
-  const [currencies, setCurrencies] = useState<
-    { value: number; label: string; symbol: string; exchange_rate: number; code: string }[]
-  >([]);
-
-  const { isLoading: isSupplierLoading } = useSWR(
-    ['suppliers', shopId],
-    () => api.get(`/suppliers/${shopId}?all_data=1`).then(({ data }) => data.result),
-    {
-      onSuccess: (data) => {
-        const _suppliers = data.map((item) => ({ ...item, label: item.name, value: item.id }));
-        setSuppliers([{ supplier_id: 0, id: 0, value: 0, label: 'walk in supplier' }, ..._suppliers]);
-      },
-    }
-  );
-  const { isLoading: isProductsLoading } = useSWR(
-    ['products', shopId],
-    () => api.get(`/products/${shopId}?all_data=1`).then(({ data }) => data.result),
-    {
-      onSuccess: (data) => {
-        const _products = data.map((item) => ({ ...item, label: item.name, value: item.id }));
-        setProducts([..._products]);
-      },
-    }
-  );
-  const { isLoading: isCurrenciesLoading } = useCurrenciesList(null, {
-    onSuccess(data, key, config) {
-      const _currenciesList = data.result.map((itm: ICurrency) => {
-        return { value: itm.id, label: `${itm.currency} (${itm.code})` };
-      });
-
-      setCurrencies(_currenciesList);
-    },
-  });
 
   const { locationSettings, setLocationSettings } = useUser();
 
@@ -97,6 +69,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
   const [purchaseDetails, setPurchaseDetails] = useState(purchasesInitPurchaseDetails);
 
   const [isEdit, setIsEdit] = useState(false);
+  const [dataLoading, setDataLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isEditSort, setIsEditSort] = useState(false);
   const [vatInColumn, setVatInColumn] = useState(false);
@@ -126,6 +99,18 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
   const [jobType] = useRecoilState(cartJobType);
   const [openRemoveDialog, setOpenRemoveDialog] = useState(false);
 
+  const [currencies, setCurrencies] = useState<ICurrencySelect[]>([]);
+
+  const { isLoading: isCurrenciesLoading } = useCurrenciesList(null, {
+    onSuccess(data, key, config) {
+      const _currenciesList = data.result.map((itm: ICurrency) => {
+        return { ...itm, value: itm.id, label: `${itm.currency} (${itm.code})` };
+      });
+
+      setCurrencies(_currenciesList);
+    },
+  });
+
   const onCostClick = (type: string, id: number, vr: number) => {
     const found = selectProducts.findIndex((el) => el.product_id === id && el.variation_id == vr);
     if (found > -1) {
@@ -147,14 +132,18 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
     </div>
   );
 
-  async function initDataPage(url) {
-    if (url?.length == 2) setIsEdit(true);
+  useDebugValue(formObj);
 
-    if (url?.length == 2) {
+  async function initDataPage(url: string[]) {
+    if (url?.length < 2) return;
+
+    setIsEdit(true);
+    setLoading(true);
+    try {
       const res = await findAllData(`purchase/${router.query.slug[1]}/show`);
       const itm = res.data.result;
       setProducts(itm?.products);
-      // setSuppliers([...itm?.suppliers, { label: 'Walk-in Supplier', value: 1 }]);
+
       setCurrencies(itm?.currencies);
       setExpends(itm?.expenses);
       setAllVariations(itm?.variations);
@@ -240,6 +229,13 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
           payment_id: pay_id,
         });
       }
+    } catch (e) {
+      setProducts([]);
+      setCurrencies([]);
+      setExpends([]);
+      setAllVariations([]);
+      setSelectProducts([]);
+    } finally {
       setLoading(false);
     }
   }
@@ -253,17 +249,16 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
       supplier_id: formObj.supplier_id ?? 0,
       payment_type: formObj.paymentType,
       currency_id: formObj.currency_id,
-      cart: [...selectProducts.map((item) => ({ ...item, qty: item.quantity, note: "" }))],
+      cart: [...selectProducts.map((item) => ({ ...item, qty: item.quantity, note: '' }))],
       expense: {
         amount: null,
         category: {
-          id: 35
-        }
+          id: 35,
+        },
       },
-      notes: ""
+      notes: '',
     };
-    api.post(`/purchase/${shopId}`, data)
-    .then((res) => {
+    api.post(`/purchase/${shopId}`, data).then((res) => {
       if (!res.data.success) {
         alert('Has Error ,try Again');
         return;
@@ -289,22 +284,26 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
       return;
     }
     Toastify('success', 'Purchase Successfully Edited..');
+
     router.push('/shop/' + shopId + '/purchases');
   }
   var errors = [];
+
   useEffect(() => {
-    var _locs = JSON.parse(localStorage.getItem('locations') || '[]');
-    if (_locs.toString().length > 10)
-      setLocationSettings(
-        _locs[
-          _locs.findIndex((loc: any) => {
-            return loc.value == shopId;
-          })
-        ]
-      );
-    else alert('errorr location settings');
-    initDataPage(router.query.slug);
-  }, [router.asPath]);
+    if (!shopId) return;
+
+    const locations: ILocation[] = getLocalStorage(ELocalStorageKeys.LOCATIONS);
+    const currentLocation = locations.find((location) => +location.location_id === +shopId);
+    setLocationSettings(currentLocation ?? locationSettings);
+    console.log(router.query.slug);
+
+    if (!router.query.slug) return;
+    if (typeof router.query.slug === 'string') {
+      initDataPage([router.query.slug]);
+    } else {
+      initDataPage(router.query.slug);
+    }
+  }, [shopId, router.query.slug]);
 
   function getPriority(type: string, subTotal: number): number {
     switch (type) {
@@ -547,7 +546,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
         is_service: 0,
         product_name: e.name,
       });
-      setAllVariations(e.variations)
+      setAllVariations(e.variations);
       setIsOpenVariationDialog(true);
       return;
     }
@@ -651,10 +650,37 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
         setSelecetdId,
         setOpenRemoveDialog,
       }),
-    [locationSettings, formObj]
+    [locationSettings, formObj, formObjRef]
   );
+
   formObjRef.current = formObj;
 
+  const mapToSelectList = (item) => ({ ...item, label: item.name, value: item.id });
+  async function getPageData(shopId) {
+    setDataLoading(true);
+    try {
+      const _suppliers = await api
+        .get(`/suppliers/${shopId}?all_data=1`)
+        .then(({ data }) => data.result?.map(mapToSelectList));
+      const _products = await api
+        .get(`/products/${shopId}?all_data=1`)
+        .then(({ data }) => data.result?.map(mapToSelectList));
+
+      setSuppliers(_suppliers);
+      setProducts(_products);
+    } catch {
+      Toastify('error', 'Somethig went wrong, please refresh and try again!');
+      setSuppliers([]);
+      setProducts([]);
+    } finally {
+      setDataLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    if (!shopId) return Toastify('warning', 'Please refresh the page!');
+    getPageData(shopId);
+  }, [shopId]);
   return (
     <AdminLayout shopId={shopId}>
       {isOpenVariationDialog && (
@@ -726,7 +752,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                         Supplier : <span className="text-danger">*</span>
                       </label>
                       <Select
-                        isLoading={isSupplierLoading}
+                        isLoading={dataLoading}
                         styles={purchasesSelectStyle}
                         options={suppliers}
                         value={suppliers.filter((sp) => sp.value == formObj.supplier_id)}
@@ -890,15 +916,13 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                   onChange={(itm) => {
                     setFormObj({
                       ...formObj,
-                      currency_code: itm!.code,
-                      currency_rate: itm!.exchange_rate,
-                      currency_id: itm!.value,
+                      // currency_code: itm!.,
+                      // currency_rate: itm!.exchange_rate,
+                      // currency_id: itm!.id,
                     });
                   }}
                 />
-                {errorForm.currency_id && (
-                  <p className="p-1 h6 text-danger ">Select a Currency</p>
-                )}
+                {errorForm.currency_id && <p className="p-1 h6 text-danger ">Select a Currency</p>}
               </div>
             </div>
             <div className="col-md-3" style={{ display: 'none' }}>
@@ -919,7 +943,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
             <Card.Header className="p-3 bg-white">
               <Select
                 formatOptionLabel={formatProductsOptions}
-                isLoading={isProductsLoading}
+                isLoading={dataLoading}
                 styles={purchasesColourStyles}
                 options={products}
                 onChange={(e) => addToProductQuotations(e)}
@@ -1164,7 +1188,8 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                   errors = [];
                   if (formObj.supplier_id == 0) errors.push('supplier id');
                   if (selectProducts.length == 0) errors.push('selected products');
-                  if (formObj.currency_id == 0 || formObj.currency_id == undefined) errors.push('currency id');
+                  if (formObj.currency_id == 0 || formObj.currency_id == undefined)
+                    errors.push('currency id');
                   if (formObj.purchaseStatus.length <= 2) errors.push('purchaseStatus less than 2');
                   if (formObj.purchaseStatus != 'draft') {
                     if (formObj.paymentStatus.length <= 2) errors.push('paymentStatus less than 2');
@@ -1174,8 +1199,8 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                   if (formObj.paymentStatus == 'partially_paid' && formObj.paid_amount < 0.5)
                     errors.push(' partially paid');
 
-                    console.log(formObj.currency_id);
-                    
+                  console.log(formObj.currency_id);
+
                   setErrorForm({
                     ...errorForm,
                     supplier_id: formObj.supplier_id == 0,

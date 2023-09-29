@@ -83,16 +83,14 @@ export const purchasesColumns: ({
     type: 'number',
     renderCell: ({ row }: Partial<GridRowParams>) => (
       <>
-        <div>{row.cost}</div>
-        {locationSettings?.currency_id != formObj.currency_id && (
-          <div className="purchase-converted-cost">
-            {(formObj.currency_rate * row.cost).toFixed(locationSettings?.location_decimal_places)}{' '}
-            <span style={{ opacity: '0.5', fontSize: '10px' }}>
-              {locationSettings?.currency_code}
-            </span>
-          </div>
-        )}
-        {row.cost < row.notifyExpensePrice && (
+        <div className="purchase-converted-cost">
+          {((formObj?.currency_rate || 1) * row.cost).toFixed(
+            locationSettings?.location_decimal_places
+          )}{' '}
+          <span style={{ opacity: '0.5', fontSize: '10px' }}>{formObj?.currency_code}</span>
+        </div>
+
+        {/* {row.cost < row.notifyExpensePrice && (
           <div
             className={row.costType == 1 ? 'purchase-label active-label' : 'purchase-label'}
             id="use-expends"
@@ -115,7 +113,7 @@ export const purchasesColumns: ({
             onClick={() => onCostClick('useTotal', row.product_id, row.variation_id)}>
             <span> Total</span> {row.notifyTotalPrice}
           </div>
-        )}
+        )} */}
       </>
     ),
   },
@@ -130,8 +128,10 @@ export const purchasesColumns: ({
     renderCell: ({ row }: Partial<GridRowParams>) => (
       <div>
         {locationSettings?.currency_id == formObj.currency_id
-          ? Number(row.cost * row.quantity).toFixed(locationSettings?.location_decimal_places)
-          : (formObj.currency_rate * row.cost).toFixed(locationSettings?.location_decimal_places)}
+          ? (+(+row.cost * +row.quantity)).toFixed(locationSettings?.location_decimal_places)
+          : (+((formObj.currency_rate || 1) * +row.cost)).toFixed(
+              locationSettings?.location_decimal_places
+            )}
       </div>
     ),
   },
