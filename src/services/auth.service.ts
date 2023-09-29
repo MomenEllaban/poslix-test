@@ -30,7 +30,7 @@ class AuthService {
     accessToken = window.localStorage.getItem(ELocalStorageKeys.TOKEN) ?? '';
     if (!this.hasExpired()) return accessToken;
 
-    return await this.refreshToken();
+    // return await this.refreshToken();
   }
 
   async getDecodedToken(): Promise<DecodedToken | null> {

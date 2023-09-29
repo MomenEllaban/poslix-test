@@ -488,7 +488,7 @@ export default function SalesListTable({ shopId, rules, salesList }: any) {
           })
         ]
       );
-    else alert('errorr location settings');
+    
 
     initDataPage();
   }, [router.asPath]);

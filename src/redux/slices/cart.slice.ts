@@ -104,16 +104,17 @@ const cartSlice = createSlice({
         cart.cartCostTotal -= +action.payload.cost_price * +existingItem.quantity;
         localStorage.setItem('cart', JSON.stringify(state));
       }
+      clearCart(state)
     },
     clearCart: (state, action) => {
       const cart = findOrCreateCart(state, action.payload.location_id);
       cart.cartItems = [];
       cart.cartSellTotal = 0;
       cart.cartCostTotal = 0;
-      console.log(cart.orderId)
       cart.orderId = null
       cart.lastTotal = null
       cart.lastDue = null
+      cart.customer_id = null
 
       localStorage.setItem('cart', JSON.stringify(state));
       localStorage.removeItem('currentQuotation')
@@ -133,6 +134,8 @@ const cartSlice = createSlice({
         cart.cartCostTotal -= +action.payload.cost_price;
         localStorage.setItem('cart', JSON.stringify(state));
       }
+
+      if(!cart.cartItems.length) clearCart(state)
     },
     addMultipleToCart: (state, action) => {
       const { location_id, products, orderId, customerId, lastTotal, lastDue } = action.payload;
@@ -141,7 +144,6 @@ const cartSlice = createSlice({
       cart.lastTotal = lastTotal
       cart.lastDue = lastDue
       cart.customer_id = customerId
-      console.log(orderId)
       products.map((prod) => {
         const existingItem = cart.cartItems.find((item) => item.id === prod.id);
         if (existingItem) {

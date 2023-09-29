@@ -24,18 +24,17 @@ function LocationUpdateForm({ businessId, location }) {
   const [loading, setLoading] = useState(false);
   const { mutate } = useSWRConfig();
   const [currenciesList, setCurrenciesList] = useState<{ value: number; label: string }[]>([]);
-  const { isLoading: currenciesLoading } = useCurrenciesList(null, {
-    onSuccess(data, key, config) {
-      const _currenciesList = data.result.map((itm: any) => {
-        return { value: itm.id, label: `${itm.country} (${itm.code})` };
-      });
-      setCurrenciesList(_currenciesList);
-    },
-  });
-
   const [users, setUsers] = useState<any>([]);
   const [roles, setRoles] = useState<any>([]);
   const initPageData = async () => {
+    const currenciesRes = await findAllData('currencies')
+    const _currenciesList = currenciesRes.data.result.map((itm: any) => {
+      return { ...itm, value: itm.id, label: `${itm.currency} (${itm.country})` };
+    });
+    const currentCurrency = {..._currenciesList.filter(curr =>
+      (curr.currency === location.currency_name && curr.code === location.currency_code))[0]}
+    setLocationValue('currency_id', currentCurrency.value)
+    setCurrenciesList(_currenciesList);
     const usersRes = await findAllData('users');
     const newUsers = usersRes.data.result.map((user) => {
       return { ...user, label: user.first_name, value: user.id };
@@ -62,7 +61,8 @@ function LocationUpdateForm({ businessId, location }) {
     shouldUnregister: false,
     defaultValues: {
       name: location.location_name,
-      currency_id: location.currency_id,
+      currency_id: currenciesList ? {...currenciesList.filter(curr =>
+        (curr.currency === location.currency_name && curr.code === location.currency_code))[0]} : {},
       decimal: location.location_decimal_places,
     },
   });
@@ -85,14 +85,13 @@ function LocationUpdateForm({ businessId, location }) {
   }
 
   const asignRoleToUser = async () => {
-    console.log('hello', selectedUserId, selectedRoles, location);
     const res = await createNewData('roles/assign', {
       user_id: selectedUserId,
       role_id: selectedRoles[0].value,
       location_id: location.location_id,
     });
     if (res.data.success) {
-      Toastify('success', 'Updated sucessfully');
+      Toastify('success', 'User assigned successfully');
       setShowAddUser(false);
     } else {
       Toastify('error', 'Has Error ,try Again');
@@ -124,7 +123,6 @@ function LocationUpdateForm({ businessId, location }) {
               register={locationRegister}
               errors={locationErrors}
               required
-              loading={currenciesLoading}
             />
             <FormField
               required
@@ -294,7 +292,6 @@ export default function BusinessSettingsView({ business }: { business: IUserBusi
     defaultValues: {
       name: business.name,
       type: business.type,
-
       email: business.email,
     },
   });

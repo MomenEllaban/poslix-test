@@ -111,7 +111,7 @@ const PricingGroup = (props: any) => {
           })
         ]
       );
-    else alert('errorr location settings');
+    
     initDataPage();
   }, []);
   return (

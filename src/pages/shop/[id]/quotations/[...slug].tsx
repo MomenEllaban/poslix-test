@@ -435,7 +435,7 @@ const AddQuotations: NextPage = (props: any) => {
           })
         ]
       );
-    else alert('errorr location settings');
+    
 
     initDataPage(slug[0] === 'edit' ? "1" : "0");
   }, [router.asPath]);

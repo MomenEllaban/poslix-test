@@ -302,7 +302,7 @@ const Product: NextPage = (props: any) => {
           })
         ]
       );
-    else alert('errorr location settings');
+    
   }, []);
 
   const handleDeleteFuc = (result: boolean, msg: string, section: string) => {

@@ -141,7 +141,7 @@ const Home = (props: any) => {
           })
         ]
       );
-    else alert('errorr location settings');
+    
 
     setTxtP1({ name: getTxtTimeFrame(1), index: 1 });
     setTxtP2({ name: getTxtTimeFrame(1), index: 1 });
