@@ -80,25 +80,25 @@ const HoldModal = ({ shopId, lang }: any) => {
       <Modal show={holdModal} onHide={handleClose}>
         <Form onSubmit={handleSubmit(handleSaveOrder)}>
           <Modal.Header className="poslix-modal-title text-primary text-capitalize" closeButton>
-            Hold Orders
+            {lang.cartComponent.holdOrders}
           </Modal.Header>
           <Modal.Body>
             <FormField
               required
               name="name"
               type="text"
-              label="Name"
+              label={lang.cartComponent.name}
               errors={errors}
               register={register}
-              placeholder="Enter Name"
+              placeholder={lang.cartComponent.enterName}
             />
           </Modal.Body>
           <Modal.Footer>
             <a className="btn btn-link link-success fw-medium" onClick={handleClose}>
-              Close <i className="ri-close-line me-1 align-middle" />
+              {lang.cartComponent.close} <i className="ri-close-line me-1 align-middle" />
             </a>
             <Button type="submit" variant="primary" className="p-2">
-              Save
+              {lang.cartComponent.save}
             </Button>
           </Modal.Footer>
         </Form>

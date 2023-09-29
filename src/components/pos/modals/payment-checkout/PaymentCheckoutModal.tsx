@@ -17,6 +17,7 @@ import MainModal from 'src/components/modals/MainModal';
 import { useProducts } from 'src/context/ProductContext';
 import { useUser } from 'src/context/UserContext';
 import { useAppDispatch, useAppSelector } from 'src/hooks';
+import { usePosContext } from 'src/modules/pos/_context/PosContext';
 import { clearCart, selectCartByLocation } from 'src/redux/slices/cart.slice';
 import api from 'src/utils/app-api';
 
@@ -27,6 +28,8 @@ export default function PaymentCheckoutModal({
   invoiceType,
   invoiceDetails,
 }) {
+  const { lang: _lang } = usePosContext();
+  const lang = _lang?.pos;
   const dispatch = useAppDispatch();
   const { locationSettings, tailoringSizes, tailoringExtras } = useUser();
   const componentRef = React.useRef(null);
@@ -64,12 +67,12 @@ export default function PaymentCheckoutModal({
       : +(cart?.cartTax ?? 0);
 
   const totalNoTax = +(cart?.cartSellTotal ?? 0) + +(cart?.shipping ?? 0);
-  const [totalAmount, setTotalAmount] = useState<any>(totalNoTax + totalTax - totalDiscount)
-  
+  const [totalAmount, setTotalAmount] = useState<any>(totalNoTax + totalTax - totalDiscount);
+
   useEffect(() => {
-    if(cart?.orderId > 0)
-    setTotalAmount(totalNoTax + totalTax - totalDiscount - +cart.lastTotal + +cart.lastDue)
-  }, [cart?.orderId])
+    if (cart?.orderId > 0)
+      setTotalAmount(totalNoTax + totalTax - totalDiscount - +cart.lastTotal + +cart.lastDue);
+  }, [cart?.orderId]);
 
   useEffect(() => {
     setValue(`payment.0.amount`, totalAmount.toString());
@@ -430,7 +433,7 @@ export default function PaymentCheckoutModal({
         <ComponentToPrint ref={componentRef} />
       </div>
       <MainModal
-        title="Payment"
+        title={lang.paymentCheckoutModal.payment}
         show={show}
         setShow={setShow}
         body={
@@ -438,35 +441,50 @@ export default function PaymentCheckoutModal({
             <Stack>
               <Row>
                 <h5 className="fw-bold">
-                  <span style={{ width: '6rem', display: 'inline-block' }}>Amount: </span>
+                  <span style={{ width: '6rem', display: 'inline-block' }}>
+                    {lang.paymentCheckoutModal.amount}:{' '}
+                  </span>
                   <span>
-                    {cart?.orderId ? totalNoTax - cart.lastTotal : totalNoTax?.toFixed(locationSettings?.location_decimal_places) ?? ''}{' '}
+                    {cart?.orderId
+                      ? totalNoTax - cart.lastTotal
+                      : totalNoTax?.toFixed(locationSettings?.location_decimal_places) ?? ''}{' '}
                   </span>
                   <span>{locationSettings?.currency_code ?? ''}</span>
                 </h5>
                 <h6 className="fw-normal">
-                  <span style={{ width: '6rem', display: 'inline-block' }}>Taxes: </span>+{' '}
+                  <span style={{ width: '6rem', display: 'inline-block' }}>
+                    {lang.paymentCheckoutModal.taxes}:{' '}
+                  </span>
+                  +{' '}
                   <span>{totalTax?.toFixed(locationSettings?.location_decimal_places) ?? ''} </span>
                   <span>{locationSettings?.currency_code ?? ''}</span>
                 </h6>
                 <h6 className="fw-normal">
-                  <span style={{ width: '6rem', display: 'inline-block' }}>Discount:</span>-{' '}
+                  <span style={{ width: '6rem', display: 'inline-block' }}>
+                    {lang.paymentCheckoutModal.discount}:
+                  </span>
+                  -{' '}
                   <span>
                     {totalDiscount?.toFixed(locationSettings?.location_decimal_places) ?? ''}{' '}
                   </span>
                   <span>{locationSettings?.currency_code ?? ''}</span>
                 </h6>
-                {cart?.orderId && 
+                {cart?.orderId && (
                   <h6 className="fw-normal">
-                    <span style={{ width: '6rem', display: 'inline-block' }}>Old: </span>+{' '}
+                    <span style={{ width: '6rem', display: 'inline-block' }}>
+                      {lang.paymentCheckoutModal.old}:{' '}
+                    </span>
+                    +{' '}
                     <span>
                       {cart.lastDue?.toFixed(locationSettings?.location_decimal_places) ?? ''}{' '}
                     </span>
                     <span>{locationSettings?.currency_code ?? ''}</span>
                   </h6>
-                }
+                )}
                 <h6 className="fw-semibold">
-                  <span style={{ width: '6rem', display: 'inline-block' }}>Total: </span>
+                  <span style={{ width: '6rem', display: 'inline-block' }}>
+                    {lang.paymentCheckoutModal.total}:{' '}
+                  </span>
                   <span>
                     {totalAmount?.toFixed(locationSettings?.location_decimal_places) ?? ''}{' '}
                   </span>
@@ -485,9 +503,9 @@ export default function PaymentCheckoutModal({
                     textArea
                     type="text"
                     name="notes"
-                    placeholder="Enter your notes"
+                    placeholder={lang.paymentCheckoutModal.enterNotes}
                     register={register}
-                    label="Order Notes"
+                    label={lang.paymentCheckoutModal.orderNotes}
                     errors={errors}
                   />
                 </Col>
@@ -496,12 +514,14 @@ export default function PaymentCheckoutModal({
                 <div className="d-flex flex-row gap-2" key={field.id}>
                   <Col xs={3}>
                     <Form.Group>
-                      <Form.Label className="fw-semibold fs-6">Amount</Form.Label>
+                      <Form.Label className="fw-semibold fs-6">
+                        {lang.paymentCheckoutModal.amount}
+                      </Form.Label>
                       <InputGroup className="mb-3">
                         <Form.Control
                           autoFocus={lastEdited === idx}
                           autoComplete="off"
-                          placeholder="enter amount"
+                          placeholder={lang.paymentCheckoutModal.enterAmount}
                           type="number"
                           name={`payment.${idx}.amount`}
                           min={0}
@@ -525,7 +545,7 @@ export default function PaymentCheckoutModal({
                       name={`payment.${idx}.payment_id`}
                       options={paymentTypes}
                       register={register}
-                      label="Method"
+                      label={lang.paymentCheckoutModal.method}
                       errors={errors}
                     />
                   </Col>
@@ -533,9 +553,9 @@ export default function PaymentCheckoutModal({
                     <FormField
                       type="text"
                       name={`payment.${idx}.note`}
-                      placeholder="your notes"
+                      placeholder={lang.paymentCheckoutModal.enterPayNote}
                       register={register}
-                      label="Pay. Note"
+                      label={lang.paymentCheckoutModal.payNote}
                       errors={errors}
                     />
                   </Col>
@@ -551,7 +571,7 @@ export default function PaymentCheckoutModal({
                             return rest;
                           });
                         }}>
-                        Remove <MdDelete />
+                        {lang.paymentCheckoutModal.remove} <MdDelete />
                       </Button>
                     </Col>
                   )}
@@ -568,7 +588,7 @@ export default function PaymentCheckoutModal({
                         note: '',
                       })
                     }>
-                    Add Payment Row
+                    {lang.paymentCheckoutModal.addPaymentRow}
                   </Button>
                 </Col>
               </Row>
@@ -576,7 +596,7 @@ export default function PaymentCheckoutModal({
             <Row className="p-1 mt-1 mb-1 rounded-2 bg-primary">
               <Col xs={3} className="d-flex flex-column">
                 <p className="fw-semibold fs-6" style={{ height: '3rem' }}>
-                  Total Payable
+                  {lang.paymentCheckoutModal.totalPayable}
                 </p>
 
                 <span className="fw-semibold fs-6">
@@ -587,7 +607,7 @@ export default function PaymentCheckoutModal({
               <Col xs={3}>
                 {' '}
                 <p className="fw-semibold fs-6" style={{ height: '3rem' }}>
-                  Total Paying
+                  {lang.paymentCheckoutModal.totalPaying}
                 </p>
                 <span className="fw-semibold fs-6">
                   {paidSum?.toFixed(locationSettings?.location_decimal_places) ?? ''}
@@ -596,7 +616,7 @@ export default function PaymentCheckoutModal({
               <Col xs={3}>
                 {' '}
                 <p className="fw-semibold fs-6" style={{ height: '3rem' }}>
-                  Change Return{' '}
+                  {lang.paymentCheckoutModal.changeReturn}{' '}
                 </p>
                 <span className="fw-semibold fs-6">
                   {Math.max(paidSum - totalAmount, 0)?.toFixed(
@@ -607,7 +627,7 @@ export default function PaymentCheckoutModal({
               <Col xs={3}>
                 {' '}
                 <p className="fw-semibold fs-6" style={{ height: '3rem' }}>
-                  Balance{' '}
+                  {lang.paymentCheckoutModal.balance}{' '}
                 </p>
                 <span className="fw-semibold fs-6">
                   {Math.max(totalAmount - paidSum, 0)?.toFixed(
@@ -646,7 +666,7 @@ export default function PaymentCheckoutModal({
                 'btn-primary',
                 ' right nexttab'
               )}>
-              <span>Complete Order</span>
+              <span>{lang.paymentCheckoutModal.completeOrder}</span>
               <MdOutlineShoppingCartCheckout />
             </Button>
           </div>

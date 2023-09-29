@@ -20,11 +20,17 @@
       "discount": "Discount",
       "total": "Total Amount",
       "delete": "Delete",
-      "hold": "Hold Card",
+      "hold": "Hold",
       "orders": "Orders",
+      "holdOrders": "Hold Orders",
       "saveOrder": "Save Order",
       "checkout": "Check Out",
       "difference": "Difference",
+      "name": "Name",
+      "enterName": "Enter Name",
+      "close": "Close",
+      "save": "Save",
+      "clearMessage": "Are you sure you want to clear cart?",
       "orderModal": {
         "search": "Search by Customer Name or Invoice Number",
         "hold": "Hold",
@@ -40,6 +46,65 @@
     "itemList": {
       "category": "Category",
       "brand": "Brand"
+    },
+    "customerData": {
+      "selectCustomer": "Select Customer..."
+    },
+    "productSearch": {
+      "searchProduct": "Search Product ..."
+    },
+    "CustomerModal": {
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "mobile": "Mobile",
+      "enterMobile": "Enter customer mobile number",
+      "pricingGroup": "Pricing Group",
+      "enterPrice": "Enter customer pricing group",
+      "selectPrice": "Select Pricing Group",
+      "less": "Less",
+      "more": "More",
+      "information": "Information",
+      "addressLine1": "Address line 1",
+      "addressLine2": "Address line 2",
+      "enterAddressLine1": "Enter Address line 1",
+      "enterAddressLine2": "Enter Address line 2",
+      "hassan": "Country",
+      "enterCountry": "Enter Country",
+      "state": "State",
+      "enterState": "Enter State",
+      "city": "City",
+      "enterCity": "Enter City",
+      "zipCode": "Zip Code",
+      "enterZipCode": "Enter Zip Code",
+      "shippingAddress": "Shipping Address",
+      "enterShippingAddress": "Enter Shipping Address",
+      "close": "Close"
+    },
+    "confirmationModal": {
+      "confirmation": "Confirmation",
+      "cancel": "Cancel",
+      "confirm": "Confirm"
+    },
+    "paymentCheckoutModal": {
+      "payment": "Payment",
+      "amount": "Amount",
+      "enterAmount": "Enter amount",
+      "taxes": "Taxes",
+      "discount": "Discount",
+      "old": "Old",
+      "total": "Total",
+      "orderNotes": "Order Notes",
+      "enterNotes": "Enter your notes",
+      "method": "Method",
+      "payNote": "Pay. Note",
+      "enterPayNote": "your notes",
+      "addPaymentRow": "Add Payment Row",
+      "totalPayable": "Total Payable",
+      "totalPaying": "Total Paying",
+      "changeReturn": "Change Return",
+      "balance": "Balance",
+      "remove": "Remove",
+      "completeOrder": "Complete Order"
     }
   }
 }

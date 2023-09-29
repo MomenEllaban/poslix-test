@@ -20,11 +20,17 @@
       "discount": "خصم",
       "total": "المبلغ الإجمالى",
       "delete": "ازالة",
-      "hold": "حجز الطلب",
+      "hold": "علق",
       "orders": "الطلبات",
+      "holdOrders": "علق الطلبات",
       "saveOrder": "حفظ الطلب",
       "checkout": "الدفع",
       "difference": "الفرق",
+      "name": "الأسم",
+      "enterName": "ادخل الأسم",
+      "close": "إغلاق",
+      "save": "حفظ",
+      "clearMessage": "هل أنت متأكد أنك تريد مسح سلة التسوق؟",
       "orderModal": {
         "search": "ابحث ب اسم العميل او رقم الفاتورة",
         "hold": "حجز",
@@ -40,6 +46,65 @@
     "itemList": {
       "category": "الفئة",
       "brand": "الماركة"
+    },
+    "customerData": {
+      "selectCustomer": "حدد العميل..."
+    },
+    "productSearch": {
+      "searchProduct": "بحث عن منتج..."
+    },
+    "CustomerModal": {
+      "firstName": "الاسم الأول",
+      "lastName": "الاسم الأخير",
+      "mobile": "الهاتف",
+      "enterMobile": "أدخل رقم الهاتف المحمول للعميل",
+      "pricingGroup": "مجموعة التسعير",
+      "enterPrice": "أدخل مجموعة تسعير العملاء",
+      "selectPrice": "حدد مجموعة التسعير",
+      "less": "أقل",
+      "more": "أكثر",
+      "information": "معلومة",
+      "addressLine1": "العنوان الأول",
+      "addressLine2": "العنوان الثاني",
+      "enterAddressLine1": "أدخل العنوان الأول",
+      "enterAddressLine2": "أدخل العنوان الثاني",
+      "hassan": "البلد",
+      "enterCountry": "أدخل البلد",
+      "state": "الحالة",
+      "enterState": "أدخل الحالة",
+      "city": "المدينة",
+      "enterCity": "أدخل المدينة",
+      "zipCode": "الرمز البريدي",
+      "enterZipCode": "أدخل الرمز البريدي",
+      "shippingAddress": "عنوان الشحن",
+      "enterShippingAddress": "أدخل عنوان الشحن",
+      "close": "إغلاق"
+    },
+    "confirmationModal": {
+      "confirmation": "تأكيد",
+      "cancel": "إلغاء",
+      "confirm": "تأكيد"
+    },
+    "paymentCheckoutModal": {
+      "payment": "الدفع",
+      "amount": "المبلغ",
+      "enterAmount": "أدخل المبلغ",
+      "taxes": "الضريبة",
+      "discount": "التخفيض",
+      "old": "عمر",
+      "total": "الإجمالي",
+      "orderNotes": "ملاحظات الطلب",
+      "enterNotes": "أدخل ملاحظاتك",
+      "method": "الطريقة",
+      "payNote": "ملحوظات الدفع",
+      "enterPayNote": "ملاحظاتك",
+      "addPaymentRow": "إضافة صف الدفع",
+      "totalPayable": "مجموع المستحق الدفع",
+      "totalPaying": "إجمالي الدفع",
+      "changeReturn": "الباقي",
+      "balance": "الرصيد",
+      "remove": "إزالة",
+      "completeOrder": "اكمل الطلب"
     }
   }
 }

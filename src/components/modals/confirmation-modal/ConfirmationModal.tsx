@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Button, Modal, Spinner } from 'react-bootstrap';
+import { usePosContext } from 'src/modules/pos/_context/PosContext';
 
 interface ConfirmationModalProps {
   show: boolean;
