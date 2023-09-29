@@ -1,3 +1,5 @@
+import { ISupplier } from './suppliers.types';
+
 export interface IPricesJson {
   name: string;
   from: string | number;
@@ -255,6 +257,7 @@ export interface IPurchase {
   currency_id: number;
   products: IProduct[];
   payment: IPayment;
+  supplier: ISupplier;
   stocks: IStock[];
 }
 
