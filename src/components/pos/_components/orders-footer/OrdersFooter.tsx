@@ -38,7 +38,7 @@ export const OrdersFooter = ({ orderEditDetails, details, shopId, lang }) => {
     const res2 = await findAllData(`appearance/${router.query.id}`);
     setInvoiceDetails(res2.data.result);
     const res = await findAllData(`print-settings/${router.query.id}`);
-    setInvoiceType(res.data.result.printtype);
+    setInvoiceType(res.data.result.print_type);
   };
   useEffect(() => {
     try {

@@ -153,7 +153,7 @@ export default function PaymentCheckoutModal({
 
   class ComponentToPrint extends React.PureComponent {
     render() {
-      return invoiceType === 'receipt' ? (
+      return invoiceType === 'A4' ? (
         <div className="bill">
           <div className="brand-logo">
             <img src={invoiceDetails.logo} />

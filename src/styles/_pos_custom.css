@@ -269,8 +269,10 @@ thead.order-head tr {
   font-size: 12px;
   color: red;
   text-align: center;
-  margin-top: 10px;
-  display: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  background-color: rgba(1, 1, 1, 0.5);
 }
 
 .item-icons img {

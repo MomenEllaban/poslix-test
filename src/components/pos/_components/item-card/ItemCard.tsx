@@ -3,21 +3,28 @@ import classNames from 'classnames';
 import { useEffect, useState } from 'react';
 import { MdAllInbox } from 'react-icons/md';
 import { useUser } from 'src/context/UserContext';
-import { useAppDispatch } from 'src/hooks';
-import { addToCart } from 'src/redux/slices/cart.slice';
+import { useAppDispatch, useAppSelector } from 'src/hooks';
+import { addToCart, selectCartByLocation } from 'src/redux/slices/cart.slice';
 import PackageItemsModal from '../../modals/package-item/PackageItemsModal';
 import styles from './ItemCard.module.scss';
+import { Toastify } from 'src/libs/allToasts';
 
 export const ItemCard = ({ product }: { product: IProduct }) => {
   const dispatch = useAppDispatch();
   const { locationSettings } = useUser();
+  // const selectCartForLocation = selectCartByLocation(shopId);
+  // const cart = useAppSelector(selectCartForLocation);
 
   const [isOpenDialog, setIsOpenDialog] = useState<boolean>(false);
   const [productVariations, setProductVariations] = useState<IProduct['variations']>([]);
 
   const handleAddToCart = () => {
-    console.log(product)
-    if (product.type?.includes('variable')) {
+    console.log(!product.is_service &&
+      !product.type?.includes('variable') &&
+      !product.type?.includes('package') &&
+      product.stock == 0);
+    
+    if (product.type?.includes('variable') && product.stock > 0) {
       setProductVariations(product.variations);
       setIsOpenDialog(true);
     } else {
@@ -35,14 +42,31 @@ export const ItemCard = ({ product }: { product: IProduct }) => {
     <>
       <button
         onClick={() => {
-          handleAddToCart();
+          if(!product.is_service &&
+            !product.type?.includes('variable') &&
+            !product.type?.includes('package') &&
+            product.stock == 0)
+            Toastify('error', 'This product is out of stock');
+          else
+            handleAddToCart();
         }}
-        className={styles['item-card__container']}>
+        className={styles['item-card__container']}
+        style={{
+          pointerEvents: !product.is_service &&
+          !product.type?.includes('variable') &&
+          !product.type?.includes('package') &&
+          product.stock == 0 ? "none" : 'auto'
+        }}>
         {product.type === 'variable' && (
           <div className={styles['item-card__container--variable']}>
             <MdAllInbox />
           </div>
         )}
+
+        {!product.is_service &&
+          !product.type?.includes('variable') &&
+          !product.type?.includes('package') &&
+          product.stock == 0 && <div className="out-of-stock">Out Of Stock</div>}
 
         <div className={classNames('product-img')}>
           <div className="img-container">
@@ -59,11 +83,6 @@ export const ItemCard = ({ product }: { product: IProduct }) => {
             ? Number(product.sell_price).toFixed(3) + locationSettings?.currency_code
             : '--'}
         </div>
-        {!product.is_service &&
-          !product.type?.includes('variable') &&
-          !product.type?.includes('package') &&
-          product.stock == 0 &&
-          !product.sell_over_stock && <div className="out-of-stock">Out Of Stock</div>}
 
         <div className="item-icons">
           {!product.is_service && (
