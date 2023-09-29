@@ -29,7 +29,7 @@ export async function getToken() {
   accessToken = localStorage.getItem(ELocalStorageKeys.TOKEN) ?? '';
   if (!hasExpired()) return accessToken; // will return null if not existed
 
-  return await refreshToken();
+  // return await refreshToken();
 }
 
 export async function getDecodedToken() {

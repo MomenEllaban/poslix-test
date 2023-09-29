@@ -132,7 +132,7 @@ export const useGetBusiness = (id: string, config?: SWRConfiguration) => {
 
 export const useCurrenciesList = (params?: { [x: string]: any }, config?: SWRConfiguration) => {
   const { data, error, isLoading, mutate } = useSWR(
-    config?.suspense ? null : ['/currencies', params],
+    ['/currencies', params],
     () => businessService.listCurrencies(params),
     {
       ...config,

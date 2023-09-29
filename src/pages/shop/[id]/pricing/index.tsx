@@ -145,7 +145,7 @@ const PricingGroups = (props) => {
           })
         ]
       );
-    else alert('errorr location settings');
+    
     initDataPage();
   }, []);
 

@@ -81,6 +81,8 @@ export default function CustomerDataSelect({
             lineHeight: 0,
             padding: '0px 12px !important',
             height: 38,
+            pointerEvents: cart?.customer_id > 0 ? "auto" : 'none',
+            opacity: cart?.customer_id > 0 ? "1" : '0.6'
           }}
           type="button"
           onClick={() => {

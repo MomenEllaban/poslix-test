@@ -302,7 +302,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
           })
         ]
       );
-    else alert('errorr location settings');
+    
     initDataPage(router.query.slug);
   }, [router.asPath]);
 

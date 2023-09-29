@@ -48,19 +48,19 @@ const responseInterceptor = api.interceptors.response.use(
 
     if (error.response && (error.response.status === 401 || error.response.status === 403)) {
       if (!isRefreshing) {
-        isRefreshing = true;
-        try {
-          const session = await getSession();
-          const newToken = await authService.refreshToken();
-          isRefreshing = false;
+        // isRefreshing = true;
+        // try {
+        //   const session = await getSession();
+        //   const newToken = await authService.refreshToken();
+        //   isRefreshing = false;
 
-          api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
-          session.user.token = newToken;
-          processQueue(null, newToken);
-        } catch (refreshError) {
-          isRefreshing = false;
-          processQueue(refreshError, null);
-        }
+        //   api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+        //   session.user.token = newToken;
+        //   processQueue(null, newToken);
+        // } catch (refreshError) {
+        //   isRefreshing = false;
+        //   processQueue(refreshError, null);
+        // }
       }
 
       const retryOriginalRequest = new Promise((resolve, reject) => {

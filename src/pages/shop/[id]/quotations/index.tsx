@@ -462,7 +462,7 @@ export default function SalesList(props: any) {
           })
         ]
       );
-    else alert('errorr location settings');
+    
     initDataPage();
   }, [router.asPath]);
 

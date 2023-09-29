@@ -61,7 +61,7 @@ const Product: NextPage = (props: any) => {
           })
         ]
       );
-    else alert('errorr location settings');
+    
     initDataPage();
   }, [router.asPath]);
   const [key, setKey] = useState('types');
