@@ -23,7 +23,7 @@ function LocationUpdateForm({ businessId, location }) {
   const [selectedRoles, setSelectedRoles] = useState<{ value: number; label: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const { mutate } = useSWRConfig();
-  const [currenciesList, setCurrenciesList] = useState<{ value: number; label: string }[]>([]);
+  const [currenciesList, setCurrenciesList] = useState<any[]>([]);
   const [users, setUsers] = useState<any>([]);
   const [roles, setRoles] = useState<any>([]);
   const initPageData = async () => {

@@ -28,7 +28,6 @@ export default function ProductSearch({ shopId }) {
   };
 
   const handleAddToCart = (product: IProduct) => {
-    console.log(product);
     if (product.type?.includes('variable')) {
       setProduct(product);
       setProductVariations(product.variations);

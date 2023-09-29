@@ -16,6 +16,7 @@ export const ItemCard = ({ product }: { product: IProduct }) => {
   const [productVariations, setProductVariations] = useState<IProduct['variations']>([]);
 
   const handleAddToCart = () => {
+    console.log(product)
     if (product.type?.includes('variable')) {
       setProductVariations(product.variations);
       setIsOpenDialog(true);
