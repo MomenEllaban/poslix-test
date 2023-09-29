@@ -17,24 +17,21 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   onClose,
   onConfirm,
 }) => {
-  const { lang: _lang } = usePosContext();
-  const lang = _lang?.pos;
-
   return (
     <Modal show={show} onHide={onClose}>
       <Modal.Header closeButton>
-        <Modal.Title>{lang.confirmationModal.confirmation}</Modal.Title>
+        <Modal.Title>Confirmation</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <p>{message}</p>
       </Modal.Body>
       <Modal.Footer>
         <Button active={!loading} variant="secondary" onClick={onClose}>
-          {lang.confirmationModal.cancel}
+          Cancel
         </Button>
         <Button active={!loading} variant="danger" onClick={onConfirm}>
           {loading && <Spinner size="sm" className="me-2" />}
-          {lang.confirmationModal.confirm}
+          Confirm
         </Button>
       </Modal.Footer>
     </Modal>
