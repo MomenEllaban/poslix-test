@@ -370,6 +370,7 @@ const Product: NextPage = ({ editId, iType }: any) => {
         sell_price: parseFloat(_form.sell_price), // Convert to number
         cost_price: parseFloat(_form.cost_price), // Convert to number
         sell_over_stock: parseInt(_form.sell_over_stock), // Convert to boolean
+        variations: _form.variations,
       };
     try {
       const _cleaned = {};
