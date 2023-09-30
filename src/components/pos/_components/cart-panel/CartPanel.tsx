@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { useAppSelector } from 'src/hooks';
-import { selectCartByLocation } from 'src/redux/slices/cart.slice';
+import { useEffect, useState } from 'react';
+import { useAppDispatch, useAppSelector } from 'src/hooks';
+import { clearCart, selectCartByLocation } from 'src/redux/slices/cart.slice';
 import { OrderCalcs } from '../../utils/OrderCalcs';
 import CustomerDataSelect from '../CustomerDataSelect';
 import CartTable from '../cart-table/CartTable';
@@ -37,9 +37,13 @@ const initOrder = {
 
 export default function CartPanel({ shopId }) {
   const { lang: _lang, isRtl } = usePosContext();
-
+  const dispatch = useAppDispatch()
   const selectCartForLocation = selectCartByLocation(shopId ?? 0);
   const cart = useAppSelector(selectCartForLocation);
+
+  useEffect(() => {
+    dispatch(clearCart({ location_id: shopId }));
+  }, [])
 
   const [customer, setCustomer] = useState<ICustomerItem>({
     ...initCustomer,
