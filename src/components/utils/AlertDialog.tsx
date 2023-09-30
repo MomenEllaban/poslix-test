@@ -2,14 +2,14 @@ import React, { useEffect, useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import { apiDeleteCtr } from "../../libs/dbUtils"
-import { deleteData } from 'src/services/crud.api';
+import { deleteData,deleteDataWithLocID } from 'src/services/crud.api';
 
 export default function AlertDialog(props: any) {
-    const { url, id, shopId, type, subType, section } = props
-    console.log(url,"api/print-settings/1")
+    const { url, id, shopId, type, subType, section,locatiooID } = props
+    console.log(shopId,locatiooID)
     const handleClose = () => props.alertFun(false, '');
     async function deletePrint() {
-        const res = await deleteData(url, id)
+        const res = await deleteDataWithLocID(url,id,locatiooID)
         console.log(res.data.result.status);
         
         if (res.data.status) {

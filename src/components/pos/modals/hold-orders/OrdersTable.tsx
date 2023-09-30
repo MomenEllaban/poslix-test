@@ -55,8 +55,8 @@ export default function OrdersTable({ lang, shopId, searchQuery = '', closeModal
             }
           }}>
           <td>#{item.id}</td>
-          <td>{item.contact_name?.trim() || '--- --- ---'}</td>
-          <td>{item.contact_mobile?.trim() || '--- --- ---'}</td>
+          <td>{item.contact_name?.trim() || 'walk-in customer'}</td>
+          <td>{item.contact_mobile?.trim() || 'walk-in customer'}</td>
           <td>
             {Number(item.sub_total).toFixed(+locationSettings?.location_decimal_places)}{' '}
             <span style={{ fontSize: '10px' }}>{locationSettings?.currency_code}</span>

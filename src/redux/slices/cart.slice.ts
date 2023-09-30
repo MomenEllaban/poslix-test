@@ -47,7 +47,7 @@ const findOrCreateCart = (state: ICart[], location_id: string): ICart => {
       cartDiscountType: 'fixed',
       shipping: 0,
       lastTotal: 0,
-      lastDue: 0
+      lastDue: 0,
     };
     state.push(newCart);
     return newCart;
@@ -89,7 +89,7 @@ const cartSlice = createSlice({
       if (existingItem) {
         existingItem.quantity += 1;
       } else {
-        cart.cartItems.push({ ...action.payload, product_id: id, quantity: 1 });
+        cart.cartItems.push({ ...action.payload, quantity: 1 });
       }
       cart.cartSellTotal += +action.payload.sell_price;
       cart.cartCostTotal += +action.payload.cost_price;
@@ -106,21 +106,21 @@ const cartSlice = createSlice({
         cart.cartCostTotal -= +action.payload.cost_price * +existingItem.quantity;
         localStorage.setItem('cart', JSON.stringify(state));
       }
-      
-      clearCart(state)
+
+      clearCart(state);
     },
     clearCart: (state, action) => {
       const cart = findOrCreateCart(state, action.payload.location_id);
       cart.cartItems = [];
       cart.cartSellTotal = 0;
       cart.cartCostTotal = 0;
-      cart.orderId = null
-      cart.lastTotal = 0
-      cart.lastDue = 0
-      cart.customer_id = null
+      cart.orderId = null;
+      cart.lastTotal = 0;
+      cart.lastDue = 0;
+      cart.customer_id = null;
 
       localStorage.setItem('cart', JSON.stringify(state));
-      localStorage.removeItem('currentQuotation')
+      localStorage.removeItem('currentQuotation');
       return state;
     },
     decreaseItemQuantity: (state, action) => {
@@ -137,21 +137,21 @@ const cartSlice = createSlice({
         cart.cartCostTotal -= +action.payload.cost_price;
         localStorage.setItem('cart', JSON.stringify(state));
       }
-      
-      if(!cart.cartItems.length) {
-        cart.orderId = null
-        cart.lastTotal = 0
-        cart.lastDue = 0
-        cart.customer_id = null
+
+      if (!cart.cartItems.length) {
+        cart.orderId = null;
+        cart.lastTotal = 0;
+        cart.lastDue = 0;
+        cart.customer_id = null;
       }
     },
     addMultipleToCart: (state, action) => {
       const { location_id, products, orderId, customerId, lastTotal, lastDue } = action.payload;
-      const cart = findOrCreateCart(state, location_id);   
-      cart.orderId = orderId
-      cart.lastTotal = lastTotal
-      cart.lastDue = lastDue
-      cart.customer_id = customerId
+      const cart = findOrCreateCart(state, location_id);
+      cart.orderId = orderId;
+      cart.lastTotal = lastTotal;
+      cart.lastDue = lastDue;
+      cart.customer_id = customerId;
       products.map((prod) => {
         const existingItem = cart.cartItems.find((item) => item.id === prod.id);
         if (existingItem) {
@@ -161,9 +161,9 @@ const cartSlice = createSlice({
         }
         cart.cartSellTotal += +prod.sell_price;
         cart.cartCostTotal += +prod.cost_price;
-      })
+      });
       localStorage.setItem('cart', JSON.stringify(state));
-    }
+    },
   },
 });
 
@@ -187,5 +187,5 @@ export const {
   decreaseItemQuantity,
   clearCart,
   removeFromCart,
-  addMultipleToCart
+  addMultipleToCart,
 } = cartSlice.actions;

@@ -1,8 +1,6 @@
 'use client';
-import { DevTool } from '@hookform/devtools';
 import { paymentTypeData } from '@models/data';
 import classNames from 'classnames';
-import { update } from 'lodash';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Button, Form, InputGroup, Stack } from 'react-bootstrap';
 import Col from 'react-bootstrap/Col';
@@ -20,6 +18,7 @@ import { useAppDispatch, useAppSelector } from 'src/hooks';
 import { usePosContext } from 'src/modules/pos/_context/PosContext';
 import { clearCart, selectCartByLocation } from 'src/redux/slices/cart.slice';
 import api from 'src/utils/app-api';
+import InvoiceToPrint from './InvoiceToPrint';
 
 export default function PaymentCheckoutModal({
   show,
@@ -46,7 +45,7 @@ export default function PaymentCheckoutModal({
 
   const [lastEdited, setLastEdited] = useState<number>(0);
 
-  const [paidAmount, setPaidAmount] = useState<{[x: string]: number;}>({'0': 0});
+  const [paidAmount, setPaidAmount] = useState<{ [x: string]: number }>({ '0': 0 });
   const selectCartForLocation = selectCartByLocation(shopId);
   const cart = useAppSelector(selectCartForLocation); // current location order
   const { customers } = useProducts();
@@ -63,17 +62,22 @@ export default function PaymentCheckoutModal({
       : +(cart?.cartTax ?? 0);
 
   const totalNoTax = +(cart?.cartSellTotal ?? 0) + +(cart?.shipping ?? 0);
-  const totalAmount = cart?.orderId ? totalNoTax + totalTax - totalDiscount : totalNoTax + totalTax - totalDiscount - +cart?.lastTotal || 0 + +cart?.lastDue || 0;
-  const [calcTotal, setCalcTotal] = useState<any>(totalAmount)
+  const totalAmount = cart?.orderId
+    ? totalNoTax + totalTax - totalDiscount
+    : totalNoTax + totalTax - totalDiscount - +cart?.lastTotal || 0 + +cart?.lastDue || 0;
+  const [calcTotal, setCalcTotal] = useState<any>(totalAmount);
   useEffect(() => {
     setValue(`payment.0.amount`, totalAmount.toString());
     setPaidAmount({ '0': totalAmount });
     setCalcTotal(totalAmount);
   }, [totalAmount]);
   useEffect(() => {
-    if(cart?.orderId) {
-      const newTotal = Number((totalNoTax + totalTax - totalDiscount - +cart.lastTotal + +cart.lastDue)
-        .toFixed(locationSettings?.location_decimal_places))
+    if (cart?.orderId) {
+      const newTotal = Number(
+        (totalNoTax + totalTax - totalDiscount - +cart.lastTotal + +cart.lastDue).toFixed(
+          locationSettings?.location_decimal_places
+        )
+      );
       setValue(`payment.0.amount`, newTotal.toString());
       setPaidAmount({ '0': newTotal });
       setCalcTotal(newTotal);
@@ -128,6 +132,7 @@ export default function PaymentCheckoutModal({
       related_invoice_id: cart.orderId > 0 ? cart.orderId : null,
       cart: cart?.cartItems.map((product) => ({
         product_id: product?.product_id,
+        variation_id: product?.variation_id ?? undefined,
         qty: product?.quantity,
         note: data?.notes,
       })),
@@ -152,277 +157,6 @@ export default function PaymentCheckoutModal({
     if (printReceipt && print) handlePrint();
   }, [printReceipt]);
 
-  class ComponentToPrint extends React.PureComponent {
-    render() {
-      return invoiceType !== 'A4' ? (
-        <div className="bill">
-          <div className="brand-logo">
-            <img src={invoiceDetails.logo} />
-          </div>
-          <br />
-          <div className="brand-name">{invoiceDetails.name}</div>
-          <div className="shop-details">{invoiceDetails.tell}</div>
-          <br />
-          <div className="bill-details">
-            <div className="flex justify-between">
-              <div>
-                {invoiceDetails.txtCustomer}{' '}
-                {invoiceDetails.isMultiLang && invoiceDetails.txtCustomer2}
-              </div>
-              <div>{currentCustomer.length > 0 ? currentCustomer[0].label : customer.label}</div>
-            </div>
-            <div className="flex justify-between">
-              <div>
-                {invoiceDetails.orderNo} {invoiceDetails.isMultiLang && invoiceDetails.orderNo2}
-              </div>
-              <div>{printReceipt?.id}</div>
-            </div>
-            <div className="flex justify-between">
-              <div>
-                {invoiceDetails.txtDate} {invoiceDetails.isMultiLang && invoiceDetails.txtDate2}
-              </div>
-              <div>{new Date().toISOString().slice(0, 10)}</div>
-            </div>
-          </div>
-          <table className="table">
-            <thead>
-              <tr className="header">
-                <th>
-                  {invoiceDetails.txtQty}
-                  <br />
-                  {invoiceDetails.isMultiLang && invoiceDetails.txtQty2}
-                </th>
-                <th>
-                  {invoiceDetails.txtItem}
-                  <br />
-                  {invoiceDetails.isMultiLang && invoiceDetails.txtItem2}
-                </th>
-                <th></th>
-                <th>
-                  {invoiceDetails.txtAmount}
-                  <br />
-                  {invoiceDetails.isMultiLang && invoiceDetails.txtAmount2}
-                </th>
-              </tr>
-              {perperdForPrint(printReceipt?.products)}
-              <tr className="net-amount">
-                <td></td>
-                <td>
-                  {invoiceDetails.txtTax} {invoiceDetails.isMultiLang && invoiceDetails.txtTax2}
-                </td>
-                <td></td>
-                <td>
-                  {(
-                    (+printReceipt?.total_price * +printReceipt?.products[0].pivot.tax_amount) /
-                    100
-                  ).toFixed(locationSettings?.location_decimal_places)}
-                </td>
-              </tr>
-              <tr className="net-amount">
-                <td></td>
-                <td>
-                  {invoiceDetails.txtDiscount}
-                  {'Discount'}
-                  {invoiceDetails.isMultiLang && invoiceDetails.txtDiscount2}
-                </td>
-                <td></td>
-                <td>
-                  {(+printReceipt?.discount_amount).toFixed(
-                    locationSettings?.location_decimal_places
-                  )}
-                </td>
-              </tr>
-              <tr className="net-amount">
-                <td></td>
-                <td className="txt-bold">
-                  {invoiceDetails.txtTotal} {invoiceDetails.isMultiLang && invoiceDetails.txtTotal2}
-                </td>
-                <td></td>
-                <td className="txt-bold">
-                  {/* {Number(__WithDiscountFeature__total + (totalAmount - printReceipt.totalPrice)).toFixed(
-                    locationSettings?.location_decimal_places
-                  )} */}
-                  {Number(+printReceipt?.total_price - +printReceipt?.discount_amount).toFixed(
-                    locationSettings?.location_decimal_places
-                  )}
-                </td>
-              </tr>
-              <tr className="net-amount">
-                <td></td>
-                <td className="txt-bold">
-                  {invoiceDetails.txtAmountpaid}{' '}
-                  {invoiceDetails.isMultiLang && invoiceDetails.txtAmountpaid2}
-                </td>
-                <td></td>
-                <td className="txt-bold">
-                  {/* {printReceipt.payment[0].amount && Number(totalPaid).toFixed(locationSettings?.location_decimal_places)} */}
-                </td>
-              </tr>
-              <tr className="net-amount">
-                <td></td>
-                <td className="txt-bold">
-                  {invoiceDetails.txtTotalDue}{' '}
-                  {invoiceDetails.isMultiLang && invoiceDetails.txtTotalDue2}
-                </td>
-                <td></td>
-                {/* <td className="txt-bold">
-                  {Number(
-                    __WithDiscountFeature__total + (totalAmount - subTotal) - (amount && totalPaid)
-                  ) > 0
-                    ? Number(
-                        __WithDiscountFeature__total +
-                          +(totalAmount - subTotal) -
-                          (amount && totalPaid)
-                      ).toFixed(locationSettings?.location_decimal_places)
-                    : 0}
-                </td> */}
-              </tr>
-            </thead>
-          </table>
-          <p className="recipt-footer">
-            {invoiceDetails.footer}
-            {invoiceDetails.isMultiLang && invoiceDetails.footer2}
-          </p>
-          {/* <p className="recipt-footer">{orderNote}</p> */}
-          <br />
-        </div>
-      ) : (
-        <div className="appear-body-item a4">
-          <div className="bill2">
-            <div className="brand-logo">
-              <img src={invoiceDetails.logo} />
-              <div className="invoice-print">
-                INVOICE
-                <div>
-                  <table className="GeneratedTable">
-                    <tbody>
-                      <tr>
-                        <td className="td_bg">INVOICE NUMBER </td>
-                        <td>
-                          <div>
-                            {invoiceDetails.orderNo}{' '}
-                            {invoiceDetails.isMultiLang && invoiceDetails.orderNo2}
-                          </div>
-                          <div>{printReceipt?.id}</div>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="td_bg">INVOICE DATE </td>
-                        <td>{new Date().toISOString().slice(0, 10)}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-            <br />
-            <div className="up_of_table flex justify-between">
-              <div className="left_up_of_table">
-                <div>Billed From</div>
-                <div>{invoiceDetails.name}</div>
-                <div>info@poslix.com</div>
-                <div>{invoiceDetails.tell}</div>
-                <div>Office 21-22, Building 532, Mazoon St. Muscat, Oman</div>
-                <div>VAT Number: OM1100270001</div>
-              </div>
-              <div className="right_up_of_table">
-                <div>Billed To</div>
-                <div>{currentCustomer.length > 0 ? currentCustomer[0].label : customer.label}</div>
-                {/* <span>Billed To</span> */}
-              </div>
-            </div>
-            <br />
-
-            <table className="GeneratedTable2">
-              <thead>
-                <tr>
-                  <th>Description</th>
-                  <th>
-                    {' '}
-                    {invoiceDetails.txtQty}
-                    <br />
-                    {invoiceDetails.isMultiLang && invoiceDetails.txtQty2}
-                  </th>
-                  <th>Unit Price</th>
-                  {/* <th> {invoiceDetails.txtItem}<br />{invoiceDetails.isMultiLang && invoiceDetails.txtItem2}</th> */}
-                  <th>Tax</th>
-                  <th>
-                    {' '}
-                    {invoiceDetails.txtAmount}
-                    <br />
-                    {invoiceDetails.isMultiLang && invoiceDetails.txtAmount2}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  {/* <td>{invoiceDetails.txtTax} {invoiceDetails.isMultiLang && invoiceDetails.txtTax2}</td> */}
-                  <td colSpan={4} className="txt_bold_invoice">
-                    Sub Total
-                  </td>
-                  <td>
-                    {Number(+printReceipt?.total_price - +printReceipt?.discount_amount).toFixed(
-                      locationSettings?.location_decimal_places
-                    )}
-                  </td>
-                </tr>
-                <tr>
-                  <td colSpan={4} className="txt_bold_invoice">
-                    Total
-                  </td>
-                  <td className="txt_bold_invoice">
-                    {Number(+printReceipt?.total_price - +printReceipt?.discount_amount).toFixed(
-                      locationSettings?.location_decimal_places
-                    )}
-                  </td>
-                </tr>
-                <tr>
-                  <td colSpan={4} className="txt_bold_invoice">
-                    Total Due
-                  </td>
-                  <td className="txt_bold_invoice">
-                    {Number(
-                      __WithDiscountFeature__total +
-                        +printReceipt?.total_price -
-                        +printReceipt?.payment[0].amount
-                    ) > 0
-                      ? Number(
-                          __WithDiscountFeature__total +
-                            +printReceipt?.total_price -
-                            printReceipt?.payment[0].amount
-                        ).toFixed(locationSettings?.location_decimal_places)
-                      : 0}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <p className="recipt-footer">
-              {invoiceDetails.footer}
-              {invoiceDetails.isMultiLang && invoiceDetails.footer2}
-            </p>
-            {/* <p className="recipt-footer">{formObj.notes}</p> */}
-            <br />
-          </div>
-        </div>
-      );
-    }
-  }
-
-  const perperdForPrint = (prods) => {
-    let counter = 0;
-    return prods?.map((prod: any, i: number) => {
-      counter++;
-      return (
-        <tr key={counter}>
-          <td>{parseInt(prod.pivot.qty)}</td>
-          <td>{prod.name}</td>
-          <th></th>
-          <td>{Number(prod.sell_price).toFixed(locationSettings?.location_decimal_places)}</td>
-        </tr>
-      );
-    });
-  };
-
   const handlePrint = useReactToPrint({
     content: () => componentRef.current,
     onAfterPrint: () => setPrint(false),
@@ -431,7 +165,16 @@ export default function PaymentCheckoutModal({
   return (
     <div>
       <div style={{ display: 'none' }}>
-        <ComponentToPrint ref={componentRef} />
+        <InvoiceToPrint
+          ref={componentRef}
+          customer={customer}
+          invoiceType={invoiceType}
+          printReceipt={printReceipt}
+          customers={currentCustomer}
+          invoiceDetails={invoiceDetails}
+          locationSettings={locationSettings}
+          __WithDiscountFeature__total={__WithDiscountFeature__total}
+        />
       </div>
       <MainModal
         title={lang.paymentCheckoutModal.payment}
@@ -487,7 +230,15 @@ export default function PaymentCheckoutModal({
                     {lang.paymentCheckoutModal.total}:{' '}
                   </span>
                   <span>
-                    {cart?.orderId ? ((totalNoTax + totalTax - totalDiscount - +cart.lastTotal + +cart.lastDue)?.toFixed(locationSettings?.location_decimal_places) ?? '') : totalAmount}{' '}
+                    {cart?.orderId
+                      ? (
+                          totalNoTax +
+                          totalTax -
+                          totalDiscount -
+                          +cart.lastTotal +
+                          +cart.lastDue
+                        )?.toFixed(locationSettings?.location_decimal_places) ?? ''
+                      : totalAmount}{' '}
                   </span>
                   <span>{locationSettings?.currency_code ?? ''}</span>
                 </h6>

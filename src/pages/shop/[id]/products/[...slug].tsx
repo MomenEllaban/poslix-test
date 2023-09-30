@@ -353,7 +353,7 @@ const Product: NextPage = ({ editId, iType }: any) => {
 
         name: _form.name,
         subproductname: _form.productName2,
-        image: url,
+        image: url || _form.img || undefined,
 
         type: _form.type,
 
@@ -370,10 +370,18 @@ const Product: NextPage = ({ editId, iType }: any) => {
         sell_price: parseFloat(_form.sell_price), // Convert to number
         cost_price: parseFloat(_form.cost_price), // Convert to number
         sell_over_stock: parseInt(_form.sell_over_stock), // Convert to boolean
+        variations: _form.variations,
       };
     try {
+      const _cleaned = {};
+      Object.keys(_data).map((item) => {
+        if (!!_data[item]) {
+          _cleaned[item] = _data[item];
+        }
+      });
       const res = await updateData('products', router.query.slug[1], _data);
       Toastify('success', 'Product updated successfully!');
+      router.push('/shop/' + router.query.id + '/products');
     } catch (e) {
       console.warn(e.response.data.error);
       Toastify('error', 'Something went wrong, please check your inputs!');
