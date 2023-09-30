@@ -137,8 +137,6 @@ export default function PaymentCheckoutModal({
       .then((res) => {
         setPrintReceipt(res.data.result);
         setPrint(true);
-        console.log(res.data.result, printReceipt, print);
-        
         setShow(false);
       })
       .then(() => {
@@ -151,7 +149,6 @@ export default function PaymentCheckoutModal({
   }, [paidAmount]);
 
   useEffect(() => {
-        console.log('ee',printReceipt, print);
     if (printReceipt && print) handlePrint();
   }, [printReceipt]);
 
