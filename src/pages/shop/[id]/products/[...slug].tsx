@@ -20,21 +20,21 @@ import { deleteObject, getDownloadURL, ref, uploadBytesResumable } from 'firebas
 import type { NextPage } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ButtonGroup, Card } from 'react-bootstrap';
 import Spinner from 'react-bootstrap/Spinner';
 import Table from 'react-bootstrap/Table';
 import Select from 'react-select';
 import { ToastContainer } from 'react-toastify';
 import withAuth from 'src/HOCs/withAuth';
-import { UserContext } from 'src/context/UserContext';
+import { useUser } from 'src/context/UserContext';
 import { Toastify } from 'src/libs/allToasts';
 import { generateUniqueString, handleNumberKeyPress } from 'src/libs/toolsUtils';
+import { productDetailsColourStyles } from 'src/modules/products/styles';
 import { createNewData, findAllData, updateData } from 'src/services/crud.api';
 import storage from '../../../../../firebaseConfig';
 import NotifiModal from '../../../../components/utils/NotifiModal';
 import { apiDeleteCtr } from '../../../../libs/dbUtils';
-import { productDetailsColourStyles } from 'src/modules/products/styles';
 
 const colourStyles = productDetailsColourStyles;
 
@@ -64,21 +64,25 @@ const initialFormObject: TFormObject = {
   tailoringPrices: [{ name: '', from: 0, to: 0, price: 0 }],
 };
 
+const initFormError = {
+  name: false,
+  barcode_type: false,
+  productName2: false,
+  sku: false,
+  img: false,
+  isTailoring: false,
+  fabs: false,
+  rules: false,
+  skuExist: false,
+};
+
 const Product: NextPage = ({ editId, iType }: any) => {
-  const [formObj, setFormObj] = useState<any>(initialFormObject);
+  const { locationSettings } = useUser();
+
   const [img, setImg] = useState<any>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
-  const [errorForm, setErrorForm] = useState({
-    name: false,
-    barcode_type: false,
-    productName2: false,
-    sku: false,
-    img: false,
-    isTailoring: false,
-    fabs: false,
-    rules: false,
-    skuExist: false,
-  });
+  const [errorForm, setErrorForm] = useState(initFormError);
+  const [formObj, setFormObj] = useState<any>(initialFormObject);
 
   const [units, setUnits] = useState<{ value: number; label: string }[]>([]);
   const [brands, setBrands] = useState<{ value: number; label: string }[]>([]);
@@ -92,7 +96,6 @@ const Product: NextPage = ({ editId, iType }: any) => {
   const [allFabrics, setAllFabrics] = useState<{ value: number; label: string }[]>([]);
   const [producTypes, setProducTypes] =
     useState<{ value: string; label: string }[]>(productTypeData);
-  const { locationSettings } = useContext(UserContext);
   const [selecetdId, setSelecetdId] = useState(0);
   const [openRemoveDialog, setOpenRemoveDialog] = useState(false);
   const [removeDialogType, setRemoveDialogType] = useState<{
@@ -191,7 +194,7 @@ const Product: NextPage = ({ editId, iType }: any) => {
   var prevUrlRef = useRef<any>();
   prevUrlRef.current = previewUrl;
 
-  async function initDataPage(url) {
+  async function initDataPage(url, locationSettings) {
     setLoading(true);
     try {
       if (url?.length == 2) setIsEdit(true);
@@ -227,7 +230,11 @@ const Product: NextPage = ({ editId, iType }: any) => {
           isFifo: itm.is_fifo == 1,
           never_tax: itm.never_tax,
           variations: [
-            ...res.data.result.variations,
+            ...res.data.result.variations.map((item: IVariation) => ({
+              ...item,
+              cost: (+item.cost).toFixed(locationSettings?.location_decimal_places),
+              price: (+item.price).toFixed(locationSettings?.location_decimal_places),
+            })),
             { name: '', name2: '', sku: '', cost: 0, price: 0, isNew: true },
           ],
           isTailoring:
@@ -297,6 +304,7 @@ const Product: NextPage = ({ editId, iType }: any) => {
   }
 
   async function insertProduct(url: string) {
+    if (!url) return Toastify('error', 'Please add image to the product!');
     const res = await createNewData('products', {
       name: formObjRef.current.name,
       category_id: formObjRef.current.category_id,
@@ -317,17 +325,19 @@ const Product: NextPage = ({ editId, iType }: any) => {
       variations:
         formObjRef.current === 'single'
           ? []
-          : formObjRef.current.variations.map((va) => {
-              return {
-                name: va.name,
-                sku: va.sku,
-                cost: va.cost,
-                price: va.price,
-                sell_over_stock: formObjRef.current.isSellOverStock,
-                is_selling_multi_price: 0,
-                is_service: formObjRef.current.is_service,
-              };
-            }),
+          : formObjRef.current.variations
+              .filter((va) => !!+va.cost && !!+va.price)
+              .map((va) => {
+                return {
+                  name: va.name,
+                  sku: va.sku,
+                  cost: va.cost,
+                  price: va.price,
+                  sell_over_stock: formObjRef.current.isSellOverStock,
+                  is_selling_multi_price: 0,
+                  is_service: formObjRef.current.is_service,
+                };
+              }),
       image: url || '',
     });
     if (res.data.success) {
@@ -370,7 +380,22 @@ const Product: NextPage = ({ editId, iType }: any) => {
         sell_price: parseFloat(_form.sell_price), // Convert to number
         cost_price: parseFloat(_form.cost_price), // Convert to number
         sell_over_stock: parseInt(_form.sell_over_stock), // Convert to boolean
-        variations: _form.variations,
+        variations:
+          _form.type === 'single'
+            ? []
+            : _form.variations
+                .filter((va) => !!+va.cost && !!+va.price)
+                .map((va) => {
+                  return {
+                    name: va.name,
+                    sku: va.sku,
+                    cost: va.cost,
+                    price: va.price,
+                    sell_over_stock: _form.isSellOverStock,
+                    is_selling_multi_price: 0,
+                    is_service: _form.is_service,
+                  };
+                }),
       };
     try {
       const _cleaned = {};
@@ -410,8 +435,8 @@ const Product: NextPage = ({ editId, iType }: any) => {
   }
 
   useEffect(() => {
-    if (router.isReady) initDataPage(router.query.slug);
-  }, [router.asPath]);
+    if (router.isReady) initDataPage(router.query.slug, locationSettings);
+  }, [router.asPath, locationSettings]);
 
   const imageChange = (e: any) => {
     if (e.target.files && e.target.files.length > 0) {
