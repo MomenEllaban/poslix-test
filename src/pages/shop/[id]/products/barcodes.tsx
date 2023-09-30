@@ -2,7 +2,7 @@ import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { AdminLayout } from '@layout';
 import { ILocation } from '@models/auth.types';
-import { IProduct } from '@models/pos.types';
+import { IProduct, IVariation } from '@models/pos.types';
 import { DataGrid, GridColDef, GridRowParams } from '@mui/x-data-grid';
 import type { GetServerSideProps, InferGetServerSidePropsType, NextPage } from 'next';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -12,12 +12,14 @@ import { BiEdit } from 'react-icons/bi';
 import Select from 'react-select';
 import { useReactToPrint } from 'react-to-print';
 import { ToastContainer } from 'react-toastify';
+import { useRecoilState } from 'recoil';
 import withAuth from 'src/HOCs/withAuth';
 import VariationModal from 'src/components/pos/modals/VariationModal';
 import { useUser } from 'src/context/UserContext';
 import { Toastify } from 'src/libs/allToasts';
 import BarcodeToPrint from 'src/modules/barcode/_components/BarcodeToPrint';
 import { barcodeSelectStyles } from 'src/modules/barcode/_utils/barcode-select-styles';
+import { cartJobType } from 'src/recoil/atoms';
 import api from 'src/utils/app-api';
 import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
 
@@ -46,6 +48,8 @@ const initProductVariation = { product_id: 0, product_name: '', is_service: 0 };
 const Barcodes: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = ({ shopId }) => {
   const componentRef = useRef(null);
   const { locationSettings, setLocationSettings } = useUser();
+
+  const [jobType, setJobType] = useRecoilState(cartJobType);
 
   const [allVariations, setAllVariations] = useState([]);
   const [products, setProducts] = useState<IProductSelect[]>([]);
@@ -140,6 +144,7 @@ const Barcodes: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>>
         is_service: 0,
         product_name: product.name,
       });
+      setAllVariations(product.variations);
 
       return setIsOpenVariationDialog(true);
     }
@@ -154,6 +159,31 @@ const Barcodes: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>>
     content: () => componentRef.current,
   });
 
+  useEffect(() => {
+    if (jobType.req === 4) {
+      //For Variation Modal
+
+      const variationId = +(jobType.val as unknown as IVariation['id']);
+      const variation = allVariations?.find((item) => +item.id === variationId) as IVariation;
+
+      // addVarToCard(0, 0, jobType.val, null);
+      if (!variation) return Toastify('error', 'Something went wrong!');
+      addPackageProducts({
+        ...selectedProductForVariation,
+        ...variation,
+        type: 'single',
+        product_name: `${selectedProductForVariation.product_name} | ${variation.name}`,
+        value: variation.id,
+        variation_id: variationId,
+        sell_price: variation.price,
+        name: `${selectedProductForVariation.product_name} | ${variation.name}`,
+        cost_price: variation.cost,
+        product_id: variation.parent_id,
+        sku: variation.sku || (selectedProductForVariation as any).sku,
+      } as any);
+      setJobType({ req: -1, val: 'reset' });
+    }
+  }, [jobType]);
   useEffect(() => {
     if (!shopId) return;
 
