@@ -90,7 +90,7 @@ const Roles = () => {
           <div className="col-md-12">
             <Card>
               <Card.Header className="p-3 bg-white">
-                <h5>Rules</h5>
+                <h5>Roles</h5>
               </Card.Header>
               <Card.Body>
                 {!isLoading ? (

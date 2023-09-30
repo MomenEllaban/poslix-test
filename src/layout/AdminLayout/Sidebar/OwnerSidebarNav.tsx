@@ -27,7 +27,7 @@ export default function OwnerSidebarNav({ username2 }: any) {
       </SidebarNavItem>
       <SidebarNavItem icon={faUser} href={username ? '/' + username + '/rules' : ''}>
         <BsFileRuledFill className="nav-icon ms-n3" />
-        Rules<small className="ms-auto"></small>
+        Roles<small className="ms-auto"></small>
       </SidebarNavItem>
       <SidebarNavItem icon={faUser} href={username ? '/' + username + '/users' : ''}>
         <ImUsers className="nav-icon ms-n3" />

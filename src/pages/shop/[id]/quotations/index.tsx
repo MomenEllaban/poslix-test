@@ -36,6 +36,7 @@ import { findAllData } from 'src/services/crud.api';
 
 export default function SalesList(props: any) {
   const { id } = props;
+  console.log(props)
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
     // @ts-ignore
     value: 0,
@@ -51,6 +52,7 @@ export default function SalesList(props: any) {
     setAnchorEl(null);
   };
   const [sales, setsales] = useState<any>([]);
+  const [customersNames, setCustomersNames] = useState<any>([]);
   const router = useRouter();
   const shopId = router.query.id
   const [selectId, setSelectId] = useState(0);
@@ -67,20 +69,33 @@ export default function SalesList(props: any) {
   //table columns
   const columns: GridColDef[] = [
     { field: 'id', headerName: '#', minWidth: 50 },
-    { field: 'customer_name', headerName: 'Customer Name', flex: 1 },
-    { field: 'sale_date', headerName: 'Quotation Date', flex: 1 },
+    {
+      field: 'customer_id', headerName: 'Customer Name', flex: 1, renderCell: ({ row }: Partial<GridRowParams>) => {
+      if (row.customer_id) {
+      let first_name = customersNames.filter(function (customer) {
+      return customer.id === row.customer_id;
+      }).map(function (customer) {
+      return customer.first_name+customer.last_name;
+})
+  
+return (
+          first_name
+        );
+      }  
+    }, },
+    { field: 'created_at', headerName: 'Quotation Date', flex: 1 },
     {
       flex: 1,
       field: 'status',
       headerName: 'Status',
       renderCell: ({ row }: Partial<GridRowParams>) => {
-        if (Number(+row.total_price - +row.amount) === 0) {
+        if (row.status === "accepted") {
           return (
             <>
               <div className="sty_Accepted">Accepted</div>
             </>
           );
-        } else if (Number(+row.total_price - +row.amount) === Number(row.total_price)) {
+        } else if (row.status === "cancled") {
           return (
             <>
               <div className="sty_Cancled">Cancled</div>
@@ -120,12 +135,7 @@ export default function SalesList(props: any) {
             <Button onClick={() => {}}>
               <FontAwesomeIcon icon={faEye} />
             </Button>
-            {/* <Button onClick={() => {}}>
-              <FontAwesomeIcon icon={faCheck} />
-            </Button>
-            <Button onClick={() => {}}>
-              <FontAwesomeIcon icon={faXmark} />
-            </Button> */}
+      
           </ButtonGroup>
         </>
       ),
@@ -203,7 +213,7 @@ export default function SalesList(props: any) {
                   {invoicDetails.txtTax} {invoicDetails.isMultiLang && invoicDetails.txtTax2}
                 </td>
                 <td></td>
-                {/* <td>{(selectRow.total_price).toFixed(locationSettings?.location_decimal_places)}</td> */}
+ 
               </tr>
               <tr className="net-amount">
                 <td></td>
@@ -255,12 +265,7 @@ export default function SalesList(props: any) {
             </div>
           </div>
           <br />
-          {/* <div className="brand-name">
-                        {invoicDetails.name}
-                    </div> */}
-          {/* <div className="shop-details">
-                        {invoicDetails.tell}
-                    </div> */}
+     
           <div className="up_of_table flex justify-between">
             <div className="left_up_of_table">
               <div>Billed From</div>
@@ -273,24 +278,10 @@ export default function SalesList(props: any) {
             <div className="right_up_of_table">
               <div>Billed To</div>
               <div>{selectRow.customer_name}</div>
-              {/* <span>Billed To</span> */}
             </div>
           </div>
           <br />
-          {/* <div className="bill-details">
-                        <div className="flex justify-between">
-                            <div>{invoicDetails.txtCustomer} {invoicDetails.isMultiLang && invoicDetails.txtCustomer2}</div>
-                            <div>{selectRow.customer_name}</div>
-                        </div>
-                        <div className="flex justify-between">
-                            <div>{invoicDetails.orderNo} {invoicDetails.isMultiLang && invoicDetails.orderNo2}</div>
-                            <div>{selectRow.id}</div>
-                        </div>
-                        <div className="flex justify-between">
-                            <div>{invoicDetails.txtDate} {invoicDetails.isMultiLang && invoicDetails.txtDate2}</div>
-                            <div>{new Date().toISOString().slice(0, 10)}</div>
-                        </div>
-                    </div> */}
+       
 
           <table className="GeneratedTable2">
             <thead>
@@ -303,7 +294,7 @@ export default function SalesList(props: any) {
                   {invoicDetails.isMultiLang && invoicDetails.txtQty2}
                 </th>
                 <th>Unit Price</th>
-                {/* <th> {invoicDetails.txtItem}<br />{invoicDetails.isMultiLang && invoicDetails.txtItem2}</th> */}
+
                 <th>Tax</th>
                 <th>
                   {' '}
@@ -344,46 +335,6 @@ export default function SalesList(props: any) {
               </tr>
             </tbody>
           </table>
-
-          {/* <table className="table">
-            <thead>
-              <tr className="header">
-                <th>
-                  {invoicDetails.txtQty}<br />{invoicDetails.isMultiLang && invoicDetails.txtQty2}
-                </th>
-                <th>
-                  {invoicDetails.txtItem}<br />{invoicDetails.isMultiLang && invoicDetails.txtItem2}
-                </th>
-                <th>
-                </th>
-                <th>
-                  {invoicDetails.txtAmount}<br />{invoicDetails.isMultiLang && invoicDetails.txtAmount2}
-                </th>
-              </tr>
-              {lines && lines.map((line: any, index: number) => {
-                return (
-                  <tr key={index}>
-                    <td>{Number(line.qty)}</td>
-                    <td>{line.name}</td>
-                    <td></td>
-                    <td>{line.price}</td>
-                  </tr>
-                );
-              })}
-              <tr className="net-amount">
-                <td></td>
-                <td>{invoicDetails.txtTax} {invoicDetails.isMultiLang && invoicDetails.txtTax2}</td>
-                <td></td>
-                <td>{(selectRow.total_price).toFixed(locationSettings?.location_decimal_places)}</td>
-              </tr>
-              <tr className="net-amount">
-                <td></td>
-                <td className='txt-bold'>{invoicDetails.txtTotal} {invoicDetails.isMultiLang && invoicDetails.txtTotal2}</td>
-                <td></td>
-                <td className='txt-bold'>{Number(selectRow.total_price).toFixed(locationSettings?.location_decimal_places)}</td>
-              </tr>
-            </thead>
-          </table> */}
           <p className="recipt-footer">
             {invoicDetails.footer}
             <br />
@@ -410,9 +361,14 @@ export default function SalesList(props: any) {
   }
   // init sales data
   async function initDataPage() {
+
     const res = await findAllData('quotations-list')
+    const customers_names = await findAllData(`customers/${shopId}`)
+    setCustomersNames(customers_names.data.result)
+    console.log(customers_names.data.result,"customers_names");
     if (res.data.success) {
       setsales(res.data.result.quotationsList);
+      console.log(res.data.result.quotationsList)
       // if (res.data.result.invoiceDetails != null && res.data.result.invoiceDetails.length > 10)
       //   setInvoicDetails(JSON.parse(res.data.result.invoiceDetails));
     }

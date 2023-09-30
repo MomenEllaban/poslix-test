@@ -378,8 +378,14 @@ const AddQuotations: NextPage = (props: any) => {
   useEffect(() => {
     const currentQuot = localStorage.getItem('currentQuotation') ?
       JSON.parse(localStorage.getItem('currentQuotation') || '[]') : null;
-    setFormObj({...formObj, ...currentQuot})
-    setSelectProducts([...currentQuot.quotation_list_lines])
+    setFormObj({ ...formObj, ...currentQuot })
+    if (currentQuot) {
+      console.log("hamo")
+      setSelectProducts([...currentQuot.quotation_list_lines])
+    } else {
+      setSelectProducts([])
+    }
+    
   }, [suppliers])
 
   async function insertPurchase() {
@@ -850,7 +856,7 @@ const AddQuotations: NextPage = (props: any) => {
                     <div className="col-md-3">
                       <div className="form-group2">
                         <label>
-                          Supplier : <span className="text-danger">*</span>
+                          Customer : <span className="text-danger">*</span>
                         </label>
                         <Select
                           styles={selectStyle}
@@ -862,7 +868,7 @@ const AddQuotations: NextPage = (props: any) => {
                           }}
                         />
                         {errorForm.customer_id && (
-                          <p className="p-1 h6 text-danger ">Select a Supplier</p>
+                          <p className="p-1 h6 text-danger ">Select a Customer</p>
                         )}
                       </div>
                     </div>
