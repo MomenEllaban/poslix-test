@@ -58,6 +58,8 @@ const AddNewRole = (props: any) => {
     let finalRes: any = {}
     Object.keys(res.data.result).forEach(field => {
       let currentField: any = []
+      if(field === 'customers')
+        finalRes = {...finalRes, [field]: {[field]: [...res.data.result[field]]}}
       Object.keys(res.data.result[field]).forEach(role => {
         if(role === 'reports')
           finalRes = {...finalRes, reports: {...res.data.result[field][role]}}
@@ -71,6 +73,7 @@ const AddNewRole = (props: any) => {
       })
     })
     delete finalRes.tailoring
+    console.log(finalRes)
     setFields(finalRes)
   }
 
