@@ -153,6 +153,7 @@ setPrinters([])
           alertFun={handleDeleteFuc}
           shopId={shopId}
           id={selectId}
+          locatiooID={locatiooID}
           url={'print-settings'}>
           Are you Sure You Want Delete This printer ?
         </AlertDialog>
