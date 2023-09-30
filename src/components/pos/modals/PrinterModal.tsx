@@ -13,7 +13,7 @@ import api from 'src/utils/app-api';
 
 const label = { inputProps: { 'aria-label': 'printer status' } };
 const PrinterModal = (props: any) => {
-  const { openDialog, statusDialog, userdata, showType, shopId,id,printersList } = props;
+  const { openDialog, statusDialog, userdata, showType, shopId,selectId,printersList } = props;
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const {register,handleSubmit,formState: { errors },reset,setValue,clearErrors,} = useForm({
@@ -22,9 +22,8 @@ const PrinterModal = (props: any) => {
     // resolver: joiResolver(addprinterSchema),
     // defaultValues: initState,
   });
-console.log(showType,"showType");
   const handleEditprinter = (data: any) => {
-    // userdata==id
+    // userdata==selectId
     api
       .put('/print-settings/' + userdata.value,{},{params:{...data,location_id:shopId}} )
       .then((res) => res.data.result)
@@ -37,7 +36,6 @@ console.log(showType,"showType");
   };
 
   const handleAddprinter = (data: any) => {
-    console.log(shopId)
     api.post('/print-settings/', {...data,location_id:shopId})
       .then((res) => res.data.result)
       .then((res) => {
@@ -83,8 +81,9 @@ console.log(showType,"showType");
   }, [open]);
   // to set value in the form if showType is edit and to empty them if add 
   useEffect(() => {
-  const selprinter = printersList
-  selprinter.forEach(function(item, index) {
+    const selectedPrinter = printersList.filter((object) => { return object.id==selectId  });
+
+    selectedPrinter.forEach(function(item, index) {
     for (let [key, value] of Object.entries(item)) {
       if (showType == "edit") {
           setValue(key, value);
@@ -93,10 +92,8 @@ console.log(showType,"showType");
         value = '';
         setValue(key, value);
       }
-      console.log(key, value);
     }
   });
-   console.log(id,"slected id",selprinter,showType);
   },[open])
   
 
@@ -117,8 +114,7 @@ console.log(showType,"showType");
   return (
     <Modal show={open} onHide={handleClose}>
       <Modal.Header className="poslix-modal-title text-primary text-capitalize" closeButton>
-        {showType + ' printer'}
-        shopId={shopId}
+        {showType + ' printer' + selectId}
       </Modal.Header>
       <Modal.Body>
         <Form noValidate onSubmit={handleSubmit(onSubmit, onError)}>
