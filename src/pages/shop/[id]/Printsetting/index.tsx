@@ -23,10 +23,7 @@ import PrinterModal from '../../../../components/pos/modals/PrinterModal';
 
 const Printers: NextPage = (props: any) => {
   const { shopId, rules } = props;
-
-  // const [locationSettings, setLocationSettings] = useState<ILocationSettings>({});
   const router = useRouter();
-
   const [printersList, setPrinters] = useState<
     {
       id: number;

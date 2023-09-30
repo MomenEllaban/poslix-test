@@ -52,9 +52,7 @@ const Customer: NextPage = ({ shopId, rules, customerId }: any) => {
     { field: 'customer_name', headerName: 'Customer Name', flex: 1 },
     { field: 'sale_date', headerName: 'Quotation Date', flex: 1 },
     {
-      flex: 1,
-      field: 'status',
-      headerName: 'Status',
+      flex: 1,field: 'status',headerName: 'Status',
       renderCell: ({ row }: Partial<GridRowParams>) => {
         if (+(+row.total_price - +row.amount) === 0) {
           return <div className="sty_Accepted">Accepted</div>;
@@ -100,10 +98,12 @@ const Customer: NextPage = ({ shopId, rules, customerId }: any) => {
   async function initDataPage() {
     if (router.query.customerId) {
       setIsLoading(true);
+      
       const res = await findAllData(`customers/${router.query.customerId}/show`);
       if (res.data.success) {
         setSales({ data: res.data.result?.sales });
         const selCustomer = res.data.result?.profile;
+        console.log(sales,"hooooooooooooooooooooooo")
         setCustomerInfo({ ...customerTemplate, ...selCustomer });
       } else {
         Toastify('error', 'has error, Try Again...');

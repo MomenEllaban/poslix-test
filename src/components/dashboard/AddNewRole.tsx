@@ -118,7 +118,7 @@ const AddNewRole = (props: any) => {
                     <form className="user-stuff-form">
                       <div className="col-sm-6 col-md-8 col-lg-6 col-cm-6">
                         <label>
-                          Rules: <span className="text-danger">*</span>
+                          Roles: <span className="text-danger">*</span>
                         </label>
                         <ul className="list-group">
                           {Object.keys(fields).map(key => {
