@@ -100,7 +100,6 @@ const Suppliers: NextPage = () => {
           
           <ConfirmationModal
             show={showDeleteModal}
-            rowId={selectId}
             onConfirm={() =>{ handleDeleteSupplier(selectId),console.log(selectId)}}
             onClose={() => setShowDeleteModal(false)}
             message="Are you sure you want to delete this supplier?"
