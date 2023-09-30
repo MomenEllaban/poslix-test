@@ -380,6 +380,7 @@ const Product: NextPage = ({ editId, iType }: any) => {
       });
       const res = await updateData('products', router.query.slug[1], _data);
       Toastify('success', 'Product updated successfully!');
+      router.push('/shop/' + router.query.id + '/products');
     } catch (e) {
       console.warn(e.response.data.error);
       Toastify('error', 'Something went wrong, please check your inputs!');
