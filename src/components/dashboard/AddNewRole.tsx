@@ -73,7 +73,6 @@ const AddNewRole = (props: any) => {
       })
     })
     delete finalRes.tailoring
-    console.log(finalRes)
     setFields(finalRes)
   }
 
