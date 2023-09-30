@@ -46,11 +46,7 @@ export default function PaymentCheckoutModal({
 
   const [lastEdited, setLastEdited] = useState<number>(0);
 
-  const [paidAmount, setPaidAmount] = useState<{
-    [x: string]: number;
-  }>({
-    '0': 0,
-  });
+  const [paidAmount, setPaidAmount] = useState<{[x: string]: number;}>({'0': 0});
   const selectCartForLocation = selectCartByLocation(shopId);
   const cart = useAppSelector(selectCartForLocation); // current location order
   const { customers } = useProducts();
@@ -67,17 +63,22 @@ export default function PaymentCheckoutModal({
       : +(cart?.cartTax ?? 0);
 
   const totalNoTax = +(cart?.cartSellTotal ?? 0) + +(cart?.shipping ?? 0);
-  const [totalAmount, setTotalAmount] = useState<any>(totalNoTax + totalTax - totalDiscount);
-
-  useEffect(() => {
-    if (cart?.orderId > 0)
-      setTotalAmount(totalNoTax + totalTax - totalDiscount - +cart.lastTotal + +cart.lastDue);
-  }, [cart?.orderId]);
-
+  const totalAmount = cart?.orderId ? totalNoTax + totalTax - totalDiscount : totalNoTax + totalTax - totalDiscount - +cart?.lastTotal || 0 + +cart?.lastDue || 0;
+  const [calcTotal, setCalcTotal] = useState<any>(totalAmount)
   useEffect(() => {
     setValue(`payment.0.amount`, totalAmount.toString());
     setPaidAmount({ '0': totalAmount });
+    setCalcTotal(totalAmount);
   }, [totalAmount]);
+  useEffect(() => {
+    if(cart?.orderId) {
+      const newTotal = Number((totalNoTax + totalTax - totalDiscount - +cart.lastTotal + +cart.lastDue)
+        .toFixed(locationSettings?.location_decimal_places))
+      setValue(`payment.0.amount`, newTotal.toString());
+      setPaidAmount({ '0': newTotal });
+      setCalcTotal(newTotal);
+    }
+  }, [cart?.orderId]);
 
   const paymentTypes = useMemo(
     () =>
@@ -136,6 +137,8 @@ export default function PaymentCheckoutModal({
       .then((res) => {
         setPrintReceipt(res.data.result);
         setPrint(true);
+        console.log(res.data.result, printReceipt, print);
+        
         setShow(false);
       })
       .then(() => {
@@ -148,12 +151,13 @@ export default function PaymentCheckoutModal({
   }, [paidAmount]);
 
   useEffect(() => {
+        console.log('ee',printReceipt, print);
     if (printReceipt && print) handlePrint();
   }, [printReceipt]);
 
   class ComponentToPrint extends React.PureComponent {
     render() {
-      return invoiceType === 'A4' ? (
+      return invoiceType !== 'A4' ? (
         <div className="bill">
           <div className="brand-logo">
             <img src={invoiceDetails.logo} />
@@ -486,7 +490,7 @@ export default function PaymentCheckoutModal({
                     {lang.paymentCheckoutModal.total}:{' '}
                   </span>
                   <span>
-                    {totalAmount?.toFixed(locationSettings?.location_decimal_places) ?? ''}{' '}
+                    {cart?.orderId ? ((totalNoTax + totalTax - totalDiscount - +cart.lastTotal + +cart.lastDue)?.toFixed(locationSettings?.location_decimal_places) ?? '') : totalAmount}{' '}
                   </span>
                   <span>{locationSettings?.currency_code ?? ''}</span>
                 </h6>
@@ -600,7 +604,7 @@ export default function PaymentCheckoutModal({
                 </p>
 
                 <span className="fw-semibold fs-6">
-                  {totalAmount?.toFixed(locationSettings?.location_decimal_places) ?? ''}
+                  {calcTotal?.toFixed(locationSettings?.location_decimal_places) ?? ''}
                 </span>
               </Col>
 
@@ -630,7 +634,7 @@ export default function PaymentCheckoutModal({
                   {lang.paymentCheckoutModal.balance}{' '}
                 </p>
                 <span className="fw-semibold fs-6">
-                  {Math.max(totalAmount - paidSum, 0)?.toFixed(
+                  {Math.max(calcTotal - paidSum, 0)?.toFixed(
                     locationSettings?.location_decimal_places
                   ) ?? ''}
                 </span>
@@ -654,7 +658,7 @@ export default function PaymentCheckoutModal({
                 {Math.abs(totalAmount - paidSum)?.toFixed(
                   locationSettings?.location_decimal_places
                 )}{' '}
-                {totalAmount - paidSum > 0 ? 'remaining' : 'exceeded'}
+                {calcTotal - paidSum > 0 ? 'remaining' : 'exceeded'}
               </span>
             )}
 

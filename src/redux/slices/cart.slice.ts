@@ -46,6 +46,8 @@ const findOrCreateCart = (state: ICart[], location_id: string): ICart => {
       cartTaxType: 'fixed',
       cartDiscountType: 'fixed',
       shipping: 0,
+      lastTotal: 0,
+      lastDue: 0
     };
     state.push(newCart);
     return newCart;
@@ -104,6 +106,7 @@ const cartSlice = createSlice({
         cart.cartCostTotal -= +action.payload.cost_price * +existingItem.quantity;
         localStorage.setItem('cart', JSON.stringify(state));
       }
+      
       clearCart(state)
     },
     clearCart: (state, action) => {
@@ -112,8 +115,8 @@ const cartSlice = createSlice({
       cart.cartSellTotal = 0;
       cart.cartCostTotal = 0;
       cart.orderId = null
-      cart.lastTotal = null
-      cart.lastDue = null
+      cart.lastTotal = 0
+      cart.lastDue = 0
       cart.customer_id = null
 
       localStorage.setItem('cart', JSON.stringify(state));
@@ -134,8 +137,13 @@ const cartSlice = createSlice({
         cart.cartCostTotal -= +action.payload.cost_price;
         localStorage.setItem('cart', JSON.stringify(state));
       }
-
-      if(!cart.cartItems.length) clearCart(state)
+      
+      if(!cart.cartItems.length) {
+        cart.orderId = null
+        cart.lastTotal = 0
+        cart.lastDue = 0
+        cart.customer_id = null
+      }
     },
     addMultipleToCart: (state, action) => {
       const { location_id, products, orderId, customerId, lastTotal, lastDue } = action.payload;

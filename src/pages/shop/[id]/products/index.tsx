@@ -151,12 +151,16 @@ const Product: NextPage = (props: any) => {
       renderCell: ({ row }: Partial<GridRowParams>) => {
         if (row.type == 'single')
           return Number(row.sell_price).toFixed(locationSettings?.location_decimal_places);
-        else
+        else {
+          const getPrices = []
+          row.variations.map(va => getPrices.push(va.price))
+          console.log(getPrices);
+          
           return (
-            Number(row.min_price).toFixed(locationSettings?.location_decimal_places) +
-            ' - ' +
-            Number(row.max_price).toFixed(locationSettings?.location_decimal_places)
-          );
+            Number(Math.min(...getPrices)).toFixed(locationSettings?.location_decimal_places)
+            + ' - ' +
+            Number(Math.max(...getPrices)).toFixed(locationSettings?.location_decimal_places));
+        }
       },
     },
 
