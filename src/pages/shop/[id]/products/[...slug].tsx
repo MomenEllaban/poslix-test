@@ -353,7 +353,7 @@ const Product: NextPage = ({ editId, iType }: any) => {
 
         name: _form.name,
         subproductname: _form.productName2,
-        image: url,
+        image: url || _form.img || undefined,
 
         type: _form.type,
 
@@ -372,6 +372,12 @@ const Product: NextPage = ({ editId, iType }: any) => {
         sell_over_stock: parseInt(_form.sell_over_stock), // Convert to boolean
       };
     try {
+      const _cleaned = {};
+      Object.keys(_data).map((item) => {
+        if (!!_data[item]) {
+          _cleaned[item] = _data[item];
+        }
+      });
       const res = await updateData('products', router.query.slug[1], _data);
       Toastify('success', 'Product updated successfully!');
     } catch (e) {
