@@ -23,10 +23,7 @@ import PrinterModal from '../../../../components/pos/modals/PrinterModal';
 
 const Printers: NextPage = (props: any) => {
   const { shopId, rules } = props;
-
-  // const [locationSettings, setLocationSettings] = useState<ILocationSettings>({});
   const router = useRouter();
-
   const [printersList, setPrinters] = useState<
     {
       id: number;
@@ -52,7 +49,7 @@ const Printers: NextPage = (props: any) => {
   async function initDataPage() {
     if (router.query.id) {
       try{
-      const res = await findAllData(`print-settings/${router.query.id}`);
+      const res = await findAllData(`print-settings/showAll/${router.query.id}`);
       if (res.data.status == 404) {
         Toastify('error', 'not found');
         return false ;
@@ -62,7 +59,7 @@ const Printers: NextPage = (props: any) => {
 
         return false ;
       }
-      setPrinters([res.data.result]);
+      setPrinters(res.data.result);
   }catch(e){
 setPrinters([])
   }
@@ -107,6 +104,7 @@ setPrinters([])
                   setShowType('edit');
                   setPrinterIsModal(true);
                 }}>
+                
                 <FontAwesomeIcon icon={faPenToSquare} />
               </Button>
             )}
@@ -201,7 +199,7 @@ setPrinters([])
       <PrinterModal
         shopId={locatiooID}
         printersList={printersList}
-        id={selectId}
+        selectId={selectId}
         showType={showType}
         userdata={printer}
         printers={printersList}

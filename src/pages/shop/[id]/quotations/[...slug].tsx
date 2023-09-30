@@ -386,7 +386,6 @@ const AddQuotations: NextPage = (props: any) => {
           cost: li.quotation_line_product.cost_price, quantity: 1
         }
       })])
-      console.log(currentQuot, currentQuot?.quotation_list_lines.quotation_line_product)
     }
   }, [suppliers])
 
@@ -857,7 +856,7 @@ const AddQuotations: NextPage = (props: any) => {
                     <div className="col-md-3">
                       <div className="form-group2">
                         <label>
-                          Supplier : <span className="text-danger">*</span>
+                          Customer : <span className="text-danger">*</span>
                         </label>
                         <Select
                           styles={selectStyle}
@@ -869,7 +868,7 @@ const AddQuotations: NextPage = (props: any) => {
                           }}
                         />
                         {errorForm.customer_id && (
-                          <p className="p-1 h6 text-danger ">Select a Supplier</p>
+                          <p className="p-1 h6 text-danger ">Select a Customer</p>
                         )}
                       </div>
                     </div>

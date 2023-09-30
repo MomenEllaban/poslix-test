@@ -16,6 +16,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   loading = false,
   onClose,
   onConfirm,
+  
 }) => {
   return (
     <Modal show={show} onHide={onClose}>

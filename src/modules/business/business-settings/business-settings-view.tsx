@@ -116,6 +116,15 @@ function LocationUpdateForm({ businessId, location }) {
               errors={locationErrors}
               register={locationRegister}
             />
+             <FormField
+             label="State"
+             name="state"
+             type="text"
+             placeholder="Enter State"
+             register={locationRegister}
+             required
+             errors={locationErrors}
+        />
             <SelectField
               label="Currency"
               name="currency_id"
