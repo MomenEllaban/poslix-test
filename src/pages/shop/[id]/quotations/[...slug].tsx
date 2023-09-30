@@ -221,8 +221,8 @@ const AddQuotations: NextPage = (props: any) => {
             {locationSettings?.currency_id == formObj.currency_id
               ? Number(row.cost * row.quantity).toFixed(locationSettings?.location_decimal_places)
               : (formObj.currency_rate * row.cost).toFixed(
-                  locationSettings?.location_decimal_places
-                )}
+                locationSettings?.location_decimal_places
+              )}
           </div>
         </>
       ),
@@ -266,7 +266,7 @@ const AddQuotations: NextPage = (props: any) => {
 
   async function initDataPage(id = '0') {
     if (id != '0') setIsEdit(true);
-    if(router.isReady) {
+    if (router.isReady) {
       const res = await findAllData(`products/${router.query.id}?all_data=1`)
       const resPurchases = await findAllData(`purchase/${router.query.id}`)
       const resExpenses = await findAllData(`expenses/${router.query.id}`)
@@ -274,13 +274,13 @@ const AddQuotations: NextPage = (props: any) => {
       const resCurrencies = await findAllData(`currencies`)
       if (res.data.success) {
         setProducts(res.data.result.map(prod => {
-          return {...prod, label: prod.name, value: prod.id}
+          return { ...prod, label: prod.name, value: prod.id }
         }));
         setSuppliers(resCustomers.data.result.map(customer => {
-          return {...customer, label: customer.first_name + ' ' + customer.last_name, value: customer.id}
+          return { ...customer, label: customer.first_name + ' ' + customer.last_name, value: customer.id }
         }));
         setCurrencies(resCurrencies.data.result.map(curr => {
-          return {...curr, label: curr.currency, value: curr.id}
+          return { ...curr, label: curr.currency, value: curr.id }
         }));
         setExpenses(resExpenses.data.result);
         setAllVariations(res.data.result.allVariations);
@@ -316,56 +316,56 @@ const AddQuotations: NextPage = (props: any) => {
           }
           // setSelectedExpendsEdit(res.data.result?.selected_expnses);
           // let _sumTotalExp = 0;
-        //   res.data.result?.selected_expnses?.map(
-        //     (mp: any) => (_sumTotalExp += parseFloat((mp.enterd_value * mp.currency_rate).toString()))
-        //   );
-        //   const itm = res.data.result.purchase[0];
-        //   let paymentType = '',
-        //     amount = 0,
-        //     pay_id = 0;
-        //   if (res.data.result.selected_payment.length > 0) {
-        //     paymentType = res.data.result.selected_payment[0].payment_type;
-        //     amount = res.data.result.selected_payment[0].amount;
-        //     pay_id = res.data.result.selected_payment[0].id;
-        //   }
-        //   let _taxes = JSON.parse(itm.taxes);
-        //   setSelectedTaxes(_taxes);
-        //   // itm.currency_id
-        //   const pidex = res.data.result.currencies.findIndex((ps: any) => ps.value == itm.currency_id);
-        //   console.log('currcny ', pidex);
-    
-        //   let crate = 0,
-        //     cCode = '';
-        //   if (pidex > -1) {
-        //     crate = res.data.result.currencies[pidex].exchange_rate;
-        //     cCode = res.data.result.currencies[pidex].code;
-        //   }
-    
-        //   setFormObj({
-        //     ...formObj,
-        //     id: Number(id),
-        //     customer_id: itm.contact_id,
-        //     currency_id: itm.currency_id,
-        //     currency_rate: crate,
-        //     currency_symbol: '',
-        //     currency_code: cCode,
-        //     total_price: itm.total_price,
-        //     ref_no: itm.invoice_no,
-        //     date: new Date(),
-        //     taxs: 0,
-        //     subTotal_price: 0,
-        //     total_tax: itm.total_taxes,
-        //     total_expense: _sumTotalExp,
-        //     discount_type: 'fixed',
-        //     discount_amount: 0,
-        //     purchaseStatus: itm.status,
-        //     paymentStatus: itm.payment_status,
-        //     paid_amount: Number(amount),
-        //     total_discount: 0,
-        //     paymentType: paymentType,
-        //     paymentDate: new Date(),
-        //     payment_id: pay_id,
-        //   });
+          //   res.data.result?.selected_expnses?.map(
+          //     (mp: any) => (_sumTotalExp += parseFloat((mp.enterd_value * mp.currency_rate).toString()))
+          //   );
+          //   const itm = res.data.result.purchase[0];
+          //   let paymentType = '',
+          //     amount = 0,
+          //     pay_id = 0;
+          //   if (res.data.result.selected_payment.length > 0) {
+          //     paymentType = res.data.result.selected_payment[0].payment_type;
+          //     amount = res.data.result.selected_payment[0].amount;
+          //     pay_id = res.data.result.selected_payment[0].id;
+          //   }
+          //   let _taxes = JSON.parse(itm.taxes);
+          //   setSelectedTaxes(_taxes);
+          //   // itm.currency_id
+          //   const pidex = res.data.result.currencies.findIndex((ps: any) => ps.value == itm.currency_id);
+          //   console.log('currcny ', pidex);
+
+          //   let crate = 0,
+          //     cCode = '';
+          //   if (pidex > -1) {
+          //     crate = res.data.result.currencies[pidex].exchange_rate;
+          //     cCode = res.data.result.currencies[pidex].code;
+          //   }
+
+          //   setFormObj({
+          //     ...formObj,
+          //     id: Number(id),
+          //     customer_id: itm.contact_id,
+          //     currency_id: itm.currency_id,
+          //     currency_rate: crate,
+          //     currency_symbol: '',
+          //     currency_code: cCode,
+          //     total_price: itm.total_price,
+          //     ref_no: itm.invoice_no,
+          //     date: new Date(),
+          //     taxs: 0,
+          //     subTotal_price: 0,
+          //     total_tax: itm.total_taxes,
+          //     total_expense: _sumTotalExp,
+          //     discount_type: 'fixed',
+          //     discount_amount: 0,
+          //     purchaseStatus: itm.status,
+          //     paymentStatus: itm.payment_status,
+          //     paid_amount: Number(amount),
+          //     total_discount: 0,
+          //     paymentType: paymentType,
+          //     paymentDate: new Date(),
+          //     payment_id: pay_id,
+          //   });
         }
         setLoading(false);
       } else {
@@ -378,11 +378,13 @@ const AddQuotations: NextPage = (props: any) => {
   useEffect(() => {
     const currentQuot = localStorage.getItem('currentQuotation') ?
       JSON.parse(localStorage.getItem('currentQuotation') || '[]') : null;
-    if(currentQuot && slug[0] === 'edit') {
-      setFormObj({...formObj, ...currentQuot})
+    if (currentQuot && slug[0] === 'edit') {
+      setFormObj({ ...formObj, ...currentQuot })
       setSelectProducts([...currentQuot?.quotation_list_lines.map(li => {
-        return {...li.quotation_line_product, price: li.quotation_line_product.sell_price,
-          cost: li.quotation_line_product.cost_price, quantity: 1}
+        return {
+          ...li.quotation_line_product, price: li.quotation_line_product.sell_price,
+          cost: li.quotation_line_product.cost_price, quantity: 1
+        }
       })])
       console.log(currentQuot, currentQuot?.quotation_list_lines.quotation_line_product)
     }
@@ -397,10 +399,10 @@ const AddQuotations: NextPage = (props: any) => {
       paymentType: formObj.paymentType,
       location_id: router.query.id,
       quotationsLines: selectProducts.map(prod => {
-        return {product_id: prod.id, qty: prod.quantity}
+        return { product_id: prod.id, qty: prod.quantity }
       })
     }
-      console.log(quotationData)
+    console.log(quotationData)
     const res = await createNewData('quotations-list', quotationData)
     if (!res.data.success) {
       alert('Has Error ,try Again');
@@ -418,7 +420,7 @@ const AddQuotations: NextPage = (props: any) => {
       paymentType: formObj.paymentType,
       location_id: router.query.id,
       quotationsLines: selectProducts.map((prod, i) => {
-        return {id: formObj?.quotation_list_lines[0]?.id, product_id: prod.id, qty: prod.quantity}
+        return { id: formObj?.quotation_list_lines[0]?.id, product_id: prod.id, qty: prod.quantity }
       })
     }
     const res = await updateData('quotations-list', formObj.id, quotationData)
@@ -435,16 +437,16 @@ const AddQuotations: NextPage = (props: any) => {
     if (_locs.toString().length > 10)
       setLocationSettings(
         _locs[
-          _locs.findIndex((loc: any) => {
-            return loc.value == id;
-          })
+        _locs.findIndex((loc: any) => {
+          return loc.value == id;
+        })
         ]
       );
-    
+
 
     initDataPage(slug[0] === 'edit' ? "1" : "0");
   }, [router.asPath]);
-  
+
 
   function getPriority(type: string, subTotal: number): number {
     switch (type) {
@@ -725,11 +727,11 @@ const AddQuotations: NextPage = (props: any) => {
         _datas[found].lineTotal =
           locationSettings?.currency_id == formObj.currency_id
             ? Number(_datas[found].cost * _datas[found].quantity).toFixed(
-                locationSettings?.location_decimal_places
-              )
+              locationSettings?.location_decimal_places
+            )
             : Number(_datas[found].cost * formObj.currency_rate * _datas[found].quantity).toFixed(
-                locationSettings?.location_decimal_places
-              );
+              locationSettings?.location_decimal_places
+            );
 
       setSelectProducts([..._datas]);
       calculationLabels(formObj.total_expense, formObj.total_tax);
@@ -765,16 +767,16 @@ const AddQuotations: NextPage = (props: any) => {
       _rows[i].notifyExpensePrice =
         _ExpVal > 0
           ? +Number(_ExpVal + parseFloat(getCost(sp.cost).toString())).toFixed(
-              locationSettings?.location_decimal_places
-            )
+            locationSettings?.location_decimal_places
+          )
           : 0;
       if (_ExpVal == 0 && _rows[i].costType == 1) _rows[i].costType = 0;
 
       _rows[i].notifyTaxPrice =
         _TaxVal > 0
           ? +Number(_TaxVal + parseFloat(getCost(sp.cost).toString())).toFixed(
-              locationSettings?.location_decimal_places
-            )
+            locationSettings?.location_decimal_places
+          )
           : 0;
       if (_TaxVal == 0 && _rows[i].costType == 2) _rows[i].costType = 0;
 
@@ -1026,7 +1028,7 @@ const AddQuotations: NextPage = (props: any) => {
                     })}
                     onChange={(itm) => {
                       console.log(itm);
-                      
+
                       setFormObj({
                         ...formObj,
                         currency_code: itm!.code,
@@ -1343,6 +1345,6 @@ export default AddQuotations;
 export async function getServerSideProps({ params }) {
   const { id, slug } = params
   return {
-    props: {id, slug},
+    props: { id, slug },
   }
 }

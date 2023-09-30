@@ -45,7 +45,7 @@ const Appearance: NextPage = (props: any) => {
   async function editInvoice(url = '0') {
     if (isLoading) return;
     setIsLoading(true);
-    const res = await createNewData(`appearance`, {...formObj, location_id: router.query.id})
+    const res = await createNewData(`appearance`, { ...formObj, location_id: router.query.id })
     if (!res.data.success) {
       Toastify('error', 'Somthing wrong!!, try agian');
       return;
@@ -61,7 +61,7 @@ const Appearance: NextPage = (props: any) => {
     }
   };
   useEffect(() => {
-    if(router.query.id) initDataPage();
+    if (router.query.id) initDataPage();
   }, [router.asPath]);
 
   useEffect(() => {
@@ -81,7 +81,7 @@ const Appearance: NextPage = (props: any) => {
   };
 
   const handleSave = () => {
-    if(previewUrl === '') delete formObj.logo
+    if (previewUrl === '') delete formObj.logo
     editInvoice();
   };
   async function handleUpload() {
@@ -1211,6 +1211,6 @@ export default withAuth(Appearance);
 export async function getServerSideProps({ params }) {
   const { id } = params
   return {
-    props: {id},
+    props: { id },
   }
 }

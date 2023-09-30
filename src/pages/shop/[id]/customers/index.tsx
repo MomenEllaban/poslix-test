@@ -72,7 +72,7 @@ const Customers: NextPage = ({ id }: any) => {
     initDataPage();
     setShow(false);
   };
-  const onRowsSelectionHandler = (ids: any) => {};
+  const onRowsSelectionHandler = (ids: any) => { };
   const columns = useMemo(
     () =>
       customersColumns({
@@ -101,12 +101,12 @@ const Customers: NextPage = ({ id }: any) => {
       perm.name.includes('customers/show')
         ? (getPermissions.hasView = true)
         : perm.name.includes('customers/add')
-        ? (getPermissions.hasInsert = true)
-        : perm.name.includes('customers/update')
-        ? (getPermissions.hasEdit = true)
-        : perm.name.includes('customers/delete')
-        ? (getPermissions.hasDelete = true)
-        : null
+          ? (getPermissions.hasInsert = true)
+          : perm.name.includes('customers/update')
+            ? (getPermissions.hasEdit = true)
+            : perm.name.includes('customers/delete')
+              ? (getPermissions.hasDelete = true)
+              : null
     );
 
     setPermissions(getPermissions);

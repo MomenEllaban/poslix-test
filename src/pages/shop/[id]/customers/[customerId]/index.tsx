@@ -50,9 +50,11 @@ const Customer: NextPage = ({ shopId, rules, customerId }: any) => {
 
   const columns: GridColDef[] = [
     { field: 'id', headerName: '#', minWidth: 50 },
-    { field: 'customer_name', headerName: 'Customer Name', flex: 1, renderCell: ({ row }: Partial<GridRowParams>) => {
-      return customerInfo.first_name + ' ' + customerInfo.last_name
-    }},
+    {
+      field: 'customer_name', headerName: 'Customer Name', flex: 1, renderCell: ({ row }: Partial<GridRowParams>) => {
+        return customerInfo.first_name + ' ' + customerInfo.last_name
+      }
+    },
     { field: 'sale_date', headerName: 'Quotation Date', flex: 1 },
     {
       flex: 1,
@@ -77,21 +79,21 @@ const Customer: NextPage = ({ shopId, rules, customerId }: any) => {
       disableExport: true,
       renderCell: ({ row }: Partial<GridRowParams>) => (
         <ButtonGroup className="mb-2 m-buttons-style">
-          <Button onClick={() => {}}>
+          <Button onClick={() => { }}>
             <FontAwesomeIcon icon={faPenToSquare} />
           </Button>
           {true && (
-            <Button onClick={() => {}}>
+            <Button onClick={() => { }}>
               <FontAwesomeIcon icon={faTrash} />
             </Button>
           )}
-          <Button onClick={() => {}}>
+          <Button onClick={() => { }}>
             <FontAwesomeIcon icon={faEye} />
           </Button>
-          <Button onClick={() => {}}>
+          <Button onClick={() => { }}>
             <FontAwesomeIcon icon={faCheck} />
           </Button>
-          <Button onClick={() => {}}>
+          <Button onClick={() => { }}>
             <FontAwesomeIcon icon={faXmark} />
           </Button>
         </ButtonGroup>

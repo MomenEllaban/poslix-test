@@ -67,9 +67,11 @@ export default function SalesList(props: any) {
   //table columns
   const columns: GridColDef[] = [
     { field: 'id', headerName: '#', minWidth: 50 },
-    { field: 'customer_name', headerName: 'Customer Name', flex: 1, renderCell: ({ row }: Partial<GridRowParams>) => {
-      return row.first_name + ' ' + row.last_name
-    }},
+    {
+      field: 'customer_name', headerName: 'Customer Name', flex: 1, renderCell: ({ row }: Partial<GridRowParams>) => {
+        return row.first_name + ' ' + row.last_name
+      }
+    },
     { field: 'sale_date', headerName: 'Quotation Date', flex: 1 },
     {
       flex: 1,
@@ -109,7 +111,7 @@ export default function SalesList(props: any) {
           <ButtonGroup className="mb-2 m-buttons-style">
             <Button onClick={() => {
               localStorage.setItem('currentQuotation', JSON.stringify(row))
-               router.push('/shop/' + shopId + '/quotations/edit');
+              router.push('/shop/' + shopId + '/quotations/edit');
             }}>
               <FontAwesomeIcon icon={faPenToSquare} />
             </Button>
@@ -119,7 +121,7 @@ export default function SalesList(props: any) {
             }}>
               <FontAwesomeIcon icon={faTrash} />
             </Button>
-            <Button onClick={() => {}}>
+            <Button onClick={() => { }}>
               <FontAwesomeIcon icon={faEye} />
             </Button>
             {/* <Button onClick={() => {}}>
@@ -438,19 +440,19 @@ export default function SalesList(props: any) {
 
   useEffect(() => {
     localStorage.getItem('currentQuotation') ? localStorage.removeItem('currentQuotation') : null
-    
-    const perms = JSON.parse(localStorage.getItem('permissions')).filter(loc => loc.id==router.query.id)
+
+    const perms = JSON.parse(localStorage.getItem('permissions')).filter(loc => loc.id == router.query.id)
     const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
     perms[0]?.permissions?.map((perm) =>
       perm.name.includes('quotations-list/show')
         ? (getPermissions.hasView = true)
         : perm.name.includes('quotations-list/add')
-        ? (getPermissions.hasInsert = true)
-        : perm.name.includes('quotations-list/update')
-        ? (getPermissions.hasEdit = true)
-        : perm.name.includes('quotations-list/delete')
-        ? (getPermissions.hasDelete = true)
-        : null
+          ? (getPermissions.hasInsert = true)
+          : perm.name.includes('quotations-list/update')
+            ? (getPermissions.hasEdit = true)
+            : perm.name.includes('quotations-list/delete')
+              ? (getPermissions.hasDelete = true)
+              : null
     );
 
     setPermissions(getPermissions);
@@ -459,12 +461,12 @@ export default function SalesList(props: any) {
     if (_locs.toString().length > 10)
       setLocationSettings(
         _locs[
-          _locs.findIndex((loc: any) => {
-            return loc.value == shopId;
-          })
+        _locs.findIndex((loc: any) => {
+          return loc.value == shopId;
+        })
         ]
       );
-    
+
     initDataPage();
   }, [router.asPath]);
 
@@ -716,6 +718,6 @@ export default function SalesList(props: any) {
 export async function getServerSideProps({ params }) {
   const { id } = params
   return {
-    props: {id},
+    props: { id },
   }
 }
