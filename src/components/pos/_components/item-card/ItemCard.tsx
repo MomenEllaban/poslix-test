@@ -37,20 +37,24 @@ export const ItemCard = ({ product }: { product: IProduct }) => {
     <>
       <button
         onClick={() => {
-          if(!product.is_service &&
+          if (
+            !product.is_service &&
             !product.type?.includes('variable') &&
             !product.type?.includes('package') &&
-            product.stock == 0)
+            product.stock == 0
+          )
             Toastify('error', 'This product is out of stock');
-          else
-            handleAddToCart();
+          else handleAddToCart();
         }}
         className={styles['item-card__container']}
         style={{
-          pointerEvents: !product.is_service &&
-          !product.type?.includes('variable') &&
-          !product.type?.includes('package') &&
-          product.stock == 0 ? "none" : 'auto'
+          pointerEvents:
+            !product.is_service &&
+            !product.type?.includes('variable') &&
+            !product.type?.includes('package') &&
+            product.stock == 0
+              ? 'none'
+              : 'auto',
         }}>
         {product.type === 'variable' && (
           <div className={styles['item-card__container--variable']}>
