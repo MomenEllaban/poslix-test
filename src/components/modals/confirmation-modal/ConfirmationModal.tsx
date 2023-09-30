@@ -8,6 +8,7 @@ interface ConfirmationModalProps {
   loading?: boolean;
   onClose: () => void;
   onConfirm: () => void;
+  rowId:any
 }
 
 const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
@@ -16,6 +17,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   loading = false,
   onClose,
   onConfirm,
+  rowId
 }) => {
   return (
     <Modal show={show} onHide={onClose}>

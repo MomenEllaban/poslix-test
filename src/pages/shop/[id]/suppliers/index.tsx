@@ -10,7 +10,9 @@ import { useEffect, useState } from 'react';
 import { Button, ButtonGroup } from 'react-bootstrap';
 import { ToastContainer } from 'react-toastify';
 import ConfirmationModal from 'src/components/modals/confirmation-modal/ConfirmationModal';
+
 import SupplierModal from 'src/components/pos/modals/SupplierModal';
+import AlertDialog from 'src/components/utils/AlertDialog';
 import { useUser } from 'src/context/UserContext';
 import { Toastify } from 'src/libs/allToasts';
 import CustomToolbar from 'src/modules/reports/_components/CustomToolbar';
@@ -39,6 +41,7 @@ const Suppliers: NextPage = () => {
   };
 
   const handleDeleteSupplier = (id: string | number) => {
+    console.log("del id " ,id)
     setIsLoading(true);
     api
       .delete(`/suppliers/${id}`)
@@ -64,7 +67,7 @@ const Suppliers: NextPage = () => {
       headerName: 'Address',
       flex: 3,
       renderCell({ row }) {
-        return `${row.invoice_address}, ${row.invoice_City}, ${row.invoice_Country}`;
+        return `${row.invoice_address== null?"Empty":row.invoice_address},${row.invoice_City== null?"Empty":row.invoice_City} ,${row.invoice_Country== null?"Empty":row.invoice_Country} `;
       },
     },
     { field: 'postal_code', headerName: 'Postal Code', flex: 1 },
@@ -94,9 +97,11 @@ const Suppliers: NextPage = () => {
             }}>
             <FontAwesomeIcon icon={faTrash} />
           </Button>
+          
           <ConfirmationModal
             show={showDeleteModal}
-            onConfirm={() => handleDeleteSupplier(row.id)}
+            rowId={selectId}
+            onConfirm={() =>{ handleDeleteSupplier(selectId),console.log(selectId)}}
             onClose={() => setShowDeleteModal(false)}
             message="Are you sure you want to delete this supplier?"
           />

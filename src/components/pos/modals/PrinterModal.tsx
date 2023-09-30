@@ -159,7 +159,7 @@ const PrinterModal = (props: any) => {
               <SelectField
               label="printer status"
               name="status"
-              options={[{value: "1",label:"on"},{value: "0",label:"off"}]} // Pass the business types options
+              options={[{value: "0",label:"off"},{value: "1",label:"on"}]} // Pass the business types options
               register={register}
               errors={errors}
               required
