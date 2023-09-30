@@ -46,7 +46,7 @@ export default function PaymentCheckoutModal({
 
   const [lastEdited, setLastEdited] = useState<number>(0);
 
-  const [paidAmount, setPaidAmount] = useState<{[x: string]: number;}>({'0': 0});
+  const [paidAmount, setPaidAmount] = useState<{ [x: string]: number }>({ '0': 0 });
   const selectCartForLocation = selectCartByLocation(shopId);
   const cart = useAppSelector(selectCartForLocation); // current location order
   const { customers } = useProducts();
@@ -63,17 +63,22 @@ export default function PaymentCheckoutModal({
       : +(cart?.cartTax ?? 0);
 
   const totalNoTax = +(cart?.cartSellTotal ?? 0) + +(cart?.shipping ?? 0);
-  const totalAmount = cart?.orderId ? totalNoTax + totalTax - totalDiscount : totalNoTax + totalTax - totalDiscount - +cart?.lastTotal || 0 + +cart?.lastDue || 0;
-  const [calcTotal, setCalcTotal] = useState<any>(totalAmount)
+  const totalAmount = cart?.orderId
+    ? totalNoTax + totalTax - totalDiscount
+    : totalNoTax + totalTax - totalDiscount - +cart?.lastTotal || 0 + +cart?.lastDue || 0;
+  const [calcTotal, setCalcTotal] = useState<any>(totalAmount);
   useEffect(() => {
     setValue(`payment.0.amount`, totalAmount.toString());
     setPaidAmount({ '0': totalAmount });
     setCalcTotal(totalAmount);
   }, [totalAmount]);
   useEffect(() => {
-    if(cart?.orderId) {
-      const newTotal = Number((totalNoTax + totalTax - totalDiscount - +cart.lastTotal + +cart.lastDue)
-        .toFixed(locationSettings?.location_decimal_places))
+    if (cart?.orderId) {
+      const newTotal = Number(
+        (totalNoTax + totalTax - totalDiscount - +cart.lastTotal + +cart.lastDue).toFixed(
+          locationSettings?.location_decimal_places
+        )
+      );
       setValue(`payment.0.amount`, newTotal.toString());
       setPaidAmount({ '0': newTotal });
       setCalcTotal(newTotal);
@@ -128,6 +133,7 @@ export default function PaymentCheckoutModal({
       related_invoice_id: cart.orderId > 0 ? cart.orderId : null,
       cart: cart?.cartItems.map((product) => ({
         product_id: product?.product_id,
+        variation_id: product?.variation_id ?? undefined,
         qty: product?.quantity,
         note: data?.notes,
       })),
@@ -487,7 +493,15 @@ export default function PaymentCheckoutModal({
                     {lang.paymentCheckoutModal.total}:{' '}
                   </span>
                   <span>
-                    {cart?.orderId ? ((totalNoTax + totalTax - totalDiscount - +cart.lastTotal + +cart.lastDue)?.toFixed(locationSettings?.location_decimal_places) ?? '') : totalAmount}{' '}
+                    {cart?.orderId
+                      ? (
+                          totalNoTax +
+                          totalTax -
+                          totalDiscount -
+                          +cart.lastTotal +
+                          +cart.lastDue
+                        )?.toFixed(locationSettings?.location_decimal_places) ?? ''
+                      : totalAmount}{' '}
                   </span>
                   <span>{locationSettings?.currency_code ?? ''}</span>
                 </h6>

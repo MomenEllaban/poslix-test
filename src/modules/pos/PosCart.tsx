@@ -1,7 +1,6 @@
 import CartPanel from 'src/components/pos/_components/cart-panel/CartPanel';
 import { ItemList } from 'src/components/pos/_components/item-list/ItemList';
 import NavMenu from 'src/components/pos/parts/NavMenu';
-import { usePosContext } from './_context/PosContext';
 
 export default function PosCart({ shopId }) {
   return (

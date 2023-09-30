@@ -26,6 +26,7 @@ const PackageItemsModal = ({
   };
   const handleAddItem = (item: IVariation) => {
     if (+item.stock < 1) return;
+    console.log(product, item);
     const _product: IProduct = {
       ...product,
       ...item,
