@@ -64,7 +64,7 @@ const AddQuotations: NextPage = (props: any) => {
     currency_rate: 1,
     currency_symbol: '',
   });
-  const [formObj, setFormObj] = useState({
+  const [formObj, setFormObj] = useState<any>({
     id: 0,
     customer_id: 0,
     location_id: 0,
@@ -378,8 +378,14 @@ const AddQuotations: NextPage = (props: any) => {
   useEffect(() => {
     const currentQuot = localStorage.getItem('currentQuotation') ?
       JSON.parse(localStorage.getItem('currentQuotation') || '[]') : null;
-    setFormObj({...formObj, ...currentQuot})
-    setSelectProducts([...currentQuot.quotation_list_lines])
+    if(currentQuot && slug[0] === 'edit') {
+      setFormObj({...formObj, ...currentQuot})
+      setSelectProducts([...currentQuot?.quotation_list_lines.map(li => {
+        return {...li.quotation_line_product, price: li.quotation_line_product.sell_price,
+          cost: li.quotation_line_product.cost_price, quantity: 1}
+      })])
+      console.log(currentQuot, currentQuot?.quotation_list_lines.quotation_line_product)
+    }
   }, [suppliers])
 
   async function insertPurchase() {
@@ -411,11 +417,10 @@ const AddQuotations: NextPage = (props: any) => {
       paymentDate: formObj.paymentDate,
       paymentType: formObj.paymentType,
       location_id: router.query.id,
-      quotationsLines: selectProducts.map(prod => {
-        return {product_id: prod.id, qty: prod.quantity}
+      quotationsLines: selectProducts.map((prod, i) => {
+        return {id: formObj?.quotation_list_lines[0]?.id, product_id: prod.id, qty: prod.quantity}
       })
     }
-      console.log(quotationData)
     const res = await updateData('quotations-list', formObj.id, quotationData)
     if (!res.data.success) {
       alert('Has Error ,try Again');
@@ -1337,7 +1342,6 @@ const AddQuotations: NextPage = (props: any) => {
 export default AddQuotations;
 export async function getServerSideProps({ params }) {
   const { id, slug } = params
-  console.log(slug)
   return {
     props: {id, slug},
   }

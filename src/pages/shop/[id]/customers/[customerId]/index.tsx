@@ -43,13 +43,16 @@ const Customer: NextPage = ({ shopId, rules, customerId }: any) => {
 
   const [key, setKey] = useState('profile');
   const [sales, setSales] = useState<any>([]);
+  const [quotations, setQuotations] = useState<any>([]);
   const [isOrder, setIsOrder] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [customerInfo, setCustomerInfo] = useState(customerTemplate);
 
   const columns: GridColDef[] = [
     { field: 'id', headerName: '#', minWidth: 50 },
-    { field: 'customer_name', headerName: 'Customer Name', flex: 1 },
+    { field: 'customer_name', headerName: 'Customer Name', flex: 1, renderCell: ({ row }: Partial<GridRowParams>) => {
+      return customerInfo.first_name + ' ' + customerInfo.last_name
+    }},
     { field: 'sale_date', headerName: 'Quotation Date', flex: 1 },
     {
       flex: 1,
@@ -77,7 +80,7 @@ const Customer: NextPage = ({ shopId, rules, customerId }: any) => {
           <Button onClick={() => {}}>
             <FontAwesomeIcon icon={faPenToSquare} />
           </Button>
-          {rules.hasDelete && (
+          {true && (
             <Button onClick={() => {}}>
               <FontAwesomeIcon icon={faTrash} />
             </Button>
@@ -103,6 +106,7 @@ const Customer: NextPage = ({ shopId, rules, customerId }: any) => {
       const res = await findAllData(`customers/${router.query.customerId}/show`);
       if (res.data.success) {
         setSales({ data: res.data.result?.sales });
+        setQuotations([...res.data.result?.quotations]);
         const selCustomer = res.data.result?.profile;
         setCustomerInfo({ ...customerTemplate, ...selCustomer });
       } else {
@@ -156,7 +160,7 @@ const Customer: NextPage = ({ shopId, rules, customerId }: any) => {
                     border: 'none',
                   },
                 }}
-                rows={sales}
+                rows={quotations}
                 columns={columns}
                 initialState={{
                   columns: { columnVisibilityModel: { mobile: false } },

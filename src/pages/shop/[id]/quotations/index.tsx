@@ -67,7 +67,9 @@ export default function SalesList(props: any) {
   //table columns
   const columns: GridColDef[] = [
     { field: 'id', headerName: '#', minWidth: 50 },
-    { field: 'customer_name', headerName: 'Customer Name', flex: 1 },
+    { field: 'customer_name', headerName: 'Customer Name', flex: 1, renderCell: ({ row }: Partial<GridRowParams>) => {
+      return row.first_name + ' ' + row.last_name
+    }},
     { field: 'sale_date', headerName: 'Quotation Date', flex: 1 },
     {
       flex: 1,
