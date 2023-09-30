@@ -12,6 +12,7 @@ export const barcodeSelectStyles = {
   }),
   menu: (provided: any, state: any) => ({
     ...provided,
+    zIndex: 998,
     borderRadius: '10px',
     padding: '10px',
     border: '1px solid #c9ced2',

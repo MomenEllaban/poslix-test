@@ -116,7 +116,7 @@ const Customers: NextPage = ({ id }: any) => {
     if (!shopId) return;
 
     const locations: ILocation[] = getLocalStorage(ELocalStorageKeys.LOCATIONS);
-    const currentLocation = locations.find((location) => +location.location_id === +shopId);
+    const currentLocation = locations?.find((location) => +location.location_id === +shopId);
     setLocationSettings(currentLocation ?? locationSettings);
 
     initDataPage();

@@ -64,6 +64,9 @@ const Appearance: NextPage = (props: any) => {
     if(router.query.id) initDataPage();
   }, [router.asPath]);
 
+  useEffect(() => {
+    handleUpload()
+  }, [previewUrl]);
   const handleRemoveImg = () => {
     if (img) {
       const desertRef = ref(storage, formObj.logo);
@@ -78,12 +81,13 @@ const Appearance: NextPage = (props: any) => {
   };
 
   const handleSave = () => {
-    if (previewUrl.length > 2) handleRemoveImg();
-    else editInvoice();
+    if(previewUrl === '') delete formObj.logo
+    editInvoice();
   };
   async function handleUpload() {
     if (previewUrl.length < 2) {
-      Toastify('error', 'Error ,Please Select Logo First');
+      console.log('hey')
+      // Toastify('error', 'Error ,Please Select Logo First');
     } else {
       const storageRef = ref(storage, `/files/logo/${generateUniqueString(12)}${id}`);
       const uploadTask = uploadBytesResumable(storageRef, img);
@@ -99,8 +103,9 @@ const Appearance: NextPage = (props: any) => {
         },
         async () => {
           await getDownloadURL(uploadTask.snapshot.ref).then((url) => {
+            console.log(url)
             setFormObj({ ...formObj, logo: url });
-            editInvoice(url);
+            // editInvoice(url);
           });
         }
       );

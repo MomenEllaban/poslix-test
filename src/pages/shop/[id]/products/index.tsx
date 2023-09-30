@@ -487,15 +487,8 @@ const Product: NextPage = (props: any) => {
 };
 
 export default withAuth(Product);
-/**
- * @description get server side props
- * @param {any} context
- *
- * get the cookies from the context
- * check the page params
- * check user permissions
- *
- */
+
+
 export async function getServerSideProps({ params }) {
   const { id } = params;
   return {
