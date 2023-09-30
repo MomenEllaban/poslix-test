@@ -67,7 +67,7 @@ const Suppliers: NextPage = () => {
       headerName: 'Address',
       flex: 3,
       renderCell({ row }) {
-        return `${row.invoice_address== null?"Empty":row.invoice_address},${row.invoice_City== null?"Empty":row.invoice_City} ,${row.invoice_Country== null?"Empty":row.invoice_Country} `;
+        return `${row.invoice_address== null?"":row.invoice_address} ${row.invoice_City== null?"":row.invoice_City}  ${row.invoice_Country== null?"":row.invoice_Country} `;
       },
     },
     { field: 'postal_code', headerName: 'Postal Code', flex: 1 },
