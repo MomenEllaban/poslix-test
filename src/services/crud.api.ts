@@ -15,3 +15,6 @@ export const updateData = async (url, id, data) => {
 export const deleteData = async (url, id) => {
     return await api.delete(`${url}/${id}`)
 }
+export const deleteDataWithLocID = async (url, id,locId) => {
+    return await api.delete(`${url}/${id}?location_id=${locId}`)
+}

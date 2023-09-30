@@ -71,7 +71,11 @@ export default function SalesListTable({ shopId, rules, salesList }: any) {
   //table columns
   const columns: GridColDef[] = [
     { field: 'id', headerName: '#', minWidth: 50 },
-    { field: 'contact_name', headerName: 'Customer Name', flex: 1 },
+    {
+      field: 'contact_name', headerName: 'Customer Name', flex: 1, renderCell({ row }) {
+      console.log(row.contact_name)
+      return  row.contact_name!==" " ? row.contact_name:"walk-in customer"
+    } },
     { field: 'mobile', headerName: 'Mobile', flex: 1, disableColumnMenu: true },
     { field: 'date', headerName: 'Sale Date', flex: 1 },
     // { field: "total_price", headerName: "Final Total ", flex: 1 },
