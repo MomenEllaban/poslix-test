@@ -39,8 +39,8 @@ export function paymentTypeData(): {
   readonly value: string;
 }[] {
   return [
-    { label: 'Card', value: 'card' },
     { label: 'Cash', value: 'cash' },
+    { label: 'Card', value: 'card' },
     { label: 'Bank', value: 'bank' },
     { label: 'Cheque', value: 'cheque' },
   ];
