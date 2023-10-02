@@ -65,7 +65,7 @@ function LocationUpdateForm({ businessId, location }) {
       currency_id: currenciesList ? {...currenciesList.filter(curr =>
         (curr.currency === location.currency_name && curr.code === location.currency_code))[0]} : {},
       decimal: location.location_decimal_places,
-      status:location.location_statuss
+      status:location.location_status
     },
   });
 
