@@ -49,6 +49,7 @@ function LocationUpdateForm({ businessId, location }) {
 
   useEffect(() => {
     initPageData();
+    console.log(location);
   }, []);
 
   const {
@@ -64,13 +65,15 @@ function LocationUpdateForm({ businessId, location }) {
       currency_id: currenciesList ? {...currenciesList.filter(curr =>
         (curr.currency === location.currency_name && curr.code === location.currency_code))[0]} : {},
       decimal: location.location_decimal_places,
+      status:location.location_status
     },
   });
 
   function onLocationSubmit(data: any) {
+    console.log(data)
     setLoading(true);
     businessService
-      .updateLocationSettings(location.location_id, data)
+      .updateLocationSettings(location.location_id, {data})
       .then((res) => {
         Toastify('success', 'Location Settings Updated Successfully');
 
@@ -118,7 +121,7 @@ function LocationUpdateForm({ businessId, location }) {
             />
              <FormField
              label="State"
-             name="state"
+             name="status"
              type="text"
              placeholder="Enter State"
              register={locationRegister}

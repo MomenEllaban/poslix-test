@@ -62,7 +62,7 @@ export default function CustomerDataSelect({
     setOptions(_options)
     setCustomer(_options[0]);
     dispatch(setCartCustomer({ customer_id: _options[0].value, location_id: shopId, }));
-  }, [customers])
+  }, [customers, cart?.customer_id])
 
   return (
     <>

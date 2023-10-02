@@ -117,7 +117,7 @@ export default function PaymentCheckoutModal({
     control, // control props comes from useForm (optional: if you are using FormContext)
     name: 'payment', // unique name for your Field Array
   });
-
+const [sentData, setSentData] = useState<any>()
   const onSubmit = (data) => {
     const checkoutData = {
       notes: data?.notes,
@@ -137,12 +137,20 @@ export default function PaymentCheckoutModal({
         note: data?.notes,
       })),
     };
+    setSentData(checkoutData)
     api
       .post('/checkout', checkoutData)
       .then((res) => {
-        setPrintReceipt(res.data.result);
+        console.log(res.data.result.data)
+        setPrintReceipt({
+          ...res.data.result.data,
+          due: res.data.result.sales.due,
+          paid: res.data.result.sales.payed,
+          tax: res.data.result.sales.tax
+        });
         setPrint(true);
         setShow(false);
+        setPaidAmount({ '0': 0 })
       })
       .then(() => {
         dispatch(clearCart({ location_id: shopId }));

@@ -66,11 +66,12 @@ const CloseRegister = ({ openDialog, statusDialog, shopId }: any) => {
       setJobType({ req: 101, val: 'closeRegister' });
       Toastify('success', 'successfully done');
       const registerObject = getLocalStorage<{hand_cash: number; state: string}>(ELocalStorageKeys.POS_REGISTER_STATE);
-      dispatch(setPosRegister({...registerObject, state: 'close'}));
+      dispatch(setPosRegister({...registerObject, hand_cash: 0, status: 'close'}));
     } else Toastify('error', 'Something went wrong!');
   }
 
   const getCloseData = async () => {
+    setIsLoading(true)
     const res = await findAllData(`registration/${shopId}/close`)
     setCash(res.data.result.cash);
     setCard(res.data.result.card);

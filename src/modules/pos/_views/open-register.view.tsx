@@ -45,10 +45,10 @@ export function OpenRegisterView({ setShopId, shopId: _shopId, setIsLoading }) {
     });
     if (res.data.success) {
       Toastify('success', res.data.result.message);
-      dispatch(setPosRegister({ state: 'open', hand_cash: +cashHand }));
+      dispatch(setPosRegister({ status: 'open', hand_cash: +cashHand }));
       localStorage.setItem(
         ELocalStorageKeys.POS_REGISTER_STATE,
-        JSON.stringify({ state: 'open', hand_cash: +cashHand })
+        JSON.stringify({ status: 'open', hand_cash: +cashHand })
       );
       router.replace(`/pos/${currentShopId}`);
     } else alert('error..Try Again');
