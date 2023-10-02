@@ -33,7 +33,7 @@ export default function PaymentCheckoutModal({
   const { locationSettings, tailoringSizes, tailoringExtras } = useUser();
   const componentRef = React.useRef(null);
   const [customer, setCustomer] = useState<{
-    value: string;
+    value: number | string;
     label: string;
     isNew: boolean;
   }>({ value: 0, label: 'walk-in customer', isNew: false });
@@ -128,7 +128,6 @@ const [sentData, setSentData] = useState<any>()
       discount_amount: cart?.cartDiscount,
       tax_type: cart?.cartTaxType,
       tax_amount: cart?.cartTax,
-
       related_invoice_id: cart.orderId > 0 ? cart.orderId : null,
       cart: cart?.cartItems.map((product) => ({
         product_id: product?.product_id,

@@ -36,11 +36,18 @@ export const OrderCalcs = ({
     const _tax: any = taxesList?.taxes?.filter((tax: any) => tax?.is_primary)
     const _taxGroup: any = taxesList?.taxes?.filter((tax: any) => tax?.is_tax_group && tax?.is_primary)
     let finalTax;
-    if(_taxGroup.length > 0) finalTax = _taxGroup[0].tax_group.reduce((total, tax) => total + (tax.amount || 0), 0);
-    else finalTax = _tax[0]?.amount ?? 0
+    let finalTaxType;
+    if(_taxGroup.length > 0) {
+      finalTax = _taxGroup[0].tax_group.reduce((total, tax) => total + (tax.amount || 0), 0);
+      finalTaxType = _taxGroup[0].type
+    }
+    else {
+      finalTax = _tax[0]?.amount ?? 0
+      finalTaxType = _tax[0].type
+    }
     console.log(_taxGroup, finalTax)
     dispatch(
-      setCartTax({ tax: finalTax, location_id: shopId, type: finalTax?.type ?? 'fixed' })
+      setCartTax({ tax: finalTax, location_id: shopId, type: finalTaxType ?? 'fixed' })
     );
   }, [taxesList])
 

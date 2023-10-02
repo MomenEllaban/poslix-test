@@ -71,6 +71,7 @@ const cartSlice = createSlice({
       const { location_id, tax, type } = action.payload;
       const cart = findOrCreateCart(state, location_id);
       cart.cartTax = +tax;
+      console.log(type)
       cart.cartTaxType = type;
       localStorage.setItem('cart', JSON.stringify(state));
     },
