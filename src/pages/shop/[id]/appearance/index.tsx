@@ -86,7 +86,6 @@ const Appearance: NextPage = (props: any) => {
   };
   async function handleUpload() {
     if (previewUrl.length < 2) {
-      console.log('hey')
       // Toastify('error', 'Error ,Please Select Logo First');
     } else {
       const storageRef = ref(storage, `/files/logo/${generateUniqueString(12)}${id}`);
@@ -103,9 +102,7 @@ const Appearance: NextPage = (props: any) => {
         },
         async () => {
           await getDownloadURL(uploadTask.snapshot.ref).then((url) => {
-            console.log(url)
             setFormObj({ ...formObj, logo: url });
-            // editInvoice(url);
           });
         }
       );

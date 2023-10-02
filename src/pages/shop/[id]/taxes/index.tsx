@@ -232,7 +232,6 @@ const Taxes: NextPage = (props: any) => {
       Toastify('error', 'Has Error ,try Again');
       return;
     }
-    console.log(res.data.result.tax)
     setItemDetails(res.data.result.tax);
     setIsLoadingDetails(false);
     setShowDetails(true);
@@ -316,7 +315,8 @@ const Taxes: NextPage = (props: any) => {
           alertFun={(e: boolean) => setShowDetails(e)}
           id={selectId}
           type="deleteTax"
-          taxs={taxs}>
+          taxs={taxs}
+        >
           <Table className="table table-hover" responsive>
             <thead className="thead-dark">
               <tr>
@@ -440,13 +440,6 @@ const Taxes: NextPage = (props: any) => {
                   </div>
                 )}
               </Card.Body>
-              {!isLoading && permissions.hasInsert && (
-                <div className="m-3">
-                  <button className="btn m-btn btn-primary p-3" onClick={() => addUpdateTaxs(taxs)}>
-                    <FontAwesomeIcon icon={faFloppyDisk} /> save
-                  </button>
-                </div>
-              )}
             </Card>
 
             {/* excces */}
@@ -523,15 +516,6 @@ const Taxes: NextPage = (props: any) => {
                   </div>
                 )}
               </Card.Body>
-              {!isLoading && permissions.hasInsert && (
-                <div className="m-3">
-                  <button
-                    className="btn m-btn btn-primary p-3"
-                    onClick={() => addUpdateTaxs(taxsExcise)}>
-                    <FontAwesomeIcon icon={faFloppyDisk} /> save{' '}
-                  </button>
-                </div>
-              )}
             </Card>
 
             {/* Service Charge */}
@@ -625,15 +609,6 @@ const Taxes: NextPage = (props: any) => {
                   </div>
                 )}
               </Card.Body>
-              {!isLoading && permissions.hasInsert && (
-                <div className="m-3">
-                  <button
-                    className="btn m-btn btn-primary p-3"
-                    onClick={() => addUpdateTaxs(taxsService)}>
-                    <FontAwesomeIcon icon={faFloppyDisk} /> save{' '}
-                  </button>
-                </div>
-              )}
             </Card>
 
             {/* Group */}

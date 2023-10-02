@@ -114,20 +114,20 @@ export const OrderCalcs = ({
         </div>
 
         {cart?.orderId &&
-            <div className="calcs-details-row">
-              <div className="py-1 calcs-details-col">
-                <div></div>
-                <div></div>
-              </div>
-              <div className="py-1 calcs-details-col">
-                <div>{lang.cartComponent.difference}</div>
-                <div>{(+totalAmount - +cart.lastTotal + +cart.lastDue)
-                  .toFixed(locationSettings?.location_decimal_places)}{' '}
-                  <span style={{ fontSize: '10px' }}>{locationSettings?.currency_code}</span>
-                </div>
+          <div className="calcs-details-row">
+            <div className="py-1 calcs-details-col">
+              <div></div>
+              <div></div>
+            </div>
+            <div className="py-1 calcs-details-col">
+              <div>{lang.cartComponent.difference}</div>
+              <div>{(+totalAmount - +cart.lastTotal + +cart.lastDue)
+                .toFixed(locationSettings?.location_decimal_places)}{' '}
+                <span style={{ fontSize: '10px' }}>{locationSettings?.currency_code}</span>
               </div>
             </div>
-          }
+          </div>
+        }
         <EditDiscountModal
           shopId={shopId}
           show={isDiscountModalOpen}
