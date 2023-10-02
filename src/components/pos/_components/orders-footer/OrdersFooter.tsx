@@ -86,7 +86,7 @@ export const OrdersFooter = ({ orderEditDetails, details, shopId, lang }) => {
           disabled={!cart?.cartItems?.length}
           onClick={() => {
             if (!cart?.cartItems?.length) return Toastify('error', 'Select Product(s) First');
-            if (cart.customer_id > 0) {
+            if (!!cart.customer_id) {
               if (details.totalAmount > 0 || orderEditDetails.total_price > 0) {
                 setPaymentModalShow(true);
               } else Toastify('error', 'Select Product(s) First');

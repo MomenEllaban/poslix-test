@@ -39,6 +39,7 @@ export default function CustomerDataSelect({
 
   const [showType, setShowType] = useState(String);
   const [customerIsModal, setCustomerIsModal] = useState<boolean>(false);
+  const [options, setOptions] = useState<{ value: string | number; label: string; isNew: boolean }[]>([{ value: '1', label: 'walk-in customer', isNew: false }])
   const currentCustomer = [{ value: '1', label: 'walk-in customer', isNew: false }, ...customers]?.find((c) => c.value === cart?.customer_id) ?? [];
 
   const customerModalHandler = (status: any) => setCustomerIsModal(false);
@@ -50,6 +51,15 @@ export default function CustomerDataSelect({
     if (customer?.isNew) setCustomerIsModal(true);
   }, [customer]);
 
+  useEffect(() => {
+    const _options = [{ value: '1', label: 'walk-in customer', isNew: false }, ...customers]
+
+
+    setOptions(_options)
+    setCustomer(_options[0]);
+    dispatch(setCartCustomer({ customer_id: _options[0].value, location_id: shopId, }));
+  }, [customers])
+
   return (
     <>
       <div className="d-flex">
@@ -57,29 +67,15 @@ export default function CustomerDataSelect({
           <Select
             isLoading={customers.length === 0}
             styles={selectStyle}
-            isDisabled={
-              isOrderEdit > 0 ||
-              (cart?.customer_id > 0 && cart.cartItems.length > 0) ||
-              cart?.orderId > 0
-            }
-            options={[{ value: '1', label: 'walk-in customer', isNew: false }, ...customers]}
+            isDisabled={isOrderEdit > 0 || (cart?.customer_id > 0 && cart.cartItems.length > 0) || cart?.orderId > 0}
+            options={options}
+            defaultValue={options[0]}
             onChange={(choice: any) => {
-              setCustomer({
-                ...choice,
-                isNew: choice.__isNew__ === undefined ? false : true,
-              });
-              dispatch(
-                setCartCustomer({
-                  customer_id: choice.value,
-                  location_id: shopId,
-                })
-              );
+              setCustomer({ ...choice, isNew: choice.__isNew__ === undefined ? false : true, });
+              dispatch(setCartCustomer({ customer_id: choice.value, location_id: shopId, }));
             }}
             placeholder={lang.customerData.selectCustomer}
-            value={
-              currentCustomer ||
-              (isOrderEdit > 0 ? { label: orderEditDetails.name, value: '111' } : customer)
-            }
+            value={currentCustomer || (isOrderEdit > 0 ? { label: orderEditDetails.name, value: '111' } : customer)}
           />
         </div>
         <button
