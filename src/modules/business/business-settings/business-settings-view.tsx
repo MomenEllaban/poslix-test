@@ -120,10 +120,10 @@ function LocationUpdateForm({ businessId, location }) {
               register={locationRegister}
             />
              <FormField
-             label="State"
+             label="Status"
              name="status"
              type="text"
-             placeholder="Enter State"
+             placeholder="Enter Status"
              register={locationRegister}
              required
              errors={locationErrors}
@@ -310,6 +310,7 @@ export default function BusinessSettingsView({ business }: { business: IUserBusi
 
   function onSubmit(data: any) {
     setLoading(true);
+    console.log(data)
     businessService
       .updateBusinessSettings(business.id, data)
       .then((res) => {

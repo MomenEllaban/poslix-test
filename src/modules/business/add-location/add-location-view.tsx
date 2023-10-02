@@ -17,8 +17,7 @@ import { joiResolver } from '@hookform/resolvers/joi';
 
 type Inputs = {
   name: string;
-  state: string;
-
+  status: string;
   currency_id: number;
   business_id: number;
   decimal: number;
@@ -32,9 +31,9 @@ const createLocationSchema = Joi.object({
     'string.empty': 'Name is required',
     'any.required': 'Name is required',
   }),
-  state: Joi.string().required().messages({
-    'string.empty': 'State is required',
-    'any.required': 'State is required',
+  status: Joi.string().required().messages({
+    'string.empty': 'Status is required',
+    'any.required': 'Status is required',
   }),
 
   decimal: Joi.number().required().min(0).messages({
@@ -82,7 +81,7 @@ export default function AddBusinessLocationView({ businessId = '0' }: Props) {
     reValidateMode: 'onBlur',
     defaultValues: {
       name: '',
-      state: '',
+      status: '',
       decimal: 1,
       currency_id: 0,
       business_id: +businessId,
@@ -138,10 +137,10 @@ export default function AddBusinessLocationView({ businessId = '0' }: Props) {
           errors={errors}
         />
         <FormField
-          label="State"
-          name="state"
+          label="Status"
+          name="status"
           type="text"
-          placeholder="Enter State"
+          placeholder="Enter Status"
           register={register}
           required
           errors={errors}
