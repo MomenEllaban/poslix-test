@@ -47,7 +47,7 @@ export default function CartPanel({ shopId }) {
 
   const [customer, setCustomer] = useState<ICustomerItem>({
     ...initCustomer,
-    value: cart?.customer_id ?? '1',
+    value: cart?.customer_id ?? 0,
   });
 
   const direction = isRtl ? 'rtl' : 'ltr';
@@ -79,7 +79,7 @@ export default function CartPanel({ shopId }) {
       <OrdersFooter
         orderEditDetails={initOrder}
         shopId={shopId}
-        details={{ customerId: customer?.value, totalAmount: cart?.cartSellTotal, isReturn: 0 }}
+        details={{ customerId: customer?.value || undefined, totalAmount: cart?.cartSellTotal, isReturn: 0 }}
         lang={lang}
       />
     </div>

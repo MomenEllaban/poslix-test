@@ -68,11 +68,7 @@ export default function OrdersComponent(props: any) {
   });
   const [shippingRate] = useState<number>(0);
 
-  const [customer, setCustomer] = useState<{
-    value: string;
-    label: string;
-    isNew: boolean;
-  }>({ value: '1', label: 'walk-in customer', isNew: false });
+  const [customer, setCustomer] = useState<{ value: string; label: string; isNew: boolean; }>({ value: '1', label: 'walk-in customer', isNew: false });
   const [product, setProducInfo] = useRecoilState(productDetails);
   const [clearEvent, setClear] = useRecoilState(clearOrders);
   const [jobType, setJobType] = useRecoilState(cartJobType);
@@ -345,10 +341,10 @@ export default function OrdersComponent(props: any) {
                     __WithDiscountFeature__total + (totalAmount - subTotal) - (amount && totalPaid)
                   ) > 0
                     ? Number(
-                        __WithDiscountFeature__total +
-                          +(totalAmount - subTotal) -
-                          (amount && totalPaid)
-                      ).toFixed(locationSettings?.location_decimal_places)
+                      __WithDiscountFeature__total +
+                      +(totalAmount - subTotal) -
+                      (amount && totalPaid)
+                    ).toFixed(locationSettings?.location_decimal_places)
                     : 0}
                 </td>
               </tr>
@@ -458,14 +454,14 @@ export default function OrdersComponent(props: any) {
                   <td className="txt_bold_invoice">
                     {Number(
                       __WithDiscountFeature__total +
-                        (totalAmount - subTotal) -
-                        (amount && totalPaid)
+                      (totalAmount - subTotal) -
+                      (amount && totalPaid)
                     ) > 0
                       ? Number(
-                          __WithDiscountFeature__total +
-                            +(totalAmount - subTotal) -
-                            (amount && totalPaid)
-                        ).toFixed(locationSettings?.location_decimal_places)
+                        __WithDiscountFeature__total +
+                        +(totalAmount - subTotal) -
+                        (amount && totalPaid)
+                      ).toFixed(locationSettings?.location_decimal_places)
                       : 0}
                   </td>
                 </tr>
@@ -675,6 +671,7 @@ export default function OrdersComponent(props: any) {
     }, 1000);
     return () => clearInterval(interval);
   }, []);
+
   async function displayOrders() {
     await new Promise((resolve) => setTimeout(resolve, 200));
     setSelectedHold({ holdId: Number(jobType.val2) });
@@ -844,6 +841,7 @@ export default function OrdersComponent(props: any) {
       setQuantityPush([]);
     }
   }, [jobType]);
+
   const ClearOrders = () => {
     setOrderEditDetails({ ...orderEditDetails, isEdit: false, total_price: 0 });
     setOrders([]);
@@ -1446,7 +1444,7 @@ export default function OrdersComponent(props: any) {
                     <div onClick={() => handleLinkColor()}>{isLinking ? 'Apply' : 'link'}</div>
                   </th>
                 )}
-                <th scope="col" style={{ width: 30 }} onClick={() => {}}>
+                <th scope="col" style={{ width: 30 }} onClick={() => { }}>
                   #
                 </th>
                 <th scope="col" className="text-start">
@@ -1549,8 +1547,8 @@ export default function OrdersComponent(props: any) {
                               order.quantity2! > 0
                                 ? 'green'
                                 : order.quantity2! < 0
-                                ? 'red'
-                                : 'black',
+                                  ? 'red'
+                                  : 'black',
                             marginLeft: '4px',
                           }}>
                           {order.quantity2! > 0 ? '+' : ''}

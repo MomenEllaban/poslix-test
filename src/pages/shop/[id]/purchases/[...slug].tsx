@@ -54,6 +54,7 @@ interface ICurrencySelect extends ICurrency {
   label: string;
 }
 
+//! THIS IS NOT THE FILE USED FOR ADDING PURCHASE FOR NOW 
 const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
   const router = useRouter();
   const formObjRef = useRef<any>();
@@ -580,11 +581,11 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
         _datas[found].lineTotal =
           locationSettings?.currency_id == formObj.currency_id
             ? Number(_datas[found].cost * _datas[found].quantity).toFixed(
-                locationSettings?.location_decimal_places
-              )
+              locationSettings?.location_decimal_places
+            )
             : Number(_datas[found].cost * formObj.currency_rate * _datas[found].quantity).toFixed(
-                locationSettings?.location_decimal_places
-              );
+              locationSettings?.location_decimal_places
+            );
 
       setSelectProducts([..._datas]);
       calculationLabels(formObj.total_expense, formObj.total_tax);
@@ -620,16 +621,16 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
       _rows[i].notifyExpensePrice =
         _ExpVal > 0
           ? +Number(_ExpVal + parseFloat(getCost(sp.cost).toString())).toFixed(
-              locationSettings?.location_decimal_places
-            )
+            locationSettings?.location_decimal_places
+          )
           : 0;
       if (_ExpVal == 0 && _rows[i].costType == 1) _rows[i].costType = 0;
 
       _rows[i].notifyTaxPrice =
         _TaxVal > 0
           ? +Number(_TaxVal + parseFloat(getCost(sp.cost).toString())).toFixed(
-              locationSettings?.location_decimal_places
-            )
+            locationSettings?.location_decimal_places
+          )
           : 0;
       if (_TaxVal == 0 && _rows[i].costType == 2) _rows[i].costType = 0;
 

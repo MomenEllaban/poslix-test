@@ -6,13 +6,13 @@ import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
 import { useRecoilState } from 'recoil';
 import { useAppDispatch } from 'src/hooks';
+import { usePosContext } from 'src/modules/pos/_context/PosContext';
 import { setCart } from 'src/redux/slices/cart.slice';
 import { apiFetchCtr } from '../../../../libs/dbUtils';
 import { IHold } from '../../../../models/common-model';
 import { cartJobType } from '../../../../recoil/atoms';
 import HoldTable from './HoldTable';
 import OrdersTable from './OrdersTable';
-import { usePosContext } from 'src/modules/pos/_context/PosContext';
 
 export default function HoldOrdersModal({ shopId, lang }: any) {
   const dispatch = useAppDispatch();

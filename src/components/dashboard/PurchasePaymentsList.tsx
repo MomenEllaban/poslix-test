@@ -1,17 +1,17 @@
-import { useEffect, useState } from 'react';
-import { Spinner } from 'react-bootstrap';
-import { apiFetchCtr } from 'src/libs/dbUtils';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faPlus,
   faArrowAltCircleLeft,
   faCircleCheck,
   faMinus,
+  faPlus,
 } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
-import AddNewPayment from './AddNewPayment';
+import { useEffect, useState } from 'react';
+import { Spinner } from 'react-bootstrap';
 import { Toastify } from 'src/libs/allToasts';
 import { findAllData } from 'src/services/crud.api';
+import AddNewPayment from './AddNewPayment';
+
 const PurchasePaymentsList = (props: any) => {
   const { shopId, purchaseId, purchases } = props;
   const [information, setInformation] = useState<any>({ totalPaid: 0, totalLeft: 0, isPaid: 0 });

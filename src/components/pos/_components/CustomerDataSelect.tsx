@@ -8,6 +8,16 @@ import { selectCartByLocation, setCartCustomer } from 'src/redux/slices/cart.sli
 import CustomerModal from '../modals/CustomerModal';
 import { usePosContext } from 'src/modules/pos/_context/PosContext';
 
+
+type TCustomer = { value: string | number; label: string; isNew: boolean }
+interface IProps {
+  shopId: number;
+  isOrderEdit: number;
+  customer: TCustomer;
+  orderEditDetails: IOrderMiniDetails;
+  setCustomer: React.Dispatch<React.SetStateAction<TCustomer>>;
+}
+
 const selectStyle = {
   control: (style: any) => ({
     ...style,
@@ -23,28 +33,22 @@ export default function CustomerDataSelect({
   setCustomer,
   orderEditDetails,
   customer,
-}: {
-  shopId: number;
-  isOrderEdit: number;
-  setCustomer: React.Dispatch<
-    React.SetStateAction<{ value: string; label: string; isNew: boolean }>
-  >;
-  orderEditDetails: IOrderMiniDetails;
-  customer: { value: string | number; label: string; isNew: boolean };
-}) {
+}: IProps) {
   const dispatch = useAppDispatch();
   const { customers } = useProducts();
+  const { lang: _lang } = usePosContext();
+
   const selectCartForLocation = selectCartByLocation(shopId);
   const cart = useAppSelector(selectCartForLocation); // current location order
 
-  const [showType, setShowType] = useState(String);
+  const [showType, setShowType] = useState('');
   const [customerIsModal, setCustomerIsModal] = useState<boolean>(false);
-  const [options, setOptions] = useState<{ value: string | number; label: string; isNew: boolean }[]>([{ value: '1', label: 'walk-in customer', isNew: false }])
-  const currentCustomer = [{ value: '1', label: 'walk-in customer', isNew: false }, ...customers]?.find((c) => c.value === cart?.customer_id) ?? [];
+  const [options, setOptions] = useState<TCustomer[]>([{ value: 0, label: 'walk-in customer', isNew: false }])
+
+  const currentCustomer = [{ value: 0, label: 'walk-in customer', isNew: false }, ...customers]?.find((c) => c.value === cart?.customer_id) ?? [];
 
   const customerModalHandler = (status: any) => setCustomerIsModal(false);
 
-  const { lang: _lang } = usePosContext();
   const lang = _lang?.pos;
 
   useEffect(() => {
@@ -52,7 +56,7 @@ export default function CustomerDataSelect({
   }, [customer]);
 
   useEffect(() => {
-    const _options = [{ value: '1', label: 'walk-in customer', isNew: false }, ...customers]
+    const _options = [{ value: 0, label: 'walk-in customer', isNew: false }, ...customers]
 
 
     setOptions(_options)
@@ -75,7 +79,7 @@ export default function CustomerDataSelect({
               dispatch(setCartCustomer({ customer_id: choice.value, location_id: shopId, }));
             }}
             placeholder={lang.customerData.selectCustomer}
-            value={currentCustomer || (isOrderEdit > 0 ? { label: orderEditDetails.name, value: '111' } : customer)}
+            value={currentCustomer.value || (isOrderEdit > 0 ? { label: orderEditDetails.name, value: '111' } : customer)}
           />
         </div>
         <button
@@ -90,7 +94,7 @@ export default function CustomerDataSelect({
           }}
           type="button"
           onClick={() => {
-            if (currentCustomer && currentCustomer !== '1') {
+            if (currentCustomer && currentCustomer !== 0) {
               setShowType('edit');
               setCustomerIsModal(true);
             } else Toastify('error', 'Choose Customer First!');

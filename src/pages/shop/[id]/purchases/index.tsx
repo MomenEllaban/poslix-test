@@ -1,53 +1,37 @@
-import type { NextPage } from 'next';
-import Table from 'react-bootstrap/Table';
-import { AdminLayout } from '@layout';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import Spinner from 'react-bootstrap/Spinner';
 import {
-  faTrash,
+  faDollarSign,
+  faListCheck,
   faPenToSquare,
   faPlus,
-  faDollarSign,
-  faCheckDouble,
-  faListCheck,
+  faTrash
 } from '@fortawesome/free-solid-svg-icons';
-import { Button, ButtonGroup, Card } from 'react-bootstrap';
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import { apiFetchCtr } from 'src/libs/dbUtils';
-import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/checkUtils';
-import { ILocationSettings, ITokenVerfy } from '@models/common-model';
-import * as cookie from 'cookie';
-import PurchasesQtyCheckList from 'src/components/dashboard/PurchasesQtyCheckList';
-import PurchasePaymentsList from 'src/components/dashboard/PurchasePaymentsList';
-import { ToastContainer } from 'react-toastify';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { AdminLayout } from '@layout';
 import {
   DataGrid,
   GridColDef,
-  GridRowParams,
-  GridToolbarColumnsButton,
-  GridToolbarContainer,
-  GridToolbarExport,
+  GridRowParams
 } from '@mui/x-data-grid';
+import type { NextPage } from 'next';
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
+import { Button, ButtonGroup } from 'react-bootstrap';
+import Spinner from 'react-bootstrap/Spinner';
+import { ToastContainer } from 'react-toastify';
 import withAuth from 'src/HOCs/withAuth';
-import { findAllData } from 'src/services/crud.api';
-import { Toastify } from 'src/libs/allToasts';
+import PurchasePaymentsList from 'src/components/dashboard/PurchasePaymentsList';
+import PurchasesQtyCheckList from 'src/components/dashboard/PurchasesQtyCheckList';
 import AlertDialog from 'src/components/utils/AlertDialog';
+import { useUser } from 'src/context/UserContext';
+import { Toastify } from 'src/libs/allToasts';
+import CustomToolbar from 'src/modules/reports/_components/CustomToolbar';
+import { findAllData } from 'src/services/crud.api';
 
-const Purchases: NextPage = (props: any) => {
-  const { shopId, id } = props;
+const Purchases: NextPage = ({ shopId, id }: any) => {
+
   const [purchases, setPurchases] = useState<{ id: number; name: string; sku: string }[]>([]);
   const [isloading, setIsloading] = useState(true);
-  const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
-    // @ts-ignore
-    value: 0,
-    label: '',
-    currency_decimal_places: 0,
-    currency_code: '',
-    currency_id: 0,
-    currency_rate: 1,
-    currency_symbol: '',
-  });
+  const { locationSettings, setLocationSettings } = useUser();
   const [isShowQtyManager, setIsShowQtyManager] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isShowPayments, setIsShowPayments] = useState(false);
@@ -136,14 +120,8 @@ const Purchases: NextPage = (props: any) => {
       ),
     },
   ];
-  function CustomToolbar() {
-    return (
-      <GridToolbarContainer>
-        <GridToolbarExport />
-        <GridToolbarColumnsButton />
-      </GridToolbarContainer>
-    );
-  }
+
+
   const handleDeleteFuc = (result: boolean, msg: string, section: string) => {
     initDataPage();
     if (msg.length > 0) Toastify(result ? 'success' : 'error', msg);
@@ -164,12 +142,12 @@ const Purchases: NextPage = (props: any) => {
     if (_locs.toString()?.length > 10)
       setLocationSettings(
         _locs[
-          _locs.findIndex((loc: any) => {
-            return loc.value == shopId;
-          })
+        _locs.findIndex((loc: any) => {
+          return loc.value == shopId;
+        })
         ]
       );
-    
+
     initDataPage();
   }, [router.asPath]);
 
@@ -183,10 +161,10 @@ const Purchases: NextPage = (props: any) => {
       perm.name.includes('purchases/add')
         ? (getPermissions.hasInsert = true)
         : perm.name.includes('purchases/update')
-        ? (getPermissions.hasEdit = true)
-        : perm.name.includes('purchases/delete')
-        ? (getPermissions.hasDelete = true)
-        : null
+          ? (getPermissions.hasEdit = true)
+          : perm.name.includes('purchases/delete')
+            ? (getPermissions.hasDelete = true)
+            : null
     );
 
     setPermissions(getPermissions);
@@ -239,33 +217,24 @@ const Purchases: NextPage = (props: any) => {
               <div className="mb-4">
                 <button
                   className="btn m-btn btn-primary p-3"
-                  onClick={() => {
-                    router.push('/shop/' + shopId + '/purchases/add');
-                  }}>
-                  <FontAwesomeIcon icon={faPlus} /> New Purchase{' '}
+                  onClick={() => { router.push('/shop/' + shopId + '/purchases/add'); }}>
+                  <FontAwesomeIcon icon={faPlus} /> New Purchase
                 </button>
               </div>
             )}
             {!isloading ? (
               <div>
                 <div className="page-content-style card">
-                  <h5>Product List</h5>
+                  <h5>Purchases List</h5>
                   <DataGrid
                     className="datagrid-style"
-                    sx={{
-                      '.MuiDataGrid-columnSeparator': {
-                        display: 'none',
-                      },
-                      '&.MuiDataGrid-root': {
-                        border: 'none',
-                      },
-                    }}
+                    sx={{ '.MuiDataGrid-columnSeparator': { display: 'none', }, '&.MuiDataGrid-root': { border: 'none', }, }}
+
                     rows={purchases}
                     columns={columns}
                     pageSize={10}
                     rowsPerPageOptions={[10]}
-                    components={{ Toolbar: CustomToolbar }}
-                  />
+                    components={{ Toolbar: CustomToolbar }} />
                 </div>
               </div>
             ) : (
