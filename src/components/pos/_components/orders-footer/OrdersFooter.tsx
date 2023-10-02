@@ -86,11 +86,11 @@ export const OrdersFooter = ({ orderEditDetails, details, shopId, lang }) => {
           disabled={!cart?.cartItems?.length}
           onClick={() => {
             if (!cart?.cartItems?.length) return Toastify('error', 'Select Product(s) First');
-            if (!!cart.customer_id) {
-              if (details.totalAmount > 0 || orderEditDetails.total_price > 0) {
-                setPaymentModalShow(true);
-              } else Toastify('error', 'Select Product(s) First');
-            } else Toastify('error', 'Select Cuctomer First');
+
+            if (details.totalAmount > 0 || orderEditDetails.total_price > 0) {
+              setPaymentModalShow(true);
+            } else Toastify('error', 'Select Product(s) First');
+
           }}
           className="btn btn-primary fs-15 fs-sm-20">
           {orderEditDetails.isEdit ? lang.cartComponent.saveOrder : lang.cartComponent.checkout}

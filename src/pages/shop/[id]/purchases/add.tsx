@@ -57,14 +57,10 @@ interface ISupplierSelect extends Partial<ISupplier> {
   label: string;
 }
 
-const purchasesSelectStyle = {
-  control: (style: any) => ({ ...style, color: '#db3333', borderRadius: '10px' }),
-};
-const purchasesColourStyles = {
-  control: (style: any) => ({ ...style, borderRadius: '10px' }),
-};
+const purchasesColourStyles = { control: (style: any) => ({ ...style, borderRadius: '10px' }), };
+const purchasesSelectStyle = { control: (style: any) => ({ ...style, color: '#db3333', borderRadius: '10px' }), };
 
-const initialSupplier = [{ supplier_id: 0, id: 0, value: 0, label: 'Loading ... ' }];
+const initialSupplier = [{ supplier_id: -1, id: -1, value: -1, label: 'Loading ... ' }];
 const mapToSelectList = (item) => ({ ...item, label: item.name, value: item.id });
 
 const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
@@ -141,7 +137,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
       location_id: +shopId, //  "required|numeric",
       status: formObj.purchaseStatus, //  "required|string:in:draft,partially_received,processing,received,cancelled",
       payment_status: formObj.paymentStatus, //  "required|string:in:credit,partially_paid,paid,due",
-      supplier_id: formObj.supplier_id ?? 0,
+      supplier_id: formObj.supplier_id || undefined,
       payment_type: formObj.paymentType,
       currency_id: formObj.currency_id,
       cart: [...selectProducts.map((item) => ({ ...item, qty: item.quantity, note: '' }))],
@@ -422,11 +418,11 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
         _datas[found].lineTotal =
           locationSettings?.currency_id == formObj.currency_id
             ? Number(_datas[found].cost * _datas[found].quantity).toFixed(
-                locationSettings?.location_decimal_places
-              )
+              locationSettings?.location_decimal_places
+            )
             : Number(_datas[found].cost * formObj.currency_rate * _datas[found].quantity).toFixed(
-                locationSettings?.location_decimal_places
-              );
+              locationSettings?.location_decimal_places
+            );
 
       setSelectProducts([..._datas]);
       calculationLabels(formObj.total_expense, formObj.total_tax);
@@ -462,16 +458,16 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
       _rows[i].notifyExpensePrice =
         _ExpVal > 0
           ? +Number(_ExpVal + parseFloat(getCost(sp.cost).toString())).toFixed(
-              locationSettings?.location_decimal_places
-            )
+            locationSettings?.location_decimal_places
+          )
           : 0;
       if (_ExpVal == 0 && _rows[i].costType == 1) _rows[i].costType = 0;
 
       _rows[i].notifyTaxPrice =
         _TaxVal > 0
           ? +Number(_TaxVal + parseFloat(getCost(sp.cost).toString())).toFixed(
-              locationSettings?.location_decimal_places
-            )
+            locationSettings?.location_decimal_places
+          )
           : 0;
       if (_TaxVal == 0 && _rows[i].costType == 2) _rows[i].costType = 0;
 
@@ -515,7 +511,9 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
           }))
       );
 
-      setSuppliers(_suppliers);
+      setSuppliers([{ supplier_id: 0, id: 0, value: 0, label: 'walk-in supplier' }, ..._suppliers]);
+      setFormObj({ ...formObj, supplier_id: 0 });
+
       setProducts(_products);
       setCurrencies(_currencies);
     } catch {
@@ -641,6 +639,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                         isLoading={dataLoading}
                         styles={purchasesSelectStyle}
                         options={suppliers}
+                        defaultValue={suppliers[0]}
                         value={suppliers.filter((sp) => sp.value == formObj.supplier_id)}
                         onChange={(itm) => {
                           setFormObj({ ...formObj, supplier_id: itm.value });
@@ -793,20 +792,11 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
             <div className="col-md-3">
               <div className="form-group">
                 <Select
+                  options={currencies}
                   isLoading={dataLoading}
                   styles={purchasesSelectStyle}
-                  options={currencies}
-                  value={currencies?.filter((f: any) => {
-                    return f.value == formObj.currency_id;
-                  })}
-                  onChange={(itm) => {
-                    setFormObj({
-                      ...formObj,
-                      // currency_code: itm!.,
-                      // currency_rate: itm!.exchange_rate,
-                      // currency_id: itm!.id,
-                    });
-                  }}
+                  value={currencies?.filter((f: any) => f.value == formObj.currency_id)}
+                  onChange={(itm) => { setFormObj({ ...formObj, currency_code: itm!.currency_code, currency_id: itm!.id, }); }}
                 />
                 {errorForm.currency_id && <p className="p-1 h6 text-danger ">Select a Currency</p>}
               </div>
@@ -1072,7 +1062,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                 onClick={(e) => {
                   e.preventDefault();
                   errors = [];
-                  if (formObj.supplier_id == 0) errors.push('supplier id');
+                  if (formObj.supplier_id === null || formObj.supplier_id === undefined || formObj.supplier_id.toString() === '') errors.push('supplier id');
                   if (selectProducts.length == 0) errors.push('selected products');
                   if (formObj.currency_id == 0 || formObj.currency_id == undefined)
                     errors.push('currency id');
@@ -1087,7 +1077,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
 
                   setErrorForm({
                     ...errorForm,
-                    supplier_id: formObj.supplier_id == 0,
+
                     currency_id: formObj.currency_id == 0 || formObj.currency_id == undefined,
                     purchaseStatus: formObj.purchaseStatus.length <= 2,
                     paymentDate: (formObj.paymentDate + '').length <= 2,

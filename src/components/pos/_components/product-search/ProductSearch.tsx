@@ -20,6 +20,7 @@ export default function ProductSearch({ shopId }) {
   const lang = _lang?.pos;
 
   const handleProductSearch = async (inputValue: string) => {
+    if (!inputValue) return;
     const result = await api
       .get(`/products/search/${shopId}?search=${inputValue}`)
       .then(({ data }) => data.result);
@@ -50,6 +51,7 @@ export default function ProductSearch({ shopId }) {
       }
     }
   }, [isProductModalOpen]);
+
   return (
     <Fragment>
       <AsyncSelect

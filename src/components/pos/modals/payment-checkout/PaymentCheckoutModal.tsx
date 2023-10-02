@@ -36,7 +36,7 @@ export default function PaymentCheckoutModal({
     value: string;
     label: string;
     isNew: boolean;
-  }>({ value: '1', label: 'walk-in customer', isNew: false });
+  }>({ value: 0, label: 'walk-in customer', isNew: false });
   const [printReceipt, setPrintReceipt] = useState<any>();
   const [print, setPrint] = useState<boolean>(false);
   const [__WithDiscountFeature__total, set__WithDiscountFeature__total] = useState<number>(0);
@@ -123,7 +123,7 @@ const [sentData, setSentData] = useState<any>()
       notes: data?.notes,
       payment: data?.payment,
       location_id: shopId,
-      customer_id: cart?.customer_id,
+      customer_id: cart?.customer_id || undefined,
       disount_type: cart?.cartDiscountType,
       discount_amount: cart?.cartDiscount,
       tax_type: cart?.cartTaxType,
@@ -240,12 +240,12 @@ const [sentData, setSentData] = useState<any>()
                   <span>
                     {cart?.orderId
                       ? (
-                          totalNoTax +
-                          totalTax -
-                          totalDiscount -
-                          +cart.lastTotal +
-                          +cart.lastDue
-                        )?.toFixed(locationSettings?.location_decimal_places) ?? ''
+                        totalNoTax +
+                        totalTax -
+                        totalDiscount -
+                        +cart.lastTotal +
+                        +cart.lastDue
+                      )?.toFixed(locationSettings?.location_decimal_places) ?? ''
                       : totalAmount}{' '}
                   </span>
                   <span>{locationSettings?.currency_code ?? ''}</span>
