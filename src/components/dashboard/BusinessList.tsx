@@ -53,7 +53,6 @@ const BusinessList = () => {
                               <ButtonGroup className="mb-2 m-buttons-style">
                                 <Button
                                   onClick={() => {
-                                    // redirectToLogin('/shop/' + busi.id + '/products/')
                                     redirectToLogin('/products/');
                                   }}>
                                   <FontAwesomeIcon icon={faFolderOpen} />
