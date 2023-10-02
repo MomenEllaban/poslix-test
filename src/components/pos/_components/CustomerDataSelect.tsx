@@ -53,12 +53,10 @@ export default function CustomerDataSelect({
 
   useEffect(() => {
     const _options = [{ value: '1', label: 'walk-in customer', isNew: false }, ...customers]
-
-
     setOptions(_options)
     setCustomer(_options[0]);
     dispatch(setCartCustomer({ customer_id: _options[0].value, location_id: shopId, }));
-  }, [customers])
+  }, [customers, cart?.customer_id])
 
   return (
     <>

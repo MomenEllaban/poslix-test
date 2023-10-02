@@ -59,6 +59,9 @@ interface IProps {
   customers: { label: string }[];
   customer: { label: string };
   printReceipt: {
+    paid: number | string;
+    due: number | string;
+    tax: number | string;
     id: number | string;
     total_price: number | string;
     discount_amount: number | string;
@@ -305,7 +308,7 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
               </td>
               <td></td>
               <td>
-                {((+printReceipt?.total_price * +printReceipt?.products[0].tax) / 100).toFixed(
+                {((+printReceipt?.total_price * +printReceipt?.tax) / 100).toFixed(
                   locationSettings?.location_decimal_places
                 )}
               </td>
@@ -342,32 +345,26 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
             <tr className="net-amount">
               <td></td>
               <td className="txt-bold">
-                {invoiceDetails.txtAmountpaid}{' '}
-                {invoiceDetails.isMultiLang && invoiceDetails.txtAmountpaid2}
+                {/* {invoiceDetails.txtAmountpaid}{' '}
+                {invoiceDetails.isMultiLang && invoiceDetails.txtAmountpaid2} */}
+                Total Paid
               </td>
               <td></td>
               <td className="txt-bold">
-                {/* {printReceipt.payment[0].amount && Number(totalPaid).toFixed(locationSettings?.location_decimal_places)} */}
+                {printReceipt?.paid}
               </td>
             </tr>
             <tr className="net-amount">
               <td></td>
               <td className="txt-bold">
-                {invoiceDetails.txtTotalDue}{' '}
-                {invoiceDetails.isMultiLang && invoiceDetails.txtTotalDue2}
+                {/* {invoiceDetails.txtTotalDue}{' '}
+                {invoiceDetails.isMultiLang && invoiceDetails.txtTotalDue2} */}
+                Total Due
               </td>
               <td></td>
-              {/* <td className="txt-bold">
-                {Number(
-                  __WithDiscountFeature__total + (totalAmount - subTotal) - (amount && totalPaid)
-                ) > 0
-                  ? Number(
-                      __WithDiscountFeature__total +
-                        +(totalAmount - subTotal) -
-                        (amount && totalPaid)
-                    ).toFixed(locationSettings?.location_decimal_places)
-                  : 0}
-              </td> */}
+              <td className="txt-bold">
+                {printReceipt?.due}
+              </td>
             </tr>
           </thead>
         </table>

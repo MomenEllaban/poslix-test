@@ -94,7 +94,6 @@ const Home: NextPage = ({ shopId: _id }: any) => {
     if (isLoading) return <PosLoader />;
 
     if (pos?.register?.status === 'open') return <PosCart shopId={shopId} />;
-
     return <OpenRegisterView shopId={shopId} setShopId={setShopId} setIsLoading={setIsLoading} />;
   }, [isLoading, pos, shopId, setIsLoading, dispatch]);
 

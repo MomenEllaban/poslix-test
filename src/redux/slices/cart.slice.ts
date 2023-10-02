@@ -117,7 +117,7 @@ const cartSlice = createSlice({
       cart.orderId = null;
       cart.lastTotal = 0;
       cart.lastDue = 0;
-      cart.customer_id = null;
+      cart.customer_id = 1;
 
       localStorage.setItem('cart', JSON.stringify(state));
       localStorage.removeItem('currentQuotation');
@@ -142,7 +142,7 @@ const cartSlice = createSlice({
         cart.orderId = null;
         cart.lastTotal = 0;
         cart.lastDue = 0;
-        cart.customer_id = null;
+        cart.customer_id = 1;
       }
     },
     addMultipleToCart: (state, action) => {

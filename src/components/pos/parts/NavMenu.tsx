@@ -41,7 +41,7 @@ const NavMenu: any = ({ shopId }: any) => {
           hand_cash: 0,
         })
       );
-      const _posRegisterState = JSON.stringify({ state: 'close', hand_cash: 0 });
+      const _posRegisterState = JSON.stringify({ status: 'close', hand_cash: 0 });
       // localStorage.setItem(ELocalStorageKeys.POS_REGISTER_STATE, _posRegisterState);
     }
   };

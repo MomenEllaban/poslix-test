@@ -33,9 +33,14 @@ export const OrderCalcs = ({
   const { taxesList } = useTaxesList(shopId);
   useEffect(() => {
     setTaxList(taxesList?.taxes)
-    const _tax: ITax = taxesList?.taxes?.find((tax: ITax) => tax?.is_primary === 1);
+    const _tax: any = taxesList?.taxes?.filter((tax: any) => tax?.is_primary)
+    const _taxGroup: any = taxesList?.taxes?.filter((tax: any) => tax?.is_tax_group && tax?.is_primary)
+    let finalTax;
+    if(_taxGroup.length > 0) finalTax = _taxGroup[0].tax_group.reduce((total, tax) => total + (tax.amount || 0), 0);
+    else finalTax = _tax[0]?.amount ?? 0
+    console.log(_taxGroup, finalTax)
     dispatch(
-      setCartTax({ tax: _tax?.amount ?? 0, location_id: shopId, type: _tax?.type ?? 'fixed' })
+      setCartTax({ tax: finalTax, location_id: shopId, type: finalTax?.type ?? 'fixed' })
     );
   }, [taxesList])
 
