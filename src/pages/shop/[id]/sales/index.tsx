@@ -329,7 +329,7 @@ export default function SalesList(props: any) {
   // init sales data
   async function initDataPage() {
    if(router.isReady) {
-      const res = await findAllData(`reports/sales/${router.query.id}`)
+      const res = await findAllData(`reports/sales/${router.query.id}?all_data=1`)
       if (res.data.success) {
         setSales(res.data.result);
       //   if (newdata.invoiceDetails != null && newdata.invoiceDetails?.length > 10)
