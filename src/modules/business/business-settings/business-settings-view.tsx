@@ -49,7 +49,6 @@ function LocationUpdateForm({ businessId, location }) {
 
   useEffect(() => {
     initPageData();
-    console.log(location);
   }, []);
 
   const {
@@ -73,7 +72,7 @@ function LocationUpdateForm({ businessId, location }) {
     console.log(data)
     setLoading(true);
     businessService
-      .updateLocationSettings(location.location_id, {data})
+      .updateLocationSettings(location.location_id, data)
       .then((res) => {
         Toastify('success', 'Location Settings Updated Successfully');
 

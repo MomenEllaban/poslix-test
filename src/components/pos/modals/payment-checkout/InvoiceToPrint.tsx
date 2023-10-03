@@ -102,7 +102,7 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
             {(+prod?.pivot?.price).toFixed(this.props.locationSettings?.location_decimal_places)}
           </td>
           <td>
-            {(+prod?.pivot?.tax_amount || 0).toFixed(
+            {(+prod?.pivot?.tax_amount / 100 * +prod?.pivot?.price || 0).toFixed(
               this.props.locationSettings?.location_decimal_places
             )}
           </td>
@@ -127,7 +127,7 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
       __WithDiscountFeature__total,
     } = this.props;
 
-    if (invoiceType === 'A4')
+    if (invoiceType.toLowerCase() === 'a4')
       return (
         <div className="appear-body-item a4">
           <div className="bill2">
@@ -201,10 +201,10 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
                 <tr>
                   {/* <td>{invoiceDetails.txtTax} {invoiceDetails.isMultiLang && invoiceDetails.txtTax2}</td> */}
                   <td colSpan={4} className="txt_bold_invoice">
-                    Sub Total
+                    Total Paid
                   </td>
                   <td>
-                    {Number(+printReceipt?.total_price - +printReceipt?.discount_amount).toFixed(
+                  {Number(printReceipt?.paid).toFixed(
                       locationSettings?.location_decimal_places
                     )}
                   </td>
@@ -224,17 +224,9 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
                     Total Due
                   </td>
                   <td className="txt_bold_invoice">
-                    {Number(
-                      __WithDiscountFeature__total +
-                        (+printReceipt?.total_price - +printReceipt?.discount_amount) -
-                        +printReceipt?.payment[0].amount
-                    ) > 0
-                      ? Number(
-                          __WithDiscountFeature__total +
-                            (+printReceipt?.total_price - +printReceipt?.discount_amount) -
-                            +printReceipt?.payment[0].amount
-                        ).toFixed(locationSettings?.location_decimal_places)
-                      : 0}
+                    {Number(printReceipt?.due).toFixed(
+                      locationSettings?.location_decimal_places
+                    )}
                   </td>
                 </tr>
               </tbody>

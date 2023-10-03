@@ -73,11 +73,12 @@ export default function CustomerDataSelect({
             options={options}
             defaultValue={options[0]}
             onChange={(choice: any) => {
-              setCustomer({ ...choice, isNew: choice.__isNew__ === undefined ? false : true, });
+              console.log(choice)
               dispatch(setCartCustomer({ customer_id: choice.value, location_id: shopId, }));
+              setCustomer({ ...choice, isNew: choice.__isNew__ === undefined ? false : true, });
             }}
             placeholder={lang.customerData.selectCustomer}
-            value={currentCustomer.value || (isOrderEdit > 0 ? { label: orderEditDetails.name, value: '111' } : customer)}
+            value={customer.value ? customer : currentCustomer}
           />
         </div>
         <button
