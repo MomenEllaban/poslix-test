@@ -45,7 +45,6 @@ export const OrderCalcs = ({
       finalTax = _tax[0]?.amount ?? 0
       finalTaxType = _tax[0].type
     }
-    console.log(_taxGroup, finalTax)
     dispatch(
       setCartTax({ tax: finalTax, location_id: shopId, type: finalTaxType ?? 'fixed' })
     );

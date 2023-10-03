@@ -98,6 +98,7 @@ export default function PaymentCheckoutModal({
     control,
     setValue,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm({
     mode: 'onBlur',
@@ -140,7 +141,6 @@ const [sentData, setSentData] = useState<any>()
     api
       .post('/checkout', checkoutData)
       .then((res) => {
-        console.log(res.data.result.data)
         setPrintReceipt({
           ...res.data.result.data,
           due: res.data.result.sales.due,
@@ -150,6 +150,7 @@ const [sentData, setSentData] = useState<any>()
         setPrint(true);
         setShow(false);
         setPaidAmount({ '0': 0 })
+        reset({ payment: [] }); 
       })
       .then(() => {
         dispatch(clearCart({ location_id: shopId }));

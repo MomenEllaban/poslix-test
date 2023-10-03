@@ -71,7 +71,6 @@ const cartSlice = createSlice({
       const { location_id, tax, type } = action.payload;
       const cart = findOrCreateCart(state, location_id);
       cart.cartTax = +tax;
-      console.log(type)
       cart.cartTaxType = type;
       localStorage.setItem('cart', JSON.stringify(state));
     },
@@ -118,7 +117,7 @@ const cartSlice = createSlice({
       cart.orderId = null;
       cart.lastTotal = 0;
       cart.lastDue = 0;
-      cart.customer_id = 1;
+      cart.customer_id = 0;
 
       localStorage.setItem('cart', JSON.stringify(state));
       localStorage.removeItem('currentQuotation');
@@ -143,7 +142,7 @@ const cartSlice = createSlice({
         cart.orderId = null;
         cart.lastTotal = 0;
         cart.lastDue = 0;
-        cart.customer_id = 1;
+        cart.customer_id = 0;
       }
     },
     addMultipleToCart: (state, action) => {

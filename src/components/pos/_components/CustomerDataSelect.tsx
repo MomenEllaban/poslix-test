@@ -69,16 +69,15 @@ export default function CustomerDataSelect({
           <Select
             isLoading={customers.length === 0}
             styles={selectStyle}
-            isDisabled={isOrderEdit > 0 || (cart?.customer_id > 0 && cart.cartItems.length > 0) || cart?.orderId > 0}
+            isDisabled={isOrderEdit > 0 || (cart?.customer_id >= 0 && cart.cartItems.length > 0) || cart?.orderId > 0}
             options={options}
             defaultValue={options[0]}
             onChange={(choice: any) => {
-              console.log(choice)
               dispatch(setCartCustomer({ customer_id: choice.value, location_id: shopId, }));
               setCustomer({ ...choice, isNew: choice.__isNew__ === undefined ? false : true, });
             }}
             placeholder={lang.customerData.selectCustomer}
-            value={customer.value ? customer : currentCustomer}
+            value={+customer.value > 0 && cart.customer_id > 0 ? customer : currentCustomer}
           />
         </div>
         <button
