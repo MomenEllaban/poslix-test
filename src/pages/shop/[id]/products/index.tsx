@@ -73,7 +73,7 @@ const Product: NextPage = (props: any) => {
   const { id } = props;
   const [shopId, setShopId] = useState('');
   const myLoader = (img: any) => img.src;
-  const { locationSettings, setLocationSettings } = useUser();
+  const [locationSettings, setLocationSettings] = useState<any>();
   const dataGridRef = useRef(null);
   const router = useRouter();
   const [products, setProducts] = useState<
@@ -154,8 +154,7 @@ const Product: NextPage = (props: any) => {
         else {
           const getPrices = []
           row.variations.map(va => getPrices.push(va.price))
-          console.log(getPrices);
-          
+          console.log(locationSettings)
           return (
             Number(Math.min(...getPrices)).toFixed(locationSettings?.location_decimal_places)
             + ' - ' +
@@ -302,12 +301,12 @@ const Product: NextPage = (props: any) => {
       setLocationSettings(
         _locs[
           _locs.findIndex((loc: any) => {
-            return loc.value == shopId;
+            return loc.location_id == +id;
           })
         ]
       );
     
-  }, []);
+  }, [router.asPath]);
 
   const handleDeleteFuc = (result: boolean, msg: string, section: string) => {
     initDataPage();
