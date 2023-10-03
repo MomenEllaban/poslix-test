@@ -238,7 +238,7 @@ export default function SalesListTable({ id, shopId, rules, salesList }: any) {
                       <td>{Number(line.pivot.qty).toFixed(0)}</td>
                       <td>{line.name}</td>
                       <td></td>
-                      <td>{+line.pivot.qty * +line.pivot.price}</td>
+                      <td>{Number(+line.pivot.qty * +line.pivot.price).toFixed(locationSettings?.location_decimal_places)}</td>
                     </tr>
                   );
                 })}
@@ -249,7 +249,7 @@ export default function SalesListTable({ id, shopId, rules, salesList }: any) {
                 </td>
                 <td></td>
                 <td>
-                  {((+selectRow.sub_total * +lines[0]?.pivot.tax_amount) / 100).toFixed(
+                  {(+selectRow.sub_total / (1 + +selectRow?.tax/100) * +selectRow?.tax/100).toFixed(
                     locationSettings?.location_decimal_places
                   )}
                 </td>
@@ -272,6 +272,30 @@ export default function SalesListTable({ id, shopId, rules, salesList }: any) {
                 <td></td>
                 <td className="txt-bold">
                   {Number(selectRow.sub_total - +selectRow?.discount).toFixed(
+                    locationSettings?.location_decimal_places
+                  )}
+                </td>
+              </tr>
+              <tr className="net-amount">
+                <td></td>
+                <td className="txt-bold">
+                  Total Paid
+                </td>
+                <td></td>
+                <td className="txt-bold">
+                  {Number(selectRow.payed).toFixed(
+                    locationSettings?.location_decimal_places
+                  )}
+                </td>
+              </tr>
+              <tr className="net-amount">
+                <td></td>
+                <td className="txt-bold">
+                  Total Due
+                </td>
+                <td></td>
+                <td className="txt-bold">
+                  {Number(selectRow.discount).toFixed(
                     locationSettings?.location_decimal_places
                   )}
                 </td>
@@ -380,9 +404,9 @@ export default function SalesListTable({ id, shopId, rules, salesList }: any) {
                   <tr key={index}>
                     <td>{line.name}</td>
                     <td>{Number(line.pivot.qty).toFixed(0)}</td>
-                    <td>{line.pivot.price}</td>
-                    <td>{line.pivot.tax_amount}</td>
-                    <td>{+line.pivot.qty * +line.pivot.price}</td>
+                    <td>{Number(line.pivot.price).toFixed(locationSettings?.location_decimal_places)}</td>
+                    <td>{Number(+line.pivot.tax_amount / 100 * +line.pivot.price).toFixed(locationSettings?.location_decimal_places)}</td>
+                    <td>{Number(+line.pivot.qty * +line.pivot.price).toFixed(locationSettings?.location_decimal_places)}</td>
                   </tr>
                 );
               })}
@@ -400,6 +424,22 @@ export default function SalesListTable({ id, shopId, rules, salesList }: any) {
                 </td>
                 <td className="txt_bold_invoice">
                   {Number(selectRow.sub_total).toFixed(locationSettings?.location_decimal_places)}
+                </td>
+              </tr>
+              <tr>
+                <td colSpan={4} className="txt_bold_invoice">
+                  Total Paid
+                </td>
+                <td className="txt_bold_invoice">
+                  {Number(selectRow.payed).toFixed(locationSettings?.location_decimal_places)}
+                </td>
+              </tr>
+              <tr>
+                <td colSpan={4} className="txt_bold_invoice">
+                  Total Due
+                </td>
+                <td className="txt_bold_invoice">
+                  {Number(selectRow.due).toFixed(locationSettings?.location_decimal_places)}
                 </td>
               </tr>
             </tbody>

@@ -141,6 +141,13 @@ const [sentData, setSentData] = useState<any>()
     api
       .post('/checkout', checkoutData)
       .then((res) => {
+        reset({ payment: [
+          {
+            payment_id: '1',
+            amount: totalAmount?.toString() ?? '0',
+            note: '',
+          },
+        ], });
         setPrintReceipt({
           ...res.data.result.data,
           due: res.data.result.sales.due,
@@ -150,7 +157,6 @@ const [sentData, setSentData] = useState<any>()
         setPrint(true);
         setShow(false);
         setPaidAmount({ '0': 0 })
-        reset({ payment: [] }); 
       })
       .then(() => {
         dispatch(clearCart({ location_id: shopId }));
@@ -325,7 +331,6 @@ const [sentData, setSentData] = useState<any>()
                         className="h-60 w-100 mt-auto align-items-center gap-1 d-flex flex-row"
                         onClick={() => {
                           remove(idx);
-
                           setPaidAmount((prev) => {
                             const { [idx]: _, ...rest } = prev;
                             return rest;
