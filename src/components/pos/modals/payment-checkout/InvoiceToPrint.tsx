@@ -300,7 +300,7 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
               </td>
               <td></td>
               <td>
-                {((+printReceipt?.total_price * +printReceipt?.tax) / 100).toFixed(
+                {((+printReceipt?.total_price * (+printReceipt?.tax/100))).toFixed(
                   locationSettings?.location_decimal_places
                 )}
               </td>

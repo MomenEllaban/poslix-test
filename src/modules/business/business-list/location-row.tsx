@@ -37,7 +37,7 @@ export default function LocationRow({ location, locations, businessId }) {
     <tr key={location.location_id}>
       <th scope="row"></th>
       <td>{location.location_name}</td>
-      <td className="text-center">{location.location_statuss}</td>
+      <td className="text-center">{location.location_status}</td>
 
       <td>
         <ButtonGroup className="mb-2 m-buttons-style">
