@@ -39,14 +39,12 @@ export const OrderCalcs = ({
     let finalTaxType;
     if(_taxGroup.length > 0) {
       finalTax = _taxGroup[0].tax_group.reduce((total, tax) => total + (tax.amount || 0), 0);
-      finalTaxType = _taxGroup[0].type
     }
     else {
       finalTax = _tax[0]?.amount ?? 0
-      finalTaxType = _tax[0].type
     }
     dispatch(
-      setCartTax({ tax: finalTax, location_id: shopId, type: finalTaxType ?? 'fixed' })
+      setCartTax({ tax: finalTax, location_id: shopId, type: 'percentage' })
     );
   }, [taxesList])
 

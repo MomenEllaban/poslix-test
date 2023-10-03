@@ -73,23 +73,22 @@ export default function SalesListTable({ shopId, rules, salesList }: any) {
     { field: 'id', headerName: '#', minWidth: 50 },
     {
       field: 'contact_name', headerName: 'Customer Name', flex: 1, renderCell({ row }) {
-      console.log(row.contact_name)
-      return  row.contact_name!==" " ? row.contact_name:"walk-in customer"
+      return  row.contact_name!==" " ? row.contact_name : "walk-in customer"
     } },
     { field: 'mobile', headerName: 'Mobile', flex: 1, disableColumnMenu: true },
     { field: 'date', headerName: 'Sale Date', flex: 1 },
     // { field: "total_price", headerName: "Final Total ", flex: 1 },
     {
-      field: 'sub_total',
+      field: 'total',
       headerName: 'Final Total ',
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) =>
-        Number(+row.sub_total).toFixed(locationSettings?.location_decimal_places),
+        Number(+row.total).toFixed(locationSettings?.location_decimal_places),
     },
     { field: 'payed', headerName: 'Amount paid', flex: 1 },
     {
       flex: 1,
-      field: 'TotalDue',
+      field: 'due',
       headerName: 'Total Due ',
       renderCell: ({ row }: Partial<GridRowParams>) =>
         Number(+row.sub_total - +row.payed) > 0
