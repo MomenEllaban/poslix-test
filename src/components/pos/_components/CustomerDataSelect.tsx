@@ -59,7 +59,7 @@ export default function CustomerDataSelect({
     const _options = [{ value: 0, label: 'walk-in customer', isNew: false }, ...customers]
     setOptions(_options)
     setCustomer(_options[0]);
-    dispatch(setCartCustomer({ customer_id: _options[0].value, location_id: shopId, }));
+    if (!cart?.customer_id) dispatch(setCartCustomer({ customer_id: _options[0].value, location_id: shopId, }));
   }, [customers])
 
   return (
@@ -75,7 +75,6 @@ export default function CustomerDataSelect({
             onChange={(choice: any) => {
               dispatch(setCartCustomer({ customer_id: choice.value, location_id: shopId, }));
               setCustomer({ ...choice, isNew: choice.__isNew__ === undefined ? false : true, });
-              console.log('test', choice)
             }}
             placeholder={lang.customerData.selectCustomer}
             value={+customer.value > 0 && cart.customer_id > 0 ? customer : currentCustomer}

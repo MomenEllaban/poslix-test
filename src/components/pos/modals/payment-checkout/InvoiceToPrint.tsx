@@ -343,7 +343,7 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
               </td>
               <td></td>
               <td className="txt-bold">
-                {printReceipt?.paid}
+                {Number(printReceipt?.paid).toFixed(this.props.locationSettings?.location_decimal_places)}
               </td>
             </tr>
             <tr className="net-amount">
@@ -355,7 +355,7 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
               </td>
               <td></td>
               <td className="txt-bold">
-                {printReceipt?.due}
+                {Number(printReceipt?.due).toFixed(this.props.locationSettings?.location_decimal_places)}
               </td>
             </tr>
           </thead>
