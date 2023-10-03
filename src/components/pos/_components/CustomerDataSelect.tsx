@@ -75,6 +75,7 @@ export default function CustomerDataSelect({
             onChange={(choice: any) => {
               dispatch(setCartCustomer({ customer_id: choice.value, location_id: shopId, }));
               setCustomer({ ...choice, isNew: choice.__isNew__ === undefined ? false : true, });
+              console.log('test', choice)
             }}
             placeholder={lang.customerData.selectCustomer}
             value={+customer.value > 0 && cart.customer_id > 0 ? customer : currentCustomer}

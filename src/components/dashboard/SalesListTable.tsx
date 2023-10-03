@@ -27,11 +27,11 @@ import { findAllData } from 'src/services/crud.api';
 import { convertDateStringToDateAndTime } from '../../models/data';
 import SalesPaymentModal from '../pos/modals/SalesPaymentModal';
 
-export default function SalesListTable({ shopId, rules, salesList }: any) {
+export default function SalesListTable({ id, shopId, rules, salesList }: any) {
   const dispatch = useAppDispatch();
   const componentRef = useRef(null);
 
-  const { locationSettings, setLocationSettings } = useUser();
+  const [locationSettings, setLocationSettings] = useState<any>();
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const handleClose = () => {
@@ -77,7 +77,6 @@ export default function SalesListTable({ shopId, rules, salesList }: any) {
     } },
     { field: 'mobile', headerName: 'Mobile', flex: 1, disableColumnMenu: true },
     { field: 'date', headerName: 'Sale Date', flex: 1 },
-    // { field: "total_price", headerName: "Final Total ", flex: 1 },
     {
       field: 'total',
       headerName: 'Final Total ',
@@ -85,15 +84,16 @@ export default function SalesListTable({ shopId, rules, salesList }: any) {
       renderCell: ({ row }: Partial<GridRowParams>) =>
         Number(+row.total).toFixed(locationSettings?.location_decimal_places),
     },
-    { field: 'payed', headerName: 'Amount paid', flex: 1 },
+    { field: 'payed', headerName: 'Amount paid', flex: 1,
+      renderCell: ({ row }: Partial<GridRowParams>) =>
+        Number(+row.payed).toFixed(locationSettings?.location_decimal_places)
+    },
     {
       flex: 1,
       field: 'due',
-      headerName: 'Total Due ',
+      headerName: 'Total Due',
       renderCell: ({ row }: Partial<GridRowParams>) =>
-        Number(+row.sub_total - +row.payed) > 0
-          ? Number(+row.sub_total - +row.payed).toFixed(locationSettings?.location_decimal_places)
-          : 0,
+        Number(+row.due).toFixed(locationSettings?.location_decimal_places)
     },
     {
       flex: 1,
@@ -482,17 +482,16 @@ export default function SalesListTable({ shopId, rules, salesList }: any) {
   };
 
   useEffect(() => {
-    var _locs = JSON.parse(localStorage.getItem('locations') || '[]');
+    let _locs = JSON.parse(localStorage.getItem('locations') || '[]');
     if (_locs.toString().length > 10)
       setLocationSettings(
         _locs[
           _locs.findIndex((loc: any) => {
-            return loc.value == shopId;
+            return loc.value == id;
           })
         ]
       );
     
-
     initDataPage();
   }, [router.asPath]);
 
@@ -788,4 +787,11 @@ export default function SalesListTable({ shopId, rules, salesList }: any) {
       />
     </>
   );
+}
+
+export async function getServerSideProps({ params }) {
+  const { id } = params;
+  return {
+    props: { id },
+  };
 }
