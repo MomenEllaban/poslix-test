@@ -6,12 +6,9 @@ import { deleteData,deleteDataWithLocID } from 'src/services/crud.api';
 
 export default function AlertDialog(props: any) {
     const { url, id, shopId, type, subType, section,locatiooID } = props
-    console.log(shopId,locatiooID,id)
     const handleClose = () => props.alertFun(false, '');
     async function deletePrint() {
         const res = await deleteDataWithLocID(url,id,locatiooID)
-        console.log(res.data.result.status);
-        
         if (res.data.status) {
             props.alertFun(true, "Item successfully deleted!!", section)
         } else

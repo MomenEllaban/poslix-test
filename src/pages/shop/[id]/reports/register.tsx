@@ -33,7 +33,8 @@ const initialDetailsState: IDetails = {
 function SalesReport() {
   const router = useRouter();
   const shopId = router.query.id ?? '';
-  const { locationSettings, setLocationSettings, invoicDetails } = useUser();
+  const { invoicDetails } = useUser();
+  const [locationSettings, setLocationSettings] = useState<any>()
 
   const componentRef = useRef(null);
 
@@ -45,8 +46,7 @@ function SalesReport() {
   const [sales, setSales] = useState<IOpenCloseReport[]>([]);
   const [details, setDetails] = useState(initialDetailsState);
 
-  const columns: GridColDef<IOpenCloseReport>[] = useMemo(
-    () => [
+  const columns: GridColDef<IOpenCloseReport>[] = [
       { field: 'id', headerName: '#', maxWidth: 72 },
       {
         field: 'name',
@@ -66,35 +66,35 @@ function SalesReport() {
         headerName: 'hand cash',
         flex: 1,
         renderCell: ({ row }: Partial<GridRowParams>) =>
-          +Number(row.hand_cash).toFixed(locationSettings?.location_decimal_places),
+          Number(row.hand_cash).toFixed(locationSettings?.location_decimal_places),
       },
       {
         field: 'total_card_slips',
         headerName: 'Card',
         flex: 1,
         renderCell: ({ row }: Partial<GridRowParams>) =>
-          +Number(row.cart).toFixed(locationSettings?.location_decimal_places),
+          Number(row.cart).toFixed(locationSettings?.location_decimal_places),
       },
       {
         field: 'total_cash',
         headerName: 'Cash',
         flex: 1,
         renderCell: ({ row }: Partial<GridRowParams>) =>
-          +Number(row.cash).toFixed(locationSettings?.location_decimal_places),
+          Number(row.cash).toFixed(locationSettings?.location_decimal_places),
       },
       {
         field: 'total_cheques',
         headerName: 'Cheques',
         flex: 1,
         renderCell: ({ row }: Partial<GridRowParams>) =>
-          +Number(row.cheque).toFixed(locationSettings?.location_decimal_places),
+          Number(row.cheque).toFixed(locationSettings?.location_decimal_places),
       },
       {
         field: 'total_bank',
         headerName: 'Bank',
         flex: 1,
         renderCell: ({ row }: Partial<GridRowParams>) =>
-          +Number(row.bank).toFixed(locationSettings?.location_decimal_places),
+          Number(row.bank).toFixed(locationSettings?.location_decimal_places),
       },
       {
         field: 'date',
@@ -110,9 +110,7 @@ function SalesReport() {
         disableColumnMenu: true,
         renderCell: ({ row }) => row.note?.trim() || '---',
       },
-    ],
-    [locationSettings]
-  );
+    ];
 
   async function initDataPage() {
     setIsLoadItems(true);

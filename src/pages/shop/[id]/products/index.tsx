@@ -154,7 +154,6 @@ const Product: NextPage = (props: any) => {
         else {
           const getPrices = []
           row.variations.map(va => getPrices.push(va.price))
-          console.log(locationSettings)
           return (
             Number(Math.min(...getPrices)).toFixed(locationSettings?.location_decimal_places)
             + ' - ' +
