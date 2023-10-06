@@ -32,6 +32,7 @@ import { createNewData, findAllData } from 'src/services/crud.api';
 import api from 'src/utils/app-api';
 import { darkModeContext } from '../../../../context/DarkModeContext';
 import styles from './table.module.css';
+import { grey } from '@mui/material/colors';
 
 // const CustomToolbar = ({
 //   importFileClickHandler,
@@ -176,6 +177,9 @@ const Product: NextPage = (props: any) => {
       flex: 0.5,
       headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
+      renderCell: ({ row }: Partial<GridRowParams>) => (
+        <p>{row.stock} <span style={{fontSize: '13px', color: 'grey'}}>[{row.total_qty_sold}]</span></p>
+      )
     },
     {
       field: 'action',

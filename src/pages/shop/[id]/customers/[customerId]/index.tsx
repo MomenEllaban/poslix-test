@@ -51,13 +51,18 @@ const Customer: NextPage = ({ shopId, rules, customerId }: any) => {
   const columns: GridColDef[] = [
     { field: 'id', headerName: '#', minWidth: 50 },
     {
-      field: 'customer_name', headerName: 'Customer Name', flex: 1, renderCell: ({ row }: Partial<GridRowParams>) => {
-        return customerInfo.first_name + ' ' + customerInfo.last_name
-      }
+      field: 'customer_name',
+      headerName: 'Customer Name',
+      flex: 1,
+      renderCell: ({ row }: Partial<GridRowParams>) => {
+        return customerInfo.first_name + ' ' + customerInfo.last_name;
+      },
     },
     { field: 'sale_date', headerName: 'Quotation Date', flex: 1 },
     {
-      flex: 1,field: 'status',headerName: 'Status',
+      flex: 1,
+      field: 'status',
+      headerName: 'Status',
       renderCell: ({ row }: Partial<GridRowParams>) => {
         if (+(+row.total_price - +row.amount) === 0) {
           return <div className="sty_Accepted">Accepted</div>;
@@ -77,21 +82,21 @@ const Customer: NextPage = ({ shopId, rules, customerId }: any) => {
       disableExport: true,
       renderCell: ({ row }: Partial<GridRowParams>) => (
         <ButtonGroup className="mb-2 m-buttons-style">
-          <Button onClick={() => { }}>
+          <Button onClick={() => {}}>
             <FontAwesomeIcon icon={faPenToSquare} />
           </Button>
           {true && (
-            <Button onClick={() => { }}>
+            <Button onClick={() => {}}>
               <FontAwesomeIcon icon={faTrash} />
             </Button>
           )}
-          <Button onClick={() => { }}>
+          <Button onClick={() => {}}>
             <FontAwesomeIcon icon={faEye} />
           </Button>
-          <Button onClick={() => { }}>
+          <Button onClick={() => {}}>
             <FontAwesomeIcon icon={faCheck} />
           </Button>
-          <Button onClick={() => { }}>
+          <Button onClick={() => {}}>
             <FontAwesomeIcon icon={faXmark} />
           </Button>
         </ButtonGroup>
@@ -103,13 +108,11 @@ const Customer: NextPage = ({ shopId, rules, customerId }: any) => {
   async function initDataPage() {
     if (router.query.customerId) {
       setIsLoading(true);
-      
       const res = await findAllData(`customers/${router.query.customerId}/show`);
       if (res.data.success) {
         setSales({ data: res.data.result?.sales });
         setQuotations([...res.data.result?.quotations]);
         const selCustomer = res.data.result?.profile;
-        console.log(sales,"hooooooooooooooooooooooo")
         setCustomerInfo({ ...customerTemplate, ...selCustomer });
       } else {
         Toastify('error', 'has error, Try Again...');
