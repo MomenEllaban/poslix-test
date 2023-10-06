@@ -20,10 +20,11 @@ import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
 
 type TProduct = { id: number; name: string; sku: string; type: string; qty: number };
 
-const Suppliers: NextPage = () => {
+const Suppliers: NextPage = (props: any) => {
   const router = useRouter();
   const { locationSettings, setLocationSettings } = useUser();
-  const shopId = (router.query.id as string) ?? '';
+  const { id } = props
+  const shopId = id;
 
   const { isLoading: isSuppliersLoading, suppliersList, error, refetch } = useSuppliersList(shopId);
 
@@ -39,7 +40,6 @@ const Suppliers: NextPage = () => {
   };
 
   const handleDeleteSupplier = (id: string | number) => {
-    console.log("del id ", id)
     setIsLoading(true);
     api
       .delete(`/suppliers/${id}`)
@@ -169,3 +169,9 @@ const Suppliers: NextPage = () => {
   );
 };
 export default Suppliers;
+export async function getServerSideProps({ params }) {
+  const { id } = params;
+  return {
+    props: { id },
+  };
+}
