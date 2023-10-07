@@ -50,7 +50,7 @@ export function OpenRegisterView({ setShopId, shopId: _shopId, setIsLoading }) {
         ELocalStorageKeys.POS_REGISTER_STATE,
         JSON.stringify({ status: 'open', hand_cash: +cashHand })
       );
-      router.replace(`/pos/${currentShopId}`);
+      router.replace(`/pos/${currentShopId}`).then(() => router.reload());
     } else alert('error..Try Again');
     setIsLoading(false);
   }
