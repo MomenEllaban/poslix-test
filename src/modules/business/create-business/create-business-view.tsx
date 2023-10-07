@@ -66,6 +66,7 @@ export default function CreateBusinessView() {
           business_id: res.data.result.id,
           name: `${data.name} - location 1`,
           state: 'egy',
+          status: 'soon',
           currency_id: 35,
           decimal: 1,
         });

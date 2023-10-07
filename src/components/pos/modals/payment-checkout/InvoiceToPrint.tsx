@@ -293,6 +293,8 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
               </th>
             </tr>
             {this.perperdForPrint(printReceipt?.products)}
+            <tr style={{borderTop: '2px', height: '2px'}}></tr>
+            <tr></tr>
             <tr className="net-amount">
               <td></td>
               <td>

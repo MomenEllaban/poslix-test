@@ -67,6 +67,12 @@ export default function PaymentCheckoutModal({
     : totalNoTax + totalTax - totalDiscount - +cart?.lastTotal || 0 + +cart?.lastDue || 0;
   const [calcTotal, setCalcTotal] = useState<any>(totalAmount);
   useEffect(() => {
+    reset({payment: []})
+      append({
+        payment_id: '1',
+        amount: '',
+        note: '',
+      })
     setValue(`payment.0.amount`, totalAmount.toString());
     setPaidAmount({ '0': totalAmount });
     setCalcTotal(totalAmount);
@@ -141,13 +147,6 @@ const [sentData, setSentData] = useState<any>()
     api
       .post('/checkout', checkoutData)
       .then((res) => {
-        reset({ payment: [
-          {
-            payment_id: '1',
-            amount: totalAmount?.toString() ?? '0',
-            note: '',
-          },
-        ], });
         setPrintReceipt({
           ...res.data.result.data,
           due: res.data.result.sales.due,
