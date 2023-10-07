@@ -242,6 +242,7 @@ export default function SalesListTable({ id, shopId, rules, salesList }: any) {
                     </tr>
                   );
                 })}
+              <tr style={{borderTop: '2px', height: '2px'}}></tr>
               <tr className="net-amount">
                 <td></td>
                 <td>

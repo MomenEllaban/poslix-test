@@ -151,7 +151,8 @@ const [sentData, setSentData] = useState<any>()
           ...res.data.result.data,
           due: res.data.result.sales.due,
           paid: res.data.result.sales.payed,
-          tax: res.data.result.sales.tax
+          tax: res.data.result.sales.tax,
+          customerName: res.data.result.sales.data[0].contact_name
         });
         setPrint(true);
         setShow(false);

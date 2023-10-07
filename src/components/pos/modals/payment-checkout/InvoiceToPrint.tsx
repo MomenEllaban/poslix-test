@@ -67,6 +67,7 @@ interface IProps {
     discount_amount: number | string;
     payment: IPayment[];
     products: IProductWithPivot[];
+    customerName: string;
   };
   locationSettings: ILocationSettings;
   __WithDiscountFeature__total: number;
@@ -169,7 +170,7 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
               </div>
               <div className="right_up_of_table">
                 <div>Billed To</div>
-                <div>{customers.length > 0 ? customers[0].label : customer.label}</div>
+                <div>{printReceipt?.customerName}</div>
                 {/* <span>Billed To</span> */}
               </div>
             </div>
@@ -257,7 +258,7 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
               {invoiceDetails.txtCustomer}{' '}
               {invoiceDetails.isMultiLang && invoiceDetails.txtCustomer2}
             </div>
-            <div>{customers.length > 0 ? customers[0].label : customer.label}</div>
+            <div>{printReceipt?.customerName}</div>
           </div>
           <div className="flex justify-between">
             <div>
