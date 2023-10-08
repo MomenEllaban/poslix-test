@@ -2,7 +2,7 @@ import { faCancel } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { AdminLayout } from '@layout';
 import { ITokenVerfy, IinvoiceDetails } from '@models/common-model';
-import { defaultInvoiceDetials } from '@models/data';
+import { defaultDetails, defaultInvoiceDetials } from '@models/data';
 import * as cookie from 'cookie';
 import { deleteObject, getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
 import storage from 'firebaseConfig';
@@ -24,19 +24,22 @@ const Appearance: NextPage = (props: any) => {
   const { shopId, id } = props;
   const router = useRouter();
   const [key, setKey] = useState('Recipt');
-  const [formObj, setFormObj] = useState<IinvoiceDetails>(defaultInvoiceDetials);
+  const [formObj, setFormObj] = useState<any>(defaultDetails);
   const [isLoading, setIsLoading] = useState(true);
   const [isOpenPriceDialog, setIsOpenPriceDialog] = useState(false);
   const [img, setImg] = useState<any>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
 
   async function initDataPage() {
-    const res = await findAllData(`appearance/${router.query.id}`)
+    const res = await findAllData(`appearance/${router.query.id}`);
     if (!res.data.success) {
       Toastify('error', 'Somthing wrong!!, try agian');
       return;
     }
+    console.log(res.data.result);
     setFormObj({ ...formObj, ...res.data.result });
+    console.log(formObj);
+    console.log(formObj.en.name);
     // if (res.data.result.details != undefined && res.data.result.details != null && res.data.result.details.length > 10) {
     //   const _data= JSON.parse(res.data.details);
     // }
@@ -45,14 +48,13 @@ const Appearance: NextPage = (props: any) => {
   async function editInvoice(url = '0') {
     if (isLoading) return;
     setIsLoading(true);
-    const res = await createNewData(`appearance`, { ...formObj, location_id: router.query.id })
-    if (!res.data.success) {
-      Toastify('error', 'Somthing wrong!!, try agian');
-      return;
+    const res = await createNewData(`appearance`, { ...formObj, location_id: router.query.id });
+    if (res.data.success) {
+      Toastify('success', 'successfully updated');
+      setPreviewUrl('');
     }
+    Toastify('error', 'Somthing wrong!!, try agian');
     setIsLoading(false);
-    setPreviewUrl('');
-    Toastify('success', 'successfully updated');
   }
   const imageChange = (e: any) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -65,7 +67,7 @@ const Appearance: NextPage = (props: any) => {
   }, [router.asPath]);
 
   useEffect(() => {
-    handleUpload()
+    handleUpload();
   }, [previewUrl]);
   const handleRemoveImg = () => {
     if (img) {
@@ -81,7 +83,7 @@ const Appearance: NextPage = (props: any) => {
   };
 
   const handleSave = () => {
-    if (previewUrl === '') delete formObj.logo
+    if (previewUrl === '') delete formObj.logo;
     editInvoice();
   };
   async function handleUpload() {
@@ -169,13 +171,38 @@ const Appearance: NextPage = (props: any) => {
                                 <input
                                   type="text"
                                   className="form-control"
-                                  value={formObj.name}
+                                  value={formObj?.en?.name}
                                   min={0}
                                   step={0.1}
                                   onChange={(e) => {
                                     setFormObj({
                                       ...formObj,
-                                      name: e.target.value,
+                                      en: {
+                                        ...formObj.en,
+                                        name: e.target.value,
+                                      },
+                                    });
+                                  }}
+                                />
+                              </div>
+
+                              <div className="form-group2">
+                                <label>
+                                  Email: <span className="text-danger">*</span>
+                                </label>
+                                <input
+                                  type="text"
+                                  className="form-control"
+                                  value={formObj?.en?.email}
+                                  min={0}
+                                  step={0.1}
+                                  onChange={(e) => {
+                                    setFormObj({
+                                      ...formObj,
+                                      en: {
+                                        ...formObj.en,
+                                        email: e.target.value,
+                                      },
                                     });
                                   }}
                                 />
@@ -188,17 +215,65 @@ const Appearance: NextPage = (props: any) => {
                                 <input
                                   type="text"
                                   className="form-control"
-                                  value={formObj.tell}
+                                  value={formObj?.en?.tell}
                                   min={0}
                                   step={0.1}
                                   onChange={(e) => {
                                     setFormObj({
                                       ...formObj,
-                                      tell: e.target.value,
+                                      en: {
+                                        ...formObj.en,
+                                        tell: e.target.value,
+                                      },
                                     });
                                   }}
                                 />
                               </div>
+
+                              <div className="form-group2">
+                                <label>
+                                  Address: <span className="text-danger">*</span>
+                                </label>
+                                <input
+                                  type="text"
+                                  className="form-control"
+                                  value={formObj?.en?.address}
+                                  min={0}
+                                  step={0.1}
+                                  onChange={(e) => {
+                                    setFormObj({
+                                      ...formObj,
+                                      en: {
+                                        ...formObj.en,
+                                        address: e.target.value,
+                                      },
+                                    });
+                                  }}
+                                />
+                              </div>
+
+                              <div className="form-group2">
+                                <label>
+                                  VAT Number: <span className="text-danger">*</span>
+                                </label>
+                                <input
+                                  type="text"
+                                  className="form-control"
+                                  value={formObj?.en?.vatNumber}
+                                  min={0}
+                                  step={0.1}
+                                  onChange={(e) => {
+                                    setFormObj({
+                                      ...formObj,
+                                      en: {
+                                        ...formObj.en,
+                                        vatNumber: e.target.value,
+                                      },
+                                    });
+                                  }}
+                                />
+                              </div>
+
                               <div className="form-group2">
                                 <label>
                                   Customer: <span className="text-danger">*</span>
@@ -206,11 +281,14 @@ const Appearance: NextPage = (props: any) => {
                                 <input
                                   type="text"
                                   className="form-control"
-                                  value={formObj.txtCustomer}
+                                  value={formObj?.en?.txtCustomer}
                                   onChange={(e) => {
                                     setFormObj({
                                       ...formObj,
-                                      txtCustomer: e.target.value,
+                                      en: {
+                                        ...formObj.en,
+                                        txtCustomer: e.target.value,
+                                      },
                                     });
                                   }}
                                 />
@@ -222,11 +300,14 @@ const Appearance: NextPage = (props: any) => {
                                 <input
                                   type="text"
                                   className="form-control"
-                                  value={formObj.orderNo}
+                                  value={formObj?.en?.orderNo}
                                   onChange={(e) => {
                                     setFormObj({
                                       ...formObj,
-                                      orderNo: e.target.value,
+                                      en: {
+                                        ...formObj.en,
+                                        orderNo: e.target.value,
+                                      },
                                     });
                                   }}
                                 />
@@ -238,11 +319,14 @@ const Appearance: NextPage = (props: any) => {
                                 <input
                                   type="text"
                                   className="form-control"
-                                  value={formObj.txtDate}
+                                  value={formObj?.en?.txtDate}
                                   onChange={(e) => {
                                     setFormObj({
                                       ...formObj,
-                                      txtDate: e.target.value,
+                                      en: {
+                                        ...formObj.en,
+                                        txtDate: e.target.value,
+                                      },
                                     });
                                   }}
                                 />
@@ -254,11 +338,14 @@ const Appearance: NextPage = (props: any) => {
                                 <input
                                   type="text"
                                   className="form-control"
-                                  value={formObj.txtQty}
+                                  value={formObj?.en?.txtQty}
                                   onChange={(e) => {
                                     setFormObj({
                                       ...formObj,
-                                      txtQty: e.target.value,
+                                      en: {
+                                        ...formObj.en,
+                                        txtQty: e.target.value,
+                                      },
                                     });
                                   }}
                                 />
@@ -270,11 +357,14 @@ const Appearance: NextPage = (props: any) => {
                                 <input
                                   type="text"
                                   className="form-control"
-                                  value={formObj.txtItem}
+                                  value={formObj?.en?.txtItem}
                                   onChange={(e) => {
                                     setFormObj({
                                       ...formObj,
-                                      txtItem: e.target.value,
+                                      en: {
+                                        ...formObj.en,
+                                        txtItem: e.target.value,
+                                      },
                                     });
                                   }}
                                 />
@@ -286,11 +376,14 @@ const Appearance: NextPage = (props: any) => {
                                 <input
                                   type="text"
                                   className="form-control"
-                                  value={formObj.txtAmount}
+                                  value={formObj?.en?.txtAmount}
                                   onChange={(e) => {
                                     setFormObj({
                                       ...formObj,
-                                      txtAmount: e.target.value,
+                                      en: {
+                                        ...formObj.en,
+                                        txtAmount: e.target.value,
+                                      },
                                     });
                                   }}
                                 />
@@ -302,11 +395,14 @@ const Appearance: NextPage = (props: any) => {
                                 <input
                                   type="text"
                                   className="form-control"
-                                  value={formObj.txtTax}
+                                  value={formObj?.en?.txtTax}
                                   onChange={(e) => {
                                     setFormObj({
                                       ...formObj,
-                                      txtTax: e.target.value,
+                                      en: {
+                                        ...formObj.en,
+                                        txtTax: e.target.value,
+                                      },
                                     });
                                   }}
                                 />
@@ -318,11 +414,14 @@ const Appearance: NextPage = (props: any) => {
                                 <input
                                   type="text"
                                   className="form-control"
-                                  value={formObj.txtTotal}
+                                  value={formObj?.en?.txtTotal}
                                   onChange={(e) => {
                                     setFormObj({
                                       ...formObj,
-                                      txtTotal: e.target.value,
+                                      en: {
+                                        ...formObj.en,
+                                        txtTotal: e.target.value,
+                                      },
                                     });
                                   }}
                                 />
@@ -334,11 +433,14 @@ const Appearance: NextPage = (props: any) => {
                                 <input
                                   type="text"
                                   className="form-control"
-                                  value={formObj.footer}
+                                  value={formObj?.en?.footer}
                                   onChange={(e) => {
                                     setFormObj({
                                       ...formObj,
-                                      footer: e.target.value,
+                                      en: {
+                                        ...formObj.en,
+                                        footer: e.target.value,
+                                      },
                                     });
                                   }}
                                 />
@@ -370,11 +472,14 @@ const Appearance: NextPage = (props: any) => {
                                     <input
                                       type="text"
                                       className="form-control"
-                                      value={formObj.txtCustomer2}
+                                      value={formObj?.ar?.txtCustomer}
                                       onChange={(e) => {
                                         setFormObj({
                                           ...formObj,
-                                          txtCustomer2: e.target.value,
+                                          ar: {
+                                            ...formObj.ar,
+                                            txtCustomer: e.target.value,
+                                          },
                                         });
                                       }}
                                     />
@@ -387,11 +492,14 @@ const Appearance: NextPage = (props: any) => {
                                       type="text"
                                       className="form-control"
                                       placeholder=""
-                                      value={formObj.orderNo2}
+                                      value={formObj?.ar?.orderNo}
                                       onChange={(e) => {
                                         setFormObj({
                                           ...formObj,
-                                          orderNo2: e.target.value,
+                                          ar: {
+                                            ...formObj.ar,
+                                            orderNo: e.target.value,
+                                          },
                                         });
                                       }}
                                     />
@@ -404,11 +512,14 @@ const Appearance: NextPage = (props: any) => {
                                       type="text"
                                       className="form-control"
                                       placeholder=""
-                                      value={formObj.txtDate2}
+                                      value={formObj?.ar?.txtDate}
                                       onChange={(e) => {
                                         setFormObj({
                                           ...formObj,
-                                          txtDate2: e.target.value,
+                                          ar: {
+                                            ...formObj.ar,
+                                            txtDate: e.target.value,
+                                          },
                                         });
                                       }}
                                     />
@@ -420,11 +531,14 @@ const Appearance: NextPage = (props: any) => {
                                     <input
                                       type="text"
                                       className="form-control"
-                                      value={formObj.txtQty2}
+                                      value={formObj?.ar?.txtQty}
                                       onChange={(e) => {
                                         setFormObj({
                                           ...formObj,
-                                          txtQty2: e.target.value,
+                                          ar: {
+                                            ...formObj.ar,
+                                            txtQty: e.target.value,
+                                          },
                                         });
                                       }}
                                     />
@@ -436,11 +550,14 @@ const Appearance: NextPage = (props: any) => {
                                     <input
                                       type="text"
                                       className="form-control"
-                                      value={formObj.txtItem2}
+                                      value={formObj?.ar?.txtItem}
                                       onChange={(e) => {
                                         setFormObj({
                                           ...formObj,
-                                          txtItem2: e.target.value,
+                                          ar: {
+                                            ...formObj.ar,
+                                            txtItem: e.target.value,
+                                          },
                                         });
                                       }}
                                     />
@@ -452,11 +569,14 @@ const Appearance: NextPage = (props: any) => {
                                     <input
                                       type="text"
                                       className="form-control"
-                                      value={formObj.txtAmount2}
+                                      value={formObj?.ar?.txtAmount}
                                       onChange={(e) => {
                                         setFormObj({
                                           ...formObj,
-                                          txtAmount2: e.target.value,
+                                          ar: {
+                                            ...formObj.ar,
+                                            txtAmount: e.target.value,
+                                          },
                                         });
                                       }}
                                     />
@@ -468,11 +588,14 @@ const Appearance: NextPage = (props: any) => {
                                     <input
                                       type="text"
                                       className="form-control"
-                                      value={formObj.txtTax2}
+                                      value={formObj.ar?.txtTax}
                                       onChange={(e) => {
                                         setFormObj({
                                           ...formObj,
-                                          txtTax2: e.target.value,
+                                          ar: {
+                                            ...formObj.ar,
+                                            txtTax: e.target.value,
+                                          },
                                         });
                                       }}
                                     />
@@ -484,11 +607,14 @@ const Appearance: NextPage = (props: any) => {
                                     <input
                                       type="text"
                                       className="form-control"
-                                      value={formObj.txtTotal2}
+                                      value={formObj?.ar.txtTotal}
                                       onChange={(e) => {
                                         setFormObj({
                                           ...formObj,
-                                          txtTotal2: e.target.value,
+                                          ar: {
+                                            ...formObj.ar,
+                                            txtTotal: e.target.value,
+                                          },
                                         });
                                       }}
                                     />
@@ -500,11 +626,14 @@ const Appearance: NextPage = (props: any) => {
                                     <input
                                       type="text"
                                       className="form-control"
-                                      value={formObj.footer2}
+                                      value={formObj?.ar?.footer}
                                       onChange={(e) => {
                                         setFormObj({
                                           ...formObj,
-                                          footer2: e.target.value,
+                                          ar: {
+                                            ...formObj.ar,
+                                            footer: e.target.value,
+                                          },
                                         });
                                       }}
                                     />
@@ -528,29 +657,31 @@ const Appearance: NextPage = (props: any) => {
                                 {previewUrl.length > 0 ? (
                                   <img src={previewUrl} />
                                 ) : (
-                                  <img src={formObj.logo} />
+                                  <img src={formObj.en.logo} />
                                 )}
                                 <div className="top-content">
-                                  <h6 className="text-primary">{formObj.name}</h6>
-                                  <h6 className="text-primary">{formObj.tell}</h6>
+                                  <h6 className="text-primary">{formObj.en.name}</h6>
+                                  <h6 className="text-primary">{formObj.en.tell}</h6>
                                 </div>
                                 <div className="order-details-top">
                                   <div className="order-details-top-item">
                                     <div>
-                                      {formObj.txtCustomer}{' '}
-                                      {formObj.isMultiLang && formObj.txtCustomer2}
+                                      {formObj.en.txtCustomer}{' '}
+                                      {formObj.isMultiLang && formObj.ar.txtCustomer}
                                     </div>
                                     <div>Walk-in-customer</div>
                                   </div>
                                   <div className="order-details-top-item">
                                     <div>
-                                      {formObj.orderNo} {formObj.isMultiLang && formObj.orderNo2}
+                                      {formObj.en.orderNo}{' '}
+                                      {formObj.isMultiLang && formObj.ar.orderNo}
                                     </div>
                                     <div>1518</div>
                                   </div>
                                   <div className="order-details-top-item">
                                     <div>
-                                      {formObj.txtDate} {formObj.isMultiLang && formObj.txtDate2}
+                                      {formObj.en.txtDate}{' '}
+                                      {formObj.isMultiLang && formObj.ar.txtDate}
                                     </div>
                                     <div>2023-03-31</div>
                                   </div>
@@ -558,14 +689,15 @@ const Appearance: NextPage = (props: any) => {
                                 <div className="order-details-top" style={{ marginTop: '5px' }}>
                                   <div className="order-details-top-item">
                                     <div>
-                                      {formObj.txtQty} {formObj.isMultiLang && formObj.txtQty2}
+                                      {formObj.en.txtQty} {formObj.isMultiLang && formObj.ar.txtQty}
                                     </div>
                                     <div>
-                                      {formObj.txtItem} {formObj.isMultiLang && formObj.txtItem2}
+                                      {formObj.en.txtItem}{' '}
+                                      {formObj.isMultiLang && formObj.ar.txtItem}
                                     </div>
                                     <div>
-                                      {formObj.txtAmount}{' '}
-                                      {formObj.isMultiLang && formObj.txtAmount2}
+                                      {formObj.en.txtAmount}{' '}
+                                      {formObj.isMultiLang && formObj.ar.txtAmount}
                                     </div>
                                   </div>
                                 </div>
@@ -602,7 +734,7 @@ const Appearance: NextPage = (props: any) => {
                                   <div className="order-details-top-item">
                                     <div></div>
                                     <div>
-                                      {formObj.txtTax} {formObj.isMultiLang && formObj.txtTax2}
+                                      {formObj.en.txtTax} {formObj.isMultiLang && formObj.ar.txtTax}
                                     </div>
                                     <div>0.540</div>
                                   </div>
@@ -616,7 +748,8 @@ const Appearance: NextPage = (props: any) => {
                                   <div className="order-details-top-item">
                                     <div></div>
                                     <div>
-                                      {formObj.txtTotal} {formObj.isMultiLang && formObj.txtTotal2}
+                                      {formObj.en.txtTotal}{' '}
+                                      {formObj.isMultiLang && formObj.ar.txtTotal}
                                     </div>
                                     <div>9.540</div>
                                   </div>
@@ -628,9 +761,9 @@ const Appearance: NextPage = (props: any) => {
                                     marginBottom: '20px',
                                   }}>
                                   <h6 className="text-primary">
-                                    {formObj.footer}
+                                    {formObj.en.footer}
                                     <br />
-                                    {formObj.isMultiLang && formObj.footer2}
+                                    {formObj.isMultiLang && formObj.ar.footer}
                                   </h6>
                                 </div>
                               </div>
@@ -692,13 +825,38 @@ const Appearance: NextPage = (props: any) => {
                                 <input
                                   type="text"
                                   className="form-control"
-                                  value={formObj.name}
+                                  value={formObj?.en?.name}
                                   min={0}
                                   step={0.1}
                                   onChange={(e) => {
                                     setFormObj({
                                       ...formObj,
-                                      name: e.target.value,
+                                      en: {
+                                        ...formObj.en,
+                                        name: e.target.value,
+                                      },
+                                    });
+                                  }}
+                                />
+                              </div>
+
+                              <div className="form-group2">
+                                <label>
+                                  Email: <span className="text-danger">*</span>
+                                </label>
+                                <input
+                                  type="text"
+                                  className="form-control"
+                                  value={formObj?.en?.email}
+                                  min={0}
+                                  step={0.1}
+                                  onChange={(e) => {
+                                    setFormObj({
+                                      ...formObj,
+                                      en: {
+                                        ...formObj.en,
+                                        email: e.target.value,
+                                      },
                                     });
                                   }}
                                 />
@@ -711,17 +869,65 @@ const Appearance: NextPage = (props: any) => {
                                 <input
                                   type="text"
                                   className="form-control"
-                                  value={formObj.tell}
+                                  value={formObj?.en?.tell}
                                   min={0}
                                   step={0.1}
                                   onChange={(e) => {
                                     setFormObj({
                                       ...formObj,
-                                      tell: e.target.value,
+                                      en: {
+                                        ...formObj.en,
+                                        tell: e.target.value,
+                                      },
                                     });
                                   }}
                                 />
                               </div>
+
+                              <div className="form-group2">
+                                <label>
+                                  Address: <span className="text-danger">*</span>
+                                </label>
+                                <input
+                                  type="text"
+                                  className="form-control"
+                                  value={formObj?.en?.address}
+                                  min={0}
+                                  step={0.1}
+                                  onChange={(e) => {
+                                    setFormObj({
+                                      ...formObj,
+                                      en: {
+                                        ...formObj.en,
+                                        address: e.target.value,
+                                      },
+                                    });
+                                  }}
+                                />
+                              </div>
+
+                              <div className="form-group2">
+                                <label>
+                                  VAT Number: <span className="text-danger">*</span>
+                                </label>
+                                <input
+                                  type="text"
+                                  className="form-control"
+                                  value={formObj?.en?.vatNumber}
+                                  min={0}
+                                  step={0.1}
+                                  onChange={(e) => {
+                                    setFormObj({
+                                      ...formObj,
+                                      en: {
+                                        ...formObj.en,
+                                        vatNumber: e.target.value,
+                                      },
+                                    });
+                                  }}
+                                />
+                              </div>
+
                               <div className="form-group2">
                                 <label>
                                   Customer: <span className="text-danger">*</span>
@@ -729,11 +935,14 @@ const Appearance: NextPage = (props: any) => {
                                 <input
                                   type="text"
                                   className="form-control"
-                                  value={formObj.txtCustomer}
+                                  value={formObj?.en?.txtCustomer}
                                   onChange={(e) => {
                                     setFormObj({
                                       ...formObj,
-                                      txtCustomer: e.target.value,
+                                      en: {
+                                        ...formObj.en,
+                                        txtCustomer: e.target.value,
+                                      },
                                     });
                                   }}
                                 />
@@ -745,11 +954,14 @@ const Appearance: NextPage = (props: any) => {
                                 <input
                                   type="text"
                                   className="form-control"
-                                  value={formObj.orderNo}
+                                  value={formObj?.en?.orderNo}
                                   onChange={(e) => {
                                     setFormObj({
                                       ...formObj,
-                                      orderNo: e.target.value,
+                                      en: {
+                                        ...formObj.en,
+                                        orderNo: e.target.value,
+                                      },
                                     });
                                   }}
                                 />
@@ -761,11 +973,14 @@ const Appearance: NextPage = (props: any) => {
                                 <input
                                   type="text"
                                   className="form-control"
-                                  value={formObj.txtDate}
+                                  value={formObj?.en?.txtDate}
                                   onChange={(e) => {
                                     setFormObj({
                                       ...formObj,
-                                      txtDate: e.target.value,
+                                      en: {
+                                        ...formObj.en,
+                                        txtDate: e.target.value,
+                                      },
                                     });
                                   }}
                                 />
@@ -777,11 +992,14 @@ const Appearance: NextPage = (props: any) => {
                                 <input
                                   type="text"
                                   className="form-control"
-                                  value={formObj.txtQty}
+                                  value={formObj?.en?.txtQty}
                                   onChange={(e) => {
                                     setFormObj({
                                       ...formObj,
-                                      txtQty: e.target.value,
+                                      en: {
+                                        ...formObj.en,
+                                        txtQty: e.target.value,
+                                      },
                                     });
                                   }}
                                 />
@@ -793,11 +1011,14 @@ const Appearance: NextPage = (props: any) => {
                                 <input
                                   type="text"
                                   className="form-control"
-                                  value={formObj.txtItem}
+                                  value={formObj?.en?.txtItem}
                                   onChange={(e) => {
                                     setFormObj({
                                       ...formObj,
-                                      txtItem: e.target.value,
+                                      en: {
+                                        ...formObj.en,
+                                        txtItem: e.target.value,
+                                      },
                                     });
                                   }}
                                 />
@@ -809,11 +1030,14 @@ const Appearance: NextPage = (props: any) => {
                                 <input
                                   type="text"
                                   className="form-control"
-                                  value={formObj.txtAmount}
+                                  value={formObj?.en?.txtAmount}
                                   onChange={(e) => {
                                     setFormObj({
                                       ...formObj,
-                                      txtAmount: e.target.value,
+                                      en: {
+                                        ...formObj.en,
+                                        txtAmount: e.target.value,
+                                      },
                                     });
                                   }}
                                 />
@@ -825,11 +1049,14 @@ const Appearance: NextPage = (props: any) => {
                                 <input
                                   type="text"
                                   className="form-control"
-                                  value={formObj.txtTax}
+                                  value={formObj?.en?.txtTax}
                                   onChange={(e) => {
                                     setFormObj({
                                       ...formObj,
-                                      txtTax: e.target.value,
+                                      en: {
+                                        ...formObj.en,
+                                        txtTax: e.target.value,
+                                      },
                                     });
                                   }}
                                 />
@@ -841,11 +1068,14 @@ const Appearance: NextPage = (props: any) => {
                                 <input
                                   type="text"
                                   className="form-control"
-                                  value={formObj.txtTotal}
+                                  value={formObj?.en?.txtTotal}
                                   onChange={(e) => {
                                     setFormObj({
                                       ...formObj,
-                                      txtTotal: e.target.value,
+                                      en: {
+                                        ...formObj.en,
+                                        txtTotal: e.target.value,
+                                      },
                                     });
                                   }}
                                 />
@@ -857,11 +1087,14 @@ const Appearance: NextPage = (props: any) => {
                                 <input
                                   type="text"
                                   className="form-control"
-                                  value={formObj.footer}
+                                  value={formObj?.en?.footer}
                                   onChange={(e) => {
                                     setFormObj({
                                       ...formObj,
-                                      footer: e.target.value,
+                                      en: {
+                                        ...formObj.en,
+                                        footer: e.target.value,
+                                      },
                                     });
                                   }}
                                 />
@@ -893,11 +1126,14 @@ const Appearance: NextPage = (props: any) => {
                                     <input
                                       type="text"
                                       className="form-control"
-                                      value={formObj.txtCustomer2}
+                                      value={formObj?.ar?.txtCustomer}
                                       onChange={(e) => {
                                         setFormObj({
                                           ...formObj,
-                                          txtCustomer2: e.target.value,
+                                          ar: {
+                                            ...formObj.ar,
+                                            txtCustomer: e.target.value,
+                                          },
                                         });
                                       }}
                                     />
@@ -910,11 +1146,14 @@ const Appearance: NextPage = (props: any) => {
                                       type="text"
                                       className="form-control"
                                       placeholder=""
-                                      value={formObj.orderNo2}
+                                      value={formObj?.ar?.orderNo}
                                       onChange={(e) => {
                                         setFormObj({
                                           ...formObj,
-                                          orderNo2: e.target.value,
+                                          ar: {
+                                            ...formObj.ar,
+                                            orderNo: e.target.value,
+                                          },
                                         });
                                       }}
                                     />
@@ -927,11 +1166,14 @@ const Appearance: NextPage = (props: any) => {
                                       type="text"
                                       className="form-control"
                                       placeholder=""
-                                      value={formObj.txtDate2}
+                                      value={formObj?.ar?.txtDate}
                                       onChange={(e) => {
                                         setFormObj({
                                           ...formObj,
-                                          txtDate2: e.target.value,
+                                          ar: {
+                                            ...formObj.ar,
+                                            txtDate: e.target.value,
+                                          },
                                         });
                                       }}
                                     />
@@ -943,11 +1185,14 @@ const Appearance: NextPage = (props: any) => {
                                     <input
                                       type="text"
                                       className="form-control"
-                                      value={formObj.txtQty2}
+                                      value={formObj?.ar?.txtQty}
                                       onChange={(e) => {
                                         setFormObj({
                                           ...formObj,
-                                          txtQty2: e.target.value,
+                                          ar: {
+                                            ...formObj.ar,
+                                            txtQty: e.target.value,
+                                          },
                                         });
                                       }}
                                     />
@@ -959,11 +1204,14 @@ const Appearance: NextPage = (props: any) => {
                                     <input
                                       type="text"
                                       className="form-control"
-                                      value={formObj.txtItem2}
+                                      value={formObj?.ar?.txtItem}
                                       onChange={(e) => {
                                         setFormObj({
                                           ...formObj,
-                                          txtItem2: e.target.value,
+                                          ar: {
+                                            ...formObj.ar,
+                                            txtItem: e.target.value,
+                                          },
                                         });
                                       }}
                                     />
@@ -975,11 +1223,14 @@ const Appearance: NextPage = (props: any) => {
                                     <input
                                       type="text"
                                       className="form-control"
-                                      value={formObj.txtAmount2}
+                                      value={formObj?.ar?.txtAmount}
                                       onChange={(e) => {
                                         setFormObj({
                                           ...formObj,
-                                          txtAmount2: e.target.value,
+                                          ar: {
+                                            ...formObj.ar,
+                                            txtAmount: e.target.value,
+                                          },
                                         });
                                       }}
                                     />
@@ -991,11 +1242,14 @@ const Appearance: NextPage = (props: any) => {
                                     <input
                                       type="text"
                                       className="form-control"
-                                      value={formObj.txtTax2}
+                                      value={formObj?.ar?.txtTax}
                                       onChange={(e) => {
                                         setFormObj({
                                           ...formObj,
-                                          txtTax2: e.target.value,
+                                          ar: {
+                                            ...formObj.ar,
+                                            txtTax: e.target.value,
+                                          },
                                         });
                                       }}
                                     />
@@ -1007,11 +1261,14 @@ const Appearance: NextPage = (props: any) => {
                                     <input
                                       type="text"
                                       className="form-control"
-                                      value={formObj.txtTotal2}
+                                      value={formObj?.ar?.txtTotal}
                                       onChange={(e) => {
                                         setFormObj({
                                           ...formObj,
-                                          txtTotal2: e.target.value,
+                                          ar: {
+                                            ...formObj.ar,
+                                            txtTotal: e.target.value,
+                                          },
                                         });
                                       }}
                                     />
@@ -1023,11 +1280,14 @@ const Appearance: NextPage = (props: any) => {
                                     <input
                                       type="text"
                                       className="form-control"
-                                      value={formObj.footer2}
+                                      value={formObj?.ar?.footer}
                                       onChange={(e) => {
                                         setFormObj({
                                           ...formObj,
-                                          footer2: e.target.value,
+                                          ar: {
+                                            ...formObj.ar,
+                                            footer: e.target.value,
+                                          },
                                         });
                                       }}
                                     />
@@ -1049,7 +1309,7 @@ const Appearance: NextPage = (props: any) => {
                             <div className="appear-body-item a4">
                               <div className="bill2">
                                 <div className="brand-logo">
-                                  <img src={formObj.logo} />
+                                  <img src={formObj.en.logo} />
                                   <div className="invoice-print">
                                     INVOICE
                                     <div>
@@ -1057,7 +1317,7 @@ const Appearance: NextPage = (props: any) => {
                                         <tbody>
                                           <tr>
                                             <td className="td_bg">INVOICE NUMBER </td>
-                                            <td>{formObj.orderNo}</td>
+                                            <td>{formObj.en.orderNo}</td>
                                           </tr>
                                           <tr>
                                             <td className="td_bg">INVOICE DATE </td>
@@ -1072,16 +1332,15 @@ const Appearance: NextPage = (props: any) => {
                                 <div className="up_of_table flex justify-between">
                                   <div className="left_up_of_table">
                                     <div>Billed From</div>
-                                    <div>{formObj.name}</div>
-                                    <div>info@poslix.com</div>
-                                    <div>{formObj.tell}</div>
-                                    <div>Office 21-22, Building 532, Mazoon St. Muscat, Oman</div>
-                                    <div>VAT Number: OM1100270001</div>
+                                    <div>{formObj.en.name}</div>
+                                    <div>{formObj.en.email}</div>
+                                    <div>{formObj.en.tell}</div>
+                                    <div>{formObj.en.address}</div>
+                                    <div>VAT Number: {formObj.en.vatNumber}</div>
                                   </div>
                                   <div className="right_up_of_table">
                                     <div>Billed To</div>
-                                    <div>{formObj.txtCustomer}</div>
-                                    {/* <span>Billed To</span> */}
+                                    <div>{formObj.en.txtCustomer}</div>
                                   </div>
                                 </div>
                                 <br />
@@ -1092,18 +1351,18 @@ const Appearance: NextPage = (props: any) => {
                                       <th>Description</th>
                                       <th>
                                         {' '}
-                                        {formObj.txtQty}
+                                        {formObj.en.txtQty}
                                         <br />
-                                        {formObj.isMultiLang && formObj.txtQty2}
+                                        {formObj.isMultiLang && formObj.ar.txtQty}
                                       </th>
                                       <th>Unit Price</th>
                                       {/* <th> {invoicDetails.txtItem}<br />{invoicDetails.isMultiLang && invoicDetails.txtItem2}</th> */}
                                       <th>Tax</th>
                                       <th>
                                         {' '}
-                                        {formObj.txtAmount}
+                                        {formObj.en.txtAmount}
                                         <br />
-                                        {formObj.isMultiLang && formObj.txtAmount2}
+                                        {formObj.isMultiLang && formObj.ar.txtAmount}
                                       </th>
                                     </tr>
                                   </thead>
@@ -1120,17 +1379,17 @@ const Appearance: NextPage = (props: any) => {
                                         Total
                                       </td>
                                       <td className="txt_bold_invoice">
-                                        {formObj.txtTotal}{' '}
-                                        {formObj.isMultiLang && formObj.txtTotal2}
+                                        {formObj.en.txtTotal}{' '}
+                                        {formObj.isMultiLang && formObj.ar.txtTotal}
                                       </td>
                                     </tr>
                                   </tbody>
                                 </table>
 
                                 <p className="recipt-footer">
-                                  {formObj.footer}
+                                  {formObj.en.footer}
 
-                                  {formObj.isMultiLang && formObj.footer2}
+                                  {formObj.isMultiLang && formObj.ar.footer}
                                 </p>
                                 {/* <p className="recipt-footer">{formObj.notes}</p> */}
                                 <br />
@@ -1206,8 +1465,8 @@ const Appearance: NextPage = (props: any) => {
 };
 export default withAuth(Appearance);
 export async function getServerSideProps({ params }) {
-  const { id } = params
+  const { id } = params;
   return {
     props: { id },
-  }
+  };
 }

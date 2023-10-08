@@ -176,12 +176,15 @@ function SalesReport() {
     });
     const totalPriceAndTax = totalPrice + taxAmount;
     setDetails({ subTotal: totalPrice, tax: taxAmount, total: totalPriceAndTax });
+
+    if(selectedCustomer?.length > 0)
+      localFilteredSales = localFilteredSales.filter((el) => el.contact_name.includes(selectedCustomer))
+
     setFilteredSales(localFilteredSales);
-  }, [strSelectedDate]);
+  }, [strSelectedDate, selectedCustomer]);
 
   const handleChangeCustomer = (event: SelectChangeEvent<string>) => {
     setSelectedCustomer(event.target.value);
-    setFilteredSales(filteredSales.filter((el) => el.contact_name.includes(event.target.value)));
   };
 
   const resetFilters = () => {

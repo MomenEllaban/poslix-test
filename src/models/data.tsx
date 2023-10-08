@@ -98,6 +98,80 @@ export function defaultInvoiceDetials(): IinvoiceDetails {
     txtCustomer2: 'الزبون',
   };
 }
+
+export function defaultDetails(): any {
+  return {
+    location_id: 140,
+    logo: '',
+    ar: {
+      name: 'عربي',
+      tell: '9662564731',
+      txtCustomer: 'Customer',
+      orderNo: 'order no',
+      txtDate: 'date',
+      txtQty: 'qty',
+      '{}': 'item',
+      txtAmount: 'amount',
+      txtTax: 'tax',
+      txtItem: 'txtItem',
+      txtTotal: 'total',
+      footer: 'footers',
+      email: 'Email',
+      address: 'Address',
+      vatNumber: 'Vat',
+      customerNumber: 'Customer Number',
+      description: 'desc',
+      unitPrice: 'unit price',
+      subTotal: 'totals',
+    },
+    en: {
+      name: 'poslix',
+      tell: '9662564731',
+      txtCustomer: 'Customer',
+      orderNo: 'order no',
+      txtDate: 'date',
+      txtQty: 'qty',
+      '{}': 'item',
+      txtAmount: 'amount',
+      txtTax: 'tax',
+      txtItem: 'txtItem',
+      txtTotal: 'total',
+      footer: 'footers',
+      email: 'Email',
+      address: 'Address',
+      vatNumber: 'Vat',
+      customerNumber: 'Customer Number',
+      description: 'desc',
+      unitPrice: 'unit price',
+      subTotal: 'totals',
+    },
+  };
+}
+
+export function defaultDetailsEn(): any {
+  return {
+    name: 'poslix',
+    tell: '9662564731',
+    txtCustomer: 'Customer',
+    orderNo: 'order no',
+    txtDate: 'date',
+    txtQty: 'qty',
+    '{}': 'item',
+    txtAmount: 'amount',
+    txtTax: 'tax',
+    txtItem: 'txtItem',
+    txtTotal: 'total',
+    footer: 'footers',
+    email: 'Email',
+    address: 'Address',
+    vatNumber: 'Vat',
+    customerNumber: 'Customer Number',
+    description: 'desc',
+    unitPrice: 'unit price',
+    subTotal: 'totals',
+  };
+}
+
 export function BusinessTypeData(): {
   readonly label: string;
   readonly value: number;

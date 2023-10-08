@@ -51,12 +51,10 @@ function ItemsReport() {
 
   const handleChangeSupplier = (event: SelectChangeEvent<string>) => {
     setSelectedSupplier(event.target.value);
-    setFilteredSales(filteredSales.filter((el) => el.user_name === event.target.value));
   };
 
   const handleChangeCustomer = (event: SelectChangeEvent<string>) => {
     setSelectedCustomer(event.target.value);
-    setFilteredSales(filteredSales.filter((el) => event.target.value === el.contact_first_name));
   };
 
   const handleClose = () => setAnchorEl(null);
@@ -156,7 +154,7 @@ function ItemsReport() {
   useEffect(() => {
     let localFilteredSales = [];
     if (strSelectedDate.length === 2) {
-      const filteredList = filteredSales.filter((sale) => {
+      const filteredList = sales.filter((sale) => {
         const dateCreated = sale.date.split(' ')[0];
         return (
           new Date(dateCreated).getDate() >= new Date(strSelectedDate[0]).getDate() &&
@@ -198,8 +196,14 @@ function ItemsReport() {
       tax: taxAmount,
       cost: totalPriceAndTax,
     });
+    if(selectedSupplier?.length > 0)
+      localFilteredSales = localFilteredSales.filter((el) => el.user_first_name === selectedSupplier)
+
+    if(selectedCustomer?.length > 0)
+      localFilteredSales = localFilteredSales.filter((el) => el.contact_first_name === selectedCustomer)
+
     setFilteredSales(localFilteredSales);
-  }, [strSelectedDate]);
+  }, [strSelectedDate, selectedSupplier, selectedCustomer]);
 
   /*************************************/
   useEffect(() => {

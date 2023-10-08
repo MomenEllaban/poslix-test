@@ -19,13 +19,14 @@ const AddNewExpeness = ({
   const router = useRouter();
   const [cats, setCategories] = useState<ICategory[]>([]);
 
-  const [formObj, setFormObj] = useState<IExpenseList>({
+  const [formObj, setFormObj] = useState<any>({
     id: 0,
     expense_id: 0,
     name: '',
     amount: 0,
     date: new Date(),
     category_id: '',
+    file: File
   });
   const [cateData, setCateData] = useState<{ id: number; label: string; value: number }[]>([]);
   const [errorForm, setErrorForm] = useState({ expense_id: false, name: false, amount: false });
@@ -45,14 +46,21 @@ const AddNewExpeness = ({
     }
   );
   async function addExpense() {
+    const formData = new FormData()
+    formData.append('id', formObj.id)
+    formData.append('name', formObj.name)
+    formData.append('amount', formObj.amount)
+    formData.append('category_id', formObj.category_id)
+    formData.append('date', formObj.date)
+    formData.append('file', formObj.file)
     if (router.query.id) {
-      const res = await createNewData(`expenses/${router.query.id}`, formObj);
+      const res = await createNewData(`expenses/${router.query.id}`, formData);
       console.log(res);
       if (res.data.success || res.data.status == 201) {
         Toastify('success', 'Successfully created');
         let _rows = [...rows];
         _rows.push({
-          id: res.data.error.id,
+          id: res.data.result.id,
           name: formObj.name,
           category: formObj.category_id,
           amount: formObj.amount,
@@ -171,7 +179,7 @@ const AddNewExpeness = ({
           <div className="col-md-6">
             <div className="form-group2">
               <label>Attach:</label>
-              <input type="file" className="form-control" />
+              <input type="file" className="form-control" onChange={(e) => setFormObj({ ...formObj, file: e.target.files[0] })} />
             </div>
           </div>
         </div>
