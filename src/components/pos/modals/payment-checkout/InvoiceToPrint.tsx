@@ -218,7 +218,8 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
                 <tr>
                   {/* <td>{invoiceDetails?.txtTax} {invoiceDetails?.en?.is_multi_language && invoiceDetails?.txtTax}</td> */}
                   <td colSpan={4} className="txt_bold_invoice">
-                    Total Paid
+                    Total Paid {' '}
+                    {invoiceDetails?.en?.is_multi_language && 'إجمالى المدفوعات'}
                   </td>
                   <td>
                     {Number(printReceipt?.paid).toFixed(locationSettings?.location_decimal_places)}
@@ -238,6 +239,7 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
                 <tr>
                   <td colSpan={4} className="txt_bold_invoice">
                     Total Due
+                    {invoiceDetails?.en?.is_multi_language && 'المتبقى'}
                   </td>
                   <td className="txt_bold_invoice">
                     {Number(printReceipt?.due).toFixed(locationSettings?.location_decimal_places)}
@@ -330,9 +332,10 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
             <tr className="net-amount">
               <td></td>
               <td>
-                {invoiceDetails?.txtDiscount}
-                {'Discount'}
-                {invoiceDetails?.en?.is_multi_language && invoiceDetails?.txtDiscount2}
+                {/* {invoiceDetails?.txtDiscount}
+                {invoiceDetails?.en?.is_multi_language && invoiceDetails?.txtDiscount2} */}
+                {'Discount'} {' '}
+                {invoiceDetails?.en?.is_multi_language && 'التخفيضات'}
               </td>
               <td></td>
               <td>
@@ -363,6 +366,7 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
                 {/* {invoiceDetails?.txtAmountpaid}{' '}
                 {invoiceDetails?.en?.is_multi_language && invoiceDetails?.txtAmountpaid2} */}
                 Total Paid
+                {invoiceDetails?.en?.is_multi_language && 'إجمالى المدفوعات'}
               </td>
               <td></td>
               <td className="txt-bold">
@@ -377,6 +381,7 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
                 {/* {invoiceDetails?.txtTotalDue}{' '}
                 {invoiceDetails?.en?.is_multi_language && invoiceDetails?.txtTotalDue2} */}
                 Total Due
+                {invoiceDetails?.en?.is_multi_language && 'المتبقى'}
               </td>
               <td></td>
               <td className="txt-bold">
