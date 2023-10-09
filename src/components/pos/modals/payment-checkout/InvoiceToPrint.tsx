@@ -128,13 +128,16 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
       locationSettings,
       __WithDiscountFeature__total,
     } = this.props;
-console.log(invoiceDetails)
+    console.log(invoiceDetails);
     if (invoiceType.toLowerCase() === 'a4')
       return (
         <div className="appear-body-item a4">
           <div className="bill2">
             <div className="brand-logo">
-              <img src={invoiceDetails?.en?.logo} style={{width: '50%', height: 'auto', objectFit: 'contain'}} />
+              <img
+                src={invoiceDetails?.en?.logo}
+                style={{ width: '50%', height: 'auto', objectFit: 'contain' }}
+              />
               <div className="invoice-print">
                 INVOICE
                 <div>
@@ -173,8 +176,11 @@ console.log(invoiceDetails)
               </div>
               <div className="right_up_of_table">
                 <div>Billed To</div>
+                <div>
+                  {invoiceDetails?.en?.txtCustomer}{' '}
+                  {invoiceDetails?.is_multi_language && invoiceDetails?.ar?.txtCustomer}
+                </div>
                 <div>{printReceipt?.customerName}</div>
-                {/* <span>Billed To</span> */}
               </div>
             </div>
             <br />
@@ -195,7 +201,8 @@ console.log(invoiceDetails)
                   <th>Unit Price</th>
                   {/* <th> {invoiceDetails?.txtItem}<br />{invoiceDetails?.en?.is_multi_language && invoiceDetails?.txtItem2}</th> */}
                   <th>
-                    {invoiceDetails?.en?.txtTax} <br />
+                    {invoiceDetails?.en?.txtTax}
+                    <br />
                     {invoiceDetails?.is_multi_language && invoiceDetails?.ar?.txtTax}
                   </th>
                   <th>
@@ -209,7 +216,7 @@ console.log(invoiceDetails)
               <tbody>
                 {this.perperdForA4Print(printReceipt?.products)}
                 <tr>
-                  {/* <td>{invoiceDetails?.txtTax} {invoiceDetails?.en?.is_multi_language && invoiceDetails?.txtTax2}</td> */}
+                  {/* <td>{invoiceDetails?.txtTax} {invoiceDetails?.en?.is_multi_language && invoiceDetails?.txtTax}</td> */}
                   <td colSpan={4} className="txt_bold_invoice">
                     Total Paid
                   </td>
@@ -269,13 +276,15 @@ console.log(invoiceDetails)
           </div>
           <div className="flex justify-between">
             <div>
-              {invoiceDetails?.en?.orderNo} {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.orderNo}
+              {invoiceDetails?.en?.orderNo}{' '}
+              {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.orderNo}
             </div>
             <div>{printReceipt?.id}</div>
           </div>
           <div className="flex justify-between">
             <div>
-              {invoiceDetails?.en?.txtDate} {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtDate}
+              {invoiceDetails?.en?.txtDate}{' '}
+              {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtDate}
             </div>
             <div>{new Date().toISOString().slice(0, 10)}</div>
           </div>
@@ -306,7 +315,8 @@ console.log(invoiceDetails)
             <tr className="net-amount">
               <td></td>
               <td>
-                {invoiceDetails?.en?.txtTax} {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtTax}
+                {invoiceDetails?.en?.txtTax}{' '}
+                {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtTax}
               </td>
               <td></td>
               <td>

@@ -42,11 +42,12 @@ const Appearance: NextPage = (props: any) => {
     if (isLoading) return;
     setIsLoading(true);
     const res = await createNewData(`appearance`, {
-      ...formObj, location_id: router.query.id, logo: formObj.en.logo, ar: {...formObj.ar, name: 'arabic_name'}
+      ...formObj, location_id: router.query.id
     });
     if (res.data.success) {
       Toastify('success', 'successfully updated');
       setPreviewUrl('');
+      setFormObj({...formObj, en: {...formObj.en, logo: formObj.logo}, ar: {...formObj.ar, logo: formObj.logo}})
     } else Toastify('error', 'Somthing wrong!!, try agian');
     setIsLoading(false);
   }
