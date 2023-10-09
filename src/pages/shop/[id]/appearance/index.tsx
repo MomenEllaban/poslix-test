@@ -1,8 +1,7 @@
 import { faCancel } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { AdminLayout } from '@layout';
-import { ITokenVerfy, IinvoiceDetails } from '@models/common-model';
-import { defaultDetails, defaultInvoiceDetials } from '@models/data';
+import { defaultDetails } from '@models/data';
 import * as cookie from 'cookie';
 import { deleteObject, getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
 import storage from 'firebaseConfig';
@@ -11,12 +10,9 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { Card, Form, Tab, Tabs } from 'react-bootstrap';
 import Spinner from 'react-bootstrap/Spinner';
-import Select from 'react-select';
 import { ToastContainer } from 'react-toastify';
 import { Toastify } from 'src/libs/allToasts';
 import { generateUniqueString } from 'src/libs/toolsUtils';
-import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/checkUtils';
-import { apiFetchCtr, apiUpdateCtr } from '../../../../libs/dbUtils';
 import { createNewData, findAllData } from 'src/services/crud.api';
 import withAuth from 'src/HOCs/withAuth';
 
@@ -36,10 +32,7 @@ const Appearance: NextPage = (props: any) => {
       Toastify('error', 'Somthing wrong!!, try agian');
       return;
     }
-    console.log(res.data.result);
-    setFormObj({ ...formObj, ...res.data.result });
-    console.log(formObj);
-    console.log(formObj.en.name);
+    setFormObj({ ...formObj, ...res.data.result, is_multi_language: !!res.data.result.en.is_multi_language });
     // if (res.data.result.details != undefined && res.data.result.details != null && res.data.result.details.length > 10) {
     //   const _data= JSON.parse(res.data.details);
     // }
@@ -48,12 +41,13 @@ const Appearance: NextPage = (props: any) => {
   async function editInvoice(url = '0') {
     if (isLoading) return;
     setIsLoading(true);
-    const res = await createNewData(`appearance`, { ...formObj, location_id: router.query.id });
+    const res = await createNewData(`appearance`, {
+      ...formObj, location_id: router.query.id, logo: formObj.en.logo, ar: {...formObj.ar, name: 'arabic_name'}
+    });
     if (res.data.success) {
       Toastify('success', 'successfully updated');
       setPreviewUrl('');
-    }
-    Toastify('error', 'Somthing wrong!!, try agian');
+    } else Toastify('error', 'Somthing wrong!!, try agian');
     setIsLoading(false);
   }
   const imageChange = (e: any) => {
@@ -188,28 +182,6 @@ const Appearance: NextPage = (props: any) => {
 
                               <div className="form-group2">
                                 <label>
-                                  Email: <span className="text-danger">*</span>
-                                </label>
-                                <input
-                                  type="text"
-                                  className="form-control"
-                                  value={formObj?.en?.email}
-                                  min={0}
-                                  step={0.1}
-                                  onChange={(e) => {
-                                    setFormObj({
-                                      ...formObj,
-                                      en: {
-                                        ...formObj.en,
-                                        email: e.target.value,
-                                      },
-                                    });
-                                  }}
-                                />
-                              </div>
-
-                              <div className="form-group2">
-                                <label>
                                   Phone: <span className="text-danger">*</span>
                                 </label>
                                 <input
@@ -224,50 +196,6 @@ const Appearance: NextPage = (props: any) => {
                                       en: {
                                         ...formObj.en,
                                         tell: e.target.value,
-                                      },
-                                    });
-                                  }}
-                                />
-                              </div>
-
-                              <div className="form-group2">
-                                <label>
-                                  Address: <span className="text-danger">*</span>
-                                </label>
-                                <input
-                                  type="text"
-                                  className="form-control"
-                                  value={formObj?.en?.address}
-                                  min={0}
-                                  step={0.1}
-                                  onChange={(e) => {
-                                    setFormObj({
-                                      ...formObj,
-                                      en: {
-                                        ...formObj.en,
-                                        address: e.target.value,
-                                      },
-                                    });
-                                  }}
-                                />
-                              </div>
-
-                              <div className="form-group2">
-                                <label>
-                                  VAT Number: <span className="text-danger">*</span>
-                                </label>
-                                <input
-                                  type="text"
-                                  className="form-control"
-                                  value={formObj?.en?.vatNumber}
-                                  min={0}
-                                  step={0.1}
-                                  onChange={(e) => {
-                                    setFormObj({
-                                      ...formObj,
-                                      en: {
-                                        ...formObj.en,
-                                        vatNumber: e.target.value,
                                       },
                                     });
                                   }}
@@ -452,18 +380,18 @@ const Appearance: NextPage = (props: any) => {
                                     <Form.Check
                                       type="switch"
                                       className="custom-switch"
-                                      checked={formObj.isMultiLang}
+                                      checked={formObj.is_multi_language}
                                       onChange={(e) => {
                                         setFormObj({
                                           ...formObj,
-                                          isMultiLang: !formObj.isMultiLang,
+                                          is_multi_language: !formObj.is_multi_language,
                                         });
                                       }}
                                     />
                                   </div>
                                 </div>
                               </div>
-                              {formObj.isMultiLang && (
+                              {formObj.is_multi_language && (
                                 <>
                                   <div className="form-group2">
                                     <label>
@@ -667,21 +595,21 @@ const Appearance: NextPage = (props: any) => {
                                   <div className="order-details-top-item">
                                     <div>
                                       {formObj.en.txtCustomer}{' '}
-                                      {formObj.isMultiLang && formObj.ar.txtCustomer}
+                                      {formObj.is_multi_language && formObj.ar.txtCustomer}
                                     </div>
                                     <div>Walk-in-customer</div>
                                   </div>
                                   <div className="order-details-top-item">
                                     <div>
                                       {formObj.en.orderNo}{' '}
-                                      {formObj.isMultiLang && formObj.ar.orderNo}
+                                      {formObj.is_multi_language && formObj.ar.orderNo}
                                     </div>
                                     <div>1518</div>
                                   </div>
                                   <div className="order-details-top-item">
                                     <div>
                                       {formObj.en.txtDate}{' '}
-                                      {formObj.isMultiLang && formObj.ar.txtDate}
+                                      {formObj.is_multi_language && formObj.ar.txtDate}
                                     </div>
                                     <div>2023-03-31</div>
                                   </div>
@@ -689,15 +617,15 @@ const Appearance: NextPage = (props: any) => {
                                 <div className="order-details-top" style={{ marginTop: '5px' }}>
                                   <div className="order-details-top-item">
                                     <div>
-                                      {formObj.en.txtQty} {formObj.isMultiLang && formObj.ar.txtQty}
+                                      {formObj.en.txtQty} {formObj.is_multi_language && formObj.ar.txtQty}
                                     </div>
                                     <div>
                                       {formObj.en.txtItem}{' '}
-                                      {formObj.isMultiLang && formObj.ar.txtItem}
+                                      {formObj.is_multi_language && formObj.ar.txtItem}
                                     </div>
                                     <div>
                                       {formObj.en.txtAmount}{' '}
-                                      {formObj.isMultiLang && formObj.ar.txtAmount}
+                                      {formObj.is_multi_language && formObj.ar.txtAmount}
                                     </div>
                                   </div>
                                 </div>
@@ -734,7 +662,7 @@ const Appearance: NextPage = (props: any) => {
                                   <div className="order-details-top-item">
                                     <div></div>
                                     <div>
-                                      {formObj.en.txtTax} {formObj.isMultiLang && formObj.ar.txtTax}
+                                      {formObj.en.txtTax} {formObj.is_multi_language && formObj.ar.txtTax}
                                     </div>
                                     <div>0.540</div>
                                   </div>
@@ -749,7 +677,7 @@ const Appearance: NextPage = (props: any) => {
                                     <div></div>
                                     <div>
                                       {formObj.en.txtTotal}{' '}
-                                      {formObj.isMultiLang && formObj.ar.txtTotal}
+                                      {formObj.is_multi_language && formObj.ar.txtTotal}
                                     </div>
                                     <div>9.540</div>
                                   </div>
@@ -763,7 +691,7 @@ const Appearance: NextPage = (props: any) => {
                                   <h6 className="text-primary">
                                     {formObj.en.footer}
                                     <br />
-                                    {formObj.isMultiLang && formObj.ar.footer}
+                                    {formObj.is_multi_language && formObj.ar.footer}
                                   </h6>
                                 </div>
                               </div>
@@ -1106,18 +1034,18 @@ const Appearance: NextPage = (props: any) => {
                                     <Form.Check
                                       type="switch"
                                       className="custom-switch"
-                                      checked={formObj.isMultiLang}
+                                      checked={formObj.is_multi_language}
                                       onChange={(e) => {
                                         setFormObj({
                                           ...formObj,
-                                          isMultiLang: !formObj.isMultiLang,
+                                          is_multi_language: !formObj.is_multi_language,
                                         });
                                       }}
                                     />
                                   </div>
                                 </div>
                               </div>
-                              {formObj.isMultiLang && (
+                              {formObj.is_multi_language && (
                                 <>
                                   <div className="form-group2">
                                     <label>
@@ -1309,18 +1237,25 @@ const Appearance: NextPage = (props: any) => {
                             <div className="appear-body-item a4">
                               <div className="bill2">
                                 <div className="brand-logo">
-                                  <img src={formObj.en.logo} />
+                                  <img src={formObj.en.logo} style={{width: '50%', height: 'auto', objectFit: 'contain'}} />
                                   <div className="invoice-print">
                                     INVOICE
                                     <div>
                                       <table className="GeneratedTable">
                                         <tbody>
                                           <tr>
-                                            <td className="td_bg">INVOICE NUMBER </td>
-                                            <td>{formObj.en.orderNo}</td>
+                                            <td className="td_bg">
+                                              {formObj.en.orderNo}{' '}
+                                              {formObj.is_multi_language && formObj.ar.orderNo}
+                                            </td>
+                                            <td>
+                                            </td>
                                           </tr>
                                           <tr>
-                                            <td className="td_bg">INVOICE DATE </td>
+                                            <td className="td_bg">
+                                              {formObj.en.txtDate}{' '}
+                                              {formObj.is_multi_language && formObj.ar.txtDate}
+                                            </td>
                                             <td>{new Date().toISOString().slice(0, 10)}</td>
                                           </tr>
                                         </tbody>
@@ -1340,7 +1275,10 @@ const Appearance: NextPage = (props: any) => {
                                   </div>
                                   <div className="right_up_of_table">
                                     <div>Billed To</div>
-                                    <div>{formObj.en.txtCustomer}</div>
+                                    <div>
+                                      {formObj.en.txtCustomer}{' '}
+                                      {formObj.is_multi_language && formObj.ar.txtCustomer}
+                                    </div>
                                   </div>
                                 </div>
                                 <br />
@@ -1348,27 +1286,33 @@ const Appearance: NextPage = (props: any) => {
                                 <table className="GeneratedTable2">
                                   <thead>
                                     <tr>
-                                      <th>Description</th>
+                                      <th>
+                                        {formObj.en.txtItem}{' '}
+                                        {formObj.is_multi_language && formObj.ar.txtItem}
+                                      </th>
                                       <th>
                                         {' '}
                                         {formObj.en.txtQty}
                                         <br />
-                                        {formObj.isMultiLang && formObj.ar.txtQty}
+                                        {formObj.is_multi_language && formObj.ar.txtQty}
                                       </th>
                                       <th>Unit Price</th>
-                                      {/* <th> {invoicDetails.txtItem}<br />{invoicDetails.isMultiLang && invoicDetails.txtItem2}</th> */}
-                                      <th>Tax</th>
+                                      {/* <th> {invoicDetails.txtItem}<br />{invoicDetails.is_multi_language && invoicDetails.txtItem2}</th> */}
+                                      <th>
+                                        {formObj.en.txtTax}{' '}
+                                        {formObj.is_multi_language && formObj.ar.txtTax}
+                                      </th>
                                       <th>
                                         {' '}
                                         {formObj.en.txtAmount}
                                         <br />
-                                        {formObj.isMultiLang && formObj.ar.txtAmount}
+                                        {formObj.is_multi_language && formObj.ar.txtAmount}
                                       </th>
                                     </tr>
                                   </thead>
                                   <tbody>
                                     <tr>
-                                      {/* <td>{invoicDetails.txtTax} {invoicDetails.isMultiLang && invoicDetails.txtTax2}</td> */}
+                                      {/* <td>{invoicDetails.txtTax} {invoicDetails.is_multi_language && invoicDetails.txtTax2}</td> */}
                                       <td colSpan={4} className="txt_bold_invoice">
                                         Sub Total
                                       </td>
@@ -1376,11 +1320,10 @@ const Appearance: NextPage = (props: any) => {
                                     </tr>
                                     <tr>
                                       <td colSpan={4} className="txt_bold_invoice">
-                                        Total
+                                        {formObj.en.txtTotal}{' '}
+                                        {formObj.is_multi_language && formObj.ar.txtTotal}
                                       </td>
                                       <td className="txt_bold_invoice">
-                                        {formObj.en.txtTotal}{' '}
-                                        {formObj.isMultiLang && formObj.ar.txtTotal}
                                       </td>
                                     </tr>
                                   </tbody>
@@ -1388,8 +1331,8 @@ const Appearance: NextPage = (props: any) => {
 
                                 <p className="recipt-footer">
                                   {formObj.en.footer}
-
-                                  {formObj.isMultiLang && formObj.ar.footer}
+                                  <br />
+                                  {formObj.is_multi_language && formObj.ar.footer}
                                 </p>
                                 {/* <p className="recipt-footer">{formObj.notes}</p> */}
                                 <br />
@@ -1403,21 +1346,21 @@ const Appearance: NextPage = (props: any) => {
                                             </div>
                                             <div className='order-details-top'>
                                                 <div className="order-details-top-item">
-                                                    <div>{formObj.txtCustomer} {formObj.isMultiLang && formObj.txtCustomer2}</div>
+                                                    <div>{formObj.txtCustomer} {formObj.is_multi_language && formObj.txtCustomer2}</div>
                                                     <div>Walk-in-customer</div>
                                                 </div>
                                                 <div className="order-details-top-item">
-                                                    <div>{formObj.orderNo} {formObj.isMultiLang && formObj.orderNo2}</div>
+                                                    <div>{formObj.orderNo} {formObj.is_multi_language && formObj.orderNo2}</div>
                                                     <div>1518</div>
                                                 </div>
                                                 <div className="order-details-top-item">
-                                                    <div>{formObj.txtDate} {formObj.isMultiLang && formObj.txtDate2}</div>
+                                                    <div>{formObj.txtDate} {formObj.is_multi_language && formObj.txtDate2}</div>
                                                     <div>2023-03-31</div>
                                                 </div>
                                             </div>
                                             <div className='order-details-top' style={{ marginTop: '5px' }}>
                                                 <div className="order-details-top-item">
-                                                    <div>{formObj.txtQty} {formObj.isMultiLang && formObj.txtQty2}</div><div>{formObj.txtItem} {formObj.isMultiLang && formObj.txtItem2}</div><div>{formObj.txtAmount} {formObj.isMultiLang && formObj.txtAmount2}</div>
+                                                    <div>{formObj.txtQty} {formObj.is_multi_language && formObj.txtQty2}</div><div>{formObj.txtItem} {formObj.is_multi_language && formObj.txtItem2}</div><div>{formObj.txtAmount} {formObj.is_multi_language && formObj.txtAmount2}</div>
                                                 </div>
                                             </div>
                                             <div className='order-details-top' style={{ marginTop: '5px', borderBottom: '1px solid #eaeaea' }}>
@@ -1432,16 +1375,16 @@ const Appearance: NextPage = (props: any) => {
                                             </div>
                                             <div className='order-details-top' style={{ marginTop: '5px', borderBottom: '1px solid #696969' }}>
                                                 <div className="order-details-top-item">
-                                                    <div></div><div>{formObj.txtTax} {formObj.isMultiLang && formObj.txtTax2}</div><div>0.540</div>
+                                                    <div></div><div>{formObj.txtTax} {formObj.is_multi_language && formObj.txtTax2}</div><div>0.540</div>
                                                 </div>
                                             </div>
                                             <div className='order-details-top' style={{ marginTop: '5px', borderBottom: '1px solid #696969' }}>
                                                 <div className="order-details-top-item">
-                                                    <div></div><div>{formObj.txtTotal} {formObj.isMultiLang && formObj.txtTotal2}</div><div>9.540</div>
+                                                    <div></div><div>{formObj.txtTotal} {formObj.is_multi_language && formObj.txtTotal2}</div><div>9.540</div>
                                                 </div>
                                             </div>
                                             <div className='top-content' style={{ marginTop: '20px', marginBottom: '20px' }}>
-                                                <h6 className='text-primary'>{formObj.footer}<br />{formObj.isMultiLang && formObj.footer2}</h6>
+                                                <h6 className='text-primary'>{formObj.footer}<br />{formObj.is_multi_language && formObj.footer2}</h6>
                                             </div>
                                         </div> */}
                             </div>

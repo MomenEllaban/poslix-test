@@ -40,6 +40,7 @@ export const OrdersFooter = ({ orderEditDetails, details, shopId, lang }) => {
     const res = await findAllData(`print-settings/${router.query.id}`);
     setInvoiceType(res.data.result.print_type);
   };
+  
   useEffect(() => {
     try {
       if (router.isReady) checkPrintType();

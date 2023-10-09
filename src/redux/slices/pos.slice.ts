@@ -43,7 +43,6 @@ const posSlice = createSlice({
     },
     setPosRegister(state, { payload }) {
       state.register = payload as IRegister;
-      console.log(payload)
       localStorage.setItem(ELocalStorageKeys.POS_REGISTER_STATE, JSON.stringify(payload));
       return state;
     },

@@ -101,8 +101,9 @@ export function defaultInvoiceDetials(): IinvoiceDetails {
 
 export function defaultDetails(): any {
   return {
-    location_id: 140,
+    location_id: '',
     logo: '',
+    is_multi_language: false,
     ar: {
       name: 'عربي',
       tell: '9662564731',
@@ -145,30 +146,6 @@ export function defaultDetails(): any {
       unitPrice: 'unit price',
       subTotal: 'totals',
     },
-  };
-}
-
-export function defaultDetailsEn(): any {
-  return {
-    name: 'poslix',
-    tell: '9662564731',
-    txtCustomer: 'Customer',
-    orderNo: 'order no',
-    txtDate: 'date',
-    txtQty: 'qty',
-    '{}': 'item',
-    txtAmount: 'amount',
-    txtTax: 'tax',
-    txtItem: 'txtItem',
-    txtTotal: 'total',
-    footer: 'footers',
-    email: 'Email',
-    address: 'Address',
-    vatNumber: 'Vat',
-    customerNumber: 'Customer Number',
-    description: 'desc',
-    unitPrice: 'unit price',
-    subTotal: 'totals',
   };
 }
 

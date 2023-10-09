@@ -106,11 +106,9 @@ const Home: NextPage = ({ shopId: _id }: any) => {
     api
       .get(`reports/latest-register/${shopId}?all_data=1`)
       .then(({ data }) => {
-        console.log(shopId, 'check', data)
         return data.result.data[0];
       })
       .then((registerObject) => {
-        console.log(shopId, 'check2', registerObject)
         const checkPos: any = getLocalStorage<{hand_cash: number; state: string}>(ELocalStorageKeys.POS_REGISTER_STATE)
         if(checkPos?.status === 'open' || checkPos?.register?.status === 'open')
           registerObject.status = 'open'
