@@ -239,8 +239,9 @@ console.log(invoiceDetails)
               </tbody>
             </table>
             <p className="recipt-footer">
-              {invoiceDetails?.footer}
-              {invoiceDetails?.en?.is_multi_language && invoiceDetails?.footer2}
+              {invoiceDetails?.en?.footer}
+              <br />
+              {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.footer}
             </p>
             {/* <p className="recipt-footer">{formObj.notes}</p> */}
             <br />
@@ -334,7 +335,6 @@ console.log(invoiceDetails)
               <td></td>
               <td className="txt-bold">
                 {invoiceDetails?.en?.txtTotal}{' '}
-                <br />
                 {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtTotal}
               </td>
               <td></td>
@@ -379,6 +379,7 @@ console.log(invoiceDetails)
         </table>
         <p className="recipt-footer">
           {invoiceDetails?.en?.footer}
+          <br />
           {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.footer}
         </p>
         {/* <p className="recipt-footer">{orderNote}</p> */}
