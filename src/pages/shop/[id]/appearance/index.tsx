@@ -1238,7 +1238,11 @@ const Appearance: NextPage = (props: any) => {
                             <div className="appear-body-item a4">
                               <div className="bill2">
                                 <div className="brand-logo">
-                                  <img src={formObj.en.logo} style={{width: '50%', height: 'auto', objectFit: 'contain'}} />
+                                  {previewUrl.length > 0 ? (
+                                    <img src={previewUrl} />
+                                  ) : (
+                                    <img src={formObj.en.logo} style={{width: '50%', height: 'auto', objectFit: 'contain'}} />
+                                  )}
                                   <div className="invoice-print">
                                     INVOICE
                                     <div>
