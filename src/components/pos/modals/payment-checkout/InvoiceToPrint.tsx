@@ -150,9 +150,9 @@ console.log(invoiceDetails)
                       </tr>
                       <tr>
                         <td className="td_bg">
-                          {invoiceDetails?.en?.orderDate}
+                          {invoiceDetails?.en?.txtDate}
                           <br />
-                          {invoiceDetails?.is_multi_language && invoiceDetails?.ar?.orderDate}
+                          {invoiceDetails?.is_multi_language && invoiceDetails?.ar?.txtDate}
                         </td>
                         <td>{new Date().toISOString().slice(0, 10)}</td>
                       </tr>
@@ -252,7 +252,7 @@ console.log(invoiceDetails)
     return (
       <div className="bill">
         <div className="brand-logo">
-          <img src={invoiceDetails?.logo} />
+          <img src={invoiceDetails?.en?.logo} />
         </div>
         <br />
         <div className="brand-name">{invoiceDetails?.en?.name}</div>
