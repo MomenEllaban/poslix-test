@@ -1239,7 +1239,7 @@ const Appearance: NextPage = (props: any) => {
                               <div className="bill2">
                                 <div className="brand-logo">
                                   {previewUrl.length > 0 ? (
-                                    <img src={previewUrl} />
+                                    <img src={previewUrl} style={{width: '50%', height: 'auto', objectFit: 'contain'}} />
                                   ) : (
                                     <img src={formObj.en.logo} style={{width: '50%', height: 'auto', objectFit: 'contain'}} />
                                   )}

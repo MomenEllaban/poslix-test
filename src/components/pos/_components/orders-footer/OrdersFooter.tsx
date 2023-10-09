@@ -36,11 +36,14 @@ export const OrdersFooter = ({ orderEditDetails, details, shopId, lang }) => {
 
   const checkPrintType = async () => {
     const res2 = await findAllData(`appearance/${router.query.id}`);
-    setInvoiceDetails(res2.data.result);
+    setInvoiceDetails({
+      ...res2.data.result,
+      en: { ...res2.data.result.en, is_multi_language: !!res2.data.result.en.is_multi_language },
+    });
     const res = await findAllData(`print-settings/${router.query.id}`);
     setInvoiceType(res.data.result.print_type);
   };
-  
+
   useEffect(() => {
     try {
       if (router.isReady) checkPrintType();
@@ -91,7 +94,6 @@ export const OrdersFooter = ({ orderEditDetails, details, shopId, lang }) => {
             if (details.totalAmount > 0 || orderEditDetails.total_price > 0) {
               setPaymentModalShow(true);
             } else Toastify('error', 'Select Product(s) First');
-
           }}
           className="btn btn-primary fs-15 fs-sm-20">
           {orderEditDetails.isEdit ? lang.cartComponent.saveOrder : lang.cartComponent.checkout}

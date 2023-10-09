@@ -238,7 +238,7 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
                 </tr>
                 <tr>
                   <td colSpan={4} className="txt_bold_invoice">
-                    Total Due
+                    Total Due {' '}
                     {invoiceDetails?.en?.is_multi_language && 'المتبقى'}
                   </td>
                   <td className="txt_bold_invoice">
@@ -365,7 +365,7 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
               <td className="txt-bold">
                 {/* {invoiceDetails?.txtAmountpaid}{' '}
                 {invoiceDetails?.en?.is_multi_language && invoiceDetails?.txtAmountpaid2} */}
-                Total Paid
+                Total Paid {' '}
                 {invoiceDetails?.en?.is_multi_language && 'إجمالى المدفوعات'}
               </td>
               <td></td>
@@ -380,7 +380,7 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
               <td className="txt-bold">
                 {/* {invoiceDetails?.txtTotalDue}{' '}
                 {invoiceDetails?.en?.is_multi_language && invoiceDetails?.txtTotalDue2} */}
-                Total Due
+                Total Due {' '}
                 {invoiceDetails?.en?.is_multi_language && 'المتبقى'}
               </td>
               <td></td>
