@@ -45,7 +45,9 @@ const Expenses: NextPage = ({ id }: any) => {
   const columns: GridColDef[] = [
     { field: 'id', headerName: '#', minWidth: 50 },
     { field: 'name', headerName: 'Name', flex: 1 },
-    { field: 'category', headerName: 'Category', flex: 1 },
+    { field: 'expense_category', headerName: 'Category', flex: 1,
+      renderCell: ({ row }) => row?.expense_category?.name
+    },
     {
       field: 'amount',
       headerName: 'amount',
@@ -60,13 +62,13 @@ const Expenses: NextPage = ({ id }: any) => {
       renderCell: ({ row }: Partial<GridRowParams>) => row.created_at,
     },
     {
-      field: 'attach',
-      headerName: 'Attach File',
+      field: 'path',
+      headerName: 'Attached File',
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) => (
         <ButtonGroup className="mb-2 m-buttons-style">
           {
-            <Button>
+            <Button onClick={() => window.open(row.path, '_blank')}>
               <FontAwesomeIcon icon={faPaperclip} />
             </Button>
           }
@@ -130,32 +132,8 @@ const Expenses: NextPage = ({ id }: any) => {
       if (res.data.success) {
         setExpensesList(res.data.result);
       }
-
       setIsLoading(false);
     }
-  }
-  async function addUpdateExpense() {
-    const { success, data } = await apiInsertCtr({
-      type: 'expenses',
-      subType: 'insetUpdateExpenes',
-      data: cate,
-      shopId,
-    });
-    if (!success) {
-      Toastify('error', 'Has Error ,try Again');
-      return;
-    }
-    let jj = 0;
-    const _rows = [...cate];
-    for (var j = 0; j < _rows.length - 1; j++) {
-      _rows[j].isNew = false;
-      if (_rows[j].id == 0) {
-        _rows[j].id = data[jj];
-        jj++;
-      }
-    }
-    setCate(_rows);
-    Toastify('success', 'successfuly Done!');
   }
 
   const onRowsSelectionHandler = (ids: any) => {};
@@ -231,6 +209,7 @@ const Expenses: NextPage = ({ id }: any) => {
                     rows={expensesList}
                     setIsAddExpense={setIsAddExpense}
                     shopId={id}
+                    initData={initDataPage}
                   />
                 )}
               </Card.Body>
