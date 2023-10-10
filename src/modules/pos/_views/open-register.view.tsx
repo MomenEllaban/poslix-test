@@ -1,7 +1,6 @@
 import { faCashRegister } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useEffect, useState } from 'react';
-import { useBusinessList } from 'src/services/business.service';
 import api from 'src/utils/app-api';
 import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
 import { usePosContext } from '../_context/PosContext';
@@ -9,29 +8,32 @@ import { Toastify } from 'src/libs/allToasts';
 import { useRouter } from 'next/router';
 import { useAppDispatch } from 'src/hooks';
 import { setPosRegister } from 'src/redux/slices/pos.slice';
-import { createNewData } from 'src/services/crud.api';
+import { createNewData, findAllData } from 'src/services/crud.api';
 
-export function OpenRegisterView({ setShopId, shopId: _shopId, setIsLoading }) {
+export function OpenRegisterView({ setShopId, shopId: _shopId }) {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
   const shopId = router.query.id ?? 0;
-  const [cusLocs, setCusLocs] = useState([]);
+  const [businesses, setBusinesses] = useState([]);
   const [locations, setLocations] = useState([]);
   const { cashHand, setCashHand } = usePosContext();
   const dispatch = useAppDispatch();
   const [currentShopId, setCurrentShopId] = useState(shopId);
 
-  const { isLoading } = useBusinessList({
-    onSuccess: (data) => {
-      setCusLocs(data?.result.filter((el) => el.locations?.length > 0));
-      setLocations(data?.result?.[0]?.locations);
-    },
-  });
+  const getBusinesses = async () => {
+    setIsLoading(true);
+    const res = await findAllData('/business');
+    setBusinesses(res.data.result.filter((el) => el.locations?.length > 0));
+    setIsLoading(false);
+  };
 
   const handleBussinesChange = (e: any) => {
-    const idx = cusLocs?.findIndex((el) => el.id == e.target?.value);
-    const locs = idx > -1 ? cusLocs?.[idx].locations : [];
+    setIsLoading(true);
+    const idx = businesses?.findIndex((el) => el.id == e.target?.value);
+    const locs = idx > -1 ? businesses?.[idx].locations : [];
     setLocations(locs);
     setCurrentShopId(locs?.[0]?.location_id);
+    setIsLoading(false);
   };
 
   const handleLocationChange = (e: any) => {
@@ -62,6 +64,7 @@ export function OpenRegisterView({ setShopId, shopId: _shopId, setIsLoading }) {
   useEffect(() => {
     const locs = getLocalStorage<any[]>(ELocalStorageKeys.CUSTOEMR_LOCATIONS) ?? [];
     setLocations(locs?.[0]?.locations);
+    getBusinesses();
   }, []);
 
   return (
@@ -72,15 +75,18 @@ export function OpenRegisterView({ setShopId, shopId: _shopId, setIsLoading }) {
         openRegister();
       }}>
       <img className="logo" src="/images/logo1.png" />
-      <p>You have Open Register First!</p>
+      <div className="text-center">
+        <p className='mb-0'>You have to ppen the Register first!</p>
+        <small>Please select a location or continue with the current one.</small>
+      </div>
       <div className="col-lg-4 mb-3">
         <label>Bussnies</label>
         <select
           className="form-select"
-          disabled={isLoading || !cusLocs?.length}
+          disabled={isLoading || !businesses?.length}
           defaultValue={0}
           onChange={handleBussinesChange}>
-          {cusLocs?.length == 0 ? (
+          {businesses?.length == 0 ? (
             <option value={0} disabled>
               Loading...
             </option>
@@ -89,7 +95,7 @@ export function OpenRegisterView({ setShopId, shopId: _shopId, setIsLoading }) {
               <option value={0} disabled>
                 Select Bussnies
               </option>
-              {cusLocs?.map((el) => (
+              {businesses?.map((el) => (
                 <option key={el.id} value={el.id}>
                   {el.name}
                 </option>
