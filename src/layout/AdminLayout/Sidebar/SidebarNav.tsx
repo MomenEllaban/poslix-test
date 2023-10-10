@@ -90,6 +90,8 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
       hasBrands: false,
       hasTaxes: false,
       hasAppearance: false,
+      hasPayment: false,
+      hasPrint: false,
       hasRegisterReport: false,
       hasSalesReport: false,
       hasItemsReport: false,
@@ -120,6 +122,10 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
         ? (getPermissions.hasTaxes = true)
         : perm.name === 'appearance/view'
         ? (getPermissions.hasAppearance = true)
+        : perm.name === 'payment/view'
+        ? (getPermissions.hasPayment = true)
+        : perm.name === 'appearance/viewall'
+        ? (getPermissions.hasPrint = true)
         : perm.name === 'pricinggroup/view'
         ? (getPermissions.hasPricingGroups = true)
         : perm.name === 'sales-list/view'
@@ -224,25 +230,25 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
         </SidebarNavItem>
       )}
 
-      {(permissions.hasSalesList || permissions.hasPurchases || permissions.hasCategories) && (
+      {(permissions.hasSalesList || permissions.hasQuotations) && (
         <SidebarNavGroup toggleIcon="MdOutlineCrisisAlert" toggleText="Sales">
-          {/* {permissions.hasQuotations && ( */}
-          <SidebarNavItem
-            href={'/shop/' + shopId + '/quotations'}
-            sub={true}
-            isShown={!!router.query.id}>
-            Quotations List
-          </SidebarNavItem>
-          {/* )} */}
-          {/* {permissions.hasSalesList && ( */}
-          <SidebarNavItem
-            href={'/shop/' + shopId + '/sales'}
-            sub={true}
-            isShown={!!router.query.id}>
-            {' '}
-            Sales List
-          </SidebarNavItem>
-          {/* )} */}
+          {permissions.hasQuotations && (
+            <SidebarNavItem
+              href={'/shop/' + shopId + '/quotations'}
+              sub={true}
+              isShown={!!router.query.id}>
+              Quotations List
+            </SidebarNavItem>
+          )}
+          {permissions.hasSalesList && (
+            <SidebarNavItem
+              href={'/shop/' + shopId + '/sales'}
+              sub={true}
+              isShown={!!router.query.id}>
+              {' '}
+              Sales List
+            </SidebarNavItem>
+          )}
 
           {permissions.hasOrders &&
             btype == 'Kianvqyqndr' && ( //! why?
@@ -270,7 +276,10 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
         </SidebarNavItem>
       )}
 
-      {(permissions.hasTaxes || permissions.hasDiscount || permissions.hasExpenses) && (
+      {(permissions.hasRegisterReport ||
+        permissions.hasSalesReport ||
+        permissions.hasItemsReport ||
+        permissions.hasStockReport) && (
         <SidebarNavGroup toggleIcon="TbReportSearch" toggleText="Report">
           {permissions.hasRegisterReport && (
             <SidebarNavItem
@@ -338,7 +347,11 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
         </SidebarNavItem>
       )}
 
-      {(permissions.hasTaxes || permissions.hasAppearance || permissions.Categories) && (
+      {(permissions.hasTaxes ||
+        permissions.hasAppearance ||
+        permissions.Categories ||
+        permissions.hasPayment ||
+        permissions.hasPrint) && (
         <SidebarNavGroup toggleIcon="IoSettingsSharp" toggleText="Settings">
           {permissions.hasTaxes && (
             <SidebarNavItem
@@ -364,7 +377,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
               Category & Brands
             </SidebarNavItem>
           )}
-          {permissions.hasTaxes && (
+          {permissions.hasPayment && (
             <SidebarNavItem
               href={'/shop/' + shopId + '/payment'}
               sub={true}
@@ -372,14 +385,14 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
               Payment Methods
             </SidebarNavItem>
           )}
-          {
+          {permissions.hasPrint && (
             <SidebarNavItem
               href={'/shop/' + shopId + '/Printsetting'}
               sub={true}
               isShown={!!router.query.id}>
               Print setting
             </SidebarNavItem>
-          }
+          )}
         </SidebarNavGroup>
       )}
       {permissions.hasPos && (

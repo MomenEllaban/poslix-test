@@ -57,7 +57,10 @@ export default function SalesListTable({ id, shopId, rules, salesList }: any) {
 
   const checkPrintType = async () => {
     const res = await findAllData(`appearance/${router.query.id}`);
-    setInvoiceDetails(res.data.result);
+    setInvoiceDetails({
+      ...res.data.result,
+      en: { ...res.data.result.en, is_multi_language: !!res.data.result.en.is_multi_language },
+    });
   };
 
   const handleCompletePrint = (id) => {
@@ -279,7 +282,7 @@ export default function SalesListTable({ id, shopId, rules, salesList }: any) {
                 <td></td>
                 <td>
                   {invoiceDetails?.en?.txtDiscount}
-                  {'Discount'} {'التخفيضات'}
+                  {'Discount'} {invoiceDetails?.en?.is_multi_language && 'التخفيضات'}
                   {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtDiscount}
                 </td>
                 <td></td>
@@ -300,7 +303,9 @@ export default function SalesListTable({ id, shopId, rules, salesList }: any) {
               </tr>
               <tr className="net-amount">
                 <td></td>
-                <td className="txt-bold">Total Paid المدفوعات</td>
+                <td className="txt-bold">
+                  Total Paid {invoiceDetails?.en?.is_multi_language && 'إجمالى المدفوعات'}
+                </td>
                 <td></td>
                 <td className="txt-bold">
                   {Number(selectRow.payed).toFixed(locationSettings?.location_decimal_places)}
@@ -308,7 +313,9 @@ export default function SalesListTable({ id, shopId, rules, salesList }: any) {
               </tr>
               <tr className="net-amount">
                 <td></td>
-                <td className="txt-bold">Total Due المتبقى</td>
+                <td className="txt-bold">
+                  Total Due {invoiceDetails?.en?.is_multi_language && 'المتبقى'}
+                </td>
                 <td></td>
                 <td className="txt-bold">
                   {Number(selectRow.discount).toFixed(locationSettings?.location_decimal_places)}
@@ -472,7 +479,7 @@ export default function SalesListTable({ id, shopId, rules, salesList }: any) {
               </tr>
               <tr>
                 <td colSpan={4} className="txt_bold_invoice">
-                  Total Paid المدفوعات
+                  Total Paid {invoiceDetails?.en?.is_multi_language && 'إجمالى المدفوعات'}
                 </td>
                 <td className="txt_bold_invoice">
                   {Number(selectRow.payed).toFixed(locationSettings?.location_decimal_places)}
@@ -480,7 +487,7 @@ export default function SalesListTable({ id, shopId, rules, salesList }: any) {
               </tr>
               <tr>
                 <td colSpan={4} className="txt_bold_invoice">
-                  Total Due المتبقى
+                  Total Due {invoiceDetails?.en?.is_multi_language && 'المتبقى'}
                 </td>
                 <td className="txt_bold_invoice">
                   {Number(selectRow.due).toFixed(locationSettings?.location_decimal_places)}

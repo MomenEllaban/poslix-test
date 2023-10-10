@@ -61,6 +61,8 @@ const AddNewRole = (props: any) => {
         finalRes = { ...finalRes, [field]: { [field]: [...res.data.result[field]] } };
       if (field === 'suppliers')
         finalRes = { ...finalRes, [field]: { [field]: [...res.data.result[field]] } };
+      if (field === 'units')
+        finalRes = { ...finalRes, [field]: { [field]: [...res.data.result[field]] } };
       Object.keys(res.data.result[field]).forEach((role) => {
         if (role === 'reports')
           finalRes = { ...finalRes, reports: { ...res.data.result[field][role] } };
@@ -77,7 +79,7 @@ const AddNewRole = (props: any) => {
     });
     delete finalRes.tailoring;
     delete finalRes.business;
-    delete finalRes.Locationbusiness;
+    delete finalRes.locationbusiness;
     finalRes = {
       ...finalRes,
       inventory: { ...finalRes.inventory, suppliers: [...finalRes.suppliers.suppliers] },
