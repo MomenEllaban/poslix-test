@@ -1,11 +1,13 @@
 import { ICustomer, ITax } from '@models/pos.types';
 import type { NextPage } from 'next';
+import { useRouter } from 'next/router';
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import 'remixicon/fonts/remixicon.css';
 import withAuth from 'src/HOCs/withAuth';
 import { useProducts } from 'src/context/ProductContext';
 import { useUser } from 'src/context/UserContext';
 import { useAppDispatch, useAppSelector } from 'src/hooks';
+import { Toastify } from 'src/libs/allToasts';
 import PosCart from 'src/modules/pos/PosCart';
 import PosLoader from 'src/modules/pos/_components/PosLoader';
 import PosLayout from 'src/modules/pos/_components/layout/pos.layout';
@@ -32,6 +34,7 @@ const Home: NextPage = ({ shopId: _id }: any) => {
   const { setLocationSettings } = useUser();
   const pos = useAppSelector(selectPos);
   const dispatch = useAppDispatch();
+  const router = useRouter();
 
   const [shopId, setShopId] = useState(_id);
   const [isLoading, setIsLoading] = useState(false);
@@ -109,9 +112,11 @@ const Home: NextPage = ({ shopId: _id }: any) => {
         return data.result.data[0];
       })
       .then((registerObject) => {
-        const checkPos: any = getLocalStorage<{hand_cash: number; state: string}>(ELocalStorageKeys.POS_REGISTER_STATE)
-        if(checkPos?.status === 'open' || checkPos?.register?.status === 'open')
-          registerObject.status = 'open'
+        const checkPos: any = getLocalStorage<{ hand_cash: number; state: string }>(
+          ELocalStorageKeys.POS_REGISTER_STATE
+        );
+        if (checkPos?.status === 'open' || checkPos?.register?.status === 'open')
+          registerObject.status = 'open';
         dispatch(setPosRegister(registerObject));
       })
       .finally(() => {
@@ -120,7 +125,14 @@ const Home: NextPage = ({ shopId: _id }: any) => {
   };
 
   useEffect(() => {
-    handleCheckRegister();
+    const perms = JSON.parse(localStorage.getItem('permissions')).filter(
+      (loc) => loc.id == router.query.id
+    );
+    console.log(perms);
+    if (!perms[0]?.permissions?.length) {
+      Toastify('error', "You don't have access to this page!");
+      router.replace(`/shop/${_id}/`);
+    } else handleCheckRegister();
   }, [_id]);
 
   return (

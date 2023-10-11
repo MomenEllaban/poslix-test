@@ -80,6 +80,8 @@ const AddNewRole = (props: any) => {
     delete finalRes.tailoring;
     delete finalRes.business;
     delete finalRes.locationbusiness;
+    delete finalRes.units;
+    delete finalRes.reports.items;
     finalRes = {
       ...finalRes,
       inventory: { ...finalRes.inventory, suppliers: [...finalRes.suppliers.suppliers] },
