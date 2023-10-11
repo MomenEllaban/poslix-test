@@ -32,7 +32,11 @@ const Appearance: NextPage = (props: any) => {
       Toastify('error', 'Somthing wrong!!, try agian');
       return;
     }
-    setFormObj({ ...formObj, ...res.data.result, is_multi_language: !!res.data.result.en.is_multi_language });
+    setFormObj({
+      ...formObj,
+      ...res.data.result,
+      is_multi_language: !!res.data.result.en.is_multi_language,
+    });
     // if (res.data.result.details != undefined && res.data.result.details != null && res.data.result.details.length > 10) {
     //   const _data= JSON.parse(res.data.details);
     // }
@@ -42,12 +46,17 @@ const Appearance: NextPage = (props: any) => {
     if (isLoading) return;
     setIsLoading(true);
     const res = await createNewData(`appearance`, {
-      ...formObj, location_id: router.query.id
+      ...formObj,
+      location_id: router.query.id,
     });
     if (res.data.success) {
       Toastify('success', 'successfully updated');
       setPreviewUrl('');
-      setFormObj({...formObj, en: {...formObj.en, logo: formObj.logo}, ar: {...formObj.ar, logo: formObj.logo}})
+      setFormObj({
+        ...formObj,
+        en: { ...formObj.en, logo: formObj.logo },
+        ar: { ...formObj.ar, logo: formObj.logo },
+      });
     } else Toastify('error', 'Somthing wrong!!, try agian');
     setIsLoading(false);
   }
@@ -618,7 +627,8 @@ const Appearance: NextPage = (props: any) => {
                                 <div className="order-details-top" style={{ marginTop: '5px' }}>
                                   <div className="order-details-top-item">
                                     <div>
-                                      {formObj.en.txtQty} {formObj.is_multi_language && formObj.ar.txtQty}
+                                      {formObj.en.txtQty}{' '}
+                                      {formObj.is_multi_language && formObj.ar.txtQty}
                                     </div>
                                     <div>
                                       {formObj.en.txtItem}{' '}
@@ -663,7 +673,8 @@ const Appearance: NextPage = (props: any) => {
                                   <div className="order-details-top-item">
                                     <div></div>
                                     <div>
-                                      {formObj.en.txtTax} {formObj.is_multi_language && formObj.ar.txtTax}
+                                      {formObj.en.txtTax}{' '}
+                                      {formObj.is_multi_language && formObj.ar.txtTax}
                                     </div>
                                     <div>0.540</div>
                                   </div>
@@ -1239,9 +1250,15 @@ const Appearance: NextPage = (props: any) => {
                               <div className="bill2">
                                 <div className="brand-logo">
                                   {previewUrl.length > 0 ? (
-                                    <img src={previewUrl} style={{width: '50%', height: 'auto', objectFit: 'contain'}} />
+                                    <img
+                                      src={previewUrl}
+                                      style={{ width: '50%', height: 'auto', objectFit: 'contain' }}
+                                    />
                                   ) : (
-                                    <img src={formObj.en.logo} style={{width: '50%', height: 'auto', objectFit: 'contain'}} />
+                                    <img
+                                      src={formObj.en.logo}
+                                      style={{ width: '50%', height: 'auto', objectFit: 'contain' }}
+                                    />
                                   )}
                                   <div className="invoice-print">
                                     INVOICE
@@ -1253,8 +1270,7 @@ const Appearance: NextPage = (props: any) => {
                                               {formObj.en.orderNo}{' '}
                                               {formObj.is_multi_language && formObj.ar.orderNo}
                                             </td>
-                                            <td>
-                                            </td>
+                                            <td></td>
                                           </tr>
                                           <tr>
                                             <td className="td_bg">
@@ -1328,8 +1344,7 @@ const Appearance: NextPage = (props: any) => {
                                         {formObj.en.txtTotal}{' '}
                                         {formObj.is_multi_language && formObj.ar.txtTotal}
                                       </td>
-                                      <td className="txt_bold_invoice">
-                                      </td>
+                                      <td className="txt_bold_invoice"></td>
                                     </tr>
                                   </tbody>
                                 </table>

@@ -153,12 +153,13 @@ const Product: NextPage = (props: any) => {
         if (row.type == 'single')
           return Number(row.sell_price).toFixed(locationSettings?.location_decimal_places);
         else {
-          const getPrices = []
-          row.variations.map(va => getPrices.push(va.price))
+          const getPrices = [];
+          row.variations.map((va) => getPrices.push(va.price));
           return (
-            Number(Math.min(...getPrices)).toFixed(locationSettings?.location_decimal_places)
-            + ' - ' +
-            Number(Math.max(...getPrices)).toFixed(locationSettings?.location_decimal_places));
+            Number(Math.min(...getPrices)).toFixed(locationSettings?.location_decimal_places) +
+            ' - ' +
+            Number(Math.max(...getPrices)).toFixed(locationSettings?.location_decimal_places)
+          );
         }
       },
     },
@@ -178,8 +179,11 @@ const Product: NextPage = (props: any) => {
       headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       renderCell: ({ row }: Partial<GridRowParams>) => (
-        <p>{row.stock} <span style={{fontSize: '13px', color: 'grey'}}>[{row.total_qty_sold}]</span></p>
-      )
+        <p>
+          {row.stock}{' '}
+          <span style={{ fontSize: '13px', color: 'grey' }}>[{row.total_qty_sold}]</span>
+        </p>
+      ),
     },
     {
       field: 'action',
@@ -192,13 +196,13 @@ const Product: NextPage = (props: any) => {
       renderCell: ({ row }: Partial<GridRowParams>) => (
         <ButtonGroup className="mb-2 m-buttons-style">
           {permissions.hasEdit && (
-              <Button
-                onClick={() => {
-                  router.push('/shop/' + shopId + '/products/edit/' + row.id);
-                }}>
-                <FontAwesomeIcon icon={faPenToSquare} />
-              </Button>
-            )}
+            <Button
+              onClick={() => {
+                router.push('/shop/' + shopId + '/products/edit/' + row.id);
+              }}>
+              <FontAwesomeIcon icon={faPenToSquare} />
+            </Button>
+          )}
           {permissions.hasDelete && (
             <Button
               onClick={() => {
@@ -308,7 +312,6 @@ const Product: NextPage = (props: any) => {
           })
         ]
       );
-    
   }, [router.asPath]);
 
   const handleDeleteFuc = (result: boolean, msg: string, section: string) => {
@@ -489,7 +492,6 @@ const Product: NextPage = (props: any) => {
 };
 
 export default withAuth(Product);
-
 
 export async function getServerSideProps({ params }) {
   const { id } = params;

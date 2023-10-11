@@ -45,8 +45,11 @@ const Expenses: NextPage = ({ id }: any) => {
   const columns: GridColDef[] = [
     { field: 'id', headerName: '#', minWidth: 50 },
     { field: 'name', headerName: 'Name', flex: 1 },
-    { field: 'expense_category', headerName: 'Category', flex: 1,
-      renderCell: ({ row }) => row?.expense_category?.name
+    {
+      field: 'expense_category',
+      headerName: 'Category',
+      flex: 1,
+      renderCell: ({ row }) => row?.expense_category?.name,
     },
     {
       field: 'amount',

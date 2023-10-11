@@ -29,10 +29,10 @@ const Category = ({ id }: any) => {
   const [isloading, setIsloading] = useState(true);
 
   async function initDataPage() {
-    if(router.isReady) {
-      setShopId(router.query.id.toString())
-      const resCategories = await findAllData(`categories/${router.query.id}`)
-      const resBrands = await findAllData(`brands/${router.query.id}`)
+    if (router.isReady) {
+      setShopId(router.query.id.toString());
+      const resCategories = await findAllData(`categories/${router.query.id}`);
+      const resBrands = await findAllData(`brands/${router.query.id}`);
       if (resCategories.data.success) {
         setCats(resCategories.data.result);
       }
@@ -46,35 +46,57 @@ const Category = ({ id }: any) => {
     initDataPage();
   }, [router.asPath]);
 
-  const [categoryPermissions, setCategoryPermissions] = useState<any>()
-  const [brandPermissions, setBrandPermissions] = useState<any>()
+  const [categoryPermissions, setCategoryPermissions] = useState<any>();
+  const [brandPermissions, setBrandPermissions] = useState<any>();
   useEffect(() => {
     const perms = JSON.parse(localStorage.getItem('permissions'));
-    const getCategoryPermissions = {hasView: false, hasInsert: false, hasEdit: false, hasDelete: false}
-    const getBrandPermissions = {hasView: false, hasInsert: false, hasEdit: false, hasDelete: false}
+    const getCategoryPermissions = {
+      hasView: false,
+      hasInsert: false,
+      hasEdit: false,
+      hasDelete: false,
+    };
+    const getBrandPermissions = {
+      hasView: false,
+      hasInsert: false,
+      hasEdit: false,
+      hasDelete: false,
+    };
     perms[0]?.permissions.map((perm) =>
-      perm.name.includes('categories/view') ? getCategoryPermissions.hasView = true
-      : perm.name.includes('categories/add') ? getCategoryPermissions.hasInsert = true
-      : perm.name.includes('categories/update') ? getCategoryPermissions.hasEdit = true
-      : perm.name.includes('categories/delete') ? getCategoryPermissions.hasDelete = true : null)
+      perm.name.includes('categories/view')
+        ? (getCategoryPermissions.hasView = true)
+        : perm.name.includes('categories/add')
+        ? (getCategoryPermissions.hasInsert = true)
+        : perm.name.includes('categories/update')
+        ? (getCategoryPermissions.hasEdit = true)
+        : perm.name.includes('categories/delete')
+        ? (getCategoryPermissions.hasDelete = true)
+        : null
+    );
     perms[0]?.permissions.map((perm) =>
-      perm.name.includes('brands/view') ? getBrandPermissions.hasView = true
-      : perm.name.includes('brands/add') ? getBrandPermissions.hasInsert = true
-      : perm.name.includes('brands/update') ? getBrandPermissions.hasEdit = true
-      : perm.name.includes('brands/delete') ? getBrandPermissions.hasDelete = true : null)
+      perm.name.includes('brands/view')
+        ? (getBrandPermissions.hasView = true)
+        : perm.name.includes('brands/add')
+        ? (getBrandPermissions.hasInsert = true)
+        : perm.name.includes('brands/update')
+        ? (getBrandPermissions.hasEdit = true)
+        : perm.name.includes('brands/delete')
+        ? (getBrandPermissions.hasDelete = true)
+        : null
+    );
 
-    setCategoryPermissions(getCategoryPermissions)
-    setBrandPermissions(getBrandPermissions)
-  }, [router.asPath])
+    setCategoryPermissions(getCategoryPermissions);
+    setBrandPermissions(getBrandPermissions);
+  }, [router.asPath]);
   return (
     <>
       <AdminLayout shopId={id}>
         <AlertDialog
           alertShow={show}
           alertFun={(e: boolean) => {
-            setShow(false)
+            setShow(false);
             Toastify('success', 'successfuly Done!');
-            initDataPage()
+            initDataPage();
           }}
           id={selectId}
           expenses={cats}
@@ -111,9 +133,7 @@ const Category = ({ id }: any) => {
             <Tab eventKey="categories" title="Categories">
               <Card>
                 <Card.Header className="p-3 bg-white">
-                  <h5>
-                    
-                  </h5>
+                  <h5></h5>
                 </Card.Header>
                 <Card.Body className="table-responsive text-nowrap">
                   {!isloading ? (
@@ -140,7 +160,7 @@ const Category = ({ id }: any) => {
                                       onClick={() =>
                                         router.push({
                                           pathname: '/shop/' + id + '/category/edit/' + ex.id,
-                                          query: { type: 'categories' }
+                                          query: { type: 'categories' },
                                         })
                                       }>
                                       <FontAwesomeIcon icon={faPenToSquare} />
@@ -207,7 +227,7 @@ const Category = ({ id }: any) => {
                                       onClick={() =>
                                         router.push({
                                           pathname: '/shop/' + id + '/category/edit/' + ex.id,
-                                          query: { type: 'brands' }
+                                          query: { type: 'brands' },
                                         })
                                       }>
                                       <FontAwesomeIcon icon={faPenToSquare} />
@@ -246,8 +266,8 @@ const Category = ({ id }: any) => {
 };
 export default withAuth(Category);
 export async function getServerSideProps({ params }) {
-  const { id } = params
+  const { id } = params;
   return {
-    props: {id},
-  }
+    props: { id },
+  };
 }
