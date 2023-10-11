@@ -68,6 +68,18 @@ function LocationUpdateForm({ businessId, location }) {
     },
   });
 
+  useEffect(() => {
+    if (currenciesList && location.currency_name && location.currency_code) {
+      const matchingCurrency = currenciesList.find(curr =>
+        curr.currency === location.currency_name && curr.code === location.currency_code
+      );
+
+      if (matchingCurrency) {
+        setLocationValue('currency_id', matchingCurrency.id);
+      }
+    }
+  }, [currenciesList, location, setLocationValue]);
+
   function onLocationSubmit(data: any) {
     console.log(data)
     setLoading(true);
