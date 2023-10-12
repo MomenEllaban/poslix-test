@@ -118,7 +118,18 @@ export const purchasesColumns: ({
       </>
     ),
   },
-  { field: 'price', headerName: 'Price', minWidth: 150, editable: true, type: 'number' },
+  {
+    field: 'price',
+    headerName: 'Price',
+    minWidth: 150,
+    editable: true,
+    type: 'number',
+    renderCell: ({ row }: Partial<GridRowParams>) => (
+      <div>
+        {row.price.toFixed(locationSettings?.location_decimal_places)}
+      </div>
+    ),
+  },
   {
     field: 'quantity',
     headerName: 'Qty',
@@ -143,7 +154,7 @@ export const purchasesColumns: ({
       <div>
         {locationSettings?.currency_id == formObj.currency_id
           ? (+(+row.cost * +row.quantity)).toFixed(locationSettings?.location_decimal_places)
-          : (+((formObj.currency_rate || 1) * +row.cost)).toFixed(
+          : (+((formObj.currency_rate || +row.quantity) * +row.cost)).toFixed(
               locationSettings?.location_decimal_places
             )}
       </div>

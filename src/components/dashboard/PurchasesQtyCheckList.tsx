@@ -5,50 +5,22 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowAltCircleLeft, faSave, faCircleCheck } from '@fortawesome/free-solid-svg-icons';
 import { DataGrid, GridColDef, GridRowParams } from '@mui/x-data-grid';
 import { Toastify } from 'src/libs/allToasts';
+import { findAllData } from 'src/services/crud.api';
 const PurchasesQtyCheckList = (props: any) => {
   const { shopId, purchaseId } = props;
-  const [orderLines, setOrderLines] = useState<
-    {
-      id: number;
-      name: string;
-      price: string;
-      qty: string;
-      qty_received: string;
-      qty_left: string;
-    }[]
-  >([]);
+  const [orderLines, setOrderLines] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedIndex, setSlectedIndex] = useState(-1);
   async function intPageData() {
-    const { success, newdata, msg } = await apiFetchCtr({
-      fetch: 'transactions',
-      subType: 'initCheckList',
-      shopId,
-      purchaseId,
-    });
-
-    if (!success) {
-      alert(msg);
+    const res = await findAllData(`purchase/${purchaseId}/show`)
+    if (!res.data.success) {
+      alert("Failed");
       return;
     }
     setIsLoading(false);
-    setOrderLines(newdata);
+    setOrderLines(res.data.result.stocks);
   }
-  async function addUpdateStock2() {
-    const { success, newdata, msg } = await apiInsertCtr({
-      type: 'transactions',
-      subType: 'addUpdateStockCheckList',
-      shopId,
-      data: { purchaseId, orderLines },
-    });
-    if (!success) {
-      alert(msg);
-      return;
-    }
-    Toastify('success', 'successfully completed');
-    props.purchases[selectedIndex].status = newdata;
-    props.setIsShowQtyManager(false);
-  }
+
   const columns: GridColDef[] = [
     { field: 'name', headerName: 'Product Name', minWidth: 250 },
     { field: 'cost', headerName: 'Cost', minWidth: 150 },
@@ -155,11 +127,6 @@ const PurchasesQtyCheckList = (props: any) => {
             rowsPerPageOptions={[10]}
             onCellEditCommit={onRowsSelectionHandler}
           />
-          <div className="mb-4">
-            <button className="btn m-btn btn-primary p-3" onClick={() => addUpdateStock2()}>
-              <FontAwesomeIcon icon={faSave} /> Save List
-            </button>
-          </div>
         </div>
       ) : (
         <div className="d-flex justify-content-around">

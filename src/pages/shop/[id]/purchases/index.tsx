@@ -3,15 +3,11 @@ import {
   faListCheck,
   faPenToSquare,
   faPlus,
-  faTrash
+  faTrash,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { AdminLayout } from '@layout';
-import {
-  DataGrid,
-  GridColDef,
-  GridRowParams
-} from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridRowParams, GridSortItem, GridSortModel } from '@mui/x-data-grid';
 import type { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
@@ -28,7 +24,6 @@ import CustomToolbar from 'src/modules/reports/_components/CustomToolbar';
 import { findAllData } from 'src/services/crud.api';
 
 const Purchases: NextPage = ({ shopId, id }: any) => {
-
   const [purchases, setPurchases] = useState<{ id: number; name: string; sku: string }[]>([]);
   const [isloading, setIsloading] = useState(true);
   const { locationSettings, setLocationSettings } = useUser();
@@ -85,18 +80,9 @@ const Purchases: NextPage = ({ shopId, id }: any) => {
             <FontAwesomeIcon icon={faListCheck} />
           </Button>
           <Button
-            disabled={
-              row.status == 'draft' ||
-              row.payment_status == 'partially_paid' ||
-              row.payment_status == 'not_paid'
-            }
+            disabled={row.payment_status == 'paid'}
             onClick={() => {
-              if (
-                row.status == 'draft' ||
-                row.payment_status == 'partially_paid' ||
-                row.payment_status == 'not_paid'
-              )
-                return;
+              if (row.payment_status == 'paid') return;
               setPurchaseId(row.id);
               setIsShowPayments(!isShowPayments);
             }}>
@@ -121,7 +107,6 @@ const Purchases: NextPage = ({ shopId, id }: any) => {
     },
   ];
 
-
   const handleDeleteFuc = (result: boolean, msg: string, section: string) => {
     initDataPage();
     if (msg.length > 0) Toastify(result ? 'success' : 'error', msg);
@@ -132,6 +117,7 @@ const Purchases: NextPage = ({ shopId, id }: any) => {
     if (router.query.id) {
       const res = await findAllData(`purchase/${router.query.id}`);
       if (res.data.success) {
+        console.log(res.data.result);
         setPurchases(res.data.result);
       }
     }
@@ -142,9 +128,9 @@ const Purchases: NextPage = ({ shopId, id }: any) => {
     if (_locs.toString()?.length > 10)
       setLocationSettings(
         _locs[
-        _locs.findIndex((loc: any) => {
-          return loc.value == shopId;
-        })
+          _locs.findIndex((loc: any) => {
+            return loc.value == shopId;
+          })
         ]
       );
 
@@ -161,10 +147,10 @@ const Purchases: NextPage = ({ shopId, id }: any) => {
       perm.name.includes('purchases/add')
         ? (getPermissions.hasInsert = true)
         : perm.name.includes('purchases/update')
-          ? (getPermissions.hasEdit = true)
-          : perm.name.includes('purchases/delete')
-            ? (getPermissions.hasDelete = true)
-            : null
+        ? (getPermissions.hasEdit = true)
+        : perm.name.includes('purchases/delete')
+        ? (getPermissions.hasDelete = true)
+        : null
     );
 
     setPermissions(getPermissions);
@@ -176,10 +162,24 @@ const Purchases: NextPage = ({ shopId, id }: any) => {
         return <span className="purchase-satus-style">{status}</span>;
 
       default:
-        return <span className="purchase-satus-style paid-other">{status.split('_').join(' ')}</span>;
+        return (
+          <span className="purchase-satus-style paid-other">{status.split('_').join(' ')}</span>
+        );
     }
   }
 
+  const defaultSortModel: GridSortItem[] = [
+    {
+      field: 'id',
+      sort: 'desc', // 'asc' for ascending, 'desc' for descending
+    },
+  ];
+
+  const [sortModel, setSortModel] = useState<GridSortModel>(defaultSortModel);
+
+  const handleSortModelChange = (newSortModel) => {
+    setSortModel(newSortModel);
+  };
   return (
     <AdminLayout shopId={id}>
       <ToastContainer />
@@ -217,7 +217,9 @@ const Purchases: NextPage = ({ shopId, id }: any) => {
               <div className="mb-4">
                 <button
                   className="btn m-btn btn-primary p-3"
-                  onClick={() => { router.push('/shop/' + shopId + '/purchases/add'); }}>
+                  onClick={() => {
+                    router.push('/shop/' + shopId + '/purchases/add');
+                  }}>
                   <FontAwesomeIcon icon={faPlus} /> New Purchase
                 </button>
               </div>
@@ -228,13 +230,18 @@ const Purchases: NextPage = ({ shopId, id }: any) => {
                   <h5>Purchases List</h5>
                   <DataGrid
                     className="datagrid-style"
-                    sx={{ '.MuiDataGrid-columnSeparator': { display: 'none', }, '&.MuiDataGrid-root': { border: 'none', }, }}
-
+                    sx={{
+                      '.MuiDataGrid-columnSeparator': { display: 'none' },
+                      '&.MuiDataGrid-root': { border: 'none' },
+                    }}
+                    sortModel={sortModel}
+                    onSortModelChange={handleSortModelChange}
                     rows={purchases}
                     columns={columns}
                     pageSize={10}
                     rowsPerPageOptions={[10]}
-                    components={{ Toolbar: CustomToolbar }} />
+                    components={{ Toolbar: CustomToolbar }}
+                  />
                 </div>
               </div>
             ) : (
