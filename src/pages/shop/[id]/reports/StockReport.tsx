@@ -1,6 +1,6 @@
 import { AdminLayout } from '@layout';
 import { ILocation } from '@models/auth.types';
-import { IBrand } from '@models/pos.types';
+import { IBrand, ICategory } from '@models/pos.types';
 import { IStockReport } from '@models/reports.types';
 import { Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import FormControl from '@mui/material/FormControl';
@@ -31,6 +31,9 @@ function StockReport() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [sales, setSales] = useState<any>([]);
   const [brands, setBrands] = useState<(IBrand & { label: string; value: number })[]>([]);
+  const [categories, setCategories] = useState<(ICategory & { label: string; value: number })[]>(
+    []
+  );
   const handleClose = () => {
     setAnchorEl(null);
   };
@@ -45,7 +48,9 @@ function StockReport() {
   const [details, setDetails] = useState({ subTotal: 1, tax: 0, cost: 0 });
   const { setInvoicDetails, invoicDetails, locationSettings, setLocationSettings } = useUser();
 
-  const [filteredByBrands, setFilteredByBrand] = useState([]);
+  const [filteredByBrands, setFilteredByBrands] = useState([]);
+  const [filteredByCategories, setFilteredByCategories] = useState([]);
+
   const [filteredSales, setFilteredSales] = useState<any>([]);
   const [selectedRange, setSelectedRange] = useState(null);
   const [strSelectedDate, setStrSelectedDate] = useState([]);
@@ -64,13 +69,21 @@ function StockReport() {
   const handleSelectBrand: StateManagerProps['onChange'] = (
     brand: IBrand & { label: string; value: number }
   ) => {
-    if (!brand) return setFilteredByBrand(sales);
+    if (!brand) return setFilteredByBrands(sales);
 
     const _filteredSales = sales?.filter((sale) => sale.brand_id === brand.id);
-    setFilteredByBrand(_filteredSales);
+    setFilteredByBrands(_filteredSales);
     console.log(_filteredSales);
   };
-  const filteredArr = intersectionBy(filteredByBrands, 'id');
+  const handleSelectCategory: StateManagerProps['onChange'] = (
+    category: ICategory & { label: string; value: number }
+  ) => {
+    if (!category) return setFilteredByCategories(sales);
+
+    const _filteredSales = sales?.filter((sale) => sale.sub_category === category.id);
+    setFilteredByCategories(_filteredSales);
+  };
+  const filteredArr = intersectionBy(filteredByBrands, filteredByCategories, 'id');
 
   useEffect(() => {
     let localFilteredSales = [];
@@ -125,15 +138,9 @@ function StockReport() {
     setFilteredSales(localFilteredSales);
   }, [strSelectedDate, selectedCustomer]);
 
-  const handleChangeCustomer = (event: SelectChangeEvent<string>) => {
-    setSelectedCustomer(event.target.value);
-  };
-
   const resetFilters = () => {
-    // setFilteredSales(sales);
-    setSelectedCustomer('');
-    setSelectedRange(null);
-    setStrSelectedDate([]);
+    setFilteredByCategories(sales);
+    setFilteredByBrands(sales);
   };
 
   //table columns
@@ -292,7 +299,8 @@ function StockReport() {
         }));
         setSales(_sales);
         setFilteredSales(_sales);
-        setFilteredByBrand(_sales);
+        setFilteredByBrands(_sales);
+        setFilteredByCategories(_sales);
         _sales.forEach(({ brand_id, brand_name }) => {
           if (!brandSet.has(brand_id)) {
             brandSet.set(brand_id, {
@@ -310,6 +318,9 @@ function StockReport() {
 
     posService.getBrands(shopId as string).then(({ result }) => {
       setBrands(result.map((p) => ({ ...p, label: p.name, value: p.id })));
+    });
+    posService.getCategories(shopId as string).then(({ result }) => {
+      setCategories(result.map((p) => ({ ...p, label: p.name, value: p.id })));
     });
   }
 
@@ -352,25 +363,23 @@ function StockReport() {
     <AdminLayout shopId={shopId}>
       <div className="flex" style={{ alignItems: 'center' }}>
         <FormControl sx={{ m: 1, width: 220 }}>
-          <InputLabel id="Category-select-label">Category</InputLabel>
           <Select
-            options={[]}
-            // labelId="Category-select-label"
-            id="Category-select"
-            value={selectedCustomer}
+            options={categories}
+            isClearable
+            id="category-select"
+            // defaultValue={categories[0]}
             placeholder="Category"
-            // onChange={handleChangeCustomer}
+            onChange={handleSelectCategory}
           />
         </FormControl>
 
         <FormControl sx={{ m: 1, width: 220 }}>
-          <InputLabel id="brand-select-label">Brand</InputLabel>
           <Select
             // labelId="Brand-select-label"
             id="brand-select"
             isClearable
             options={brands}
-            defaultValue={brands[0]}
+            // defaultValue={brands[0]}
             placeholder="Brand"
             onChange={handleSelectBrand}
           />
