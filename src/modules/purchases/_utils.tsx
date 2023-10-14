@@ -126,7 +126,7 @@ export const purchasesColumns: ({
     type: 'number',
     renderCell: ({ row }: Partial<GridRowParams>) => (
       <div>
-        {row.price.toFixed(locationSettings?.location_decimal_places)}
+        {row?.price?.toFixed(locationSettings?.location_decimal_places)}
       </div>
     ),
   },

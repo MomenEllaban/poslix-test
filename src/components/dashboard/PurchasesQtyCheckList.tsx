@@ -54,13 +54,13 @@ const PurchasesQtyCheckList = (props: any) => {
         </>
       ),
     },
-    {
-      field: 'qty_entered',
-      headerName: 'Enter Qty',
-      minWidth: 150,
-      type: 'number',
-      editable: true,
-    },
+    // {
+    //   field: 'qty_entered',
+    //   headerName: 'Enter Qty',
+    //   minWidth: 150,
+    //   type: 'number',
+    //   editable: true,
+    // },
   ];
   const onRowsSelectionHandler = (params: any) => {
     const found = orderLines.findIndex((el) => el.id === params.id);
@@ -102,7 +102,7 @@ const PurchasesQtyCheckList = (props: any) => {
           <h5>Purchase Quantity Manager List {props.purchases[selectedIndex].status}</h5>
           <hr />
           <div className="quick-suppier-info">
-            <div>Supplier: {props.purchases[selectedIndex].supplier}</div>
+            <div>Supplier: {props.purchases[selectedIndex]?.supplier?.name || "walk-in supplier"}</div>
             <div>Status: {props.purchases[selectedIndex].status}</div>
             <div>Total Price: {props.purchases[selectedIndex].total_price}</div>
           </div>

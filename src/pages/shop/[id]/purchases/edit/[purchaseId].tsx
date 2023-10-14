@@ -204,7 +204,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
     subTotal = subTotal > 0 ? subTotal : formObj?.subTotal_price;
     var _total = subTotal;
     if (_total <= 0) return;
-    purchaseDetails.map((dp) => (_total = getPriority(dp.value, _total)));
+    purchaseDetails?.map((dp) => (_total = getPriority(dp.value, _total)));
 
     setFormObj({
       ...formObj,
@@ -353,11 +353,11 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
         _datas[found].lineTotal =
           locationSettings?.currency_id == formObj?.currency_id
             ? Number(_datas[found].cost * _datas[found].quantity).toFixed(
-                locationSettings?.location_decimal_places
-              )
+              locationSettings?.location_decimal_places
+            )
             : Number(_datas[found].cost * formObj?.currency_rate * _datas[found].quantity).toFixed(
-                locationSettings?.location_decimal_places
-              );
+              locationSettings?.location_decimal_places
+            );
 
       setSelectProducts([..._datas]);
       calculationLabels(formObj?.total_expense, formObj?.total_tax);
@@ -393,16 +393,16 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
       _rows[i].notifyExpensePrice =
         _ExpVal > 0
           ? +Number(_ExpVal + parseFloat(getCost(sp.cost).toString())).toFixed(
-              locationSettings?.location_decimal_places
-            )
+            locationSettings?.location_decimal_places
+          )
           : 0;
       if (_ExpVal == 0 && _rows[i].costType == 1) _rows[i].costType = 0;
 
       _rows[i].notifyTaxPrice =
         _TaxVal > 0
           ? +Number(_TaxVal + parseFloat(getCost(sp.cost).toString())).toFixed(
-              locationSettings?.location_decimal_places
-            )
+            locationSettings?.location_decimal_places
+          )
           : 0;
       if (_TaxVal == 0 && _rows[i].costType == 2) _rows[i].costType = 0;
 
@@ -450,58 +450,58 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
         .get(`/purchase/${purchaseId}/show`)
         .then(({ data }) => data.result);
 
-      setSuppliers(_suppliers);
+      setSuppliers([{ supplier_id: 0, id: 0, value: 0, label: 'walk-in supplier' }, ..._suppliers]);
       setProducts(_products);
       setCurrencies(_currencies);
 
       const currentCurrency: ICurrencySelect = _currencies.find(
-        (currency) => currency.id === _purchaseDetails.currency_id
+        (currency) => currency?.id === _purchaseDetails?.currency_id
       );
 
       console.log(
-        (_purchaseDetails.payment[0] as IPayment).created_at,
-        new Date(_purchaseDetails.created_at)
+        (_purchaseDetails?.payment[0] as IPayment).created_at,
+        new Date(_purchaseDetails?.created_at)
       );
       setFormObj((prev) => ({
         ...prev,
         ..._purchaseDetails,
         ...currentCurrency,
 
-        payment_id: (_purchaseDetails.payment[0] as IPayment).id,
-        supplier_id: _purchaseDetails.supplier.id,
+        payment_id: (_purchaseDetails?.payment[0] as IPayment)?.id,
+        supplier_id: _purchaseDetails?.supplier?.id || 0,
 
-        total_tax: +(_purchaseDetails.total_taxes || 0),
-        total_price: +(_purchaseDetails.total_price || 0),
-        subTotal_price: +(_purchaseDetails.total_price || 0),
+        total_tax: +(_purchaseDetails?.total_taxes || 0),
+        total_price: +(_purchaseDetails?.total_price || 0),
+        subTotal_price: +(_purchaseDetails?.total_price || 0),
 
-        currency_rate: +(currentCurrency.exchange_rate || 1),
-        paid_amount: +((_purchaseDetails.payment[0] as IPayment).amount || 0),
-        total_discount: +(_purchaseDetails.discount_amount || 0),
-        discount_amount: +(_purchaseDetails.discount_amount || 0),
+        currency_rate: +(currentCurrency?.exchange_rate || 1),
+        paid_amount: +((_purchaseDetails?.payment[0] as IPayment).amount || 0),
+        total_discount: +(_purchaseDetails?.discount_amount || 0),
+        discount_amount: +(_purchaseDetails?.discount_amount || 0),
 
-        currency_symbol: currentCurrency.symbol,
-        currency_code: currentCurrency.code,
+        currency_symbol: currentCurrency?.symbol,
+        currency_code: currentCurrency?.code,
 
-        date: new Date(_purchaseDetails.created_at),
+        date: new Date(_purchaseDetails?.created_at),
 
         total_expense: 0,
 
-        purchaseStatus: _purchaseDetails.status,
-        paymentStatus: _purchaseDetails.payment_status,
-        paymentType: (_purchaseDetails.payment[0] as IPayment).payment_type,
+        purchaseStatus: _purchaseDetails?.status,
+        paymentStatus: _purchaseDetails?.payment_status,
+        paymentType: (_purchaseDetails?.payment[0] as IPayment).payment_type,
 
-        // paymentDate: _purchaseDetails.created_at as any,
+        // paymentDate: _purchaseDetails?.created_at as any,
       }));
 
       const _selectedProducts = [];
-      _purchaseDetails.stocks.forEach((stock) => {
-        console.log('_____________', _products, stock);
+      _purchaseDetails?.stocks.forEach((stock) => {
+
         const _product = _products.find((product: IProduct) => +product.id === +stock.product_id);
         if (_product) {
-          console.log('_______HT______');
+
           _selectedProducts.push({ ..._product });
         }
-        
+
       });
       setSelectProducts([..._selectedProducts]);
     } catch {
@@ -706,7 +706,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
                         isLoading={dataLoading}
                         styles={purchasesSelectStyle}
                         options={suppliers}
-                        value={suppliers.filter((sp) => sp.value == formObj?.supplier_id)}
+                        value={suppliers.filter((sp) => +sp.value == formObj?.supplier_id)}
                         onChange={(itm) => {
                           setFormObj({ ...formObj, supplier_id: itm.value });
                         }}
@@ -989,7 +989,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
                       </div>
                     </div>
                     <Divider flexItem></Divider>
-                    {purchaseDetails.map((pd, i: number) => {
+                    {purchaseDetails?.map((pd, i: number) => {
                       return (
                         <Fragment key={`${pd.value}-purchase-details`}>
                           <div className="purchase-item">
@@ -1000,7 +1000,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
                                     <KeyboardArrowUpIcon />
                                   </Button>
                                 )}
-                                {isEditSort && purchaseDetails.length - 1 != i && (
+                                {isEditSort && purchaseDetails?.length - 1 != i && (
                                   <Button variant="outlined" onClick={() => sortHandler(i, 'd')}>
                                     <KeyboardArrowDownIcon />
                                   </Button>
