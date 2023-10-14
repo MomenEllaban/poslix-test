@@ -24,13 +24,16 @@ import Select from 'react-select';
 import { StateManagerProps } from 'react-select/dist/declarations/src/useStateManager';
 import { intersectionBy } from 'lodash';
 
+type IBrandWithSelect = IBrand & { label: string; value: number };
+type ICategoryWithSelect = ICategory & { label: string; value: number };
+
 function StockReport() {
   const router = useRouter();
   const shopId = router.query.id;
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [sales, setSales] = useState<any>([]);
-  const [brands, setBrands] = useState<(IBrand & { label: string; value: number })[]>([]);
+  const [brands, setBrands] = useState<IBrandWithSelect[]>([]);
   const [categories, setCategories] = useState<(ICategory & { label: string; value: number })[]>(
     []
   );
@@ -47,6 +50,9 @@ function StockReport() {
   const [handleSearchTxt, setHandleSearchTxt] = useState('');
   const [details, setDetails] = useState({ subTotal: 1, tax: 0, cost: 0 });
   const { setInvoicDetails, invoicDetails, locationSettings, setLocationSettings } = useUser();
+
+  const [selectedBrand, setSelectedBrand] = useState<IBrandWithSelect | null>();
+  const [selectedCategory, setSelectedCategory] = useState<ICategoryWithSelect | null>();
 
   const [filteredByBrands, setFilteredByBrands] = useState([]);
   const [filteredByCategories, setFilteredByCategories] = useState([]);
@@ -69,6 +75,7 @@ function StockReport() {
   const handleSelectBrand: StateManagerProps['onChange'] = (
     brand: IBrand & { label: string; value: number }
   ) => {
+    setSelectedBrand(brand);
     if (!brand) return setFilteredByBrands(sales);
 
     const _filteredSales = sales?.filter((sale) => sale.brand_id === brand.id);
@@ -78,6 +85,7 @@ function StockReport() {
   const handleSelectCategory: StateManagerProps['onChange'] = (
     category: ICategory & { label: string; value: number }
   ) => {
+    setSelectedCategory(category);
     if (!category) return setFilteredByCategories(sales);
 
     const _filteredSales = sales?.filter((sale) => sale.sub_category === category.id);
@@ -141,6 +149,9 @@ function StockReport() {
   const resetFilters = () => {
     setFilteredByCategories(sales);
     setFilteredByBrands(sales);
+
+    setSelectedCategory(null);
+    setSelectedBrand(null);
   };
 
   //table columns
@@ -366,8 +377,8 @@ function StockReport() {
           <Select
             options={categories}
             isClearable
+            value={selectedCategory}
             id="category-select"
-            // defaultValue={categories[0]}
             placeholder="Category"
             onChange={handleSelectCategory}
           />
@@ -379,7 +390,7 @@ function StockReport() {
             id="brand-select"
             isClearable
             options={brands}
-            // defaultValue={brands[0]}
+            value={selectedBrand}
             placeholder="Brand"
             onChange={handleSelectBrand}
           />
