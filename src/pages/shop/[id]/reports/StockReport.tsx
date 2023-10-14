@@ -396,7 +396,7 @@ function StockReport() {
           />
         </FormControl>
 
-        <Button onClick={resetFilters} style={{ height: '56px', marginLeft: 'auto' }}>
+        <Button onClick={resetFilters} style={{ height: '2.5rem', marginLeft: 'auto' }}>
           CLEAR
         </Button>
       </div>
