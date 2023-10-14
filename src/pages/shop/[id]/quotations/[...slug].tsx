@@ -401,13 +401,12 @@ const AddQuotations: NextPage = (props: any) => {
         return { product_id: prod.id, qty: prod.quantity }
       })
     }
-    console.log(quotationData)
     const res = await createNewData('quotations-list', quotationData)
     if (!res.data.success) {
       alert('Has Error ,try Again');
       return;
     }
-    Toastify('success', 'Purchase Successfully Created..');
+    Toastify('success', 'Quotation Successfully Created..');
     router.push('/shop/' + router.query.id + '/quotations');
   }
   async function editPurchase() {
@@ -427,7 +426,7 @@ const AddQuotations: NextPage = (props: any) => {
       alert('Has Error ,try Again');
       return;
     }
-    Toastify('success', 'Purchase Successfully Created..');
+    Toastify('success', 'Quotation Successfully Updated..');
     router.push('/shop/' + router.query.id + '/quotations');
   }
   var errors = [];

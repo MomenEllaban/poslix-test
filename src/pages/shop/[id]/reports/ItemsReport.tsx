@@ -1,7 +1,7 @@
 import { AdminLayout } from '@layout';
 import { ILocation } from '@models/auth.types';
 import { EStatus, IItemSalesReport } from '@models/reports.types';
-import { Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { Dialog, DialogActions, DialogContent, DialogTitle, MenuItem } from '@mui/material';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
@@ -17,6 +17,7 @@ import { useUser } from 'src/context/UserContext';
 import { apiFetch, apiFetchCtr } from 'src/libs/dbUtils';
 import CustomToolbar from 'src/modules/reports/_components/CustomToolbar';
 import ItemsReportToPrint from 'src/modules/reports/_components/ItemsReportToPrint';
+import { findAllData } from 'src/services/crud.api';
 import api from 'src/utils/app-api';
 import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
 
@@ -29,6 +30,7 @@ function ItemsReport() {
   const { locationSettings, setLocationSettings, invoicDetails } = useUser();
 
   const [sales, setSales] = useState<any>([]);
+  const [filteredSales, setFilteredSales] = useState<any>([]);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [selectId, setSelectId] = useState(0);
   const [selectRow, setSelectRow] = useState<any>({});
@@ -38,21 +40,29 @@ function ItemsReport() {
   const [showViewPopUp, setShowViewPopUp] = useState(false);
   const [handleSearchTxt, setHandleSearchTxt] = useState('');
   const [details, setDetails] = useState({ subTotal: 1, tax: 0, cost: 0 });
-  const [filteredSales, setFilteredSales] = useState<any>([]);
   const [selectedRange, setSelectedRange] = useState(null);
   const [strSelectedDate, setStrSelectedDate] = useState([]);
   const [selectedDateVlaue, setSelectedDateValue] = useState('');
+  const [selectedSupplier, setSelectedSupplier] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState('');
+  const [locations, setLocations] = useState([]);
+  const [suppliersOptions, setSuppliersOptions] = useState([]);
   const [customersOptions, setCustomersOptions] = useState([]);
+
+  const handleChangeSupplier = (event: SelectChangeEvent<string>) => {
+    setSelectedSupplier(event.target.value);
+  };
 
   const handleChangeCustomer = (event: SelectChangeEvent<string>) => {
     setSelectedCustomer(event.target.value);
   };
+
   const handleClose = () => setAnchorEl(null);
 
   const resetFilters = () => {
-    // setFilteredSales(sales);
+    setFilteredSales(sales);
     setSelectedCustomer('');
+    setSelectedSupplier('');
     setSelectedRange(null);
     setStrSelectedDate([]);
   };
@@ -63,18 +73,29 @@ function ItemsReport() {
       { field: 'order_id', headerName: '#', maxWidth: 72, renderCell: ({ row }) => row.order_id },
       {
         field: 'user_name',
-        headerName: 'User',
+        headerName: 'Name',
         renderCell: ({ row }) => `${row.user_first_name} ${row.user_last_name ?? ''}`,
       },
       {
         field: 'contact_name',
-        headerName: 'Contact',
-        flex: 1,
+        headerName: 'Sold To',
         renderCell: ({ row }) => `${row.contact_first_name} ${row.contact_last_name}`,
       },
       {
+        field: 'Purchase Date',
+        headerName: 'Purchase Date',
+        width: 180,
+        renderCell: ({ row }) =>
+          `${new Date(row.date).toLocaleDateString()} ${new Date(row.date).toLocaleTimeString()}`,
+      },
+      {
+        field: 'qty',
+        headerName: 'Qty',
+        renderCell: ({ row }) => (+row.qty).toFixed(0),
+      },
+      {
         field: 'price',
-        headerName: 'Price',
+        headerName: 'Total',
         renderCell: ({ row }) =>
           (+row.price).toFixed(locationSettings?.location_decimal_places) +
           ' ' +
@@ -89,68 +110,34 @@ function ItemsReport() {
           locationSettings?.currency_name,
       },
       {
-        field: 'Purchase Date',
-        headerName: 'Purchase Date',
-        width: 180,
+        field: 'cost',
+        headerName: 'Cost',
         renderCell: ({ row }) =>
-          `${new Date(row.date).toLocaleDateString()} ${new Date(row.date).toLocaleTimeString()}`,
-      },
-      {
-        field: 'status',
-        headerName: 'Status',
-        renderCell: ({ row }) => (
-          <span
-            className="text-black border px-3 rounded rounded-3"
-            style={{
-              color: row.status === EStatus.Close ? 'black' : 'gray',
-            }}>
-            {row.status}
-          </span>
-        ),
-      },
-      {
-        field: 'Quantity',
-        headerName: 'Quantity',
-        renderCell: ({ row }) => <span className="text-center">{+(row.qty ?? 0)} </span>,
+          (+row.tax).toFixed(locationSettings?.location_decimal_places) +
+          ' ' +
+          locationSettings?.currency_name,
       },
     ],
     [locationSettings]
   );
 
-  async function viewTransaction() {
-    setShowViewPopUp(true);
-    var result = await apiFetch({
-      fetch: 'getSellLinesByTransactionId',
-      data: { id: selectId },
-    });
-    const { success, newdata } = result;
-    if (success) {
-      setLines(newdata.sellLines);
-    }
-  }
   // init sales data
   async function initDataPage() {
     setIsLoadItems(true);
     api
       .get(`reports/item-sales/${shopId}`, { params: { all_data: 1 } })
-      .then(({ data }) => setSales(data.result.data))
-      .finally(() => {
-        setIsLoadItems(false);
-      });
-  }
+      .then(({ data }) => {
+        setSales(data.result.data);
+        setFilteredSales(data.result.data);
+      })
+      .finally(() => {});
 
-  async function getItems(id: number) {
-    setIsLoadItems(true);
-    const { success, newdata } = await apiFetchCtr({
-      fetch: 'transactions',
-      subType: 'getSaleItems',
-      shopId,
-      id,
-    });
-    if (success) {
-      setLines(newdata);
-      setIsLoadItems(false);
-    }
+    const supplierRes = await findAllData(`suppliers/${shopId}`);
+    setSuppliersOptions(supplierRes.data.result);
+    const customerRes = await findAllData(`customers/${shopId}`);
+    setCustomersOptions([...customerRes.data.result, {name: "walk-in customer"}]);
+
+    setIsLoadItems(false);
   }
 
   const handlePrint = useReactToPrint({ content: () => componentRef.current });
@@ -158,7 +145,6 @@ function ItemsReport() {
   const onRowsSelectionHandler = (selectedRowsData: any) => {
     setSelectRow(selectedRowsData);
     setSelectId(selectedRowsData.id);
-    getItems(selectedRowsData.id);
     setShowViewPopUp(true);
   };
   const handleSearch = (e: any) => {
@@ -195,11 +181,6 @@ function ItemsReport() {
     } else {
       localFilteredSales = sales;
     }
-    if (selectedCustomer) {
-      localFilteredSales = localFilteredSales.filter(
-        (sale) => sale.customer_name === selectedCustomer
-      );
-    }
     //Eslam 19
     let totalPrice = 0;
     let taxAmount = 0;
@@ -215,14 +196,21 @@ function ItemsReport() {
       tax: taxAmount,
       cost: totalPriceAndTax,
     });
+    if(selectedSupplier?.length > 0)
+      localFilteredSales = localFilteredSales.filter((el) => el.user_first_name === selectedSupplier)
+
+    if(selectedCustomer?.length > 0)
+      localFilteredSales = localFilteredSales.filter((el) => el.contact_first_name === selectedCustomer)
+
     setFilteredSales(localFilteredSales);
-  }, [strSelectedDate, selectedCustomer]);
+  }, [strSelectedDate, selectedSupplier, selectedCustomer]);
 
   /*************************************/
   useEffect(() => {
     if (!shopId) return;
 
     const locations: ILocation[] = getLocalStorage(ELocalStorageKeys.LOCATIONS);
+    setLocations(locations);
     const currentLocation = locations.find((location) => +location.location_id === +shopId);
     setLocationSettings(currentLocation ?? locationSettings);
 
@@ -237,14 +225,14 @@ function ItemsReport() {
           <Select
             labelId="Supplier-select-label"
             id="Supplier-select"
-            value={selectedCustomer}
+            value={selectedSupplier}
             label="Supplier"
-            onChange={handleChangeCustomer}>
-            {/* {customersOptions.map((customer) => (
-              <MenuItem key={customer} value={customer}>
-                {customer}
+            onChange={handleChangeSupplier}>
+            {suppliersOptions.map((supplier) => (
+              <MenuItem key={supplier.id} value={supplier.name}>
+                {supplier.name}
               </MenuItem>
-            ))} */}
+            ))}
           </Select>
         </FormControl>
         <DatePicker
@@ -265,66 +253,11 @@ function ItemsReport() {
             value={selectedCustomer}
             label="Customer"
             onChange={handleChangeCustomer}>
-            {/* {customersOptions.map((customer) => (
-              <MenuItem key={customer} value={customer}>
-                {customer}
+            {customersOptions.map((customer) => (
+              <MenuItem key={customer.id} value={customer.first_name}>
+                {customer?.first_name} {customer?.last_name}
               </MenuItem>
-            ))} */}
-          </Select>
-        </FormControl>
-        <DatePicker
-          {...{
-            strSelectedDate,
-            setStrSelectedDate,
-            selectedRange,
-            setSelectedRange,
-            hiden: true,
-            placeHolder: 'Sale Date',
-          }}
-        />
-        <FormControl sx={{ m: 1, width: 220 }}>
-          <InputLabel id="BusinessLocation-select-label">Business Location</InputLabel>
-          <Select
-            labelId="BusinessLocation-select-label"
-            id="BusinessLocation-select"
-            value={selectedCustomer}
-            label="Business Location"
-            onChange={handleChangeCustomer}>
-            {/* {customersOptions.map((customer) => (
-              <MenuItem key={customer} value={customer}>
-                {customer}
-              </MenuItem>
-            ))} */}
-          </Select>
-        </FormControl>
-        <FormControl sx={{ m: 1, width: 220 }}>
-          <InputLabel id="category-select-label">Category</InputLabel>
-          <Select
-            labelId="category-select-label"
-            id="category-select"
-            value={selectedCustomer}
-            label="Category"
-            onChange={handleChangeCustomer}>
-            {/* {customersOptions.map((category) => (
-              <MenuItem key={customer} value={customer}>
-                {customer}
-              </MenuItem>
-            ))} */}
-          </Select>
-        </FormControl>
-        <FormControl sx={{ m: 1, width: 220 }}>
-          <InputLabel id="Brand-select-label">Brand</InputLabel>
-          <Select
-            labelId="Brand-select-label"
-            id="Brand-select"
-            value={selectedCustomer}
-            label="Brand"
-            onChange={handleChangeCustomer}>
-            {/* {customersOptions.map((customer) => (
-              <MenuItem key={customer} value={customer}>
-                {customer}
-              </MenuItem>
-            ))} */}
+            ))}
           </Select>
         </FormControl>
         <Button onClick={resetFilters} style={{ height: '56px', marginLeft: 'auto' }}>
@@ -385,7 +318,7 @@ function ItemsReport() {
               border: 'none',
             },
           }}
-          rows={sales}
+          rows={filteredSales}
           columns={columns}
           pageSize={30}
           rowsPerPageOptions={[10]}

@@ -104,7 +104,7 @@ export default function LoginView() {
         </Form.Group>
         <button className="btn-login mt-auto" type="submit">
           {isLoading && (
-            <Image
+            <img
               alt="loading"
               width={25}
               height={25}

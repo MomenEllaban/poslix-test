@@ -10,7 +10,6 @@ import { useRouter } from 'next/router';
 import { ProductContext } from 'src/context/ProductContext';
 import { Dialog } from '@mui/material';
 
-
 const PaymentModal = (props: any) => {
   const { openDialog, statusDialog, showType, fetchData } = props;
 
@@ -41,7 +40,6 @@ const PaymentModal = (props: any) => {
     }
     let res;
     if (showType === 'add') {
- 
       res = await createNewData(`/payments`, { ...paymentMethods, location_id: router.query.id });
       if (res.data.success) {
         handleClose();
@@ -92,7 +90,6 @@ const PaymentModal = (props: any) => {
                   )}
                 </div>
               </div>
-
             </div>
           )}
         </DialogContent>

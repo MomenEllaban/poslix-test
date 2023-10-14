@@ -1,4 +1,3 @@
-import { IExpenseList } from '@models/common-model';
 import { ICategory } from '@models/pos.types';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
@@ -7,25 +6,29 @@ import Select from 'react-select';
 import { Toastify } from 'src/libs/allToasts';
 import { createNewData, findAllData, updateData } from 'src/services/crud.api';
 import useSWR from 'swr';
+import { getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
+import storage from 'firebaseConfig';
+import { generateUniqueString } from 'src/libs/toolsUtils';
 
 const AddNewExpeness = ({
   shopId,
   setExpensesList,
   rows,
-
   setIsAddExpense,
   selectId,
+  initData,
 }: any) => {
   const router = useRouter();
   const [cats, setCategories] = useState<ICategory[]>([]);
 
-  const [formObj, setFormObj] = useState<IExpenseList>({
+  const [formObj, setFormObj] = useState<any>({
     id: 0,
     expense_id: 0,
     name: '',
     amount: 0,
     date: new Date(),
     category_id: '',
+    file: File,
   });
   const [cateData, setCateData] = useState<{ id: number; label: string; value: number }[]>([]);
   const [errorForm, setErrorForm] = useState({ expense_id: false, name: false, amount: false });
@@ -44,40 +47,34 @@ const AddNewExpeness = ({
       },
     }
   );
+
+  const uploadImage = async (img) => {
+    const storageRef = ref(storage, `/files/logo/${generateUniqueString(12)}${shopId}`);
+    const uploadTask = uploadBytesResumable(storageRef, img);
+    const snapshot = await uploadTask;
+    const url = await getDownloadURL(snapshot.ref);
+    return url;
+  };
+
   async function addExpense() {
+    const image = await uploadImage(formObj.file);
+    delete formObj.file;
+    delete formObj.path;
     if (router.query.id) {
-      const res = await createNewData(`expenses/${router.query.id}`, formObj);
-      console.log(res);
+      const res = await createNewData(`expenses/${router.query.id}`, { ...formObj, image });
       if (res.data.success || res.data.status == 201) {
         Toastify('success', 'Successfully created');
-        let _rows = [...rows];
-        _rows.push({
-          id: res.data.error.id,
-          name: formObj.name,
-          category: formObj.category_id,
-          amount: formObj.amount,
-          date: formObj.date,
-        });
-        setExpensesList(_rows);
+        initData();
         setIsAddExpense(false);
       }
     }
   }
   async function editEpense() {
-    console.log(formObj);
-
-    const res = await updateData('expenses', selectId, formObj);
+    const image = await uploadImage(formObj.file);
+    delete formObj.file;
+    const res = await updateData('expenses/update-expense', selectId, { ...formObj, image });
     if (res.data.success) {
-      let _i = rows.findIndex((rw: any) => rw.id == selectId);
-      if (_i > -1) {
-        let _rows = [...rows];
-        _rows[_i].name = formObj.name;
-        _rows[_i].category = formObj.category_id;
-        _rows[_i].amount = formObj.amount;
-        _rows[_i].date = formObj.date;
-        setExpensesList(_rows);
-      }
-
+      initData();
       setIsAddExpense(false);
     }
   }
@@ -93,8 +90,9 @@ const AddNewExpeness = ({
           date: rows[_i].date.length > 0 ? new Date(rows[_i].date) : new Date(),
           expense_id: rows[_i].expense_id,
           id: rows[_i].id,
-          category_id: rows[_i].category,
+          category_id: rows[_i].expense_category.id,
           name: rows[_i].name,
+          path: rows[_i].path,
         });
     }
   }, [cats]);
@@ -171,9 +169,19 @@ const AddNewExpeness = ({
           <div className="col-md-6">
             <div className="form-group2">
               <label>Attach:</label>
-              <input type="file" className="form-control" />
+              <input
+                type="file"
+                className="form-control"
+                onChange={(e) => setFormObj({ ...formObj, file: e.target.files[0] })}
+              />
             </div>
           </div>
+          {formObj?.path && !formObj.file && (
+            <img
+              src={formObj.path}
+              style={{ width: '200px', height: '200px', objectFit: 'contain' }}
+            />
+          )}
         </div>
         <br />
         <button
@@ -185,7 +193,6 @@ const AddNewExpeness = ({
             if (formObj.expense_id == 0) errors.push('id');
             if (formObj.name.length <= 1) errors.push('name');
             if (formObj.amount == 0) errors.push('amount');
-
             setErrorForm({
               ...errorForm,
               expense_id: formObj.expense_id == 0,

@@ -39,7 +39,6 @@ const posSlice = createSlice({
       } else {
         state.lang = en;
       }
-
       return state;
     },
     setPosRegister(state, { payload }) {

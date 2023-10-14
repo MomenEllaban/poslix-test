@@ -15,6 +15,7 @@ import AddNewPayment from './AddNewPayment';
 const PurchasePaymentsList = (props: any) => {
   const { shopId, purchaseId, purchases } = props;
   const [information, setInformation] = useState<any>({ totalPaid: 0, totalLeft: 0, isPaid: 0 });
+  const [orderDetails, setOrderDetails] = useState<any>()
   const [orderPayments, setOrderPayments] = useState<
     { id: number; payment_type: string; amount: number; created_at: string }[]
   >([]);
@@ -24,6 +25,7 @@ const PurchasePaymentsList = (props: any) => {
   async function intPageData() {
     const res = await findAllData(`purchase/${purchaseId}/show`)
     if (res.data.success) {
+      setOrderDetails(res.data.result);
       setOrderPayments(res.data.result.payment);
       setIsLoading(false);
     }
@@ -76,11 +78,11 @@ const PurchasePaymentsList = (props: any) => {
           {/* {JSON.stringify(selectedIndex)} */}
           <h5>Purchase Payments List</h5>
           <div className="quick-suppier-info">
-            <div>ID: {props.purchases[selectedIndex].id}</div>
-            <div>Supplier: {props.purchases[selectedIndex].supplier}</div>
-            <div>Status: {props.purchases[selectedIndex].status}</div>
-            <div>Payment Status: {props.purchases[selectedIndex].payment_status}</div>
-            <div>Total Price: {props.purchases[selectedIndex].total_price}</div>
+            <div>ID: {orderDetails.id}</div>
+            <div>Supplier: {orderDetails?.supplier?.name}</div>
+            <div>Status: {orderDetails.status}</div>
+            <div>Payment Status: {orderDetails.payment_status}</div>
+            <div>Total Price: {orderDetails.total_price}</div>
             <div>
               Total Paid: {information.totalPaid}{' '}
               {information.isPaid && <FontAwesomeIcon icon={faCircleCheck} />}

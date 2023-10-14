@@ -1,14 +1,16 @@
 import { joiResolver } from '@hookform/resolvers/joi';
 import { Box, CircularProgress } from '@mui/material';
 import { useContext, useEffect, useState } from 'react';
-import { Button, Form, Modal } from 'react-bootstrap';
+import { Button, ButtonGroup, Form, Modal, Tab, Tabs } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import FormField from 'src/components/form/FormField';
 import { Toastify } from 'src/libs/allToasts';
 import { addSuplierSchema } from 'src/modules/suppliers/_schema/add-supplier-schema';
 import api from 'src/utils/app-api';
-import { ProductContext } from '../../../context/ProductContext';
-import { initalSupplierCustomerTemplate } from './_data/customer';
+import { DataGrid, GridColDef, GridRowParams } from '@mui/x-data-grid';
+import { findAllData } from 'src/services/crud.api';
+import { useUser } from 'src/context/UserContext';
+import CustomToolbar from 'src/modules/reports/_components/CustomToolbar';
 
 const supplierFields = [
   { name: 'name', label: 'Name', placeholder: 'Enter supplier name', type: 'text', required: true },
@@ -74,7 +76,58 @@ const SupplierModal = ({ openDialog, statusDialog, supplierId, showType, shopId 
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState('');
+  const [key, setKey] = useState('profile');
+  const [purchases, setPurchases] = useState<any>([]);
+  const { locationSettings, setLocationSettings } = useUser();
 
+  function getStatusStyle(status: string) {
+    switch (status) {
+      case 'paid':
+      case 'received':
+        return <span className="purchase-satus-style">{status}</span>;
+
+      default:
+        return (
+          <span className="purchase-satus-style paid-other">{status.split('_').join(' ')}</span>
+        );
+    }
+  }
+
+  const columns: GridColDef[] = [
+    { field: 'id', headerName: '#', minWidth: 50 },
+    {
+      field: 'status',
+      headerName: 'Stock Status',
+      flex: 0.5,
+      renderCell: ({ row }: Partial<GridRowParams>) => getStatusStyle(row.status),
+    },
+    {
+      field: 'payment_status',
+      headerName: 'Payment Status',
+      flex: 1,
+      renderCell: ({ row }: Partial<GridRowParams>) => getStatusStyle(row.payment_status),
+    },
+    {
+      field: 'payment',
+      headerName: 'Method',
+      flex: 0.5,
+      renderCell: ({ row }: Partial<GridRowParams>) => (row.payment[0]?.payment_type || "-"),
+    },
+    {
+      field: 'total_price',
+      headerName: 'Total Price',
+      flex: 1,
+      renderCell: (params) =>
+        Number(params.value).toFixed(locationSettings?.location_decimal_places),
+    },
+    {
+      field: 'products',
+      headerName: 'Products',
+      flex: 1,
+      renderCell: ({ row }) =>
+        <span title={row.products.map(prod => prod.name).join(', ')}>{row.products.map(prod => prod.name).join(', ')}</span>
+    },
+  ];
   // assumption of one order at a time / one cart
   const {
     handleSubmit,
@@ -176,12 +229,20 @@ const SupplierModal = ({ openDialog, statusDialog, supplierId, showType, shopId 
       });
   }
 
+  const initData = async () => {
+    const res = await findAllData(`purchase/${shopId}`);
+    if (res.data.success)
+      setPurchases(res.data.result?.filter((pu) => pu.supplier_id === supplierId));
+  };
+
   useEffect(() => {
     if (!statusDialog) return;
 
     setOpen(statusDialog);
+    console.log(supplierId)
     if (supplierId !== undefined && (showType === 'edit' || showType === 'show') && statusDialog)
       getCustomerInfo(supplierId);
+    initData();
   }, [statusDialog]);
 
   if (isLoading)
@@ -198,45 +259,75 @@ const SupplierModal = ({ openDialog, statusDialog, supplierId, showType, shopId 
       </Modal>
     );
   return (
-    <Modal show={open} onHide={handleClose} className="scroll-form">
-      <style scoped jsx>{`
-        .scroll-form {
-          max-height: 70dvh;
-          overflow-y: auto;
-          padding-inline: 0.5rem;
-        }
-      `}</style>
-      <Form noValidate onSubmit={handleSubmit(onSubmit, onError)}>
-        <Modal.Header className="poslix-modal-title text-primary text-capitalize" closeButton>
-          {showType === 'show' ? 'Supplier' : showType + ' Supplier'}
-        </Modal.Header>
-        <Modal.Body>
-          <div className="scroll-form">
-            {supplierFields.map((field) => {
-              return (
-                <FormField
-                  key={`supplier-form-${field.name}`}
-                  {...field}
-                  disabled={showType === 'show'}
-                  errors={errors}
-                  required={showType === 'show' ? false : field.required}
-                  register={register}
-                />
-              );
-            })}
-          </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <a className="btn btn-link link-success fw-medium" onClick={handleClose}>
-            Close <i className="ri-close-line me-1 align-middle" />
-          </a>
-          {showType !== 'show' ? (
-            <Button type="submit" variant="primary" className="p-2">
-              Save
-            </Button>
-          ) : null}
-        </Modal.Footer>
-      </Form>
+    <Modal show={open} onHide={handleClose} size="lg">
+      <Modal.Body>
+        <Tabs
+          id="controlled-tab-example"
+          activeKey={key}
+          onSelect={(k) => setKey(k)}
+          className="mb-3">
+          <Tab eventKey="profile" title="Profile">
+            <Form noValidate onSubmit={handleSubmit(onSubmit, onError)}>
+              <Modal.Header className="poslix-modal-title text-primary text-capitalize" closeButton>
+                {showType === 'show' ? 'Supplier' : showType + ' Supplier'}
+              </Modal.Header>
+              <Modal.Body>
+                <div className="scroll-form">
+                  {supplierFields.map((field) => {
+                    return (
+                      <FormField
+                        key={`supplier-form-${field.name}`}
+                        {...field}
+                        disabled={showType === 'show'}
+                        errors={errors}
+                        required={showType === 'show' ? false : field.required}
+                        register={register}
+                      />
+                    );
+                  })}
+                </div>
+              </Modal.Body>
+              <Modal.Footer>
+                <a className="btn btn-link link-success fw-medium" onClick={handleClose}>
+                  Close <i className="ri-close-line me-1 align-middle" />
+                </a>
+                {showType !== 'show' ? (
+                  <Button type="submit" variant="primary" className="p-2">
+                    Save
+                  </Button>
+                ) : null}
+              </Modal.Footer>
+            </Form>
+          </Tab>
+          <Tab eventKey="orders" title="Orders">
+            <div className="page-content-style card">
+              <DataGrid
+                className="datagrid-style"
+                sx={{
+                  '.MuiDataGrid-columnSeparator': {
+                    display: 'none',
+                  },
+                  '&.MuiDataGrid-root': {
+                    border: 'none',
+                  },
+                }}
+                rows={purchases}
+                columns={columns}
+                initialState={{
+                  columns: { columnVisibilityModel: { mobile: false } },
+                }}
+                pageSize={10}
+                rowsPerPageOptions={[10]}
+              />
+            </div>
+          </Tab>
+        </Tabs>
+      </Modal.Body>
+      <Modal.Footer>
+        <a className="btn btn-link link-success fw-medium" onClick={handleClose}>
+          <i className="ri-close-line me-1 align-middle" /> Close
+        </a>
+      </Modal.Footer>
     </Modal>
   );
 };

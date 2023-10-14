@@ -32,11 +32,11 @@ import { UserContext } from 'src/context/UserContext';
 import { useReactToPrint } from 'react-to-print';
 import { Toastify } from 'src/libs/allToasts';
 import { ToastContainer } from 'react-toastify';
-import { findAllData } from 'src/services/crud.api';
+import { findAllData, updateData } from 'src/services/crud.api';
 
 export default function SalesList(props: any) {
   const { id } = props;
-  console.log(props)
+  console.log(props);
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
     // @ts-ignore
     value: 0,
@@ -54,7 +54,7 @@ export default function SalesList(props: any) {
   const [sales, setsales] = useState<any>([]);
   const [customersNames, setCustomersNames] = useState<any>([]);
   const router = useRouter();
-  const shopId = router.query.id
+  const shopId = router.query.id;
   const [selectId, setSelectId] = useState(0);
   const [selectRow, setSelectRow] = useState<any>({});
   const [lines, setLines] = useState<any>([]);
@@ -66,21 +66,30 @@ export default function SalesList(props: any) {
   const { setInvoicDetails, invoicDetails } = useContext(UserContext);
   const [accept, setAccept] = useState(false);
 
+  const updateStatus = async (id: number, status: string) => {
+    const res = await updateData('quotations-list', id, { status });
+    if (res.data.success) Toastify('success', 'Quotation Successfuly Updated..');
+    else Toastify('error', 'Error');
+    initDataPage();
+  };
   //table columns
   const columns: GridColDef[] = [
     { field: 'id', headerName: '#', minWidth: 50 },
     {
-      field: 'customer_id', headerName: 'Customer Name', flex: 1, renderCell: ({ row }: Partial<GridRowParams>) => {
+      field: 'customer_id',
+      headerName: 'Customer Name',
+      flex: 1,
+      renderCell: ({ row }: Partial<GridRowParams>) => {
         if (row.customer_id) {
-          let first_name = customersNames.filter(function (customer) {
-            return customer.id === row.customer_id;
-          }).map(function (customer) {
-            return customer.first_name + customer.last_name;
-          })
+          let first_name = customersNames
+            .filter(function (customer) {
+              return customer.id === row.customer_id;
+            })
+            .map(function (customer) {
+              return customer.first_name + customer.last_name;
+            });
 
-          return (
-            first_name
-          );
+          return first_name;
         }
       },
     },
@@ -90,16 +99,16 @@ export default function SalesList(props: any) {
       field: 'status',
       headerName: 'Status',
       renderCell: ({ row }: Partial<GridRowParams>) => {
-        if (row.status === "accepted") {
+        if (row.status === 'accepted') {
           return (
             <>
               <div className="sty_Accepted">Accepted</div>
             </>
           );
-        } else if (row.status === "cancled") {
+        } else if (row.status === 'canceled') {
           return (
             <>
-              <div className="sty_Cancled">Cancled</div>
+              <div className="sty_Cancled">Cancelled</div>
             </>
           );
         } else {
@@ -121,22 +130,29 @@ export default function SalesList(props: any) {
       renderCell: ({ row }: Partial<GridRowParams>) => (
         <>
           <ButtonGroup className="mb-2 m-buttons-style">
-            <Button onClick={() => {
-              localStorage.setItem('currentQuotation', JSON.stringify(row))
-              router.push('/shop/' + shopId + '/quotations/edit');
-            }}>
+            <Button
+              onClick={() => {
+                localStorage.setItem('currentQuotation', JSON.stringify(row));
+                router.push('/shop/' + shopId + '/quotations/edit');
+              }}>
               <FontAwesomeIcon icon={faPenToSquare} />
             </Button>
-            <Button onClick={() => {
-              setSelectId(row.id);
-              setShow(true);
-            }}>
+            <Button
+              onClick={() => {
+                setSelectId(row.id);
+                setShow(true);
+              }}>
               <FontAwesomeIcon icon={faTrash} />
             </Button>
-            <Button onClick={() => { }}>
+            <Button onClick={() => {}}>
               <FontAwesomeIcon icon={faEye} />
             </Button>
-
+            <Button onClick={() => updateStatus(row.id, 'accepted')}>
+              <FontAwesomeIcon icon={faCheck} />
+            </Button>
+            <Button onClick={() => updateStatus(row.id, 'canceled')}>
+              <FontAwesomeIcon icon={faXmark} />
+            </Button>
           </ButtonGroup>
         </>
       ),
@@ -214,7 +230,6 @@ export default function SalesList(props: any) {
                   {invoicDetails.txtTax} {invoicDetails.isMultiLang && invoicDetails.txtTax2}
                 </td>
                 <td></td>
-
               </tr>
               <tr className="net-amount">
                 <td></td>
@@ -283,7 +298,6 @@ export default function SalesList(props: any) {
           </div>
           <br />
 
-
           <table className="GeneratedTable2">
             <thead>
               <tr>
@@ -349,27 +363,14 @@ export default function SalesList(props: any) {
     }
   }
 
-  async function viewTransaction() {
-    setShowViewPopUp(true);
-    var result = await apiFetch({
-      fetch: 'getSellLinesByTransactionId',
-      data: { id: selectId },
-    });
-    const { success, newdata } = result;
-    if (success) {
-      setLines(newdata.sellLines);
-    }
-  }
   // init sales data
   async function initDataPage() {
-
-    const res = await findAllData('quotations-list')
-    const customers_names = await findAllData(`customers/${shopId}`)
-    setCustomersNames(customers_names.data.result)
-    console.log(customers_names.data.result, "customers_names");
+    const res = await findAllData(`quotations-list?location_id=${shopId}`);
+    const customers_names = await findAllData(`customers/${shopId}`);
+    setCustomersNames(customers_names.data.result);
+    console.log(customers_names.data.result, 'customers_names');
     if (res.data.success) {
       setsales(res.data.result.quotationsList);
-      console.log(res.data.result.quotationsList)
       // if (res.data.result.invoiceDetails != null && res.data.result.invoiceDetails.length > 10)
       //   setInvoicDetails(JSON.parse(res.data.result.invoiceDetails));
     }
@@ -392,20 +393,22 @@ export default function SalesList(props: any) {
   const [permissions, setPermissions] = useState<any>();
 
   useEffect(() => {
-    localStorage.getItem('currentQuotation') ? localStorage.removeItem('currentQuotation') : null
+    localStorage.getItem('currentQuotation') ? localStorage.removeItem('currentQuotation') : null;
 
-    const perms = JSON.parse(localStorage.getItem('permissions')).filter(loc => loc.id == router.query.id)
+    const perms = JSON.parse(localStorage.getItem('permissions')).filter(
+      (loc) => loc.id == router.query.id
+    );
     const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
     perms[0]?.permissions?.map((perm) =>
       perm.name.includes('quotations-list/show')
         ? (getPermissions.hasView = true)
         : perm.name.includes('quotations-list/add')
-          ? (getPermissions.hasInsert = true)
-          : perm.name.includes('quotations-list/update')
-            ? (getPermissions.hasEdit = true)
-            : perm.name.includes('quotations-list/delete')
-              ? (getPermissions.hasDelete = true)
-              : null
+        ? (getPermissions.hasInsert = true)
+        : perm.name.includes('quotations-list/update')
+        ? (getPermissions.hasEdit = true)
+        : perm.name.includes('quotations-list/delete')
+        ? (getPermissions.hasDelete = true)
+        : null
     );
 
     setPermissions(getPermissions);
@@ -414,9 +417,9 @@ export default function SalesList(props: any) {
     if (_locs.toString().length > 10)
       setLocationSettings(
         _locs[
-        _locs.findIndex((loc: any) => {
-          return loc.value == shopId;
-        })
+          _locs.findIndex((loc: any) => {
+            return loc.value == shopId;
+          })
         ]
       );
 
@@ -669,8 +672,8 @@ export default function SalesList(props: any) {
   );
 }
 export async function getServerSideProps({ params }) {
-  const { id } = params
+  const { id } = params;
   return {
     props: { id },
-  }
+  };
 }

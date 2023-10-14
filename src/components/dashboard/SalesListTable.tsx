@@ -57,13 +57,16 @@ export default function SalesListTable({ id, shopId, rules, salesList }: any) {
 
   const checkPrintType = async () => {
     const res = await findAllData(`appearance/${router.query.id}`);
-    setInvoiceDetails(res.data.result);
+    setInvoiceDetails({
+      ...res.data.result,
+      en: { ...res.data.result.en, is_multi_language: !!res.data.result.en.is_multi_language },
+    });
   };
 
   const handleCompletePrint = (id) => {
-    setSelectRow(salesList.data.filter(row => row.id == id)[0])
-    handlePrint()
-  }
+    setSelectRow(salesList.data.filter((row) => row.id == id)[0]);
+    handlePrint();
+  };
 
   useEffect(() => {
     checkPrintType();
@@ -72,9 +75,13 @@ export default function SalesListTable({ id, shopId, rules, salesList }: any) {
   const columns: GridColDef[] = [
     { field: 'id', headerName: '#', minWidth: 50 },
     {
-      field: 'contact_name', headerName: 'Customer Name', flex: 1, renderCell({ row }) {
-      return  row.contact_name!==" " ? row.contact_name : "walk-in customer"
-    } },
+      field: 'contact_name',
+      headerName: 'Customer Name',
+      flex: 1,
+      renderCell({ row }) {
+        return row.contact_name !== ' ' ? row.contact_name : 'walk-in customer';
+      },
+    },
     { field: 'mobile', headerName: 'Mobile', flex: 1, disableColumnMenu: true },
     { field: 'date', headerName: 'Sale Date', flex: 1 },
     {
@@ -84,16 +91,19 @@ export default function SalesListTable({ id, shopId, rules, salesList }: any) {
       renderCell: ({ row }: Partial<GridRowParams>) =>
         Number(+row.total).toFixed(locationSettings?.location_decimal_places),
     },
-    { field: 'payed', headerName: 'Amount paid', flex: 1,
+    {
+      field: 'payed',
+      headerName: 'Amount paid',
+      flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) =>
-        Number(+row.payed).toFixed(locationSettings?.location_decimal_places)
+        Number(+row.payed).toFixed(locationSettings?.location_decimal_places),
     },
     {
       flex: 1,
       field: 'due',
       headerName: 'Total Due',
       renderCell: ({ row }: Partial<GridRowParams>) =>
-        Number(+row.due).toFixed(locationSettings?.location_decimal_places)
+        Number(+row.due).toFixed(locationSettings?.location_decimal_places),
     },
     {
       flex: 1,
@@ -127,12 +137,17 @@ export default function SalesListTable({ id, shopId, rules, salesList }: any) {
                   req: 3,
                   val: row.id,
                 });
-                const res = await findAllData(`sales/${row.id}`)
-                dispatch(addMultipleToCart({
-                  location_id: router.query.id, products: res.data.result.products,
-                  orderId: row.id, customerId: row.contact_id, lastTotal: row.sub_total,
-                  lastDue: +row.due
-                }));
+                const res = await findAllData(`sales/${row.id}`);
+                dispatch(
+                  addMultipleToCart({
+                    location_id: router.query.id,
+                    products: res.data.result.products,
+                    orderId: row.id,
+                    customerId: row.contact_id,
+                    lastTotal: row.sub_total,
+                    lastDue: +row.due,
+                  })
+                );
                 router.push('/pos/' + router.query.id);
               }}>
               <FontAwesomeIcon icon={faPenToSquare} />
@@ -157,7 +172,7 @@ export default function SalesListTable({ id, shopId, rules, salesList }: any) {
               onClick={() => {
                 if (Number(+row.due) > 0) {
                   getItems(row.id);
-                  setSelectRow(row)
+                  setSelectRow(row);
                   setPaymentModalData({
                     ...row,
                     totalDue:
@@ -184,29 +199,31 @@ export default function SalesListTable({ id, shopId, rules, salesList }: any) {
       return (
         <div className="bill">
           <div className="brand-logo">
-            <img src={invoiceDetails.logo} />
+            <img src={invoiceDetails?.en?.logo} />
           </div>
           <br />
-          <div className="brand-name">{invoiceDetails.name}</div>
-          <div className="shop-details">{invoiceDetails.tell}</div>
+          <div className="brand-name">{invoiceDetails?.en?.name}</div>
+          <div className="shop-details">{invoiceDetails?.en?.tell}</div>
           <br />
           <div className="bill-details">
             <div className="flex justify-between">
               <div>
-                {invoiceDetails.txtCustomer}{' '}
-                {invoiceDetails.isMultiLang && invoiceDetails.txtCustomer2}
+                {invoiceDetails?.en?.txtCustomer}{' '}
+                {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtCustomer}
               </div>
               <div>{selectRow.contact_name}</div>
             </div>
             <div className="flex justify-between">
               <div>
-                {invoiceDetails.orderNo} {invoiceDetails.isMultiLang && invoiceDetails.orderNo2}
+                {invoiceDetails?.en?.orderNo}{' '}
+                {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.orderNo}
               </div>
               <div>{selectRow.id}</div>
             </div>
             <div className="flex justify-between">
               <div>
-                {invoiceDetails.txtDate} {invoiceDetails.isMultiLang && invoiceDetails.txtDate2}
+                {invoiceDetails?.en?.txtDate}{' '}
+                {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtDate}
               </div>
               <div>{new Date().toISOString().slice(0, 10)}</div>
             </div>
@@ -215,20 +232,20 @@ export default function SalesListTable({ id, shopId, rules, salesList }: any) {
             <thead>
               <tr className="header">
                 <th>
-                  {invoiceDetails.txtQty}
+                  {invoiceDetails?.en?.txtQty}
                   <br />
-                  {invoiceDetails.isMultiLang && invoiceDetails.txtQty2}
+                  {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtQty}
                 </th>
                 <th>
-                  {invoiceDetails.txtItem}
+                  {invoiceDetails?.en?.txtItem}
                   <br />
-                  {invoiceDetails.isMultiLang && invoiceDetails.txtItem2}
+                  {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtItem}
                 </th>
                 <th></th>
                 <th>
-                  {invoiceDetails.txtAmount}
+                  {invoiceDetails?.en?.txtAmount}
                   <br />
-                  {invoiceDetails.isMultiLang && invoiceDetails.txtAmount2}
+                  {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtAmount}
                 </th>
               </tr>
               {lines.length > 0 &&
@@ -238,28 +255,35 @@ export default function SalesListTable({ id, shopId, rules, salesList }: any) {
                       <td>{Number(line.pivot.qty).toFixed(0)}</td>
                       <td>{line.name}</td>
                       <td></td>
-                      <td>{Number(+line.pivot.qty * +line.pivot.price).toFixed(locationSettings?.location_decimal_places)}</td>
+                      <td>
+                        {Number(+line.pivot.qty * +line.pivot.price).toFixed(
+                          locationSettings?.location_decimal_places
+                        )}
+                      </td>
                     </tr>
                   );
                 })}
+              <tr style={{ borderTop: '2px', height: '2px' }}></tr>
               <tr className="net-amount">
                 <td></td>
                 <td>
-                  {invoiceDetails.txtTax} {invoiceDetails.isMultiLang && invoiceDetails.txtTax2}
+                  {invoiceDetails?.en?.txtTax}{' '}
+                  {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtTax}
                 </td>
                 <td></td>
                 <td>
-                  {(+selectRow.sub_total / (1 + +selectRow?.tax/100) * +selectRow?.tax/100).toFixed(
-                    locationSettings?.location_decimal_places
-                  )}
+                  {(
+                    ((+selectRow.sub_total / (1 + +selectRow?.tax / 100)) * +selectRow?.tax) /
+                    100
+                  ).toFixed(locationSettings?.location_decimal_places)}
                 </td>
               </tr>
               <tr className="net-amount">
                 <td></td>
                 <td>
-                  {invoiceDetails.txtDiscount}
-                  {'Discount'}
-                  {invoiceDetails.isMultiLang && invoiceDetails.txtDiscount2}
+                  {invoiceDetails?.en?.txtDiscount}
+                  {'Discount'} {invoiceDetails?.en?.is_multi_language && 'التخفيضات'}
+                  {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtDiscount}
                 </td>
                 <td></td>
                 <td>{(+selectRow?.discount).toFixed(locationSettings?.location_decimal_places)}</td>
@@ -267,7 +291,8 @@ export default function SalesListTable({ id, shopId, rules, salesList }: any) {
               <tr className="net-amount">
                 <td></td>
                 <td className="txt-bold">
-                  {invoiceDetails.txtTotal} {invoiceDetails.isMultiLang && invoiceDetails.txtTotal2}
+                  {invoiceDetails?.en?.txtTotal}{' '}
+                  {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtTotal}
                 </td>
                 <td></td>
                 <td className="txt-bold">
@@ -279,32 +304,29 @@ export default function SalesListTable({ id, shopId, rules, salesList }: any) {
               <tr className="net-amount">
                 <td></td>
                 <td className="txt-bold">
-                  Total Paid
+                  Total Paid {invoiceDetails?.en?.is_multi_language && 'إجمالى المدفوعات'}
                 </td>
                 <td></td>
                 <td className="txt-bold">
-                  {Number(selectRow.payed).toFixed(
-                    locationSettings?.location_decimal_places
-                  )}
+                  {Number(selectRow.payed).toFixed(locationSettings?.location_decimal_places)}
                 </td>
               </tr>
               <tr className="net-amount">
                 <td></td>
                 <td className="txt-bold">
-                  Total Due
+                  Total Due {invoiceDetails?.en?.is_multi_language && 'المتبقى'}
                 </td>
                 <td></td>
                 <td className="txt-bold">
-                  {Number(selectRow.discount).toFixed(
-                    locationSettings?.location_decimal_places
-                  )}
+                  {Number(selectRow.discount).toFixed(locationSettings?.location_decimal_places)}
                 </td>
               </tr>
             </thead>
           </table>
           <p className="recipt-footer">
-            {invoiceDetails.footer}
-            {invoiceDetails.isMultiLang && invoiceDetails.footer2}
+            {invoiceDetails?.en?.footer}
+            <br />
+            {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.footer}
           </p>
           <p className="recipt-footer">{selectRow.notes}</p>
           <br />
@@ -320,18 +342,26 @@ export default function SalesListTable({ id, shopId, rules, salesList }: any) {
       return (
         <div className="bill2">
           <div className="brand-logo">
-            <img src={invoiceDetails.logo} />
+            <img src={invoiceDetails?.en?.logo} />
             <div className="invoice-print">
               INVOICE
               <div>
                 <table className="GeneratedTable">
                   <tbody>
                     <tr>
-                      <td className="td_bg">INVOICE NUMBER </td>
-                      <td>{selectRow.id}</td>
+                      <td className="td_bg">
+                        {invoiceDetails?.en?.orderNo}
+                        <br />
+                        {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.orderNo}
+                      </td>
+                      <td>{selectRow?.id}</td>
                     </tr>
                     <tr>
-                      <td className="td_bg">INVOICE DATE </td>
+                      <td className="td_bg">
+                        {invoiceDetails?.en?.txtDate}
+                        <br />
+                        {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtDate}
+                      </td>
                       <td>{new Date().toISOString().slice(0, 10)}</td>
                     </tr>
                   </tbody>
@@ -349,30 +379,33 @@ export default function SalesListTable({ id, shopId, rules, salesList }: any) {
           <div className="up_of_table flex justify-between">
             <div className="left_up_of_table">
               <div>Billed From</div>
-              <div>Global Tech Projects</div>
-              <div>info@poslix.com</div>
-              <div>+986 2428 8077</div>
-              <div>Office 21-22, Building 532, Mazoon St. Muscat, Oman</div>
-              <div>VAT Number: OM1100270001</div>
+              <div>{invoiceDetails?.en?.name}</div>
+              <div>{invoiceDetails?.en?.email}</div>
+              <div>{invoiceDetails?.en?.tell}</div>
+              <div>{invoiceDetails?.en?.address}</div>
+              <div>VAT Number: {invoiceDetails?.en?.vatNumber}</div>
             </div>
             <div className="right_up_of_table">
               <div>Billed To</div>
+              <div>
+                {invoiceDetails?.en?.txtCustomer}{' '}
+                {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtCustomer}
+              </div>
               <div>{selectRow.contact_name}</div>
-              {/* <span>Billed To</span> */}
             </div>
           </div>
           <br />
           {/* <div className="bill-details">
                         <div className="flex justify-between">
-                            <div>{invoiceDetails.txtCustomer} {invoiceDetails.isMultiLang && invoiceDetails.txtCustomer2}</div>
+                            <div>{invoiceDetails.txtCustomer} {invoiceDetails?.en?.is_multi_language && invoiceDetails.txtCustomer2}</div>
                             <div>{selectRow.customer_name}</div>
                         </div>
                         <div className="flex justify-between">
-                            <div>{invoiceDetails.orderNo} {invoiceDetails.isMultiLang && invoiceDetails.orderNo2}</div>
+                            <div>{invoiceDetails.orderNo} {invoiceDetails?.en?.is_multi_language && invoiceDetails.orderNo2}</div>
                             <div>{selectRow.id}</div>
                         </div>
                         <div className="flex justify-between">
-                            <div>{invoiceDetails.txtDate} {invoiceDetails.isMultiLang && invoiceDetails.txtDate2}</div>
+                            <div>{invoiceDetails.txtDate} {invoiceDetails?.en?.is_multi_language && invoiceDetails.txtDate2}</div>
                             <div>{new Date().toISOString().slice(0, 10)}</div>
                         </div>
                     </div> */}
@@ -380,21 +413,28 @@ export default function SalesListTable({ id, shopId, rules, salesList }: any) {
           <table className="GeneratedTable2">
             <thead>
               <tr>
-                <th>Description</th>
+                <th>
+                  {invoiceDetails?.en?.txtItem} <br />
+                  {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtItem}
+                </th>
                 <th>
                   {' '}
-                  {invoiceDetails.txtQty}
+                  {invoiceDetails?.en?.txtQty}
                   <br />
-                  {invoiceDetails.isMultiLang && invoiceDetails.txtQty2}
+                  {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtQty}
                 </th>
                 <th>Unit Price</th>
-                {/* <th> {invoiceDetails.txtItem}<br />{invoiceDetails.isMultiLang && invoiceDetails.txtItem2}</th> */}
-                <th>Tax</th>
+                {/* <th> {invoiceDetails?.en?.txtItem}<br />{invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtItem}</th> */}
+                <th>
+                  {invoiceDetails?.en?.txtTax}
+                  <br />
+                  {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtTax}
+                </th>
                 <th>
                   {' '}
-                  {invoiceDetails.txtAmount}
+                  {invoiceDetails?.en?.txtAmount}
                   <br />
-                  {invoiceDetails.isMultiLang && invoiceDetails.txtAmount2}
+                  {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtAmount}
                 </th>
               </tr>
             </thead>
@@ -404,9 +444,19 @@ export default function SalesListTable({ id, shopId, rules, salesList }: any) {
                   <tr key={index}>
                     <td>{line.name}</td>
                     <td>{Number(line.pivot.qty).toFixed(0)}</td>
-                    <td>{Number(line.pivot.price).toFixed(locationSettings?.location_decimal_places)}</td>
-                    <td>{Number(+line.pivot.tax_amount / 100 * +line.pivot.price).toFixed(locationSettings?.location_decimal_places)}</td>
-                    <td>{Number(+line.pivot.qty * +line.pivot.price).toFixed(locationSettings?.location_decimal_places)}</td>
+                    <td>
+                      {Number(line.pivot.price).toFixed(locationSettings?.location_decimal_places)}
+                    </td>
+                    <td>
+                      {Number((+line.pivot.tax_amount / 100) * +line.pivot.price).toFixed(
+                        locationSettings?.location_decimal_places
+                      )}
+                    </td>
+                    <td>
+                      {Number(+line.pivot.qty * +line.pivot.price).toFixed(
+                        locationSettings?.location_decimal_places
+                      )}
+                    </td>
                   </tr>
                 );
               })}
@@ -420,7 +470,8 @@ export default function SalesListTable({ id, shopId, rules, salesList }: any) {
               </tr> */}
               <tr>
                 <td colSpan={4} className="txt_bold_invoice">
-                  {invoiceDetails.txtTotal} {invoiceDetails.isMultiLang && invoiceDetails.txtTotal2}
+                  {invoiceDetails?.en?.txtTotal}{' '}
+                  {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtTotal}
                 </td>
                 <td className="txt_bold_invoice">
                   {Number(selectRow.sub_total).toFixed(locationSettings?.location_decimal_places)}
@@ -428,7 +479,7 @@ export default function SalesListTable({ id, shopId, rules, salesList }: any) {
               </tr>
               <tr>
                 <td colSpan={4} className="txt_bold_invoice">
-                  Total Paid
+                  Total Paid {invoiceDetails?.en?.is_multi_language && 'إجمالى المدفوعات'}
                 </td>
                 <td className="txt_bold_invoice">
                   {Number(selectRow.payed).toFixed(locationSettings?.location_decimal_places)}
@@ -436,7 +487,7 @@ export default function SalesListTable({ id, shopId, rules, salesList }: any) {
               </tr>
               <tr>
                 <td colSpan={4} className="txt_bold_invoice">
-                  Total Due
+                  Total Due {invoiceDetails?.en?.is_multi_language && 'المتبقى'}
                 </td>
                 <td className="txt_bold_invoice">
                   {Number(selectRow.due).toFixed(locationSettings?.location_decimal_places)}
@@ -449,15 +500,15 @@ export default function SalesListTable({ id, shopId, rules, salesList }: any) {
             <thead>
               <tr className="header">
                 <th>
-                  {invoiceDetails.txtQty}<br />{invoiceDetails.isMultiLang && invoiceDetails.txtQty2}
+                  {invoiceDetails?.en?.txtQty}<br />{invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtQty}
                 </th>
                 <th>
-                  {invoiceDetails.txtItem}<br />{invoiceDetails.isMultiLang && invoiceDetails.txtItem2}
+                  {invoiceDetails?.en?.txtItem}<br />{invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtItem}
                 </th>
                 <th>
                 </th>
                 <th>
-                  {invoiceDetails.txtAmount}<br />{invoiceDetails.isMultiLang && invoiceDetails.txtAmount2}
+                  {invoiceDetails?.en?.txtAmount}<br />{invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtAmount}
                 </th>
               </tr>
               {lines.length > 0 && lines.map((line: any, index: number) => {
@@ -472,23 +523,22 @@ export default function SalesListTable({ id, shopId, rules, salesList }: any) {
               })}
               <tr className="net-amount">
                 <td></td>
-                <td>{invoiceDetails.txtTax} {invoiceDetails.isMultiLang && invoiceDetails.txtTax2}</td>
+                <td>{invoiceDetails?.en?.txtTax} {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtTax}</td>
                 <td></td>
                 <td>{(selectRow.total_price).toFixed(locationSettings?.location_decimal_places)}</td>
               </tr>
               <tr className="net-amount">
                 <td></td>
-                <td className='txt-bold'>{invoiceDetails.txtTotal} {invoiceDetails.isMultiLang && invoiceDetails.txtTotal2}</td>
+                <td className='txt-bold'>{invoiceDetails?.en?.txtTotal} {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtTotal}</td>
                 <td></td>
                 <td className='txt-bold'>{Number(selectRow.total_price).toFixed(locationSettings?.location_decimal_places)}</td>
               </tr>
             </thead>
           </table> */}
           <p className="recipt-footer">
-            {invoiceDetails.footer}
+            {invoiceDetails?.en?.footer}
             <br />
-            {invoiceDetails.footersecond}
-            {invoiceDetails.isMultiLang && invoiceDetails.footer2}
+            {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.footer}
           </p>
           <p className="recipt-footer">{selectRow.notes}</p>
           <br />
@@ -515,7 +565,7 @@ export default function SalesListTable({ id, shopId, rules, salesList }: any) {
     setIsLoadItems(true);
     const res = await findAllData(`sales/${id}`);
     if (res.data.success) {
-      setSalesRep(res.data.result)
+      setSalesRep(res.data.result);
       setLines(res.data.result.products);
       setIsLoadItems(false);
     }
@@ -531,7 +581,7 @@ export default function SalesListTable({ id, shopId, rules, salesList }: any) {
           })
         ]
       );
-    
+
     initDataPage();
   }, [router.asPath]);
 
@@ -648,7 +698,7 @@ export default function SalesListTable({ id, shopId, rules, salesList }: any) {
         <DialogContent className="poslix-modal-content">
           <div className="poslix-modal">
             <div className="top-section-details">
-              <img src={invoiceDetails.logo} style={{ width: '80px', marginBottom: '10px' }} />
+              <img src={invoiceDetails?.en?.logo} style={{ width: '80px', marginBottom: '10px' }} />
               <div className="item-sections">
                 <div className="top-detials-invoice">
                   <div className="top-detials-item">

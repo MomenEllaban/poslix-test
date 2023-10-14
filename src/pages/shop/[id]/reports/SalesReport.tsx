@@ -18,6 +18,7 @@ import AlertDialog from 'src/components/utils/AlertDialog';
 import { useUser } from 'src/context/UserContext';
 import CustomToolbar from 'src/modules/reports/_components/CustomToolbar';
 import SalesReportToPrint from 'src/modules/reports/_components/SalesReportToPrint';
+import { findAllData } from 'src/services/crud.api';
 import api from 'src/utils/app-api';
 import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
 
@@ -33,7 +34,7 @@ function SalesReport() {
 
   const [sales, setSales] = useState<any>([]);
   const [filteredSales, setFilteredSales] = useState<any>([]);
-  const [customersOptions, setCustomersOptions] = useState<string[]>([]);
+  const [customersOptions, setCustomersOptions] = useState<any[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState('');
   const [selectId, setSelectId] = useState(0);
   const [selectRow, setSelectRow] = useState<any>({});
@@ -67,7 +68,6 @@ function SalesReport() {
         field: 'contact_name',
         headerName: 'Sold To',
         flex: 1,
-
         renderCell: ({ row }) => row.contact_name.trim() || 'walk-in-customer',
       },
       {
@@ -92,30 +92,22 @@ function SalesReport() {
     [locationSettings]
   );
 
-  useEffect(() => {
-    const customers = [];
-    sales.forEach((sale: any) => {
-      if (!customers.includes(sale.customer_name)) customers.push(sale.customer_name);
-    });
-    setCustomersOptions(customers);
-  }, [sales]);
-
   async function initDataPage() {
     setIsLoading(true);
-    api
-      .get(`reports/sales/${shopId}`, { params: { all_data: 1 } })
-      .then(({ data }) => {
-        setSales(data.result.data);
-        setFilteredSales(data.result.data);
-        setDetails({
-          subTotal: data.result.sub_total,
-          total: data.result.total,
-          tax: data.result.tax,
-        });
-      })
-      .finally(() => {
-        setIsLoading(false);
+    api.get(`reports/sales/${shopId}`, { params: { all_data: 1 } }).then(({ data }) => {
+      setSales(data.result.data);
+      setFilteredSales(data.result.data);
+      setDetails({
+        subTotal: data.result.sub_total,
+        total: data.result.total,
+        tax: data.result.tax,
       });
+    });
+
+    const customerRes = await findAllData(`customers/${shopId}`);
+    setCustomersOptions(customerRes.data.result);
+
+    setIsLoading(false);
   }
 
   useEffect(() => {
@@ -144,7 +136,7 @@ function SalesReport() {
   useEffect(() => {
     let localFilteredSales = [];
     if (strSelectedDate.length === 2) {
-      const filteredList = sales.filter((sale: ISalesReport) => {
+      const filteredList = filteredSales.filter((sale: ISalesReport) => {
         const dateCreated = sale.date.split(' ')[0];
         return (
           new Date(dateCreated).getDate() >= new Date(strSelectedDate[0]).getDate() &&
@@ -173,11 +165,6 @@ function SalesReport() {
       localFilteredSales = sales;
     }
 
-    if (selectedCustomer) {
-      localFilteredSales = localFilteredSales.filter((sale) =>
-        selectedCustomer.trim().localeCompare(sale.customer_name?.trim())
-      );
-    }
     //Eslam 19
     let totalPrice = 0;
     let taxAmount = 0;
@@ -189,11 +176,16 @@ function SalesReport() {
     });
     const totalPriceAndTax = totalPrice + taxAmount;
     setDetails({ subTotal: totalPrice, tax: taxAmount, total: totalPriceAndTax });
+
+    if(selectedCustomer?.length > 0)
+      localFilteredSales = localFilteredSales.filter((el) => el.contact_name.includes(selectedCustomer))
+
     setFilteredSales(localFilteredSales);
   }, [strSelectedDate, selectedCustomer]);
 
-  const handleChangeCustomer = (event: SelectChangeEvent<string>) =>
+  const handleChangeCustomer = (event: SelectChangeEvent<string>) => {
     setSelectedCustomer(event.target.value);
+  };
 
   const resetFilters = () => {
     setFilteredSales(sales);
@@ -229,10 +221,8 @@ function SalesReport() {
             label="Customer"
             onChange={handleChangeCustomer}>
             {customersOptions.map((customer) => (
-              <MenuItem
-                key={customer?.trim() || 'walk-in-customer'}
-                value={customer?.trim() || 'walk-in-customer'}>
-                {customer?.trim() || 'walk-in-customer'}
+              <MenuItem key={customer.id} value={customer.first_name}>
+                {customer?.first_name} {customer?.last_name}
               </MenuItem>
             ))}
           </Select>
@@ -312,10 +302,10 @@ function SalesReport() {
                     alignItems: 'center',
                     justifyContent: 'space-between',
                   }}>
-                  <p style={{ margin: 0 }}>
+                  {/* <p style={{ margin: 0 }}>
                     <span style={{ fontWeight: 'bold' }}>Page Total: </span>
                     {total.toFixed(3)} {locationSettings?.currency_code}
-                  </p>
+                  </p> */}
                   <div
                     style={{
                       display: 'flex',

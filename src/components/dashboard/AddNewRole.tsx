@@ -24,7 +24,7 @@ const AddNewRole = (props: any) => {
   const [roles, setRoles] = useState([]);
   const [selectedRole, setSelectedRole] = useState(-1);
   const [pages, setPages] = useState<
-    { value: string; label: string; stuffs: object[]; icon?: IconProp   }[]
+    { value: string; label: string; stuffs: object[]; icon?: IconProp }[]
   >([]);
 
   async function insertUpdateUsers() {
@@ -40,49 +40,65 @@ const AddNewRole = (props: any) => {
         permissions,
       });
     props.setIsAddNew(false);
-    props.initPage()
+    props.initPage();
   }
   function handelChange(checked: boolean, value: string, name: string) {
-    const perms = [...permissions]
-    if(checked && perms.indexOf(value) < 0)
-      perms.push(value)
-    else perms.splice(perms.indexOf(value), 1)
-    setPermissions([...perms])
+    const perms = [...permissions];
+    if (checked && perms.indexOf(value) < 0) perms.push(value);
+    else perms.splice(perms.indexOf(value), 1);
+    setPermissions([...perms]);
   }
 
   var errors = [];
-  const [fields, setFields] = useState<any>([])
-  const [permissions, setPermissions] = useState([])
+  const [fields, setFields] = useState<any>([]);
+  const [permissions, setPermissions] = useState([]);
   const initPageData = async () => {
     const res = await findAllData('permissions');
-    let finalRes: any = {}
-    Object.keys(res.data.result).forEach(field => {
-      let currentField: any = []
-      if(field === 'customers')
-        finalRes = {...finalRes, [field]: {[field]: [...res.data.result[field]]}}
-      Object.keys(res.data.result[field]).forEach(role => {
-        if(role === 'reports')
-          finalRes = {...finalRes, reports: {...res.data.result[field][role]}}
-        else if(Array.isArray(res.data.result[field][role])){
-          if(currentField.length > 0) {
-            finalRes = {...finalRes, [field]: {...finalRes[field], others: [...currentField]}}
+    let finalRes: any = {};
+    Object.keys(res.data.result).forEach((field) => {
+      let currentField: any = [];
+      if (field === 'customers')
+        finalRes = { ...finalRes, [field]: { [field]: [...res.data.result[field]] } };
+      if (field === 'suppliers')
+        finalRes = { ...finalRes, [field]: { [field]: [...res.data.result[field]] } };
+      if (field === 'units')
+        finalRes = { ...finalRes, [field]: { [field]: [...res.data.result[field]] } };
+      Object.keys(res.data.result[field]).forEach((role) => {
+        if (role === 'reports')
+          finalRes = { ...finalRes, reports: { ...res.data.result[field][role] } };
+        else if (Array.isArray(res.data.result[field][role])) {
+          if (currentField.length > 0) {
+            finalRes = { ...finalRes, [field]: { ...finalRes[field], others: [...currentField] } };
           }
-          finalRes = {...finalRes, [field]: {...finalRes[field], [role]: [...res.data.result[field][role]]}}
-        }
-        else currentField.push({...res.data.result[field][role]})
-      })
-    })
-    delete finalRes.tailoring
-    setFields(finalRes)
-  }
+          finalRes = {
+            ...finalRes,
+            [field]: { ...finalRes[field], [role]: [...res.data.result[field][role]] },
+          };
+        } else currentField.push({ ...res.data.result[field][role] });
+      });
+    });
+    delete finalRes.tailoring;
+    delete finalRes.business;
+    delete finalRes.locationbusiness;
+    delete finalRes.units;
+    delete finalRes.reports.items;
+    finalRes = {
+      ...finalRes,
+      inventory: { ...finalRes.inventory, suppliers: [...finalRes.suppliers.suppliers] },
+    };
+    delete finalRes.suppliers;
+    delete finalRes.reports['latest-open-close'];
+    delete finalRes.reports['purchase'];
+    setFields(finalRes);
+  };
 
   useEffect(() => {
-    initPageData()
+    initPageData();
     if (props.index > -1) {
       setSelectedRole(props.selectedRole);
       setRoles(props.selectedStuff);
-      setPermissions(props.selectedStuff)
-      setFormObj({ ...props.stuffs[props.index], isNew: false, name: props.selectedName  });
+      setPermissions(props.selectedStuff);
+      setFormObj({ ...props.stuffs[props.index], isNew: false, name: props.selectedName });
     }
   }, []);
 
@@ -121,37 +137,54 @@ const AddNewRole = (props: any) => {
                           Roles: <span className="text-danger">*</span>
                         </label>
                         <ul className="list-group">
-                          {Object.keys(fields).map(key => {
-                            return <>
-                              <li className="list-group-item bg-primary">
-                                <span>
-                                  <FontAwesomeIcon icon={'page'} size="1x" /> {key.charAt(0).toUpperCase() + key.slice(1)}
-                                </span>
-                                <div className="checkbox-rols"></div>
-                              </li>
-                              {Object.keys(fields[key]).map(field => {
-                                return <>
-                                    <li className="list-group-item">
-                                      {field !== 'others' && <span>{field.charAt(0).toUpperCase() + field.slice(1)}</span>}
-                                      <div className="checkbox-rols flex-wrap">
-                                        {fields[key][field].map(role => {
-                                          return <>
-                                            <div className="form-control" style={{ width: 'fit-content' }}>
-                                              <input className="form-check-input me-1" type="checkbox"
-                                                onClick={(e: any) => {
-                                                  handelChange(e.target.checked, role.id, role);
-                                                }}
-                                                defaultChecked={props.selectedStuff.indexOf(role.id) > -1} />
-                                              <label>{role.name}</label>
-                                            </div>
-                                          </>
-                                        })}
-                                      </div>
-                                    </li>
-                                  </>
-                                }
-                              )}
-                            </>
+                          {Object.keys(fields).map((key) => {
+                            return (
+                              <>
+                                <li className="list-group-item bg-primary">
+                                  <span>
+                                    <FontAwesomeIcon icon={'page'} size="1x" />{' '}
+                                    {key.charAt(0).toUpperCase() + key.slice(1)}
+                                  </span>
+                                  <div className="checkbox-rols"></div>
+                                </li>
+                                {Object.keys(fields[key]).map((field) => {
+                                  return (
+                                    <>
+                                      <li className="list-group-item">
+                                        {field !== 'others' && (
+                                          <span>
+                                            {field.charAt(0).toUpperCase() + field.slice(1)}
+                                          </span>
+                                        )}
+                                        <div className="checkbox-rols flex-wrap">
+                                          {fields[key][field].map((role) => {
+                                            return (
+                                              <>
+                                                <div
+                                                  className="form-control"
+                                                  style={{ width: 'fit-content' }}>
+                                                  <input
+                                                    className="form-check-input me-1"
+                                                    type="checkbox"
+                                                    onClick={(e: any) => {
+                                                      handelChange(e.target.checked, role.id, role);
+                                                    }}
+                                                    defaultChecked={
+                                                      props.selectedStuff.indexOf(role.id) > -1
+                                                    }
+                                                  />
+                                                  <label>{role.name}</label>
+                                                </div>
+                                              </>
+                                            );
+                                          })}
+                                        </div>
+                                      </li>
+                                    </>
+                                  );
+                                })}
+                              </>
+                            );
                           })}
                         </ul>
                       </div>
