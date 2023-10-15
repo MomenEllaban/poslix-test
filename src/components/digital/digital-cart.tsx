@@ -3,7 +3,7 @@ import  CartItem  from "./CartItem"
 
 import { useDispatch,useSelector } from 'react-redux';
 import {addTodigitalCart ,incrementQuantity, decrementQuantity, removeItem} from '../../redux/slices/digitalCartSlice';
-const DigitalCart = (props: any) => {
+const DigitalCart = ({cartItems}) => {
     const {digitalCart} = useSelector((state:any) => state.digitalCart)
     const dispatch = useDispatch()
     const getTotal = () => {
@@ -21,7 +21,7 @@ const DigitalCart = (props: any) => {
             <div className="digital-cart-items-container">
                 <h4>YOUR ORDER</h4>
                 <div className="digital-cart-items-list">
-                {digitalCart.length>=1?digitalCart.map((item) => (
+                {cartItems.length>=1?cartItems.map((item) => (
                 
            
           <CartItem 

@@ -18,7 +18,7 @@ const style = {
   boxShadow: 24,
   borderRadius: 1
 };
-const ProductItem = ({product}) => {
+const ProductItem = ({product,addItemTocart}) => {
     const {id, name, description, price, image , quantity } = product;
     const [modalVisible, setModalVisible] = useState(false);
     const [open, setOpen] = useState(false);
@@ -56,7 +56,7 @@ const modalHandler = (event) => {
          }   
   
  
-   <div className="digital-product-item" onClick={()=> modalHandler(id)} >
+   <div className="digital-product-item"  >
         
        
         <img className="digital-product-image" src={image} alt="" width={'100%'} height={'100%'} />
@@ -77,7 +77,9 @@ const modalHandler = (event) => {
             </div>
         </div>
         <div className="digital-product-button">
-            <Button variant="">Buy Now</Button>
+            <Button variant="" onClick={()=>{
+                addItemTocart(product)
+            }}>Buy Now</Button>
         </div>
     </div>
     </>
