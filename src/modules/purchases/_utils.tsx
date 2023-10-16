@@ -76,6 +76,128 @@ export const purchasesColumns: ({
 }) => [
   { field: 'name', headerName: 'Product Name', minWidth: 200 },
   {
+    field: 'cost',
+    headerName: 'Cost',
+    colSpan: 1,
+    minWidth: 350,
+    editable: true,
+    type: 'number',
+    renderCell: ({ row }: Partial<GridRowParams>) => (
+      <>
+        <div className="purchase-converted-cost">
+          {((formObj?.currency_rate || 1) * row.cost).toFixed(
+            locationSettings?.location_decimal_places
+          )}{' '}
+          <span style={{ opacity: '0.5', fontSize: '10px' }}>{formObj?.currency_code}</span>
+        </div>
+
+        {/* {row.cost < row.notifyExpensePrice && (
+          <div
+            className={row.costType == 1 ? 'purchase-label active-label' : 'purchase-label'}
+            id="use-expends"
+            onClick={() => onCostClick('useExpnds', row.product_id, row.variation_id)}>
+            <span>EXP</span> {row.notifyExpensePrice}
+          </div>
+        )}
+        {row.cost < row.notifyTaxPrice && (
+          <div
+            className={row.costType == 2 ? 'purchase-label active-label' : 'purchase-label'}
+            id="use-tax"
+            onClick={() => onCostClick('useTax', row.product_id, row.variation_id)}>
+            <span> TX</span> {row.notifyTaxPrice}
+          </div>
+        )}
+        {row.notifyExpensePrice > 0 && row.notifyTaxPrice > 0 && (
+          <div
+            className={row.costType == 3 ? 'purchase-label active-label' : 'purchase-label'}
+            id="use-tax"
+            onClick={() => onCostClick('useTotal', row.product_id, row.variation_id)}>
+            <span> Total</span> {row.notifyTotalPrice}
+          </div>
+        )} */}
+      </>
+    ),
+  },
+  {
+    field: 'price',
+    headerName: 'Price',
+    minWidth: 150,
+    editable: true,
+    type: 'number',
+    renderCell: ({ row }: Partial<GridRowParams>) => (
+      <div>{row?.price?.toFixed(locationSettings?.location_decimal_places)}</div>
+    ),
+  },
+  {
+    field: 'quantity',
+    headerName: 'Qty',
+    renderHeader(params) {
+      return (
+        <div className="d-flex w-100 flex-row gap-3 align-items-center justify-content-center">
+          Qty <BiEdit />
+        </div>
+      );
+    },
+    minWidth: 150,
+    editable: true,
+    type: 'number',
+  },
+  { field: 'vat', headerName: 'VAT %', minWidth: 150, editable: true, type: 'number' },
+  {
+    field: 'lineTotal',
+    headerName: 'Line Total',
+    minWidth: 100,
+    type: 'number',
+    renderCell: ({ row }: Partial<GridRowParams>) => (
+      <div>
+        {locationSettings?.currency_id == formObj.currency_id
+          ? (+(+row.cost * +row.quantity)).toFixed(locationSettings?.location_decimal_places)
+          : (+((formObj.currency_rate || +row.quantity) * +row.cost)).toFixed(
+              locationSettings?.location_decimal_places
+            )}
+      </div>
+    ),
+  },
+  {
+    field: 'action',
+    headerName: 'Action',
+    minWidth: 100,
+    sortable: false,
+    disableExport: true,
+    renderCell: ({ row }: Partial<GridRowParams>) => (
+      <Button
+        variant="outlined"
+        onClick={() => {
+          setSelecetdId({ product_id: row.product_id, variation_id: row.variation_id });
+          setOpenRemoveDialog(true);
+        }}>
+        <DeleteIcon />
+      </Button>
+    ),
+  },
+];
+
+export const purchasesEditColumns: ({
+  locationSettings,
+  formObj,
+  onCostClick,
+  setSelecetdId,
+  setOpenRemoveDialog,
+}: {
+  locationSettings: ILocationSettings;
+  formObj: any;
+  onCostClick: any;
+  setSelecetdId: any;
+  setOpenRemoveDialog: any;
+}) => GridColDef[] = ({
+  locationSettings,
+  formObj,
+  onCostClick,
+  setSelecetdId,
+  setOpenRemoveDialog,
+}) => [
+  { field: 'name', headerName: 'Product Name', minWidth: 200 },
+  {
     field: 'cost_price',
     headerName: 'Cost',
     colSpan: 1,

@@ -36,7 +36,7 @@ import { useUser } from 'src/context/UserContext';
 import { Toastify } from 'src/libs/allToasts';
 import { IPurchaseExpndes, IpurchaseProductItem } from 'src/models/common-model';
 import {
-  purchasesColumns,
+  purchasesEditColumns,
   purchasesInitFormError,
   purchasesInitFormObj,
   purchasesInitPurchaseDetails,
@@ -341,6 +341,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
 
   const saveToCell = (params: any) => {
     const _product = selectProducts.find((el) => el.id === params.id);
+
     if (!_product?.id || params.field !== 'quantity') return;
 
     const newSelected = selectProducts.map((product) => ({
@@ -348,9 +349,8 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
       [params.field]: params.id === product.id ? params.value : product[params.field],
     }));
 
-    console.log(params, newSelected);
-    setSelectProducts([...newSelected]);
-    calculationLabels(formObj?.total_expense, formObj?.total_tax);
+    // setSelectProducts(newSelected); //! it will be handled in the next function
+    calculationLabels(formObj?.total_expense, formObj?.total_tax, newSelected);
   };
 
   const sortHandler = (i: number, type: string) => {
@@ -371,9 +371,9 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
       ? cost
       : cost * formObj?.currency_rate;
   }
-  function calculationLabels(totalEpx: number, totalTax: number) {
+  function calculationLabels(totalEpx: number, totalTax: number, arr?: any[]) {
     let _subtotal = 0;
-    let _rows: any = [...selectProducts];
+    let _rows: any = arr?.length ? arr : [...selectProducts];
     _rows.map((rs: any) => (_subtotal += parseFloat(rs.lineTotal)));
     totalTax = (totalTax / 100) * _subtotal;
     _rows.map((sp: IpurchaseProductItem, i: number) => {
@@ -406,7 +406,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
 
   const columns = useMemo(
     () =>
-      purchasesColumns({
+      purchasesEditColumns({
         locationSettings,
         formObj,
         onCostClick,
@@ -537,12 +537,13 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
   /*****************************************/
   //! very bad performance !!!!!!!!!!!!!!!!!!!!
   useEffect(() => {
-    console.log('I m redering');
+    console.log('____HI________');
     const total_qty = selectProducts.reduce((prev, current) => prev + +current.quantity, 0);
     const subTotal_price = selectProducts.reduce(
       (prev, current) => prev + +current.quantity * (+(current as any).cost_price || +current.cost),
       0
     );
+    console.log(total_qty);
     setTotal_qty(total_qty);
     setFormObj({ ...formObj, subTotal_price });
     finalCalculation(subTotal_price);
@@ -592,7 +593,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
   useEffect(() => {
     finalCalculation();
   }, [formObj?.total_tax]);
-  
+
   useEffect(() => {
     setFormObj({
       ...formObj,
@@ -932,9 +933,8 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
                   rows={selectProducts}
                   columns={columns}
                   pageSize={10}
-                  editMode="row"
                   rowsPerPageOptions={[10]}
-                  onCellEditStop={saveToCell}
+                  onCellEditCommit={saveToCell}
                   columnVisibilityModel={{
                     vat: vatInColumn,
                   }}
