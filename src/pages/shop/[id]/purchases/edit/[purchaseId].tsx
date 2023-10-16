@@ -162,6 +162,8 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
       notes: form.notes || '',
     };
     console.log(_data);
+    api.put(`purchase/${purchaseId}/payment`, { data: _data });
+
     // const { success } = await apiUpdateCtr({
     //   type: 'transactions',
     //   subType: 'editPurchase',
