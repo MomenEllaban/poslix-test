@@ -34,7 +34,6 @@ import VariationModal from 'src/components/pos/modals/VariationModal';
 import { TableExpeseRows, TableTaxRows } from 'src/components/utils/ExpendsRow';
 import { useUser } from 'src/context/UserContext';
 import { Toastify } from 'src/libs/allToasts';
-import { apiUpdateCtr } from 'src/libs/dbUtils';
 import { IPurchaseExpndes, IpurchaseProductItem } from 'src/models/common-model';
 import {
   purchasesColumns,
@@ -42,6 +41,7 @@ import {
   purchasesInitFormObj,
   purchasesInitPurchaseDetails,
 } from 'src/modules/purchases/_utils';
+import { IPurchasePayload } from 'src/modules/purchases/purchases.types';
 import { cartJobType } from 'src/recoil/atoms';
 import api from 'src/utils/app-api';
 import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
@@ -83,7 +83,6 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
   const [suppliers, setSuppliers] = useState<ISupplierSelect[]>(initialSupplier);
   const [purchaseDetails, setPurchaseDetails] = useState(purchasesInitPurchaseDetails);
 
-  const [isEdit, setIsEdit] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isEditSort, setIsEditSort] = useState(false);
   const [vatInColumn, setVatInColumn] = useState(false);
@@ -91,38 +90,39 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
   const [openRemoveDialog, setOpenRemoveDialog] = useState(false);
   const [isOpenVariationDialog, setIsOpenVariationDialog] = useState(false);
 
-  const [selectedProductForVariation, setSelectedProductForVariation] = useState<{
-    product_id: number;
-    product_name: string;
-    is_service: number;
-  }>({ product_id: 0, product_name: '', is_service: 0 });
-
   const [purchaseStatus, setPurchaseStatus] =
     useState<{ value: string; label: string }[]>(purchaseStatusDataAdd);
   const [paymentTypes, setPaymentTypes] =
     useState<{ value: string; label: string }[]>(paymentTypeData);
   const [paymentStatus, setPaymentStatus] =
     useState<{ value: string; label: string }[]>(paymentStatusData);
-  const [products, setProducts] = useState<{ value: number; label: string }[]>([]);
-  const [selectProducts, setSelectProducts] = useState<IpurchaseProductItem[]>([]);
+  const [selectedProductForVariation, setSelectedProductForVariation] = useState<{
+    product_id: number;
+    product_name: string;
+    is_service: number;
+  }>({ product_id: 0, product_name: '', is_service: 0 });
+
   const [allVariations, setAllVariations] = useState([]);
   const [expends, setExpends] = useState<{ label: ''; value: 0 }[]>([]);
-  const [selectedExpends, setSelectedExpends] = useState<IPurchaseExpndes[]>([]);
-  const [selectedExpendsEdit, setSelectedExpendsEdit] = useState<IPurchaseExpndes[]>([]);
   const [selectedTaxes, setSelectedTaxes] = useState<IPurchaseExpndes[]>([]);
+  const [selectedExpends, setSelectedExpends] = useState<IPurchaseExpndes[]>([]);
+  const [selectProducts, setSelectProducts] = useState<IpurchaseProductItem[]>([]);
+  const [products, setProducts] = useState<{ value: number; label: string }[]>([]);
+  const [selectedExpendsEdit, setSelectedExpendsEdit] = useState<IPurchaseExpndes[]>([]);
 
   const [total_qty, setTotal_qty] = useState(0);
   const [totalExpends, setTotalExpends] = useState(0);
   const [expenseCounter, setExpenseCounter] = useState(0);
 
+  const [currencies, setCurrencies] = useState<ICurrencySelect[]>([]);
   const [selecetdId, setSelecetdId] = useState({ product_id: 0, variation_id: 0 });
 
-  const [currencies, setCurrencies] = useState<ICurrencySelect[]>([]);
+  formObjRef.current = formObj;
 
   const onCostClick = (type: string, id: number, vr: number) => {
     const found = selectProducts.findIndex((el) => el.product_id === id && el.variation_id == vr);
     if (found > -1) {
-      var _datas: any = selectProducts;
+      let _datas: any = selectProducts;
       if (type == 'useExpnds') _datas[found].costType = _datas[found].costType == 1 ? 0 : 1;
       else if (type == 'useTax') _datas[found].costType = _datas[found].costType == 2 ? 0 : 2;
       else if (type == 'useTotal') _datas[found].costType = _datas[found].costType == 3 ? 0 : 3;
@@ -140,54 +140,48 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
     </div>
   );
 
-  async function insertPurchase() {
-    const data = {
-      // ...formObj,
-      location_id: +shopId, //  "required|numeric",
-      status: formObj?.purchaseStatus, //  "required|string:in:draft,partially_received,processing,received,cancelled",
-      payment_status: formObj?.paymentStatus, //  "required|string:in:credit,partially_paid,paid,due",
-      supplier_id: formObj?.supplier_id ?? 0,
-      payment_type: formObj?.paymentType,
-      currency_id: formObj?.currency_id,
-      cart: [...selectProducts.map((item) => ({ ...item, qty: item.quantity, note: '' }))],
-      expense: {
-        amount: null,
-        category: {
-          id: 35,
-        },
-      },
-      notes: '',
-    };
-    api.post(`/purchase/${shopId}`, data).then((res) => {
-      if (!res.data.success) {
-        alert('Has Error ,try Again');
-        return;
-      }
-      Toastify('success', 'Purchase Successfully Created..');
-      router.push('/shop/' + shopId + '/purchases');
-    });
-  }
   async function editPurchase() {
-    const { success } = await apiUpdateCtr({
-      type: 'transactions',
-      subType: 'editPurchase',
-      shopId,
-      data: {
-        totalOrder: formObjRef.current,
-        lines: selectProducts,
-        expenses: selectedExpends,
-        taxes: selectedTaxes,
-      },
-    });
-    if (!success) {
-      Toastify('error', 'Has Error ,Check You Inputs Try Again');
-      return;
-    }
-    Toastify('success', 'Purchase Successfully Edited..');
+    console.log(formObjRef.current);
+    const form = formObjRef.current;
+    const _data: IPurchasePayload = {
+      location_id: +shopId,
+      supplier_id: form.supplier_id,
+      status: form.purchaseStatus,
+      payment_status: form.paymentStatus,
+      payment_type: form.paymentType,
 
-    router.push('/shop/' + shopId + '/purchases');
+      discount_type: form.discount_type,
+      discount_amount: form.total_discount || form.discount_amount,
+
+      tax_amount: form.total_tax,
+
+      cart: selectProducts.map((product) => ({ ...product, qty: product.quantity })),
+      expense: {
+        amount: form.total_expense,
+      },
+      notes: form.notes || '',
+    };
+    console.log(_data);
+    // const { success } = await apiUpdateCtr({
+    //   type: 'transactions',
+    //   subType: 'editPurchase',
+    //   shopId,
+    //   data: {
+    //     totalOrder: formObjRef.current,
+    //     lines: selectProducts,
+    //     expenses: selectedExpends,
+    //     taxes: selectedTaxes,
+    //   },
+    // });
+    // if (!success) {
+    //   Toastify('error', 'Has Error ,Check You Inputs Try Again');
+    //   return;
+    // }
+    // Toastify('success', 'Purchase Successfully Edited..');
+
+    // router.push('/shop/' + shopId + '/purchases');
   }
-  var errors = [];
+  let errors = [];
 
   function getPriority(type: string, subTotal: number): number {
     switch (type) {
@@ -202,7 +196,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
   }
   function finalCalculation(subTotal = 0) {
     subTotal = subTotal > 0 ? subTotal : formObj?.subTotal_price;
-    var _total = subTotal;
+    let _total = subTotal;
     if (_total <= 0) return;
     purchaseDetails?.map((dp) => (_total = getPriority(dp.value, _total)));
 
@@ -344,28 +338,24 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
       setSelectedExpends([...selectedExpends]);
     } else Toastify('error', 'already exists in list');
   };
-  const saveToCell = (params: any) => {
-    const found = selectProducts.findIndex((el) => el.id === params.id);
-    if (found > -1) {
-      var _datas: any = selectProducts;
-      _datas[found][params.field] = params.value;
-      if (params.field == 'cost' || params.field == 'quantity')
-        _datas[found].lineTotal =
-          locationSettings?.currency_id == formObj?.currency_id
-            ? Number(_datas[found].cost * _datas[found].quantity).toFixed(
-              locationSettings?.location_decimal_places
-            )
-            : Number(_datas[found].cost * formObj?.currency_rate * _datas[found].quantity).toFixed(
-              locationSettings?.location_decimal_places
-            );
 
-      setSelectProducts([..._datas]);
-      calculationLabels(formObj?.total_expense, formObj?.total_tax);
-    }
+  const saveToCell = (params: any) => {
+    const _product = selectProducts.find((el) => el.id === params.id);
+    if (!_product?.id || params.field !== 'quantity') return;
+
+    const newSelected = selectProducts.map((product) => ({
+      ...product,
+      [params.field]: params.id === product.id ? params.value : product[params.field],
+    }));
+
+    console.log(params, newSelected);
+    setSelectProducts([...newSelected]);
+    calculationLabels(formObj?.total_expense, formObj?.total_tax);
   };
+
   const sortHandler = (i: number, type: string) => {
-    var _data = [...purchaseDetails];
-    var _temp = _data[i].priority;
+    let _data = [...purchaseDetails];
+    let _temp = _data[i].priority;
     if (type == 'd') {
       _data[i].priority = _data[i + 1].priority;
       _data[i + 1].priority = _temp;
@@ -382,27 +372,27 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
       : cost * formObj?.currency_rate;
   }
   function calculationLabels(totalEpx: number, totalTax: number) {
-    var _subtotal = 0;
-    var _rows: any = [...selectProducts];
+    let _subtotal = 0;
+    let _rows: any = [...selectProducts];
     _rows.map((rs: any) => (_subtotal += parseFloat(rs.lineTotal)));
     totalTax = (totalTax / 100) * _subtotal;
     _rows.map((sp: IpurchaseProductItem, i: number) => {
-      var _ExpVal = ((sp.lineTotal / _subtotal) * totalEpx) / sp.quantity;
-      var _TaxVal = ((sp.lineTotal / _subtotal) * totalTax) / sp.quantity;
+      let _ExpVal = ((sp.lineTotal / _subtotal) * totalEpx) / sp.quantity;
+      let _TaxVal = ((sp.lineTotal / _subtotal) * totalTax) / sp.quantity;
 
       _rows[i].notifyExpensePrice =
         _ExpVal > 0
           ? +Number(_ExpVal + parseFloat(getCost(sp.cost).toString())).toFixed(
-            locationSettings?.location_decimal_places
-          )
+              locationSettings?.location_decimal_places
+            )
           : 0;
       if (_ExpVal == 0 && _rows[i].costType == 1) _rows[i].costType = 0;
 
       _rows[i].notifyTaxPrice =
         _TaxVal > 0
           ? +Number(_TaxVal + parseFloat(getCost(sp.cost).toString())).toFixed(
-            locationSettings?.location_decimal_places
-          )
+              locationSettings?.location_decimal_places
+            )
           : 0;
       if (_TaxVal == 0 && _rows[i].costType == 2) _rows[i].costType = 0;
 
@@ -423,12 +413,44 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
         setSelecetdId,
         setOpenRemoveDialog,
       }),
-    [locationSettings, formObj, formObjRef]
+    [locationSettings, selectProducts, formObj, formObjRef]
   );
 
-  formObjRef.current = formObj;
+  const handleSubmitEdit = (e) => {
+    e.preventDefault();
 
-  async function getPageData(shopId) {
+    //! handle errors
+    const errors = [];
+
+    if (selectProducts.length == 0) errors.push('selected products');
+    if (formObj?.currency_id == 0 || formObj?.currency_id == undefined) errors.push('currency id');
+    if (formObj?.purchaseStatus.length <= 2) errors.push('purchaseStatus less than 2');
+    if (formObj?.purchaseStatus != 'draft') {
+      if (formObj?.paymentStatus.length <= 2) errors.push('paymentStatus less than 2');
+      if ((formObj?.paymentDate + '').length <= 2) errors.push('payment error');
+      if (formObj?.paymentType.length <= 2) errors.push('payment type');
+    }
+    if (formObj?.paymentStatus == 'partially_paid' && formObj?.paid_amount < 0.5)
+      errors.push(' partially paid');
+
+    setErrorForm({
+      ...errorForm,
+      currency_id: formObj?.currency_id == 0 || formObj?.currency_id == undefined,
+      purchaseStatus: formObj?.purchaseStatus.length <= 2,
+      paymentDate: (formObj?.paymentDate + '').length <= 2,
+      paymentStatus: formObj?.paymentStatus.length <= 2,
+      paymentType: formObj?.paymentType.length <= 2,
+      products: selectProducts.length == 0,
+      paid: formObj?.paymentStatus == 'partially_paid' && formObj?.paid_amount < 0.5,
+      morePaid: formObj?.paid_amount > formObj?.total_price,
+    });
+
+    if (!errors.length) return editPurchase();
+
+    Toastify('error', 'Enter Required Field');
+  };
+
+  async function getPageData(shopId: string) {
     setDataLoading(true);
     try {
       const _suppliers = await api
@@ -495,14 +517,12 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
 
       const _selectedProducts = [];
       _purchaseDetails?.stocks.forEach((stock) => {
-
         const _product = _products.find((product: IProduct) => +product.id === +stock.product_id);
         if (_product) {
-
-          _selectedProducts.push({ ..._product });
+          _selectedProducts.push({ ..._product, quantity: +stock.qty_received });
         }
-
       });
+      console.log(_selectedProducts);
       setSelectProducts([..._selectedProducts]);
     } catch {
       Toastify('error', 'Somethig went wrong, please refresh and try again!');
@@ -517,19 +537,19 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
   /*****************************************/
   //! very bad performance !!!!!!!!!!!!!!!!!!!!
   useEffect(() => {
-    var _prices = 0,
-      _qty = 0;
-    selectProducts.map((p: IpurchaseProductItem) => {
-      _qty += Number(p.quantity);
-      _prices += Number(p.lineTotal);
-    });
-    setTotal_qty(_qty);
-    setFormObj({ ...formObj, subTotal_price: _prices });
-    finalCalculation(_prices);
+    console.log('I m redering');
+    const total_qty = selectProducts.reduce((prev, current) => prev + +current.quantity, 0);
+    const subTotal_price = selectProducts.reduce(
+      (prev, current) => prev + +current.quantity * (+(current as any).cost_price || +current.cost),
+      0
+    );
+    setTotal_qty(total_qty);
+    setFormObj({ ...formObj, subTotal_price });
+    finalCalculation(subTotal_price);
   }, [selectProducts]);
 
   useEffect(() => {
-    var _disAmount = 0,
+    let _disAmount = 0,
       _total = 0;
     _disAmount = formObj?.discount_amount;
 
@@ -547,7 +567,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
 
   //expenses
   useEffect(() => {
-    var _sum = 0;
+    let _sum = 0;
 
     selectedExpends.map((ep) => (_sum += Number(ep.enterd_value * ep.currency_rate)));
     selectedExpendsEdit.map((ep) => (_sum += Number(ep.enterd_value * ep.currency_rate)));
@@ -572,6 +592,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
   useEffect(() => {
     finalCalculation();
   }, [formObj?.total_tax]);
+  
   useEffect(() => {
     setFormObj({
       ...formObj,
@@ -584,7 +605,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
   }, [formObj?.currency_rate]);
 
   useEffect(() => {
-    var _tx = 0;
+    let _tx = 0;
     selectedTaxes.map((ep: any) => (_tx += Number(ep.converted_value)));
     setFormObj({ ...formObj, total_tax: +_tx.toFixed(locationSettings?.location_decimal_places) });
     calculationLabels(formObj?.total_expense, _tx);
@@ -627,6 +648,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
     const currentLocation = locations.find((location) => +location.location_id === +shopId);
     setLocationSettings(currentLocation ?? locationSettings);
   }, [shopId, router.query.slug]);
+
   useEffect(() => {
     if (!shopId) return Toastify('warning', 'Please refresh the page!');
     getPageData(shopId);
@@ -692,7 +714,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
         <>
           <Card className="mb-4">
             <Card.Header className="p-3 bg-white">
-              <h5>{isEdit ? 'Edit Purchase ' : 'Add Purchase'}</h5>
+              <h5>Edit Purchase </h5>
             </Card.Header>
             <Card.Body>
               <div className="form-style2">
@@ -906,11 +928,13 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
             <Card.Body>
               <div style={{ height: 300, width: '100%' }}>
                 <DataGrid
+                  loading={dataLoading}
                   rows={selectProducts}
                   columns={columns}
                   pageSize={10}
+                  editMode="row"
                   rowsPerPageOptions={[10]}
-                  onCellEditCommit={saveToCell}
+                  onCellEditStop={saveToCell}
                   columnVisibilityModel={{
                     vat: vatInColumn,
                   }}
@@ -1134,43 +1158,8 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
               <button
                 type="button"
                 className="btn m-btn btn-primary p-2"
-                onClick={(e) => {
-                  e.preventDefault();
-                  errors = [];
-                  if (formObj?.supplier_id == 0) errors.push('supplier id');
-                  if (selectProducts.length == 0) errors.push('selected products');
-                  if (formObj?.currency_id == 0 || formObj?.currency_id == undefined)
-                    errors.push('currency id');
-                  if (formObj?.purchaseStatus.length <= 2)
-                    errors.push('purchaseStatus less than 2');
-                  if (formObj?.purchaseStatus != 'draft') {
-                    if (formObj?.paymentStatus.length <= 2)
-                      errors.push('paymentStatus less than 2');
-                    if ((formObj?.paymentDate + '').length <= 2) errors.push('payment error');
-                    if (formObj?.paymentType.length <= 2) errors.push('payment type');
-                  }
-                  if (formObj?.paymentStatus == 'partially_paid' && formObj?.paid_amount < 0.5)
-                    errors.push(' partially paid');
-
-                  setErrorForm({
-                    ...errorForm,
-                    supplier_id: formObj?.supplier_id == 0,
-                    currency_id: formObj?.currency_id == 0 || formObj?.currency_id == undefined,
-                    purchaseStatus: formObj?.purchaseStatus.length <= 2,
-                    paymentDate: (formObj?.paymentDate + '').length <= 2,
-                    paymentStatus: formObj?.paymentStatus.length <= 2,
-                    paymentType: formObj?.paymentType.length <= 2,
-                    products: selectProducts.length == 0,
-                    paid: formObj?.paymentStatus == 'partially_paid' && formObj?.paid_amount < 0.5,
-                    morePaid: formObj?.paid_amount > formObj?.total_price,
-                  });
-
-                  if (errors.length == 0) {
-                    if (isEdit) editPurchase();
-                    else insertPurchase();
-                  } else Toastify('error', 'Enter Requires Field');
-                }}>
-                {isEdit ? 'Edit' : 'Save'}
+                onClick={handleSubmitEdit}>
+                Edit
               </button>
             </Card.Body>
           </Card>

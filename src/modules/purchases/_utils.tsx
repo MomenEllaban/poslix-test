@@ -76,16 +76,16 @@ export const purchasesColumns: ({
 }) => [
   { field: 'name', headerName: 'Product Name', minWidth: 200 },
   {
-    field: 'cost',
+    field: 'cost_price',
     headerName: 'Cost',
     colSpan: 1,
     minWidth: 350,
-    editable: true,
+    editable: false,
     type: 'number',
     renderCell: ({ row }: Partial<GridRowParams>) => (
       <>
         <div className="purchase-converted-cost">
-          {((formObj?.currency_rate || 1) * row.cost).toFixed(
+          {((formObj?.currency_rate || 1) * row.cost_price).toFixed(
             locationSettings?.location_decimal_places
           )}{' '}
           <span style={{ opacity: '0.5', fontSize: '10px' }}>{formObj?.currency_code}</span>
@@ -119,14 +119,17 @@ export const purchasesColumns: ({
     ),
   },
   {
-    field: 'price',
+    field: 'sell_price',
     headerName: 'Price',
     minWidth: 150,
-    editable: true,
+    editable: false,
     type: 'number',
     renderCell: ({ row }: Partial<GridRowParams>) => (
-      <div>
-        {row?.price?.toFixed(locationSettings?.location_decimal_places)}
+      <div className="purchase-converted-cost">
+        {((formObj?.currency_rate || 1) * row.sell_price).toFixed(
+          locationSettings?.location_decimal_places
+        )}{' '}
+        <span style={{ opacity: '0.5', fontSize: '10px' }}>{formObj?.currency_code}</span>
       </div>
     ),
   },
@@ -140,7 +143,7 @@ export const purchasesColumns: ({
         </div>
       );
     },
-    minWidth: 150,
+    minWidth: 100,
     editable: true,
     type: 'number',
   },
@@ -148,15 +151,12 @@ export const purchasesColumns: ({
   {
     field: 'lineTotal',
     headerName: 'Line Total',
-    minWidth: 100,
+    minWidth: 150,
     type: 'number',
     renderCell: ({ row }: Partial<GridRowParams>) => (
       <div>
-        {locationSettings?.currency_id == formObj.currency_id
-          ? (+(+row.cost * +row.quantity)).toFixed(locationSettings?.location_decimal_places)
-          : (+((formObj.currency_rate || +row.quantity) * +row.cost)).toFixed(
-              locationSettings?.location_decimal_places
-            )}
+        {(+(+row.cost_price * +row.quantity)).toFixed(locationSettings?.location_decimal_places)}{' '}
+        <span style={{ opacity: '0.5', fontSize: '10px' }}>{formObj?.currency_code}</span>
       </div>
     ),
   },
