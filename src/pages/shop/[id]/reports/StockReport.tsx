@@ -87,8 +87,7 @@ function StockReport() {
   ) => {
     setSelectedCategory(category);
     if (!category) return setFilteredByCategories(sales);
-
-    const _filteredSales = sales?.filter((sale) => sale.sub_category === category.id);
+    const _filteredSales = sales?.filter((sale) => sale.category_id === category.id);
     setFilteredByCategories(_filteredSales);
   };
   const filteredArr = intersectionBy(filteredByBrands, filteredByCategories, 'id');
@@ -159,6 +158,7 @@ function StockReport() {
     { field: 'sku', headerName: 'SKU', width: 80 },
     { field: 'product_name', headerName: 'Product Name', minWidth: 80, flex: 1 },
     { field: 'brand_name', headerName: 'Brand Name' },
+    { field: 'category_name', headerName: 'Category' },
     // { field: 'location_name', headerName: 'Location', flex: 1, minWidth: 120 },
     {
       field: 'unit_name',

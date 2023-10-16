@@ -32,6 +32,8 @@ function ItemsReport() {
 
   const [sales, setSales] = useState<any>([]);
   const [filteredSales, setFilteredSales] = useState<any>([]);
+  console.log(filteredSales);
+  
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [selectId, setSelectId] = useState(0);
   const [selectRow, setSelectRow] = useState<any>({});
@@ -49,6 +51,8 @@ function ItemsReport() {
   const [locations, setLocations] = useState([]);
   const [suppliersOptions, setSuppliersOptions] = useState([]);
   const [customersOptions, setCustomersOptions] = useState([]);
+  console.log(customersOptions);
+  
 
   const handleChangeSupplier = (event: SelectChangeEvent<string>) => {
     setSelectedSupplier(event.target.value);
@@ -99,17 +103,17 @@ function ItemsReport() {
         renderCell: ({ row }) =>
           `${new Date(row.date).toLocaleDateString()} ${new Date(row.date).toLocaleTimeString()}`,
       },
-      {
-        field: 'purchase_id',
-        headerName: 'Purchase ID',
-        // @ts-ignore
-        renderCell: ({ row }) => row?.product?.supplier?.name || '---',
-      },
+      // {
+      //   field: 'purchase_id',
+      //   headerName: 'Purchase ID',
+      //   // @ts-ignore
+      //   renderCell: ({ row }) => row?.product?.supplier?.name || '---',
+      // },
       {
         field: 'supplier_name',
         headerName: 'Supplier',
         // @ts-ignore
-        renderCell: ({ row }) => row?.product?.supplier?.name || '---',
+        renderCell: ({ row }) => row?.supplier_name || '---',
       },
       {
         field: 'purchase_price',
@@ -171,8 +175,6 @@ function ItemsReport() {
           });
           return rest;
         });
-
-        console.log(mappedSalesList);
         setSales(mappedSalesList);
         setFilteredSales(mappedSalesList);
       })
@@ -181,7 +183,9 @@ function ItemsReport() {
     const supplierRes = await findAllData(`suppliers/${shopId}`);
     setSuppliersOptions(supplierRes.data.result);
     const customerRes = await findAllData(`customers/${shopId}`);
-    setCustomersOptions([...customerRes.data.result, { name: 'walk-in customer' }]);
+    console.log(customerRes);
+    
+    setCustomersOptions([...customerRes.data.result, { first_name: 'walk-in', last_name: "customer" }]);
 
     setIsLoadItems(false);
   }
@@ -244,10 +248,11 @@ function ItemsReport() {
     });
     if (selectedSupplier?.length > 0)
       localFilteredSales = localFilteredSales.filter(
-        (el) => el.user_first_name === selectedSupplier
+        (el) => el.supplier_name   === selectedSupplier
       );
 
     if (selectedCustomer?.length > 0)
+    
       localFilteredSales = localFilteredSales.filter(
         (el) => el.contact_first_name === selectedCustomer
       );
