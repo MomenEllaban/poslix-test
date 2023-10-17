@@ -51,8 +51,6 @@ function ItemsReport() {
   const [locations, setLocations] = useState([]);
   const [suppliersOptions, setSuppliersOptions] = useState([]);
   const [customersOptions, setCustomersOptions] = useState([]);
-  console.log(customersOptions);
-  
 
   const handleChangeSupplier = (event: SelectChangeEvent<string>) => {
     setSelectedSupplier(event.target.value);
@@ -65,7 +63,7 @@ function ItemsReport() {
   const handleClose = () => setAnchorEl(null);
 
   const resetFilters = () => {
-    setFilteredSales(sales);
+    setFilteredSales(()=> sales);
     setSelectedCustomer('');
     setSelectedSupplier('');
     setSelectedRange(null);
@@ -113,7 +111,7 @@ function ItemsReport() {
         field: 'supplier_name',
         headerName: 'Supplier',
         // @ts-ignore
-        renderCell: ({ row }) => row?.supplier_name || '---',
+        renderCell: ({ row }) => row?.supplier_name || 'walk-in supplier',
       },
       {
         field: 'purchase_price',
@@ -166,17 +164,29 @@ function ItemsReport() {
       .get(`reports/item-sales/${shopId}`, { params: { all_data: 1 } })
       .then(({ data }) => {
         const _salesList = data.result.data;
+        console.log('original', data.result, _salesList );
+        
         const mappedSalesList = [];
-
-        const _salesListWithoutProducts = _salesList.map((item) => {
+//mohamed elsayed
+        // const _salesListWithoutProducts = _salesList.map((item, index) => { 
+        //   const { products, ...rest } = item;
+        //   products.forEach((product) => {
+        //     mappedSalesList.push({ ...rest, product });
+        //   });
+        //   return {...rest, id: index};
+        // });
+        // console.log();
+        let index = 0
+        _salesList.forEach((item) => { 
           const { products, ...rest } = item;
           products.forEach((product) => {
-            mappedSalesList.push({ ...rest, product });
+            mappedSalesList.push({ id: index++, ...rest, product });
           });
-          return rest;
         });
+        console.log('mapped', mappedSalesList);
+        ////
         setSales(mappedSalesList);
-        setFilteredSales(mappedSalesList);
+        setFilteredSales(() => mappedSalesList);
       })
       .finally(() => {});
 
@@ -184,8 +194,11 @@ function ItemsReport() {
     setSuppliersOptions(supplierRes.data.result);
     const customerRes = await findAllData(`customers/${shopId}`);
     console.log(customerRes);
-    
-    setCustomersOptions([...customerRes.data.result, { first_name: 'walk-in', last_name: "customer" }]);
+
+    setCustomersOptions([
+      ...customerRes.data.result,
+      { first_name: 'walk-in', last_name: 'customer' },
+    ]);
 
     setIsLoadItems(false);
   }
@@ -246,31 +259,31 @@ function ItemsReport() {
       tax: taxAmount,
       cost: totalPriceAndTax,
     });
-    if (selectedSupplier?.length > 0)
-      localFilteredSales = localFilteredSales.filter(
-        (el) => el.supplier_name   === selectedSupplier
-      );
-
-    if (selectedCustomer?.length > 0)
-    
+    if (selectedSupplier?.length > 0){
+      console.log(111111111);
+      localFilteredSales = localFilteredSales.filter((el) => el.supplier_name === selectedSupplier);
+    }
+    if (selectedCustomer?.length > 0){
+      console.log(222222222);
       localFilteredSales = localFilteredSales.filter(
         (el) => el.contact_first_name === selectedCustomer
       );
-
-    setFilteredSales(localFilteredSales);
+    }
+    console.log(localFilteredSales);
+    setFilteredSales(()=> localFilteredSales);
   }, [strSelectedDate, selectedSupplier, selectedCustomer]);
 
   /*************************************/
   useEffect(() => {
     if (!shopId) return;
-
     const locations: ILocation[] = getLocalStorage(ELocalStorageKeys.LOCATIONS);
     setLocations(locations);
     const currentLocation = locations.find((location) => +location.location_id === +shopId);
     setLocationSettings(currentLocation ?? locationSettings);
-
     initDataPage();
   }, [shopId]);
+
+  console.log(filteredSales);
 
   return (
     <AdminLayout shopId={shopId}>
@@ -308,8 +321,8 @@ function ItemsReport() {
             value={selectedCustomer}
             label="Customer"
             onChange={handleChangeCustomer}>
-            {customersOptions.map((customer) => (
-              <MenuItem key={customer.id} value={customer.first_name}>
+            {customersOptions.map((customer, index) => (
+              <MenuItem key={index} value={customer.first_name}>
                 {customer?.first_name} {customer?.last_name}
               </MenuItem>
             ))}
@@ -339,6 +352,7 @@ function ItemsReport() {
         </div>
       }
       <div className="page-content-style card">
+        {/* {console.log(filteredSales)} */}
         <h5> Items Report</h5>
         {/* <div className="deatils_box">
           <div>
@@ -377,7 +391,7 @@ function ItemsReport() {
           columns={columns}
           pageSize={30}
           rowsPerPageOptions={[10]}
-          getRowId={(row) => row.order_id}
+          // getRowId={(row) => row.order_id}
           components={{ Toolbar: CustomToolbar }}
         />
       </div>

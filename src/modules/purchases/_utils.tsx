@@ -84,8 +84,10 @@ export const purchasesColumns: ({
     type: 'number',
     renderCell: ({ row }: Partial<GridRowParams>) => (
       <>
+      {console.log(typeof row.sell_price)
+      }
         <div className="purchase-converted-cost">
-          {((formObj?.currency_rate || 1) * row.cost).toFixed(
+          {((formObj?.currency_rate || 1) * (row.cost || row.cost_price)).toFixed(
             locationSettings?.location_decimal_places
           )}{' '}
           <span style={{ opacity: '0.5', fontSize: '10px' }}>{formObj?.currency_code}</span>
@@ -125,7 +127,11 @@ export const purchasesColumns: ({
     editable: true,
     type: 'number',
     renderCell: ({ row }: Partial<GridRowParams>) => (
-      <div>{row?.price?.toFixed(locationSettings?.location_decimal_places)}</div>
+      <div>
+        {row.price
+          ? row?.price?.toFixed(locationSettings?.location_decimal_places)
+          : Number(row.sell_price).toFixed(locationSettings?.location_decimal_places)}
+      </div>
     ),
   },
   {
@@ -141,6 +147,11 @@ export const purchasesColumns: ({
     minWidth: 150,
     editable: true,
     type: 'number',
+    renderCell: ({ row }: Partial<GridRowParams>) => (
+      <div>
+        {+row.quantity}
+      </div>
+    )
   },
   { field: 'vat', headerName: 'VAT %', minWidth: 150, editable: true, type: 'number' },
   {
@@ -151,7 +162,7 @@ export const purchasesColumns: ({
     renderCell: ({ row }: Partial<GridRowParams>) => (
       <div>
         {locationSettings?.currency_id == formObj.currency_id
-          ? (+(+row.cost * +row.quantity)).toFixed(locationSettings?.location_decimal_places)
+          ? (+((+row.cost || +row.cost_price) * +row.quantity)).toFixed(locationSettings?.location_decimal_places)
           : (+((formObj.currency_rate || +row.quantity) * +row.cost)).toFixed(
               locationSettings?.location_decimal_places
             )}

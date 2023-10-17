@@ -379,7 +379,7 @@ const Product: NextPage = ({ editId, iType }: any) => {
         barcode_type: _form.barcode_type,
         sell_price: parseFloat(_form.sell_price), // Convert to number
         cost_price: parseFloat(_form.cost_price), // Convert to number
-        sell_over_stock: parseInt(_form.sell_over_stock), // Convert to boolean
+        sell_over_stock: parseInt(_form.sell_over), // Convert to boolean
         variations:
           _form.type === 'single'
             ? []
@@ -448,7 +448,7 @@ const Product: NextPage = ({ editId, iType }: any) => {
   };
   const checkboxHandleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.name == 'is_service')
-      setFormObj({ ...formObj, is_service: event.target.checked, isSellOverStock: false });
+      setFormObj({ ...formObj, is_service: event.target.checked, isSellOverStock: !formObj.isSellOverStock || false });
     else if (event.target.name == 'sell_over')
       setFormObj({ ...formObj, isSellOverStock: event.target.checked });
     else if (event.target.name == 'multi_price')
@@ -1204,10 +1204,14 @@ const Product: NextPage = ({ editId, iType }: any) => {
                               type="text"
                               className="form-control"
                               placeholder="Purchase Price"
-                              value={formObj.cost_price}
+                              value={Number(formObj.cost_price).toFixed(
+                                locationSettings?.location_decimal_places
+                              )}
                               onKeyPress={handleNumberKeyPress}
                               onChange={(e) => {
-                                setFormObj({ ...formObj, cost_price: e.target.value });
+                                setFormObj({ ...formObj, cost_price: Number(e.target.value).toFixed(
+                                  locationSettings?.location_decimal_places
+                                ) });
                               }}
                             />
                           </div>
@@ -1224,10 +1228,14 @@ const Product: NextPage = ({ editId, iType }: any) => {
                               type="text"
                               className="form-control"
                               placeholder="Sell Price"
-                              value={formObj.sell_price}
+                              value={Number(formObj.sell_price).toFixed(
+                                locationSettings?.location_decimal_places
+                              )}
                               onKeyPress={handleNumberKeyPress}
                               onChange={(e) => {
-                                setFormObj({ ...formObj, sell_price: e.target.value });
+                                setFormObj({ ...formObj, sell_price: Number(e.target.value).toFixed(
+                                  locationSettings?.location_decimal_places
+                                ) });
                               }}
                             />
                           </div>
@@ -1258,6 +1266,8 @@ const Product: NextPage = ({ editId, iType }: any) => {
                     )}
                     {formObj.is_service == 0 && (
                       <>
+                      {console.log(formObj.isSellOverStock)
+                      }
                         {/* Sell Over Stock */}
                         <div className="field-cover">
                           <div className="field-section">

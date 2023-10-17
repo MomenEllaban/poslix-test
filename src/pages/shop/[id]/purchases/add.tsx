@@ -142,16 +142,29 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
       supplier_id: formObj?.supplier_id || undefined,
       payment_type: formObj?.paymentType,
       currency_id: formObj?.currency_id,
-      cart: [...selectProducts.map((item) => ({ ...item, qty: item.quantity, note: '' }))],
-      expense: {
-        amount: null,
-        category: {
-          id: 35,
-        },
-      },
+      cart: [
+        ...selectProducts.map((item) => ({
+          product_id: item.product_id,
+          variation_id: item.variation_id,
+          qty: item.quantity,
+          note: '',
+          cost: item.cost,
+          price: item.price,
+        })),
+      ],
+      // expense: {
+      //   amount: null,
+      //   category: {
+      //     id: 35,
+      //   },
+      // },
       notes: '',
     };
+    console.log(data);
+
     api.post(`/purchase/${shopId}`, data).then((res) => {
+      console.log(res.data);
+
       if (!res.data.success) {
         alert('Has Error ,try Again');
         return;
@@ -471,16 +484,16 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
       _rows[i].notifyExpensePrice =
         _ExpVal > 0
           ? +Number(_ExpVal + parseFloat(getCost(sp.cost).toString())).toFixed(
-            locationSettings?.location_decimal_places
-          )
+              locationSettings?.location_decimal_places
+            )
           : 0;
       if (_ExpVal == 0 && _rows[i].costType == 1) _rows[i].costType = 0;
 
       _rows[i].notifyTaxPrice =
         _TaxVal > 0
           ? +Number(_TaxVal + parseFloat(getCost(sp.cost).toString())).toFixed(
-            locationSettings?.location_decimal_places
-          )
+              locationSettings?.location_decimal_places
+            )
           : 0;
       if (_TaxVal == 0 && _rows[i].costType == 2) _rows[i].costType = 0;
 
@@ -1089,9 +1102,11 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                   if (selectProducts.length == 0) errors.push('selected products');
                   if (formObj?.currency_id == 0 || formObj?.currency_id == undefined)
                     errors.push('currency id');
-                  if (formObj?.purchaseStatus.length <= 2) errors.push('purchaseStatus less than 2');
+                  if (formObj?.purchaseStatus.length <= 2)
+                    errors.push('purchaseStatus less than 2');
                   if (formObj?.purchaseStatus != 'draft') {
-                    if (formObj?.paymentStatus.length <= 2) errors.push('paymentStatus less than 2');
+                    if (formObj?.paymentStatus.length <= 2)
+                      errors.push('paymentStatus less than 2');
                     if ((formObj?.paymentDate + '').length <= 2) errors.push('payment error');
                     if (formObj?.paymentType.length <= 2) errors.push('payment type');
                   }
