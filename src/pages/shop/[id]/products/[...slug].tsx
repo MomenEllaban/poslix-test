@@ -195,6 +195,7 @@ const Product: NextPage = ({ editId, iType }: any) => {
   prevUrlRef.current = previewUrl;
 
   async function initDataPage(url, locationSettings) {
+    
     setLoading(true);
     try {
       if (url?.length == 2) setIsEdit(true);
@@ -217,7 +218,8 @@ const Product: NextPage = ({ editId, iType }: any) => {
           unit_id: itm.unit_id,
           brand: itm.brand_id,
           sku: itm.sku,
-          sell_over_stock: itm.sell_over_stock == 1,
+          sell_over_stock: itm.sell_over_stock == '001',
+          isSellOverStock: itm.sell_over_stock == '001',
           barcode_type: itm.barcode_type,
           category_id: itm.category_id,
           cost_price: Number(itm.cost_price).toFixed(locationSettings?.location_decimal_places),
@@ -350,16 +352,17 @@ const Product: NextPage = ({ editId, iType }: any) => {
     }
   }
   async function editProduct(url = '') {
+    
     const { productName2, tax_id, ...form } = formObjRef.current as TFormObject;
     const _form = formObjRef.current;
-
+    
     const _data =
       // : IPayload
       {
         location_id: +shopId,
         unit_id: _form.unit_id,
         category_id: _form.category_id,
-        brand_id: _form.brand_id,
+        brand_id: _form.brand,
 
         name: _form.name,
         subproductname: _form.productName2,
@@ -369,17 +372,17 @@ const Product: NextPage = ({ editId, iType }: any) => {
 
         is_service: _form.is_service,
         is_fabric: _form.is_fabric,
-        is_fifo: parseInt(_form.is_fifo), // Convert to boolean
+        is_fifo: _form.isFifo, // Convert to boolean
 
         never_tax: _form.never_tax,
 
-        alert_quantity: +_form.alert_quantity, // Convert to number
+        alert_quantity: _form.alertQuantity, // Convert to number
         sku: _form.sku,
 
         barcode_type: _form.barcode_type,
         sell_price: parseFloat(_form.sell_price), // Convert to number
         cost_price: parseFloat(_form.cost_price), // Convert to number
-        sell_over_stock: parseInt(_form.sell_over), // Convert to boolean
+        sell_over_stock: _form.isSellOverStock, // Convert to boolean
         variations:
           _form.type === 'single'
             ? []
@@ -397,20 +400,24 @@ const Product: NextPage = ({ editId, iType }: any) => {
                   };
                 }),
       };
+      
     try {
-      const _cleaned = {};
-      Object.keys(_data).map((item) => {
-        if (!!_data[item]) {
-          _cleaned[item] = _data[item];
-        }
-      });
+      if(_data['brand_id'] == 0){
+        delete _data['brand_id']
+      }
+      // const _cleaned = {};
+      // Object.keys(_data).map((item) => {
+      //   if (_data[item] !== undefined) {
+
+      //     _cleaned[item] = _data[item];
+      //   }
+      // });
       const res = await updateData('products', router.query.slug[1], _data);
       Toastify('success', 'Product updated successfully!');
       router.push('/shop/' + router.query.id + '/products');
     } catch (e) {
       console.warn(e.response.data.error);
       Toastify('error', 'Something went wrong, please check your inputs!');
-    } finally {
     }
 
     setIsSaving(false);
@@ -1266,8 +1273,6 @@ const Product: NextPage = ({ editId, iType }: any) => {
                     )}
                     {formObj.is_service == 0 && (
                       <>
-                      {console.log(formObj.isSellOverStock)
-                      }
                         {/* Sell Over Stock */}
                         <div className="field-cover">
                           <div className="field-section">
@@ -1276,6 +1281,7 @@ const Product: NextPage = ({ editId, iType }: any) => {
                           <div className="field-section">
                             <Switch
                               name={'sell_over'}
+                              value={formObj.isSellOverStock}
                               checked={formObj.isSellOverStock}
                               onChange={checkboxHandleChange}
                             />

@@ -84,8 +84,6 @@ export const purchasesColumns: ({
     type: 'number',
     renderCell: ({ row }: Partial<GridRowParams>) => (
       <>
-      {console.log(typeof row.sell_price)
-      }
         <div className="purchase-converted-cost">
           {((formObj?.currency_rate || 1) * (row.cost || row.cost_price)).toFixed(
             locationSettings?.location_decimal_places

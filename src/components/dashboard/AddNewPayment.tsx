@@ -4,17 +4,15 @@ import { IPayment } from '@models/common-model';
 import { paymentTypeData } from '@models/data';
 import Select from 'react-select';
 import { updateData } from 'src/services/crud.api';
+import { useRouter } from 'next/router';
 
 const AddNewPayment = (props: any) => {
-  const { totalLeft, shopId, purchaseId, selectedIndex, orderPayments, setOrderPayments } = props;  
-  console.log(props.purchases[selectedIndex].payment_status);
-  console.log(orderPayments);
-  
+  const { totalLeft, shopId, purchaseId, selectedIndex, orderPayments, setOrderPayments } = props;    
   const [formObj, setFormObj] = useState<IPayment>({
     payment_type: '',
     amount: 0,
   });
-
+  const router = useRouter();
   const [errorForm, setErrorForm] = useState({ payment_type: false, amount: false });
   const isValid = (errorForm.amount === false ) && (errorForm.payment_type === false);
   // const [_orderPayments, setOrderPayments] = useState<{ id: number, payment_type: string, amount: number, created_at: string }[]>([])
@@ -29,7 +27,6 @@ const AddNewPayment = (props: any) => {
       purchaseId,
       formObj
     )
-      console.log(data);
       
     if (!data.success) {
       alert(data.error.message);
@@ -39,7 +36,7 @@ const AddNewPayment = (props: any) => {
     props.purchases[selectedIndex].payment_status = 'paid';
 
     // var _orders = [...orderPayments];
-    
+    // _orders.push({payment_type: formObj.payment_type, amount: formObj.amount})
     // setOrderPayments(_orders);
     props.setIsAddNew(false);
   }
@@ -53,7 +50,7 @@ const AddNewPayment = (props: any) => {
 
   useEffect(()=>{
     const pay = formObj.payment_type.length === 0 ? true  : false
-    const am = formObj.amount === 0 || Number.isNaN(formObj.amount) ? true : false
+    const am = formObj.amount < totalLeft || formObj.amount > totalLeft || Number.isNaN(formObj.amount) ? true : false
     setErrorForm({
       amount: am,
       payment_type: pay

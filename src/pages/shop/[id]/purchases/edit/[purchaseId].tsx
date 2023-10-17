@@ -34,14 +34,14 @@ import VariationModal from 'src/components/pos/modals/VariationModal';
 import { TableExpeseRows, TableTaxRows } from 'src/components/utils/ExpendsRow';
 import { useUser } from 'src/context/UserContext';
 import { Toastify } from 'src/libs/allToasts';
+import { apiUpdateCtr } from 'src/libs/dbUtils';
 import { IPurchaseExpndes, IpurchaseProductItem } from 'src/models/common-model';
 import {
-  purchasesEditColumns,
+  purchasesColumns,
   purchasesInitFormError,
   purchasesInitFormObj,
   purchasesInitPurchaseDetails,
 } from 'src/modules/purchases/_utils';
-import { IPurchasePayload } from 'src/modules/purchases/purchases.types';
 import { cartJobType } from 'src/recoil/atoms';
 import api from 'src/utils/app-api';
 import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
@@ -83,12 +83,19 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
   const [suppliers, setSuppliers] = useState<ISupplierSelect[]>(initialSupplier);
   const [purchaseDetails, setPurchaseDetails] = useState(purchasesInitPurchaseDetails);
 
+  const [isEdit, setIsEdit] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isEditSort, setIsEditSort] = useState(false);
   const [vatInColumn, setVatInColumn] = useState(false);
   const [dataLoading, setDataLoading] = useState(false);
   const [openRemoveDialog, setOpenRemoveDialog] = useState(false);
   const [isOpenVariationDialog, setIsOpenVariationDialog] = useState(false);
+
+  const [selectedProductForVariation, setSelectedProductForVariation] = useState<{
+    product_id: number;
+    product_name: string;
+    is_service: number;
+  }>({ product_id: 0, product_name: '', is_service: 0 });
 
   const [purchaseStatus, setPurchaseStatus] =
     useState<{ value: string; label: string }[]>(purchaseStatusDataAdd);
@@ -100,28 +107,24 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
   const [selectProducts, setSelectProducts] = useState<IpurchaseProductItem[]>([]);
   console.log(selectProducts);
   
-
   const [allVariations, setAllVariations] = useState([]);
   const [expends, setExpends] = useState<{ label: ''; value: 0 }[]>([]);
-  const [selectedTaxes, setSelectedTaxes] = useState<IPurchaseExpndes[]>([]);
   const [selectedExpends, setSelectedExpends] = useState<IPurchaseExpndes[]>([]);
-  const [selectProducts, setSelectProducts] = useState<IpurchaseProductItem[]>([]);
-  const [products, setProducts] = useState<{ value: number; label: string }[]>([]);
   const [selectedExpendsEdit, setSelectedExpendsEdit] = useState<IPurchaseExpndes[]>([]);
+  const [selectedTaxes, setSelectedTaxes] = useState<IPurchaseExpndes[]>([]);
 
   const [total_qty, setTotal_qty] = useState(0);
   const [totalExpends, setTotalExpends] = useState(0);
   const [expenseCounter, setExpenseCounter] = useState(0);
 
-  const [currencies, setCurrencies] = useState<ICurrencySelect[]>([]);
   const [selecetdId, setSelecetdId] = useState({ product_id: 0, variation_id: 0 });
 
-  formObjRef.current = formObj;
+  const [currencies, setCurrencies] = useState<ICurrencySelect[]>([]);
 
   const onCostClick = (type: string, id: number, vr: number) => {
     const found = selectProducts.findIndex((el) => el.product_id === id && el.variation_id == vr);
     if (found > -1) {
-      let _datas: any = selectProducts;
+      var _datas: any = selectProducts;
       if (type == 'useExpnds') _datas[found].costType = _datas[found].costType == 1 ? 0 : 1;
       else if (type == 'useTax') _datas[found].costType = _datas[found].costType == 2 ? 0 : 2;
       else if (type == 'useTotal') _datas[found].costType = _datas[found].costType == 3 ? 0 : 3;
@@ -150,6 +153,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
       supplier_id: formObj?.supplier_id ?? 0,
       payment_type: formObj?.paymentType,
       currency_id: formObj?.currency_id,
+      ...((formObj?.paymentStatus === 'partially_paid') && {total_paid: formObj?.paid_amount}),
       cart: [...selectProducts.map((item: any) => ({ variation_id: item.variation_id || null, qty: item.quantity, note: '', product_id: item.id, cost: item.cost_price, price: item.sell_price }))],
       // expense: {
       //   amount: null,
@@ -188,9 +192,8 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
     Toastify('success', 'Purchase Successfully Edited..');
 
     router.push('/shop/' + shopId + '/purchases');
-
   }
-  let errors = [];
+  var errors = [];
 
   function getPriority(type: string, subTotal: number): number {
     switch (type) {
@@ -206,7 +209,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
 
   function finalCalculation(subTotal = 0) {
     subTotal = subTotal > 0 ? subTotal : formObj?.subTotal_price;
-    let _total = subTotal;
+    var _total = subTotal;
     if (_total <= 0) return;
     purchaseDetails?.map((dp) => (_total = getPriority(dp.value, _total)));
 
@@ -369,21 +372,14 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
               locationSettings?.location_decimal_places
             );
 
-
-    if (!_product?.id || params.field !== 'quantity') return;
-
-    const newSelected = selectProducts.map((product) => ({
-      ...product,
-      [params.field]: params.id === product.id ? params.value : product[params.field],
-    }));
-
-    // setSelectProducts(newSelected); //! it will be handled in the next function
-    calculationLabels(formObj?.total_expense, formObj?.total_tax, newSelected);
+      setSelectProducts([..._datas]);
+      calculationLabels(formObj?.total_expense, formObj?.total_tax);
+    }
   };
 
   const sortHandler = (i: number, type: string) => {
-    let _data = [...purchaseDetails];
-    let _temp = _data[i].priority;
+    var _data = [...purchaseDetails];
+    var _temp = _data[i].priority;
     if (type == 'd') {
       _data[i].priority = _data[i + 1].priority;
       _data[i + 1].priority = _temp;
@@ -401,33 +397,31 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
       : cost * formObj?.currency_rate;
   }
 
-
   console.log(formObj.subTotal_price);
 
 
   function calculationLabels(totalEpx: number, totalTax: number) {
     var _subtotal = 0;
     var _rows: any = [...selectProducts];
-
     _rows.map((rs: any) => (_subtotal += parseFloat(rs.lineTotal)));
     totalTax = (totalTax / 100) * _subtotal;
     _rows.map((sp: IpurchaseProductItem, i: number) => {
-      let _ExpVal = ((sp.lineTotal / _subtotal) * totalEpx) / sp.quantity;
-      let _TaxVal = ((sp.lineTotal / _subtotal) * totalTax) / sp.quantity;
+      var _ExpVal = ((sp.lineTotal / _subtotal) * totalEpx) / sp.quantity;
+      var _TaxVal = ((sp.lineTotal / _subtotal) * totalTax) / sp.quantity;
 
       _rows[i].notifyExpensePrice =
         _ExpVal > 0
           ? +Number(_ExpVal + parseFloat(getCost(sp.cost).toString())).toFixed(
-              locationSettings?.location_decimal_places
-            )
+            locationSettings?.location_decimal_places
+          )
           : 0;
       if (_ExpVal == 0 && _rows[i].costType == 1) _rows[i].costType = 0;
 
       _rows[i].notifyTaxPrice =
         _TaxVal > 0
           ? +Number(_TaxVal + parseFloat(getCost(sp.cost).toString())).toFixed(
-              locationSettings?.location_decimal_places
-            )
+            locationSettings?.location_decimal_places
+          )
           : 0;
       if (_TaxVal == 0 && _rows[i].costType == 2) _rows[i].costType = 0;
 
@@ -442,51 +436,19 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
   
   const columns = useMemo(
     () =>
-      purchasesEditColumns({
+      purchasesColumns({
         locationSettings,
         formObj,
         onCostClick,
         setSelecetdId,
         setOpenRemoveDialog,
       }),
-    [locationSettings, selectProducts, formObj, formObjRef]
+    [locationSettings, formObj, formObjRef]
   );
 
-  const handleSubmitEdit = (e) => {
-    e.preventDefault();
+  formObjRef.current = formObj;
 
-    //! handle errors
-    const errors = [];
-
-    if (selectProducts.length == 0) errors.push('selected products');
-    if (formObj?.currency_id == 0 || formObj?.currency_id == undefined) errors.push('currency id');
-    if (formObj?.purchaseStatus.length <= 2) errors.push('purchaseStatus less than 2');
-    if (formObj?.purchaseStatus != 'draft') {
-      if (formObj?.paymentStatus.length <= 2) errors.push('paymentStatus less than 2');
-      if ((formObj?.paymentDate + '').length <= 2) errors.push('payment error');
-      if (formObj?.paymentType.length <= 2) errors.push('payment type');
-    }
-    if (formObj?.paymentStatus == 'partially_paid' && formObj?.paid_amount < 0.5)
-      errors.push(' partially paid');
-
-    setErrorForm({
-      ...errorForm,
-      currency_id: formObj?.currency_id == 0 || formObj?.currency_id == undefined,
-      purchaseStatus: formObj?.purchaseStatus.length <= 2,
-      paymentDate: (formObj?.paymentDate + '').length <= 2,
-      paymentStatus: formObj?.paymentStatus.length <= 2,
-      paymentType: formObj?.paymentType.length <= 2,
-      products: selectProducts.length == 0,
-      paid: formObj?.paymentStatus == 'partially_paid' && formObj?.paid_amount < 0.5,
-      morePaid: formObj?.paid_amount > formObj?.total_price,
-    });
-
-    if (!errors.length) return editPurchase();
-
-    Toastify('error', 'Enter Required Field');
-  };
-
-  async function getPageData(shopId: string) {
+  async function getPageData(shopId) {
     setDataLoading(true);
     try {
       const _suppliers = await api
@@ -556,15 +518,15 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
 
       const _selectedProducts = [];
       _purchaseDetails?.stocks.forEach((stock) => {
+
         const _product = _products.find((product: IProduct) => +product.id === +stock.product_id);
         if (_product) {
           const quantity = (_purchaseDetails.products.find((product: any) => product.id == _product.id) as any ).pivot.qty || 1;
           console.log(_product)
           _selectedProducts.push({ ..._product, quantity, lineTotal: quantity * +_product.cost_price});
-
         }
+
       });
-      console.log(_selectedProducts);
       setSelectProducts([..._selectedProducts]);
     } catch {
       Toastify('error', 'Somethig went wrong, please refresh and try again!');
@@ -590,11 +552,10 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
     setTotal_qty(_qty);
     setFormObj({ ...formObj, subTotal_price: _prices });
     finalCalculation(_prices);
-
   }, [selectProducts]);
 
   useEffect(() => {
-    let _disAmount = 0,
+    var _disAmount = 0,
       _total = 0;
     _disAmount = formObj?.discount_amount;
 
@@ -612,7 +573,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
 
   //expenses
   useEffect(() => {
-    let _sum = 0;
+    var _sum = 0;
 
     selectedExpends.map((ep) => (_sum += Number(ep.enterd_value * ep.currency_rate)));
     selectedExpendsEdit.map((ep) => (_sum += Number(ep.enterd_value * ep.currency_rate)));
@@ -654,7 +615,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
   }, [formObj?.currency_rate]);
 
   useEffect(() => {
-    let _tx = 0;
+    var _tx = 0;
     selectedTaxes.map((ep: any) => (_tx += Number(ep.converted_value)));
     setFormObj({ ...formObj, total_tax: +_tx.toFixed(locationSettings?.location_decimal_places) });
     calculationLabels(formObj?.total_expense, _tx);
@@ -764,7 +725,7 @@ console.log();
         <>
           <Card className="mb-4">
             <Card.Header className="p-3 bg-white">
-              <h5>Edit Purchase </h5>
+              <h5>{isEdit ? 'Edit Purchase ' : 'Add Purchase'}</h5>
             </Card.Header>
             <Card.Body>
               <div className="form-style2">
@@ -978,7 +939,6 @@ console.log();
             <Card.Body>
               <div style={{ height: 300, width: '100%' }}>
                 <DataGrid
-                  loading={dataLoading}
                   rows={selectProducts}
                   columns={columns}
                   pageSize={10}

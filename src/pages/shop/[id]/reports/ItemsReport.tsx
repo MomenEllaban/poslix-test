@@ -31,9 +31,7 @@ function ItemsReport() {
   const { locationSettings, setLocationSettings, invoicDetails } = useUser();
 
   const [sales, setSales] = useState<any>([]);
-  const [filteredSales, setFilteredSales] = useState<any>([]);
-  console.log(filteredSales);
-  
+  const [filteredSales, setFilteredSales] = useState<any>([]);  
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [selectId, setSelectId] = useState(0);
   const [selectRow, setSelectRow] = useState<any>({});
@@ -164,8 +162,6 @@ function ItemsReport() {
       .get(`reports/item-sales/${shopId}`, { params: { all_data: 1 } })
       .then(({ data }) => {
         const _salesList = data.result.data;
-        console.log('original', data.result, _salesList );
-        
         const mappedSalesList = [];
 //mohamed elsayed
         // const _salesListWithoutProducts = _salesList.map((item, index) => { 
@@ -183,7 +179,6 @@ function ItemsReport() {
             mappedSalesList.push({ id: index++, ...rest, product });
           });
         });
-        console.log('mapped', mappedSalesList);
         ////
         setSales(mappedSalesList);
         setFilteredSales(() => mappedSalesList);
@@ -193,7 +188,6 @@ function ItemsReport() {
     const supplierRes = await findAllData(`suppliers/${shopId}`);
     setSuppliersOptions(supplierRes.data.result);
     const customerRes = await findAllData(`customers/${shopId}`);
-    console.log(customerRes);
 
     setCustomersOptions([
       ...customerRes.data.result,
@@ -269,7 +263,6 @@ function ItemsReport() {
         (el) => el.contact_first_name === selectedCustomer
       );
     }
-    console.log(localFilteredSales);
     setFilteredSales(()=> localFilteredSales);
   }, [strSelectedDate, selectedSupplier, selectedCustomer]);
 
@@ -283,7 +276,6 @@ function ItemsReport() {
     initDataPage();
   }, [shopId]);
 
-  console.log(filteredSales);
 
   return (
     <AdminLayout shopId={shopId}>

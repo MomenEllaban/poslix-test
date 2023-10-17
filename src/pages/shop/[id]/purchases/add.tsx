@@ -142,6 +142,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
       supplier_id: formObj?.supplier_id || undefined,
       payment_type: formObj?.paymentType,
       currency_id: formObj?.currency_id,
+      ...((formObj?.paymentStatus === 'partially_paid') && {total_paid: formObj?.paid_amount}),
       cart: [
         ...selectProducts.map((item) => ({
           product_id: item.product_id,
@@ -160,10 +161,8 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
       // },
       notes: '',
     };
-    console.log(data);
 
     api.post(`/purchase/${shopId}`, data).then((res) => {
-      console.log(res.data);
 
       if (!res.data.success) {
         alert('Has Error ,try Again');
