@@ -31,7 +31,7 @@ const Puller = styled(Box)(({ theme }) => ({
   left: 'calc(50% - 15px)',
 }));
 
-function MobDrawer({toggleDrawer,setOpen,open,setShowCart}) {
+function MobDrawer({toggleDrawer,setOpen,open,setShowCart,removeFromCart,addItemTocart}) {
 
   const handleDrawer = (open) => {
     setShowCart((s)=>!s)
@@ -117,6 +117,9 @@ function MobDrawer({toggleDrawer,setOpen,open,setShowCart}) {
                 
            
           <CartItem 
+          addItemTocart={addItemTocart}
+          item={item}
+          removeFromCart={removeFromCart}
           key={item.id}
           id={item.id}
           image={item.image}
