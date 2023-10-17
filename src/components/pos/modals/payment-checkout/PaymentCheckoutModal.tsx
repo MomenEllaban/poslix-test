@@ -291,7 +291,7 @@ const [sentData, setSentData] = useState<any>()
                           type="number"
                           name={`payment.${idx}.amount`}
                           min={0}
-                          max={totalAmount ?? 0}
+                          // max={totalAmount ?? 0} 
                           {...register(`payment.${idx}.amount`)}
                           value={paidAmount[idx] ?? 0}
                           onChange={(e) => {
