@@ -137,21 +137,33 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
     const data = {
       // ...formObj,
       location_id: +shopId, //  "required|numeric",
-      status: formObj.purchaseStatus, //  "required|string:in:draft,partially_received,processing,received,cancelled",
-      payment_status: formObj.paymentStatus, //  "required|string:in:credit,partially_paid,paid,due",
-      supplier_id: formObj.supplier_id || undefined,
-      payment_type: formObj.paymentType,
-      currency_id: formObj.currency_id,
-      cart: [...selectProducts.map((item) => ({ ...item, qty: item.quantity, note: '' }))],
-      expense: {
-        amount: null,
-        category: {
-          id: 35,
-        },
-      },
+      status: formObj?.purchaseStatus, //  "required|string:in:draft,partially_received,processing,received,cancelled",
+      payment_status: formObj?.paymentStatus, //  "required|string:in:credit,partially_paid,paid,due",
+      supplier_id: formObj?.supplier_id || undefined,
+      payment_type: formObj?.paymentType,
+      currency_id: formObj?.currency_id,
+      ...((formObj?.paymentStatus === 'partially_paid') && {total_paid: formObj?.paid_amount}),
+      cart: [
+        ...selectProducts.map((item) => ({
+          product_id: item.product_id,
+          variation_id: item.variation_id,
+          qty: item.quantity,
+          note: '',
+          cost: item.cost,
+          price: item.price,
+        })),
+      ],
+      // expense: {
+      //   amount: null,
+      //   category: {
+      //     id: 35,
+      //   },
+      // },
       notes: '',
     };
+
     api.post(`/purchase/${shopId}`, data).then((res) => {
+
       if (!res.data.success) {
         alert('Has Error ,try Again');
         return;
@@ -1090,11 +1102,13 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                   if (selectProducts.length == 0) errors.push('selected products');
                   if (formObj.currency_id == 0 || formObj.currency_id == undefined)
                     errors.push('currency id');
-                  if (formObj.purchaseStatus.length <= 2) errors.push('purchaseStatus less than 2');
-                  if (formObj.purchaseStatus != 'draft') {
-                    if (formObj.paymentStatus.length <= 2) errors.push('paymentStatus less than 2');
-                    if ((formObj.paymentDate + '').length <= 2) errors.push('payment error');
-                    if (formObj.paymentType.length <= 2) errors.push('payment type');
+                  if (formObj?.purchaseStatus.length <= 2)
+                    errors.push('purchaseStatus less than 2');
+                  if (formObj?.purchaseStatus != 'draft') {
+                    if (formObj?.paymentStatus.length <= 2)
+                      errors.push('paymentStatus less than 2');
+                    if ((formObj?.paymentDate + '').length <= 2) errors.push('payment error');
+                    if (formObj?.paymentType.length <= 2) errors.push('payment type');
                   }
                   if (formObj.paymentStatus == 'partially_paid' && formObj.paid_amount < 0.5)
                     errors.push(' partially paid');

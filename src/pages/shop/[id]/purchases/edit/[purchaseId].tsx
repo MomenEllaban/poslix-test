@@ -105,6 +105,8 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
     useState<{ value: string; label: string }[]>(paymentStatusData);
   const [products, setProducts] = useState<{ value: number; label: string }[]>([]);
   const [selectProducts, setSelectProducts] = useState<IpurchaseProductItem[]>([]);
+  console.log(selectProducts);
+  
   const [allVariations, setAllVariations] = useState([]);
   const [expends, setExpends] = useState<{ label: ''; value: 0 }[]>([]);
   const [selectedExpends, setSelectedExpends] = useState<IPurchaseExpndes[]>([]);
@@ -140,7 +142,9 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
     </div>
   );
 
-  async function insertPurchase() {
+  async function updatePurchase() {
+    console.log(selectProducts);
+    
     const data = {
       // ...formObj,
       location_id: +shopId, //  "required|numeric",
@@ -149,16 +153,17 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
       supplier_id: formObj?.supplier_id ?? 0,
       payment_type: formObj?.paymentType,
       currency_id: formObj?.currency_id,
-      cart: [...selectProducts.map((item) => ({ ...item, qty: item.quantity, note: '' }))],
-      expense: {
-        amount: null,
-        category: {
-          id: 35,
-        },
-      },
+      ...((formObj?.paymentStatus === 'partially_paid') && {total_paid: formObj?.paid_amount}),
+      cart: [...selectProducts.map((item: any) => ({ variation_id: item.variation_id || null, qty: item.quantity, note: '', product_id: item.id, cost: item.cost_price, price: item.sell_price }))],
+      // expense: {
+      //   amount: null,
+      //   category: {
+      //     id: 35,
+      //   },
+      // },
       notes: '',
     };
-    api.post(`/purchase/${shopId}`, data).then((res) => {
+    api.put(`/purchase/${purchaseId}/update`, data).then((res) => {
       if (!res.data.success) {
         alert('Has Error ,try Again');
         return;
@@ -167,6 +172,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
       router.push('/shop/' + shopId + '/purchases');
     });
   }
+
   async function editPurchase() {
     const { success } = await apiUpdateCtr({
       type: 'transactions',
@@ -200,11 +206,12 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
     }
     return 0;
   }
+
   function finalCalculation(subTotal = 0) {
     subTotal = subTotal > 0 ? subTotal : formObj?.subTotal_price;
     var _total = subTotal;
     if (_total <= 0) return;
-    purchaseDetails.map((dp) => (_total = getPriority(dp.value, _total)));
+    purchaseDetails?.map((dp) => (_total = getPriority(dp.value, _total)));
 
     setFormObj({
       ...formObj,
@@ -253,6 +260,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
       ]);
     }
   };
+
   const deleteTableRows = (index: any) => {
     const _rows = [...selectedExpends];
     _rows.splice(index, 1);
@@ -261,6 +269,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
 
     setExpenseCounter(expenseCounter - 1);
   };
+
   const handleChange = (index: any, evnt: any, isNew: Boolean) => {
     const _expends: IPurchaseExpndes[] | any = isNew
       ? [...selectedExpends]
@@ -291,6 +300,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
     _rows.splice(index, 1);
     setSelectedTaxes(_rows);
   };
+
   const handlerRowTaxes = (index: any, evnt: any) => {
     const _rows: IPurchaseExpndes[] | any = [...selectedTaxes];
 
@@ -344,25 +354,29 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
       setSelectedExpends([...selectedExpends]);
     } else Toastify('error', 'already exists in list');
   };
+
   const saveToCell = (params: any) => {
     const found = selectProducts.findIndex((el) => el.id === params.id);
     if (found > -1) {
       var _datas: any = selectProducts;
       _datas[found][params.field] = params.value;
+      console.log('fffffffffffff',(_datas[found].cost || _datas[found].cost_price));
+      
       if (params.field == 'cost' || params.field == 'quantity')
         _datas[found].lineTotal =
           locationSettings?.currency_id == formObj?.currency_id
-            ? Number(_datas[found].cost * _datas[found].quantity).toFixed(
-                locationSettings?.location_decimal_places
-              )
-            : Number(_datas[found].cost * formObj?.currency_rate * _datas[found].quantity).toFixed(
-                locationSettings?.location_decimal_places
-              );
+            ? Number((_datas[found].cost || _datas[found].cost_price) * _datas[found].quantity).toFixed(
+              locationSettings?.location_decimal_places
+            )
+            : Number((_datas[found].cost || _datas[found].cost_price) * formObj?.currency_rate * _datas[found].quantity).toFixed(
+              locationSettings?.location_decimal_places
+            );
 
       setSelectProducts([..._datas]);
       calculationLabels(formObj?.total_expense, formObj?.total_tax);
     }
   };
+
   const sortHandler = (i: number, type: string) => {
     var _data = [...purchaseDetails];
     var _temp = _data[i].priority;
@@ -376,11 +390,16 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
     _data.sort((a: any, b: any) => (a.priority > b.priority ? 1 : -1));
     setPurchaseDetails(_data);
   };
+
   function getCost(cost = 0) {
     return locationSettings?.currency_code == formObj?.currency_code
       ? cost
       : cost * formObj?.currency_rate;
   }
+
+  console.log(formObj.subTotal_price);
+
+
   function calculationLabels(totalEpx: number, totalTax: number) {
     var _subtotal = 0;
     var _rows: any = [...selectProducts];
@@ -393,16 +412,16 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
       _rows[i].notifyExpensePrice =
         _ExpVal > 0
           ? +Number(_ExpVal + parseFloat(getCost(sp.cost).toString())).toFixed(
-              locationSettings?.location_decimal_places
-            )
+            locationSettings?.location_decimal_places
+          )
           : 0;
       if (_ExpVal == 0 && _rows[i].costType == 1) _rows[i].costType = 0;
 
       _rows[i].notifyTaxPrice =
         _TaxVal > 0
           ? +Number(_TaxVal + parseFloat(getCost(sp.cost).toString())).toFixed(
-              locationSettings?.location_decimal_places
-            )
+            locationSettings?.location_decimal_places
+          )
           : 0;
       if (_TaxVal == 0 && _rows[i].costType == 2) _rows[i].costType = 0;
 
@@ -413,7 +432,8 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
     });
     setSelectProducts(_rows);
   }
-
+  
+  
   const columns = useMemo(
     () =>
       purchasesColumns({
@@ -450,58 +470,62 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
         .get(`/purchase/${purchaseId}/show`)
         .then(({ data }) => data.result);
 
-      setSuppliers(_suppliers);
+      setSuppliers([{ supplier_id: 0, id: 0, value: 0, label: 'walk-in supplier' }, ..._suppliers]);
       setProducts(_products);
       setCurrencies(_currencies);
 
       const currentCurrency: ICurrencySelect = _currencies.find(
-        (currency) => currency.id === _purchaseDetails.currency_id
+        (currency) => currency?.id === _purchaseDetails?.currency_id
       );
 
       console.log(
-        (_purchaseDetails.payment[0] as IPayment).created_at,
-        new Date(_purchaseDetails.created_at)
+        (_purchaseDetails?.payment[0] as IPayment).created_at,
+        new Date(_purchaseDetails?.created_at)
+      );
+      console.log(
+        _purchaseDetails
       );
       setFormObj((prev) => ({
         ...prev,
         ..._purchaseDetails,
         ...currentCurrency,
 
-        payment_id: (_purchaseDetails.payment[0] as IPayment).id,
-        supplier_id: _purchaseDetails.supplier.id,
+        payment_id: (_purchaseDetails?.payment[0] as IPayment)?.id,
+        supplier_id: _purchaseDetails?.supplier?.id || 0,
 
-        total_tax: +(_purchaseDetails.total_taxes || 0),
-        total_price: +(_purchaseDetails.total_price || 0),
-        subTotal_price: +(_purchaseDetails.total_price || 0),
+        total_tax: +(_purchaseDetails?.total_taxes || 0),
+        total_price: +(_purchaseDetails?.total_price || 0),
+        subTotal_price: +(_purchaseDetails?.total_price || 0),
 
-        currency_rate: +(currentCurrency.exchange_rate || 1),
-        paid_amount: +((_purchaseDetails.payment[0] as IPayment).amount || 0),
-        total_discount: +(_purchaseDetails.discount_amount || 0),
-        discount_amount: +(_purchaseDetails.discount_amount || 0),
+        currency_rate: +(currentCurrency?.exchange_rate || 1),
+        paid_amount: +((_purchaseDetails?.payment[0] as IPayment).amount || 0),
+        total_discount: +(_purchaseDetails?.discount_amount || 0),
+        discount_amount: +(_purchaseDetails?.discount_amount || 0),
 
-        currency_symbol: currentCurrency.symbol,
-        currency_code: currentCurrency.code,
+        currency_symbol: currentCurrency?.symbol,
+        currency_code: currentCurrency?.code,
 
-        date: new Date(_purchaseDetails.created_at),
+        date: new Date(_purchaseDetails?.created_at),
 
         total_expense: 0,
 
-        purchaseStatus: _purchaseDetails.status,
-        paymentStatus: _purchaseDetails.payment_status,
-        paymentType: (_purchaseDetails.payment[0] as IPayment).payment_type,
+        purchaseStatus: _purchaseDetails?.status,
+        paymentStatus: _purchaseDetails?.payment_status,
+        paymentType: (_purchaseDetails?.payment[0] as IPayment).payment_type,
 
-        // paymentDate: _purchaseDetails.created_at as any,
+        // paymentDate: _purchaseDetails?.created_at as any,
       }));
 
       const _selectedProducts = [];
-      _purchaseDetails.stocks.forEach((stock) => {
-        console.log('_____________', _products, stock);
+      _purchaseDetails?.stocks.forEach((stock) => {
+
         const _product = _products.find((product: IProduct) => +product.id === +stock.product_id);
         if (_product) {
-          console.log('_______HT______');
-          _selectedProducts.push({ ..._product });
+          const quantity = (_purchaseDetails.products.find((product: any) => product.id == _product.id) as any ).pivot.qty || 1;
+          console.log(_product)
+          _selectedProducts.push({ ..._product, quantity, lineTotal: quantity * +_product.cost_price});
         }
-        
+
       });
       setSelectProducts([..._selectedProducts]);
     } catch {
@@ -520,6 +544,8 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
     var _prices = 0,
       _qty = 0;
     selectProducts.map((p: IpurchaseProductItem) => {
+      console.log(p.lineTotal);
+      
       _qty += Number(p.quantity);
       _prices += Number(p.lineTotal);
     });
@@ -563,15 +589,19 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
   useEffect(() => {
     finalCalculation();
   }, [purchaseDetails]);
+
   useEffect(() => {
     finalCalculation();
   }, [formObj?.total_discount]);
+
   useEffect(() => {
     finalCalculation();
   }, [formObj?.total_expense]);
+
   useEffect(() => {
     finalCalculation();
   }, [formObj?.total_tax]);
+
   useEffect(() => {
     setFormObj({
       ...formObj,
@@ -579,6 +609,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
       currency_code: locationSettings?.currency_code,
     });
   }, [locationSettings]);
+
   useEffect(() => {
     calculationLabels(formObj?.total_expense, formObj?.total_tax);
   }, [formObj?.currency_rate]);
@@ -627,10 +658,12 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
     const currentLocation = locations.find((location) => +location.location_id === +shopId);
     setLocationSettings(currentLocation ?? locationSettings);
   }, [shopId, router.query.slug]);
+
   useEffect(() => {
     if (!shopId) return Toastify('warning', 'Please refresh the page!');
     getPageData(shopId);
   }, [shopId]);
+console.log();
 
   return (
     <AdminLayout shopId={shopId}>
@@ -706,7 +739,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
                         isLoading={dataLoading}
                         styles={purchasesSelectStyle}
                         options={suppliers}
-                        value={suppliers.filter((sp) => sp.value == formObj?.supplier_id)}
+                        value={suppliers.filter((sp) => +sp.value == formObj?.supplier_id)}
                         onChange={(itm) => {
                           setFormObj({ ...formObj, supplier_id: itm.value });
                         }}
@@ -989,7 +1022,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
                       </div>
                     </div>
                     <Divider flexItem></Divider>
-                    {purchaseDetails.map((pd, i: number) => {
+                    {purchaseDetails?.map((pd, i: number) => {
                       return (
                         <Fragment key={`${pd.value}-purchase-details`}>
                           <div className="purchase-item">
@@ -1000,7 +1033,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
                                     <KeyboardArrowUpIcon />
                                   </Button>
                                 )}
-                                {isEditSort && purchaseDetails.length - 1 != i && (
+                                {isEditSort && purchaseDetails?.length - 1 != i && (
                                   <Button variant="outlined" onClick={() => sortHandler(i, 'd')}>
                                     <KeyboardArrowDownIcon />
                                   </Button>
@@ -1166,11 +1199,10 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
                   });
 
                   if (errors.length == 0) {
-                    if (isEdit) editPurchase();
-                    else insertPurchase();
+                    updatePurchase();
                   } else Toastify('error', 'Enter Requires Field');
                 }}>
-                {isEdit ? 'Edit' : 'Save'}
+                 Save
               </button>
             </Card.Body>
           </Card>

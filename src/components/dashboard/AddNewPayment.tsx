@@ -13,17 +13,20 @@ import { redirectToLogin } from '../../libs/loginlib';
 import { IPayment, userDashboard } from '@models/common-model';
 import { paymentTypeData } from '@models/data';
 import Select from 'react-select';
+import { updateData } from 'src/services/crud.api';
+import { useRouter } from 'next/router';
 
 const AddNewPayment = (props: any) => {
-  const { totalLeft, shopId, purchaseId, selectedIndex, orderPayments, setOrderPayments } = props;
+  const { totalLeft, shopId, purchaseId, selectedIndex, orderPayments, setOrderPayments } = props;    
   const [formObj, setFormObj] = useState<IPayment>({
     id: 0,
     payment_type: '',
     amount: 0,
     created_at: '',
   });
-
-  const [errorForm, setErrorForm] = useState({ name: false, username: false, password: false });
+  const router = useRouter();
+  const [errorForm, setErrorForm] = useState({ payment_type: false, amount: false });
+  const isValid = (errorForm.amount === false ) && (errorForm.payment_type === false);
   // const [_orderPayments, setOrderPayments] = useState<{ id: number, payment_type: string, amount: number, created_at: string }[]>([])
   const [business, setBusiness] = useState<{ id: number; name: string }[]>([]);
   const colourStyles = { control: (style: any) => ({ ...style, borderRadius: '10px' }) };
@@ -31,24 +34,22 @@ const AddNewPayment = (props: any) => {
     useState<{ value: string; label: string }[]>(paymentTypeData);
 
   async function insertPayment() {
-    const { success, newdata, msg } = await apiInsertCtr({
-      type: 'transactions',
-      subType: 'addPayment',
-      data: { frm: formObj, totalLeft, purchaseId },
-      shopId,
-    });
-
-    if (!success) {
-      alert(msg);
+    const {data} = await updateData(
+      `purchase/complete-purchase`,
+      purchaseId,
+      formObj
+    )
+      
+    if (!data.success) {
+      alert(data.error.message);
       return;
     }
 
     props.purchases[selectedIndex].payment_status = newdata.status;
 
-    var _orders = [...orderPayments];
-    _orders.push(newdata.payment);
-    setOrderPayments(_orders);
-
+    // var _orders = [...orderPayments];
+    // _orders.push({payment_type: formObj.payment_type, amount: formObj.amount})
+    // setOrderPayments(_orders);
     props.setIsAddNew(false);
   }
   var errors = [];
@@ -58,6 +59,15 @@ const AddNewPayment = (props: any) => {
     // if (props.index > -1)
     setFormObj({ ...formObj, amount: totalLeft });
   }, []);
+
+  useEffect(()=>{
+    const pay = formObj.payment_type.length === 0 ? true  : false
+    const am = formObj.amount < totalLeft || formObj.amount > totalLeft || Number.isNaN(formObj.amount) ? true : false
+    setErrorForm({
+      amount: am,
+      payment_type: pay
+    });
+  }, [formObj])
 
   return (
     <>
