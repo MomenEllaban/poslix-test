@@ -1,7 +1,7 @@
 import { useDispatch } from 'react-redux'
 import {addTodigitalCart ,incrementQuantity, decrementQuantity, removeItem} from '../../redux/slices/digitalCartSlice';
 
-const  CartItem  = ({id, image, name, price, quantity=0,addItemTocart,item,removeFromCart}) =>  {
+const  CartItem  = ({location,id, image, name, price, quantity=0,addItemTocart,item,removeFromCart}) =>  {
   const dispatch = useDispatch()
 
   return (
@@ -20,7 +20,7 @@ const  CartItem  = ({id, image, name, price, quantity=0,addItemTocart,item,remov
          </div>
        
          <div className="order_btn col-3">
-         {price} OMR
+         {price.toFixed(location?.location_decimal_places||2)} {location?.currency_code}
   
          </div>
          

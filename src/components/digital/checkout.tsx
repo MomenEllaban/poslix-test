@@ -5,14 +5,14 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CartItem from './CartItem';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 
-const Checkout = ({ cartItems, removeFromCart, addItemTocart, setRenderedScreen ,totalPrice}) => {
+const Checkout = ({ cartItems, removeFromCart, addItemTocart, setRenderedScreen ,totalPrice,location}) => {
 
     return (<>
         <div style={{ background: '#ebebeb' }} className='w-100 d-flex justify-content-center'>
-            <div style={{ background: '#fff', width: 'calc(90% - 40px)' }} ><span style={{ cursor: 'pointer' }} onClick={() => { setRenderedScreen('products') }}><ArrowBackIcon /> Back</span></div>
+            <div style={{ width: 'calc(90% - 40px)' }} className='mt-2' ><span style={{ cursor: 'pointer' }} onClick={() => { setRenderedScreen('products') }}><ArrowBackIcon /> Back</span></div>
         </div>
 
-        <div className={styles.checkout_wrapper}>
+        <div className={`pt-2 ${styles.checkout_wrapper}`}>
             <div className={styles.checkout_container}>
 
                 <div className={styles.checkout_left_side_container}>
@@ -36,7 +36,7 @@ const Checkout = ({ cartItems, removeFromCart, addItemTocart, setRenderedScreen 
                         <form className={`mt-2 ${styles.user_info_form}`}>
 
                             <div className="digital-cart-checkout w-100 ">
-                                <Button className="checkout_btn" variant="contained" color="error" >Checkout 000 OMR</Button>
+                                <Button className="checkout_btn" variant="contained" color="error" >Checkout {totalPrice?.toFixed(location?.location_decimal_places)} {location?.currency_code}</Button>
                                 <Button >APPLY COUPON</Button>
                             </div>
                         </form>
@@ -54,6 +54,7 @@ const Checkout = ({ cartItems, removeFromCart, addItemTocart, setRenderedScreen 
                         {cartItems?.length >= 1 ? cartItems.map((item) => (
 
                             <CartItem
+                            location={location}
                                 key={item.id}
                                 id={item.id}
                                 image={item.image}
@@ -80,10 +81,10 @@ const Checkout = ({ cartItems, removeFromCart, addItemTocart, setRenderedScreen 
                         <div className='fw-bold'>Order Summary</div>
                         <div className={styles.order_Summary_pricing_wrapper}>
                             <div className={'w-50 '}>Total Amount</div>
-                            <div className={'w-50  text-end'}>{totalPrice}</div>
+                            <div className={'w-50  text-end'}>{totalPrice?.toFixed(location?.location_decimal_places)} {location?.currency_code}</div>
                             {/* <hr/> */}
                             <div className={'w-50 '}>Sub Total</div>
-                            <div className={'w-50 text-end'}>{totalPrice}</div>
+                            <div className={'w-50 text-end'}>{totalPrice?.toFixed(location?.location_decimal_places)} {location?.currency_code}</div>
                             <div className={'w-50'}>VAT(0.00%)</div>
                             <div className={'w-50 text-end'}>0%</div>
                         </div>

@@ -3,7 +3,7 @@ import  CartItem  from "./CartItem"
 
 import { useDispatch,useSelector } from 'react-redux';
 import {addTodigitalCart ,incrementQuantity, decrementQuantity, removeItem} from '../../redux/slices/digitalCartSlice';
-const DigitalCart = ({cartItems,addItemTocart,removeFromCart,setRenderedScreen,totalPrice}) => {
+const DigitalCart = ({cartItems,addItemTocart,removeFromCart,setRenderedScreen,totalPrice,location}) => {
     const {digitalCart} = useSelector((state:any) => state.digitalCart)
     // const dispatch = useDispatch()
     // const getTotal = () => {
@@ -26,6 +26,7 @@ const DigitalCart = ({cartItems,addItemTocart,removeFromCart,setRenderedScreen,t
                         
                 
                 <CartItem 
+                location={location}
                 key={item.id}
                 id={item.id}
                 image={item.image}
@@ -46,7 +47,7 @@ const DigitalCart = ({cartItems,addItemTocart,removeFromCart,setRenderedScreen,t
                 </div>
             </div>
             <div className="digital-cart-checkout">
-                <Button disabled={!cartItems.length} className="checkout_btn" variant="contained" color="error" onClick={()=>setRenderedScreen('checkout')}>Checkout {+totalPrice} OMR</Button>
+                <Button disabled={!cartItems.length} className="checkout_btn" variant="contained" color="error" onClick={()=>setRenderedScreen('checkout')}>Checkout {totalPrice.toFixed(location?.location_decimal_places||2)} {location?.currency_code}</Button>
                 <Button >APPLY COUPON</Button>
             </div>
         </div>

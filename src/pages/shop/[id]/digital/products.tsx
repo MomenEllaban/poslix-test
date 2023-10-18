@@ -16,6 +16,7 @@ import { findAllData } from 'src/services/crud.api';
 import { Checkout } from 'src/components/digital/checkout';
 import { Toastify } from 'src/libs/allToasts';
 import category from '../category';
+import { DigitalNavbar } from 'src/components/digital/digital-navbar';
 
 const Products: NextPage = () => {
   const [type, setType] = useState('all');
@@ -28,6 +29,8 @@ const Products: NextPage = () => {
   const [cartItems, setCartItems] = useState<Array<any>>([]);
   const [renderedScreen, setRenderedScreen] = useState<string>('products');
   const [isloading, setIsloading] = useState<boolean>(false);
+  const [appearance,setAppearance] =useState<any>()
+  const [location,setLocation] =useState<any>()
 
   // ------------------------------------------------------------------------------------------------
   const getTotalPrice=()=>{
@@ -108,7 +111,31 @@ setCartItems([...cartItems,{...item,quantity:1,itemTotalPrice:+(item.sell_price|
     setValue(newValue);
   };
   // ----------------------------------------------------------------------------------------------
-  const fetchProducts = async () => {
+  const fetchApperance = async () => {
+    try {
+      const res = await findAllData(`appearance/${router.query.id}`);
+      console.log(res.data.result);
+      
+      setAppearance(res.data.result);
+    } catch (err) {
+      Toastify('error', 'Something went wrong with getting Apperance, please try again later!');
+    }
+  }
+
+// ----------------------------------------------------------------------------------------------
+  // ----------------------------------------------------------------------------------------------
+  const fetchLocation = async () => {
+    try {
+      const res = await findAllData(`business/locations/${router.query.id}`);
+      
+      setLocation(res.data.result);
+    } catch (err) {
+      Toastify('error', 'Something went wrong with getting locations, please try again later!');
+    }
+  }
+  
+// ----------------------------------------------------------------------------------------------
+const fetchProducts = async () => {
     setIsloading(true)
     try {
       const res = await findAllData(`products/${router.query.id}?all_data=1`);
@@ -145,18 +172,38 @@ setCartItems([...cartItems,{...item,quantity:1,itemTotalPrice:+(item.sell_price|
     // ----------------------------------------------------------------------------------------------
 
   useEffect(() => {
+    
    if(router.query.id){
+    fetchApperance()
+    fetchLocation()
     fetchBrands()
     fetchProducts()
     fetchCategories()
+    
 }
   }, [router.query.id])
-  return (  <>  {renderedScreen==='products'?<AdminLayout>
+  return (  <> 
+  <DigitalNavbar appearance={appearance}/>
+   {renderedScreen==='products'?<>
       <div className="digital-products-main bg-white">
         <div className="digital-products-header">
           <h1>Digital Products</h1>
         </div>
-        <div className='w-50  d-flex justify-content-center mx-auto bg-muted'>
+       
+        <div className="digital-products-container">
+          <div className="digital-products">
+            {/* <div className="margin:0 auto w-100 justify-content-center d-flex">
+              <Box
+                sx={{
+                  maxWidth: { xs: '100%', sm: 500, md: 600, lg: 700 },
+                  bgcolor: 'background.paper',
+                }}>
+
+              
+              </Box>
+            </div> */}
+            <div className="digital-product-list bg-light">
+            <div style={{ borderRadius: '8px'}} className='toggle-brands-catigories-buttons-wrapper '>
           <div onClick={() => {
             setRenderedTabs("categories")
           }} style={{ borderRadius: '8px', cursor: 'pointer' }} className={`w-50 p-2 text-center  ${renderedTabs === 'categories' ? 'bg-success':'bg-light'} ${renderedTabs === 'categories' ? 'text-light' : 'text-success'}`}>Categories</div>
@@ -164,22 +211,14 @@ setCartItems([...cartItems,{...item,quantity:1,itemTotalPrice:+(item.sell_price|
             setRenderedTabs("brands")
           }} style={{ borderRadius: '8px', cursor: 'pointer' }} className={`w-50 p-2 text-center  ${renderedTabs === 'brands' ? 'bg-success':'bg-light'} ${renderedTabs === 'brands' ? 'text-light' : 'text-success'}`}>Brands</div>
         </div>
-        <div className="digital-products-container">
-          <div className="digital-products">
-            <div className="margin:0 auto w-100 justify-content-center d-flex">
-              <Box
-                sx={{
-                  maxWidth: { xs: '100%', sm: 500, md: 600, lg: 700 },
-                  bgcolor: 'background.paper',
-                }}>
-
-                <Tabs
+        <div className='w-100 d-flex justify-content-center bg-light'>
+            <Tabs
                   value={value}
                   onChange={handleChange}
                   variant="scrollable"
                   scrollButtons="auto"
                   aria-label="digital-products-filter"
-                  sx={{ textTransform: 'none' }}>
+                  sx={{ textTransform: 'none',marginX:'auto' }}>
                   <Tab
                     className="filter_btn"
                     label="all"
@@ -201,26 +240,21 @@ setCartItems([...cartItems,{...item,quantity:1,itemTotalPrice:+(item.sell_price|
                   })}
 
                 </Tabs>
-              </Box>
-            </div>
-            <div className="digital-product-list">
-           
+                </div>
               {isloading&&  <div className="d-flex justify-content-around w-100">
             <Spinner animation="grow" />
           </div>}
               {type === 'all'
-                ? products.map((product, ind) => <ProductItem addItemTocart={addItemTocart} product={product} key={ind} />)
-                :(renderedTabs==='categories'? products
+                ? products.map((product, ind) => <ProductItem location={location} addItemTocart={addItemTocart} product={product} key={ind} />)
+                :(renderedTabs==='categories'? 
+                products
                   .filter((product) => product.category.name === type):brands.find(brand=>{
-                    
                    return brand.name?.trim()===type?.trim()})?.products||[])
-                  .map((product) => <ProductItem addItemTocart={addItemTocart} product={product} key={product.id} />)}
-                  {
-
-                  }
+                  .map((product) => <ProductItem location={location} addItemTocart={addItemTocart} product={product} key={product.id} />)}
+                  
             </div>
           </div>
-          <DigitalCart totalPrice={getTotalPrice()}  setRenderedScreen={setRenderedScreen} removeFromCart={removeFromCart} addItemTocart={addItemTocart} cartItems={cartItems} />
+          <DigitalCart location={location} totalPrice={getTotalPrice()}  setRenderedScreen={setRenderedScreen} removeFromCart={removeFromCart} addItemTocart={addItemTocart} cartItems={cartItems} />
           {matches ? (
             <div
               className="digital-cart-small"
@@ -251,8 +285,8 @@ setCartItems([...cartItems,{...item,quantity:1,itemTotalPrice:+(item.sell_price|
           ) : null}
         </div>
       </div>
-    </AdminLayout>:renderedScreen==='checkout'&&
-    <Checkout totalPrice={getTotalPrice()} setRenderedScreen={setRenderedScreen}
+    </>:renderedScreen==='checkout'&&
+    <Checkout location={location} totalPrice={getTotalPrice()} setRenderedScreen={setRenderedScreen}
      addItemTocart={addItemTocart} removeFromCart={removeFromCart} 
      cartItems={cartItems}/>}</>
   );
