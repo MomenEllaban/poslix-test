@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build --no-lint",
-    "start": "next build --no-lint && next start",
+    "start": "next start",
+    
     "lint": "next lint",
     "format": "prettier --check --ignore-path .gitignore ."
   },
