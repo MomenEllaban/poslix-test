@@ -30,7 +30,7 @@ function ItemsReport() {
   const { locationSettings, setLocationSettings, invoicDetails } = useUser();
 
   const [sales, setSales] = useState<any>([]);
-  const [filteredSales, setFilteredSales] = useState<any>([]);
+  const [filteredSales, setFilteredSales] = useState<any>([]);  
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [selectId, setSelectId] = useState(0);
   const [selectRow, setSelectRow] = useState<any>({});
@@ -60,7 +60,7 @@ function ItemsReport() {
   const handleClose = () => setAnchorEl(null);
 
   const resetFilters = () => {
-    setFilteredSales(sales);
+    setFilteredSales(()=> sales);
     setSelectedCustomer('');
     setSelectedSupplier('');
     setSelectedRange(null);
@@ -88,6 +88,45 @@ function ItemsReport() {
         renderCell: ({ row }) =>
           `${new Date(row.date).toLocaleDateString()} ${new Date(row.date).toLocaleTimeString()}`,
       },
+      // {
+      //   field: 'purchase_id',
+      //   headerName: 'Purchase ID',
+      //   // @ts-ignore
+      //   renderCell: ({ row }) => row?.product?.supplier?.name || '---',
+      // },
+      {
+        field: 'supplier_name',
+        headerName: 'Supplier',
+        // @ts-ignore
+        renderCell: ({ row }) => row?.supplier_name || 'walk-in supplier',
+      },
+      {
+        field: 'purchase_price',
+        headerName: 'Purchase Price',
+        renderCell: ({ row }) =>
+          (+row?.product?.cost_price).toFixed(locationSettings?.location_decimal_places) +
+          ' ' +
+          locationSettings?.currency_name,
+      },
+      {
+        field: 'sale_date',
+        headerName: 'Sale Date',
+        width: 180,
+        renderCell: ({ row }) =>
+          `${new Date(row.date).toLocaleDateString()} ${new Date(row.date).toLocaleTimeString()}`,
+      },
+      {
+        field: 'order_id',
+        headerName: 'Sale',
+        maxWidth: 72,
+        renderCell: ({ row }) => row.order_id,
+      },
+      {
+        field: 'contact_name',
+        headerName: 'Customer',
+        renderCell: ({ row }) => `${row.contact_first_name} ${row.contact_last_name}`,
+      },
+
       {
         field: 'qty',
         headerName: 'Qty',
@@ -127,15 +166,38 @@ function ItemsReport() {
     api
       .get(`reports/item-sales/${shopId}`, { params: { all_data: 1 } })
       .then(({ data }) => {
-        setSales(data.result.data);
-        setFilteredSales(data.result.data);
+        const _salesList = data.result.data;
+        const mappedSalesList = [];
+//mohamed elsayed
+        // const _salesListWithoutProducts = _salesList.map((item, index) => { 
+        //   const { products, ...rest } = item;
+        //   products.forEach((product) => {
+        //     mappedSalesList.push({ ...rest, product });
+        //   });
+        //   return {...rest, id: index};
+        // });
+        // console.log();
+        let index = 0
+        _salesList.forEach((item) => { 
+          const { products, ...rest } = item;
+          products.forEach((product) => {
+            mappedSalesList.push({ id: index++, ...rest, product });
+          });
+        });
+        ////
+        setSales(mappedSalesList);
+        setFilteredSales(() => mappedSalesList);
       })
       .finally(() => {});
 
     const supplierRes = await findAllData(`suppliers/${shopId}`);
     setSuppliersOptions(supplierRes.data.result);
     const customerRes = await findAllData(`customers/${shopId}`);
-    setCustomersOptions([...customerRes.data.result, {name: "walk-in customer"}]);
+
+    setCustomersOptions([
+      ...customerRes.data.result,
+      { first_name: 'walk-in', last_name: 'customer' },
+    ]);
 
     setIsLoadItems(false);
   }
@@ -196,26 +258,29 @@ function ItemsReport() {
       tax: taxAmount,
       cost: totalPriceAndTax,
     });
-    if(selectedSupplier?.length > 0)
-      localFilteredSales = localFilteredSales.filter((el) => el.user_first_name === selectedSupplier)
-
-    if(selectedCustomer?.length > 0)
-      localFilteredSales = localFilteredSales.filter((el) => el.contact_first_name === selectedCustomer)
-
-    setFilteredSales(localFilteredSales);
+    if (selectedSupplier?.length > 0){
+      console.log(111111111);
+      localFilteredSales = localFilteredSales.filter((el) => el.supplier_name === selectedSupplier);
+    }
+    if (selectedCustomer?.length > 0){
+      console.log(222222222);
+      localFilteredSales = localFilteredSales.filter(
+        (el) => el.contact_first_name === selectedCustomer
+      );
+    }
+    setFilteredSales(()=> localFilteredSales);
   }, [strSelectedDate, selectedSupplier, selectedCustomer]);
 
   /*************************************/
   useEffect(() => {
     if (!shopId) return;
-
     const locations: ILocation[] = getLocalStorage(ELocalStorageKeys.LOCATIONS);
     setLocations(locations);
     const currentLocation = locations.find((location) => +location.location_id === +shopId);
     setLocationSettings(currentLocation ?? locationSettings);
-
     initDataPage();
   }, [shopId]);
+
 
   return (
     <AdminLayout shopId={shopId}>
@@ -253,8 +318,8 @@ function ItemsReport() {
             value={selectedCustomer}
             label="Customer"
             onChange={handleChangeCustomer}>
-            {customersOptions.map((customer) => (
-              <MenuItem key={customer.id} value={customer.first_name}>
+            {customersOptions.map((customer, index) => (
+              <MenuItem key={index} value={customer.first_name}>
                 {customer?.first_name} {customer?.last_name}
               </MenuItem>
             ))}
@@ -284,6 +349,7 @@ function ItemsReport() {
         </div>
       }
       <div className="page-content-style card">
+        {/* {console.log(filteredSales)} */}
         <h5> Items Report</h5>
         {/* <div className="deatils_box">
           <div>
@@ -322,7 +388,7 @@ function ItemsReport() {
           columns={columns}
           pageSize={30}
           rowsPerPageOptions={[10]}
-          getRowId={(row) => row.order_id}
+          // getRowId={(row) => row.order_id}
           components={{ Toolbar: CustomToolbar }}
         />
       </div>

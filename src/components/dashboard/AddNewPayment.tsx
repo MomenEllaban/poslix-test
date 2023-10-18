@@ -1,16 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Button, ButtonGroup, Card, Spinner, Table } from 'react-bootstrap';
-import { apiFetch, apiInsert, apiInsertCtr } from 'src/libs/dbUtils';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faTrash,
-  faPenToSquare,
-  faPlus,
-  faStreetView,
-  faFolderOpen,
-} from '@fortawesome/free-solid-svg-icons';
-import { redirectToLogin } from '../../libs/loginlib';
-import { IPayment, userDashboard } from '@models/common-model';
+import { apiInsertCtr } from 'src/libs/dbUtils';
+import { IPayment } from '@models/common-model';
 import { paymentTypeData } from '@models/data';
 import Select from 'react-select';
 import { updateData } from 'src/services/crud.api';
@@ -19,10 +9,8 @@ import { useRouter } from 'next/router';
 const AddNewPayment = (props: any) => {
   const { totalLeft, shopId, purchaseId, selectedIndex, orderPayments, setOrderPayments } = props;    
   const [formObj, setFormObj] = useState<IPayment>({
-    id: 0,
     payment_type: '',
     amount: 0,
-    created_at: '',
   });
   const router = useRouter();
   const [errorForm, setErrorForm] = useState({ payment_type: false, amount: false });
@@ -45,14 +33,14 @@ const AddNewPayment = (props: any) => {
       return;
     }
 
-    props.purchases[selectedIndex].payment_status = newdata.status;
+    props.purchases[selectedIndex].payment_status = 'paid';
 
     // var _orders = [...orderPayments];
     // _orders.push({payment_type: formObj.payment_type, amount: formObj.amount})
     // setOrderPayments(_orders);
     props.setIsAddNew(false);
   }
-  var errors = [];
+
   useEffect(() => {
     setOrderPayments(orderPayments);
     // console.log(props.index);
@@ -88,7 +76,7 @@ const AddNewPayment = (props: any) => {
                   setFormObj({ ...formObj, payment_type: itm!.value });
                 }}
               />
-              {errorForm.name && <p className="p-1 h6 text-danger ">Enter Full Name</p>}
+              {errorForm.payment_type && <p className="p-1 h6 text-danger ">Select Payment Type</p>}
             </div>
           </div>
           <div className="col-md-6">
@@ -105,6 +93,7 @@ const AddNewPayment = (props: any) => {
                   setFormObj({ ...formObj, amount: parseFloat(e.target.value) });
                 }}
               />
+              {errorForm.amount && <p className="p-1 h6 text-danger ">Enter Amount</p>}
             </div>
           </div>
         </div>
@@ -112,22 +101,8 @@ const AddNewPayment = (props: any) => {
         <button
           type="button"
           className="btn m-btn btn-primary p-2 "
-          onClick={(e) => {
-            e.preventDefault();
-            errors = [];
-            // if (formObj.name.length == 0) errors.push('error')
-            // if (formObj.username.length == 0) errors.push('error')
-
-            // setErrorForm({
-            //     ...errorForm,
-            //     name: formObj.name.length == 0 ? true : false,
-            //     username: formObj.username.length == 0 ? true : false,
-            //     password: formObj.password.length == 0 ? true : false,
-            // })
-            if (errors.length == 0) {
-              insertPayment();
-            }
-          }}>
+          disabled={!isValid}
+          onClick={insertPayment}>
           Save
         </button>
       </form>

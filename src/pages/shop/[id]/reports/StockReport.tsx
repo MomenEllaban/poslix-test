@@ -1,38 +1,45 @@
 import { AdminLayout } from '@layout';
-import { ILocationSettings } from '@models/common-model';
+import { ILocation } from '@models/auth.types';
+import { IBrand, ICategory } from '@models/pos.types';
 import { IStockReport } from '@models/reports.types';
 import { Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
-import {
-  DataGrid,
-  GridColDef,
-  GridToolbarColumnsButton,
-  GridToolbarContainer,
-  GridToolbarExport,
-  GridToolbarQuickFilter,
-} from '@mui/x-data-grid';
+import { SelectChangeEvent } from '@mui/material/Select';
+import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { nanoid } from '@reduxjs/toolkit';
 import { useRouter } from 'next/router';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Button } from 'react-bootstrap';
 import { useReactToPrint } from 'react-to-print';
 import withAuth from 'src/HOCs/withAuth';
 import AlertDialog from 'src/components/utils/AlertDialog';
-import { UserContext, useUser } from 'src/context/UserContext';
-import { apiFetch, apiFetchCtr } from 'src/libs/dbUtils';
+import { useUser } from 'src/context/UserContext';
+import { apiFetchCtr } from 'src/libs/dbUtils';
+import CustomToolbar from 'src/modules/reports/_components/CustomToolbar';
+import posService from 'src/services/pos.service';
 import api from 'src/utils/app-api';
+import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
+import Select from 'react-select';
+import { StateManagerProps } from 'react-select/dist/declarations/src/useStateManager';
+import { intersectionBy } from 'lodash';
+
+type IBrandWithSelect = IBrand & { label: string; value: number };
+type ICategoryWithSelect = ICategory & { label: string; value: number };
 
 function StockReport() {
   const router = useRouter();
   const shopId = router.query.id;
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [sales, setSales] = useState<any>([]);
+  const [brands, setBrands] = useState<IBrandWithSelect[]>([]);
+  const [categories, setCategories] = useState<(ICategory & { label: string; value: number })[]>(
+    []
+  );
   const handleClose = () => {
     setAnchorEl(null);
   };
-  const [sales, setSales] = useState<any>([]);
 
   const [selectId, setSelectId] = useState(0);
   const [selectRow, setSelectRow] = useState<any>({});
@@ -42,7 +49,13 @@ function StockReport() {
   const [showViewPopUp, setShowViewPopUp] = useState(false);
   const [handleSearchTxt, setHandleSearchTxt] = useState('');
   const [details, setDetails] = useState({ subTotal: 1, tax: 0, cost: 0 });
-  const { setInvoicDetails, invoicDetails, locationSettings } = useUser();
+  const { setInvoicDetails, invoicDetails, locationSettings, setLocationSettings } = useUser();
+
+  const [selectedBrand, setSelectedBrand] = useState<IBrandWithSelect | null>();
+  const [selectedCategory, setSelectedCategory] = useState<ICategoryWithSelect | null>();
+
+  const [filteredByBrands, setFilteredByBrands] = useState([]);
+  const [filteredByCategories, setFilteredByCategories] = useState([]);
 
   const [filteredSales, setFilteredSales] = useState<any>([]);
   const [selectedRange, setSelectedRange] = useState(null);
@@ -50,6 +63,34 @@ function StockReport() {
   const [selectedDateVlaue, setSelectedDateValue] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState('');
   const [customersOptions, setCustomersOptions] = useState([]);
+
+  const getLocalizedPrice = useCallback(
+    (price: number | string): string =>
+      `${(+price).toFixed(
+        locationSettings?.location_decimal_places
+      )} ${locationSettings?.currency_code}`,
+    [locationSettings]
+  );
+
+  const handleSelectBrand: StateManagerProps['onChange'] = (
+    brand: IBrand & { label: string; value: number }
+  ) => {
+    setSelectedBrand(brand);
+    if (!brand) return setFilteredByBrands(sales);
+
+    const _filteredSales = sales?.filter((sale) => sale.brand_id === brand.id);
+    setFilteredByBrands(_filteredSales);
+    console.log(_filteredSales);
+  };
+  const handleSelectCategory: StateManagerProps['onChange'] = (
+    category: ICategory & { label: string; value: number }
+  ) => {
+    setSelectedCategory(category);
+    if (!category) return setFilteredByCategories(sales);
+    const _filteredSales = sales?.filter((sale) => sale.category_id === category.id);
+    setFilteredByCategories(_filteredSales);
+  };
+  const filteredArr = intersectionBy(filteredByBrands, filteredByCategories, 'id');
 
   useEffect(() => {
     let localFilteredSales = [];
@@ -104,49 +145,58 @@ function StockReport() {
     setFilteredSales(localFilteredSales);
   }, [strSelectedDate, selectedCustomer]);
 
-  const handleChangeCustomer = (event: SelectChangeEvent<string>) => {
-    setSelectedCustomer(event.target.value);
-  };
-
   const resetFilters = () => {
-    // setFilteredSales(sales);
-    setSelectedCustomer('');
-    setSelectedRange(null);
-    setStrSelectedDate([]);
+    setFilteredByCategories(sales);
+    setFilteredByBrands(sales);
+
+    setSelectedCategory(null);
+    setSelectedBrand(null);
   };
 
   //table columns
   const columns: GridColDef<IStockReport>[] = [
     { field: 'sku', headerName: 'SKU', width: 80 },
+    { field: 'product_name', headerName: 'Product Name', minWidth: 80, flex: 1 },
     { field: 'brand_name', headerName: 'Brand Name' },
-    { field: 'product_name', headerName: 'Product', flex: 1 },
-    { field: 'location_name', headerName: 'Location', flex: 1, minWidth: 120 },
-    { field: 'unit_name', headerName: 'Unit Price', flex: 1 },
+    { field: 'category_name', headerName: 'Category' },
+    // { field: 'location_name', headerName: 'Location', flex: 1, minWidth: 120 },
     {
-      field: 'sub_category',
-      headerName: 'Sub Category',
+      field: 'unit_name',
+      headerName: 'Unit Price',
       flex: 1,
-      renderCell: ({ row }) => row.sub_category?.trim() || '---',
+      renderCell: ({ row }) => getLocalizedPrice(row.sell_price),
     },
     {
-      field: 'cost_price',
-      headerName: 'Cost Price',
+      field: 'available_qty',
+      headerName: 'Current Stock',
+      flex: 1,
+      renderCell: ({ row }) => `${+row?.available_qty || 0} ${row.unit_name}`,
+    },
+    {
+      field: 'current_stock_value_purchase',
+      headerName: 'Current Stock (By Purchse)',
+      renderCell: ({ row }) => getLocalizedPrice(+row?.available_qty * +row.cost_price),
+    },
+    {
+      field: 'current_stock_value_sell',
+      headerName: 'Current Stock (By Sell)',
+      renderCell: ({ row }) => getLocalizedPrice(+row?.available_qty * +row.sell_price),
+    },
+
+    {
+      field: 'profit',
+      headerName: 'Potential Profit',
       renderCell: ({ row }) =>
-        `${(+row.cost_price).toFixed(locationSettings.location_decimal_places)} ${
-          locationSettings.currency_name
-        }`,
+        getLocalizedPrice(+row?.available_qty * (+row.sell_price - +row.cost_price)),
     },
     {
       field: 'sell_price',
       headerName: 'Sell Price',
-      renderCell: ({ row }) =>
-        `${(+row.sell_price).toFixed(locationSettings.location_decimal_places)} ${
-          locationSettings.currency_name
-        }`,
+      renderCell: ({ row }) => getLocalizedPrice(row.sell_price),
     },
     {
       field: 'sold_qty',
-      headerName: 'Sold Qty',
+      headerName: 'Total Unit Sold',
       renderCell: ({ row }) => (+row.sold_qty).toFixed(0),
     },
   ];
@@ -247,49 +297,43 @@ function StockReport() {
     }
   }
 
-  async function viewTransaction() {
-    setShowViewPopUp(true);
-    var result = await apiFetch({
-      fetch: 'getSellLinesByTransactionId',
-      data: { id: selectId },
-    });
-    const { success, newdata } = result;
-    if (success) {
-      setLines(newdata.sellLines);
-    }
-  }
-
   // init sales data
   async function initDataPage() {
     setIsLoadItems(true);
     api
-      .get(`reports/itemStock/${shopId}`, { params: { all_data: 1 } })
+      .get(`reports/itemStock`, { params: { all_data: 1, location_id: shopId } })
       .then(({ data }) => {
-        console.table(data.result);
-        setSales(
-          data.result.map((item) => ({
-            id: nanoid(5),
-            ...item,
-          }))
-        );
+        const brandSet = new Map();
+        const _sales = data.result.map((item) => ({
+          id: nanoid(5),
+          ...item,
+        }));
+        setSales(_sales);
+        setFilteredSales(_sales);
+        setFilteredByBrands(_sales);
+        setFilteredByCategories(_sales);
+        _sales.forEach(({ brand_id, brand_name }) => {
+          if (!brandSet.has(brand_id)) {
+            brandSet.set(brand_id, {
+              id: brand_id,
+              name: brand_name,
+            });
+          }
+        });
+        const brandList = Array.from(brandSet).map(([name, value]) => ({ ...value }));
+        console.log(brandList);
       })
       .finally(() => {
         setIsLoadItems(false);
       });
-  }
 
-  // init sales data
-  // async function initDataPage() {
-  //   const { success, data } = await apiFetchCtr({
-  //     fetch: 'reports',
-  //     subType: 'getItemsReport',
-  //     shopId,
-  //   });
-  //   if (success) {
-  //     setSales(data.sales);
-  //     setDetails(data.sums[0]);
-  //   }
-  // }
+    posService.getBrands(shopId as string).then(({ result }) => {
+      setBrands(result.map((p) => ({ ...p, label: p.name, value: p.id })));
+    });
+    posService.getCategories(shopId as string).then(({ result }) => {
+      setCategories(result.map((p) => ({ ...p, label: p.name, value: p.id })));
+    });
+  }
 
   async function getItems(id: number) {
     setIsLoadItems(true);
@@ -307,19 +351,13 @@ function StockReport() {
 
   useEffect(() => {
     if (!shopId) return;
-
     initDataPage();
-  }, [shopId]);
 
-  function CustomToolbar() {
-    return (
-      <GridToolbarContainer>
-        <GridToolbarExport />
-        <GridToolbarColumnsButton />
-        <GridToolbarQuickFilter />
-      </GridToolbarContainer>
-    );
-  }
+    const locations: ILocation[] = getLocalStorage(ELocalStorageKeys.LOCATIONS);
+    const currentLocation = locations.find((location) => +location.location_id === +shopId);
+    setLocationSettings(currentLocation ?? locationSettings);
+  }, [shopId, router.query.slug]);
+
   const handlePrint = useReactToPrint({
     content: () => componentRef.current,
   });
@@ -336,81 +374,29 @@ function StockReport() {
     <AdminLayout shopId={shopId}>
       <div className="flex" style={{ alignItems: 'center' }}>
         <FormControl sx={{ m: 1, width: 220 }}>
-          <InputLabel id="BusinessLocation-select-label">Business Location</InputLabel>
           <Select
-            labelId="BusinessLocation-select-label"
-            id="BusinessLocation-select"
-            value={selectedCustomer}
-            label="Business Location"
-            onChange={handleChangeCustomer}>
-            {/* {customersOptions.map((customer) => (
-              <MenuItem key={customer} value={customer}>
-                {customer}
-              </MenuItem>
-            ))} */}
-          </Select>
+            options={categories}
+            isClearable
+            value={selectedCategory}
+            id="category-select"
+            placeholder="Category"
+            onChange={handleSelectCategory}
+          />
         </FormControl>
+
         <FormControl sx={{ m: 1, width: 220 }}>
-          <InputLabel id="Category-select-label">Category</InputLabel>
           <Select
-            labelId="Category-select-label"
-            id="Category-select"
-            value={selectedCustomer}
-            label="Category"
-            onChange={handleChangeCustomer}>
-            {/* {customersOptions.map((customer) => (
-              <MenuItem key={customer} value={customer}>
-                {customer}
-              </MenuItem>
-            ))} */}
-          </Select>
+            // labelId="Brand-select-label"
+            id="brand-select"
+            isClearable
+            options={brands}
+            value={selectedBrand}
+            placeholder="Brand"
+            onChange={handleSelectBrand}
+          />
         </FormControl>
-        <FormControl sx={{ m: 1, width: 220 }}>
-          <InputLabel id="SubCategory-select-label">Sub Category</InputLabel>
-          <Select
-            labelId="SubCategory-select-label"
-            id="SubCategory-select"
-            value={selectedCustomer}
-            label="Sub Category"
-            onChange={handleChangeCustomer}>
-            {/* {customersOptions.map((customer) => (
-              <MenuItem key={customer} value={customer}>
-                {customer}
-              </MenuItem>
-            ))} */}
-          </Select>
-        </FormControl>
-        <FormControl sx={{ m: 1, width: 220 }}>
-          <InputLabel id="Brand-select-label">Brand</InputLabel>
-          <Select
-            labelId="Brand-select-label"
-            id="Brand-select"
-            value={selectedCustomer}
-            label="Brand"
-            onChange={handleChangeCustomer}>
-            {/* {customersOptions.map((customer) => (
-              <MenuItem key={customer} value={customer}>
-                {customer}
-              </MenuItem>
-            ))} */}
-          </Select>
-        </FormControl>
-        <FormControl sx={{ m: 1, width: 220 }}>
-          <InputLabel id="Unit-select-label">Unit</InputLabel>
-          <Select
-            labelId="Unit-select-label"
-            id="Unit-select"
-            value={selectedCustomer}
-            label="Unit"
-            onChange={handleChangeCustomer}>
-            {/* {customersOptions.map((customer) => (
-              <MenuItem key={customer} value={customer}>
-                {customer}
-              </MenuItem>
-            ))} */}
-          </Select>
-        </FormControl>
-        <Button onClick={resetFilters} style={{ height: '56px', marginLeft: 'auto' }}>
+
+        <Button onClick={resetFilters} style={{ height: '2.5rem', marginLeft: 'auto' }}>
           CLEAR
         </Button>
       </div>
@@ -452,6 +438,7 @@ function StockReport() {
           </div>
         </div> */}
         <DataGrid
+          loading={isLoadItems}
           className="datagrid-style"
           sx={{
             '.MuiDataGrid-columnSeparator': {
@@ -461,7 +448,7 @@ function StockReport() {
               border: 'none',
             },
           }}
-          rows={sales}
+          rows={filteredArr}
           columns={columns}
           pageSize={30}
           rowsPerPageOptions={[10]}
