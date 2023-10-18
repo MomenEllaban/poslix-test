@@ -164,6 +164,7 @@ const fetchProducts = async () => {
 
     }
   }
+  
     // ----------------------------------------------------------------------------------------------
     useEffect(() => {
      if(products.length>0&&brands.length>0&&categories.length>0&&isloading) setIsloading(false)
@@ -244,14 +245,29 @@ const fetchProducts = async () => {
               {isloading&&  <div className="d-flex justify-content-around w-100">
             <Spinner animation="grow" />
           </div>}
-              {type === 'all'
-                ? products.map((product, ind) => <ProductItem location={location} addItemTocart={addItemTocart} product={product} key={ind} />)
-                :(renderedTabs==='categories'? 
+          {/* categories */}
+              {type === 'all'&&renderedTabs==='categories'? 
+                 products.map((product, ind) => <ProductItem location={location} addItemTocart={addItemTocart} product={product} key={ind} />)
+                :(
                 products
-                  .filter((product) => product.category.name === type):brands.find(brand=>{
-                   return brand.name?.trim()===type?.trim()})?.products||[])
+                  .filter((product) => product.category.name === type)||[])
                   .map((product) => <ProductItem location={location} addItemTocart={addItemTocart} product={product} key={product.id} />)}
-                  
+                            {/* brands */}
+              {type === 'all'&&renderedTabs==='brands'? 
+ brands?.map((brand, index) => (
+  <div className='w-100' key={index}>
+   
+      {brand.products.map((product, productIndex) => (
+        <div key={productIndex}> <ProductItem location={location} addItemTocart={addItemTocart} product={product} key={product.id} /></div>
+      ))}
+      
+    </div>
+      ) )          :(
+               
+                    brands.find(brand=>{
+                    return brand.name?.trim()===type?.trim()})?.products||[])
+                  .map((product) => <ProductItem location={location} addItemTocart={addItemTocart} product={product} key={product.id} />)}
+
             </div>
           </div>
           <DigitalCart location={location} totalPrice={getTotalPrice()}  setRenderedScreen={setRenderedScreen} removeFromCart={removeFromCart} addItemTocart={addItemTocart} cartItems={cartItems} />
