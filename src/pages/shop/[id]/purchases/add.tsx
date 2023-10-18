@@ -234,15 +234,15 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
     if (_total <= 0) return;
     purchaseDetails.map((dp) => (_total = getPriority(dp.value, _total)));
 
-    setFormObj({
-      ...formObj,
+    setFormObj((prev) => ({
+      ...prev,
       total_price: _total,
       subTotal_price: subTotal,
       paid_amount:
         formObj.paymentStatus == 'paid' || formObj.paymentStatus == 'credit'
           ? _total
           : formObj.paid_amount,
-    });
+    }));
   }
   useEffect(() => {
     var _prices = 0,
@@ -252,7 +252,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
       _prices += Number(p.lineTotal);
     });
     setTotal_qty(_qty);
-    setFormObj({ ...formObj, subTotal_price: _prices });
+    setFormObj((prev) => ({ ...prev, subTotal_price: _prices }));
     finalCalculation(_prices);
   }, [selectProducts]);
 
@@ -270,7 +270,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
       _disAmount = _disAmount > formObj.subTotal_price ? formObj.subTotal_price : _disAmount;
       _total = _disAmount;
     }
-    setFormObj({ ...formObj, total_discount: _total, discount_amount: _disAmount });
+    setFormObj((prev) => ({ ...prev, total_discount: _total, discount_amount: _disAmount }));
   }, [formObj.discount_type, formObj.discount_amount]);
 
   //expenses
@@ -281,10 +281,10 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
     selectedExpendsEdit.map((ep) => (_sum += Number(ep.enterd_value * ep.currency_rate)));
     setTotalExpends(_sum);
 
-    setFormObj({
-      ...formObj,
+    setFormObj((prev) => ({
+      ...prev,
       total_expense: +_sum.toFixed(locationSettings?.location_decimal_places),
-    });
+    }));
     calculationLabels(_sum, formObj.total_tax);
   }, [selectedExpends, selectedExpendsEdit]);
 
@@ -302,13 +302,12 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
   }, [formObj.total_tax]);
   
   useEffect(() => {
-    console.log(locationSettings);
+    console.log('sssssssssssssssssssssssss',locationSettings);
     
-    setFormObj({
-      ...formObj,
+    setFormObj((prev) => ({...prev,
       currency_id: locationSettings?.currency_id,
       currency_code: locationSettings?.currency_code,
-    });
+    }));
   }, [locationSettings]);
   useEffect(() => {
     calculationLabels(formObj.total_expense, formObj.total_tax);
@@ -455,10 +454,10 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
           (sum, product) => sum + product.cost * product.quantity,
           0
         );
-        setFormObj({
-          ...formObj,
+        setFormObj((prev)=>({
+          ...prev,
           subTotal_price: totalPrice,
-        });
+        }));
       }
       setSelectProducts([..._datas]);
       calculationLabels(formObj.total_expense, formObj.total_tax);
@@ -550,7 +549,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
 
 
       setSuppliers([{ supplier_id: 0, id: 0, value: 0, label: 'walk-in supplier' }, ..._suppliers]);
-      setFormObj({ ...formObj, supplier_id: 0});
+      setFormObj((prev)=>({ ...prev, supplier_id: 0}));
 
       setProducts(_products);
       setCurrencies(_currencies);
@@ -567,7 +566,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
   useEffect(() => {
     var _tx = 0;
     selectedTaxes.map((ep: any) => (_tx += Number(ep.converted_value)));
-    setFormObj({ ...formObj, total_tax: +_tx.toFixed(locationSettings?.location_decimal_places) });
+    setFormObj((prev) => ({ ...prev, total_tax: +_tx.toFixed(locationSettings?.location_decimal_places) }));
     calculationLabels(formObj.total_expense, _tx);
   }, [selectedTaxes]);
   useEffect(() => {
@@ -680,7 +679,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                         defaultValue={suppliers[0]}
                         value={suppliers.filter((sp) => sp.value == formObj.supplier_id)}
                         onChange={(itm) => {
-                          setFormObj({ ...formObj, supplier_id: itm.value });
+                          setFormObj((prev) => ({ ...prev, supplier_id: itm.value }));
                         }}
                       />
                       {errorForm.supplier_id && (
@@ -697,7 +696,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                         placeholder="Reference No"
                         value={formObj.ref_no}
                         onChange={(e) => {
-                          setFormObj({ ...formObj, ref_no: e.target.value });
+                          setFormObj((prev)=>({ ...prev, ref_no: e.target.value }));
                         }}
                       />
                     </div>
@@ -708,7 +707,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                       <DatePicker
                         className="form-control p-2"
                         selected={formObj.date}
-                        onChange={(date: Date) => setFormObj({ ...formObj, date: date })}
+                        onChange={(date: Date) => setFormObj((prev) => ({ ...prev, date: date }))}
                       />
                     </div>
                   </div>
@@ -732,7 +731,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                           return f.value == formObj.purchaseStatus;
                         })}
                         onChange={(itm) => {
-                          setFormObj({ ...formObj, purchaseStatus: itm!.value });
+                          setFormObj((prev)=>({ ...prev, purchaseStatus: itm!.value }));
                         }}
                       />
                       {errorForm.purchaseStatus && (
@@ -756,14 +755,14 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                             return f.value == formObj.paymentStatus;
                           })}
                           onChange={(itm) => {
-                            setFormObj({
-                              ...formObj,
+                            setFormObj((prev)=>({
+                              ...prev,
                               paymentStatus: itm!.value,
                               paid_amount:
                                 itm!.value == 'paid' || itm!.value == 'credit'
                                   ? formObj.total_price
                                   : 0,
-                            });
+                            }));
                           }}
                         />
                         {errorForm.paymentStatus && (
@@ -781,7 +780,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                             placeholder="Paid Amount"
                             value={formObj.paid_amount}
                             onChange={(e) => {
-                              setFormObj({ ...formObj, paid_amount: +e.target.value });
+                              setFormObj((prev)=>({ ...prev, paid_amount: +e.target.value }));
                             }}
                           />
                           {errorForm.paid && <p className="p-1 h6 text-danger ">Enter A Amount</p>}
@@ -795,7 +794,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                           <DatePicker
                             className="form-control p-2"
                             selected={formObj.paymentDate}
-                            onChange={(date: Date) => setFormObj({ ...formObj, paymentDate: date })}
+                            onChange={(date: Date) => setFormObj((prev)=>({ ...prev, paymentDate: date }))}
                           />
                           {errorForm.paymentDate && (
                             <p className="p-1 h6 text-danger ">Enter Payment Date From Calander</p>
@@ -813,7 +812,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                             return f.value == formObj.paymentType;
                           })}
                           onChange={(itm) => {
-                            setFormObj({ ...formObj, paymentType: itm!.value });
+                            setFormObj((prev)=>({ ...prev, paymentType: itm!.value }));
                           }}
                         />
                         {errorForm.paymentType && (
@@ -838,11 +837,11 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                   onChange={(itm) => {
                     console.log(itm);
                     
-                    setFormObj({
-                      ...formObj,
+                    setFormObj((prev) => ({
+                      ...prev,
                       currency_code: itm!.currency_code,
                       currency_id: itm!.id,
-                    });
+                    }));
                   }}
                 />
                 {errorForm.currency_id && <p className="p-1 h6 text-danger ">Select a Currency</p>}
@@ -987,7 +986,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                                     <Form.Select
                                       style={{ width: '130px' }}
                                       onChange={(e) => {
-                                        setFormObj({ ...formObj, discount_type: e.target.value });
+                                        setFormObj((prev)=> ({ ...prev, discount_type: e.target.value }));
                                       }}>
                                       <option value={'fixed'}>Fixed</option>
                                       <option value={'percent'}>Percent %</option>
@@ -1000,10 +999,10 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                                       min={0}
                                       value={formObj.discount_amount}
                                       onChange={(e) => {
-                                        setFormObj({
-                                          ...formObj,
+                                        setFormObj((prev)=>({
+                                          ...prev,
                                           discount_amount: +e.target.value,
-                                        });
+                                        }));
                                       }}
                                     />
                                   </div>
