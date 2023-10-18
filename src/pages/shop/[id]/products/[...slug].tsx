@@ -77,7 +77,11 @@ const initFormError = {
 };
 
 const Product: NextPage = ({ editId, iType }: any) => {
-  const { locationSettings } = useUser();
+  const { locationSettings, setLocationSettings} = useUser();
+console.log(locationSettings);
+
+const [locations, setLocations] = useState();
+console.log(locations);
 
   const [img, setImg] = useState<any>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
@@ -120,6 +124,8 @@ const Product: NextPage = ({ editId, iType }: any) => {
   const [percent, setPercent] = useState(0);
   const router = useRouter();
   const shopId = router.query.id;
+  console.log(router.query);
+  
 
   const [show, setShow] = useState(false);
   const [open, setOpen] = useState(false);
@@ -206,6 +212,8 @@ const Product: NextPage = ({ editId, iType }: any) => {
         // setSelectedFabrics(newdata.selectedFabrics);
         const itm = res.data.result;
         setPreviewUrl(itm?.image);
+console.log(itm.cost_price);
+console.log(locationSettings?.location_decimal_places);
 
         setFormObj({
           ...formObj,
@@ -441,6 +449,23 @@ const Product: NextPage = ({ editId, iType }: any) => {
     } else Toastify('error', 'Error, Try Again');
   }
 
+  useEffect(()=>{
+    const _locs = JSON.parse(localStorage.getItem('locations') || '[]');
+    console.log(_locs.length);
+    console.log(JSON.parse(localStorage.getItem('locations')));
+    
+    setLocations(_locs);
+    if (_locs.length > 0){
+      setLocationSettings(
+        _locs[
+          _locs.findIndex((loc: any) => {
+            return loc.location_id == +shopId;
+          })
+        ]
+        );
+
+    }
+  },[router.query])
   useEffect(() => {
     if (router.isReady) initDataPage(router.query.slug, locationSettings);
   }, [router.asPath, locationSettings]);
@@ -1211,14 +1236,10 @@ const Product: NextPage = ({ editId, iType }: any) => {
                               type="text"
                               className="form-control"
                               placeholder="Purchase Price"
-                              value={Number(formObj.cost_price).toFixed(
-                                locationSettings?.location_decimal_places
-                              )}
+                              value={formObj.cost_price}
                               onKeyPress={handleNumberKeyPress}
                               onChange={(e) => {
-                                setFormObj({ ...formObj, cost_price: Number(e.target.value).toFixed(
-                                  locationSettings?.location_decimal_places
-                                ) });
+                                setFormObj({ ...formObj, cost_price:e.target.value});
                               }}
                             />
                           </div>
@@ -1235,14 +1256,10 @@ const Product: NextPage = ({ editId, iType }: any) => {
                               type="text"
                               className="form-control"
                               placeholder="Sell Price"
-                              value={Number(formObj.sell_price).toFixed(
-                                locationSettings?.location_decimal_places
-                              )}
+                              value={formObj.sell_price}
                               onKeyPress={handleNumberKeyPress}
                               onChange={(e) => {
-                                setFormObj({ ...formObj, sell_price: Number(e.target.value).toFixed(
-                                  locationSettings?.location_decimal_places
-                                ) });
+                                setFormObj({ ...formObj, sell_price:e.target.value});
                               }}
                             />
                           </div>

@@ -519,7 +519,8 @@ const PaymentModal = (props: any) => {
                 'btn btn-label ' + (canPay ? 'btn-primary' : 'btn-danger') + ' right nexttab'
               }
               data-nexttab="pills-finish-tab"
-              onClick={handlePayment}>
+              // onClick={handlePayment}
+              >
               <i className="ri-shopping-basket-line label-icon align-middle fs-16 ms-2" />
               {canPay ? 'Complete Order' : 'Amount(s) Wrong!'}
             </button>

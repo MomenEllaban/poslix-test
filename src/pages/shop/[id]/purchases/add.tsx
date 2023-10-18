@@ -73,6 +73,8 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
   const formObjRef = useRef<any>();
 
   const [formObj, setFormObj] = useState(purchasesInitFormObj);
+  console.log(formObj);
+  
   const [errorForm, setErrorForm] = useState(purchasesInitFormError);
   const [suppliers, setSuppliers] = useState<ISupplierSelect[]>(initialSupplier);
   const [purchaseDetails, setPurchaseDetails] = useState(purchasesInitPurchaseDetails);
@@ -207,6 +209,12 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
     const locations: ILocation[] = getLocalStorage(ELocalStorageKeys.LOCATIONS);
     const currentLocation = locations.find((location) => +location.location_id === +shopId);
     setLocationSettings(currentLocation ?? locationSettings);
+    console.log(currentLocation??locationSettings.currency_id);
+    // setFormObj({
+    //   ...formObj,
+    //   currency_id: currentLocation.currency_id ?? locationSettings.currency_id,
+    //   currency_code: currentLocation.currency_code ?? locationSettings.currency_code
+    // })
   }, [shopId, router.query.slug]);
 
   function getPriority(type: string, subTotal: number): number {
@@ -292,7 +300,10 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
   useEffect(() => {
     finalCalculation();
   }, [formObj.total_tax]);
+  
   useEffect(() => {
+    console.log(locationSettings);
+    
     setFormObj({
       ...formObj,
       currency_id: locationSettings?.currency_id,
@@ -536,8 +547,10 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
           }))
       );
 
+
+
       setSuppliers([{ supplier_id: 0, id: 0, value: 0, label: 'walk-in supplier' }, ..._suppliers]);
-      setFormObj({ ...formObj, supplier_id: 0 });
+      setFormObj({ ...formObj, supplier_id: 0});
 
       setProducts(_products);
       setCurrencies(_currencies);
@@ -814,14 +827,17 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
             </Card.Body>
           </Card>
           <div className="row">
+         
             <div className="col-md-3">
               <div className="form-group">
                 <Select
                   options={currencies}
                   isLoading={dataLoading}
                   styles={purchasesSelectStyle}
-                  value={currencies?.filter((f: any) => f.value == formObj.currency_id)}
+                  value={currencies?.filter((f: any) => f.value == (formObj.currency_id || locationSettings.currency_id))}
                   onChange={(itm) => {
+                    console.log(itm);
+                    
                     setFormObj({
                       ...formObj,
                       currency_code: itm!.currency_code,
@@ -1093,6 +1109,8 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                 onClick={(e) => {
                   e.preventDefault();
                   errors = [];
+                  console.log(formObj.currency_id);
+                  
                   if (
                     formObj.supplier_id === null ||
                     formObj.supplier_id === undefined ||
@@ -1112,7 +1130,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                   }
                   if (formObj.paymentStatus == 'partially_paid' && formObj.paid_amount < 0.5)
                     errors.push(' partially paid');
-
+                    console.log(formObj.currency_id);
                   setErrorForm({
                     ...errorForm,
 

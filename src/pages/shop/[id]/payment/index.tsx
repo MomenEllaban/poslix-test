@@ -182,9 +182,10 @@ const PaymentMethods: NextPage = ({ id }: any) => {
                   <Form.Check
                     type="switch"
                     id={`custom-switch-${i}`}
-                    disabled={!permissions.hasInsert}
+                    disabled={permissions.hasInsert ? !permissions.hasInsert : false}
                     className="custom-switch"
-                    checked={method.enabled ? true : false}
+                    checked={true}
+                    // checked={method.enabled ? true : false}
                     onChange={(e) => {
                       handlePrimarySwitchChange(e, i);
                     }}
