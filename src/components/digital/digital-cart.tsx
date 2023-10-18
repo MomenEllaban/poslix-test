@@ -3,35 +3,39 @@ import  CartItem  from "./CartItem"
 
 import { useDispatch,useSelector } from 'react-redux';
 import {addTodigitalCart ,incrementQuantity, decrementQuantity, removeItem} from '../../redux/slices/digitalCartSlice';
-const DigitalCart = (props: any) => {
+const DigitalCart = ({cartItems,addItemTocart,removeFromCart,setRenderedScreen,totalPrice}) => {
     const {digitalCart} = useSelector((state:any) => state.digitalCart)
-    const dispatch = useDispatch()
-    const getTotal = () => {
-        let totalQuantity = 0
-        let totalPrice = 0
-        console.log(digitalCart);
-        digitalCart?.forEach(item => {
-          totalQuantity += item.quantity
-          totalPrice += item.price * item.quantity
-        })
-        return {totalPrice, totalQuantity}
-      }
+    // const dispatch = useDispatch()
+    // const getTotal = () => {
+    //     let totalQuantity = 0
+    //     let totalPrice = 0
+    //     console.log(digitalCart);
+    //     digitalCart?.forEach(item => {
+    //       totalQuantity += item.quantity
+    //       totalPrice += item.price * item.quantity
+    //     })
+    //     return {totalPrice, totalQuantity}
+    //   }
+  
     return (
         <div className="digital-cart">
             <div className="digital-cart-items-container">
                 <h4>YOUR ORDER</h4>
                 <div className="digital-cart-items-list">
-                {digitalCart.length>=1?digitalCart.map((item) => (
+                        {cartItems.length>=1?cartItems.map((item) => (
+                        
                 
-           
-          <CartItem 
-          key={item.id}
-          id={item.id}
-          image={item.image}
-          name={item.name}
-          price={item.price} 
-          quantity={item.quantity}
-           />
+                <CartItem 
+                key={item.id}
+                id={item.id}
+                image={item.image}
+                name={item.name}
+                price={item.itemTotalPrice} 
+                quantity={item.quantity}
+                addItemTocart={addItemTocart}
+                item={item}
+                removeFromCart={removeFromCart}
+                />
 
 
                  )):<p className="empty text-dark">Cart is empty</p>
@@ -42,7 +46,7 @@ const DigitalCart = (props: any) => {
                 </div>
             </div>
             <div className="digital-cart-checkout">
-                <Button className="checkout_btn" variant="contained" color="error">Checkout {getTotal().totalPrice} OMR</Button>
+                <Button disabled={!cartItems.length} className="checkout_btn" variant="contained" color="error" onClick={()=>setRenderedScreen('checkout')}>Checkout {+totalPrice} OMR</Button>
                 <Button >APPLY COUPON</Button>
             </div>
         </div>

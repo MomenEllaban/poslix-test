@@ -76,7 +76,7 @@ export function OpenRegisterView({ setShopId, shopId: _shopId }) {
       }}>
       <img className="logo" src="/images/logo1.png" />
       <div className="text-center">
-        <p className='mb-0'>You have to open the Register first!</p>
+        <p className='mb-0'>You have to ppen the Register first!</p>
         <small>Please select a location or continue with the current one.</small>
       </div>
       <div className="col-lg-4 mb-3">

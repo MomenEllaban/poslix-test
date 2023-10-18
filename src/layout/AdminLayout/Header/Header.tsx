@@ -12,7 +12,6 @@ import { RiEnglishInput } from 'react-icons/ri';
 import classNames from 'classnames';
 import { useDarkMode } from '../../../context/DarkModeContext';
 import DarkModeToggle from '../DarkModeToggle';
-import Image from 'next/image';
 
 type HeaderProps = {
   toggleSidebar: () => void;
@@ -51,17 +50,7 @@ export default function Header(props: HeaderProps) {
           <FontAwesomeIcon icon={faBars} />
         </Button>
         <Link href="/" className="header-brand d-md-none">
-          <div style={{ height: "18px", overflow: "hidden", }} className='d-flex flex-row'>
-            <Image
-
-              width={200}
-              height={150}
-              src='/images/logo1.png'
-              alt="sidebar-brand-full"
-              style={{ height: '100%', width: '100%' }}
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            />
-          </div>
+          sidebar-brand-full
         </Link>
         <div className="header-nav d-none d-md-flex">
           <HeaderFeaturedNav />

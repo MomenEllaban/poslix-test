@@ -11,6 +11,7 @@ import { DataGrid, GridColDef, GridRowParams } from '@mui/x-data-grid';
 import { findAllData } from 'src/services/crud.api';
 import { useUser } from 'src/context/UserContext';
 import CustomToolbar from 'src/modules/reports/_components/CustomToolbar';
+import { useRouter } from 'next/router';
 
 const supplierFields = [
   { name: 'name', label: 'Name', placeholder: 'Enter supplier name', type: 'text', required: true },
@@ -79,6 +80,7 @@ const SupplierModal = ({ openDialog, statusDialog, supplierId, showType, shopId 
   const [key, setKey] = useState('profile');
   const [purchases, setPurchases] = useState<any>([]);
   const { locationSettings, setLocationSettings } = useUser();
+  const router = useRouter();
 
   function getStatusStyle(status: string) {
     switch (status) {
@@ -148,13 +150,14 @@ const SupplierModal = ({ openDialog, statusDialog, supplierId, showType, shopId 
     openDialog(false);
     reset();
   };
-
+  
   const onSubmit = async (data) => {
     setIsLoading(true);
 
     if (showType === 'add')
-      try {
+    {  try {
         try {
+          
           await api.post(
             `suppliers/${shopId}`,
             {},
@@ -163,6 +166,11 @@ const SupplierModal = ({ openDialog, statusDialog, supplierId, showType, shopId 
             }
           );
           Toastify('success', 'Successfully Created');
+          const currentPath = router.pathname;
+        
+          if (!currentPath.includes('suppliers')) {
+            router.push(`/shop/${shopId}/suppliers`);
+          }
           handleClose();
         } catch ({ response }) {
           const err = response.data.error;
@@ -173,7 +181,7 @@ const SupplierModal = ({ openDialog, statusDialog, supplierId, showType, shopId 
         }
       } finally {
         setIsLoading(false);
-      }
+      } return}
     const { id, email: _email, ...rest } = data;
     const _updated = { ...rest };
     if (_email !== email) _updated.email = _email;

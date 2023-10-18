@@ -135,9 +135,8 @@ export interface IStockReport {
   cost_price: string;
   sell_price: string;
   unit_name: string;
-  sold_qty: string;
   receive_qty: string;
-  available_qty?: string;
+  sold_qty: string;
   brand_name: string;
   brand_id: number;
   location_name: string;

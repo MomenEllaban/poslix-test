@@ -5,26 +5,90 @@ import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { NextPage } from 'next';
-import React, { useState } from 'react';
-import { Button } from 'react-bootstrap';
+import { useRouter } from 'next/router';
+import React, { useEffect, useState } from 'react';
+import { Button, Spinner } from 'react-bootstrap';
 import { useSelector } from 'react-redux';
 import MobDrawer from 'src/components/digital/MobDrawer';
 import DigitalCart from 'src/components/digital/digital-cart';
 import ProductItem from 'src/components/digital/product-item';
+import { findAllData } from 'src/services/crud.api';
+import { Checkout } from 'src/components/digital/checkout';
+import { Toastify } from 'src/libs/allToasts';
+import category from '../category';
 
 const Products: NextPage = () => {
   const [type, setType] = useState('all');
   const [showCart, setShowCart] = useState(true);
   const [open, setOpen] = React.useState(false);
+  const [products, setProducts] = useState<Array<any>>([]);
+  const [categories, setCategories] = useState<Array<any>>([]);
+  const [brands, setBrands] = useState<Array<any>>([]);
+  const [renderedTabs, setRenderedTabs] = useState<string>('categories');
+  const [cartItems, setCartItems] = useState<Array<any>>([]);
+  const [renderedScreen, setRenderedScreen] = useState<string>('products');
+  const [isloading, setIsloading] = useState<boolean>(false);
+
+  // ------------------------------------------------------------------------------------------------
+  const getTotalPrice=()=>{
+    let totalPrice=0
+    cartItems.forEach((item)=>{
+        totalPrice=totalPrice+item.itemTotalPrice
+    })
+    
+return totalPrice
+}
+  // ------------------------------------------------------------------------------------------------
+  const addItemTocart=(item:any)=>{
+    console.log(item);
+
+if(cartItems.find(p => p.id === item.id)){
+  
+    const updatedItems = cartItems.map(cart_item => {
+      if (item.id === cart_item.id) {
+        
+        return { ...cart_item, quantity: cart_item.quantity+1 ,itemTotalPrice:+(item.sell_price||item.price)*(cart_item.quantity+1) };
+      }
+      return cart_item;
+    });
+    setCartItems(updatedItems);
+}else{  
+
+setCartItems([...cartItems,{...item,quantity:1,itemTotalPrice:+(item.sell_price||item.price)}])
+
+  }  }
+  // ------------------------------------------------------------------------------------------------
+  const removeFromCart=(item:any)=>{
+   
+    
+    if(cartItems.find(p => p.id === item.id).quantity>1){
+      
+        const updatedItems = cartItems.map(cart_item => {
+          if (item.id === cart_item.id) {
+            
+            return { ...cart_item, quantity: cart_item.quantity-1,itemTotalPrice:(item.sell_price||item.price)*(cart_item.quantity-1) };
+          }
+          return cart_item;
+        });
+        setCartItems(updatedItems);
+    }else{  
+    
+    setCartItems(cartItems.filter(el=>el.id!==item.id))
+    
+      }  }
+  // ------------------------------------------------------------------------------------------------
+  const router = useRouter()
   let toggleDrawer = (newOpen) => () => {
     setOpen(newOpen);
   };
+  // ------------------------------------------------------------------------------------------------
   const handleDrawer = (open) => {
     setOpen(!open);
     toggleDrawer(!open);
 
     setShowCart((s) => !s);
   };
+  // ------------------------------------------------------------------------------------------------
   const { digitalCart } = useSelector((state: any) => state.digitalCart);
   const getTotal = () => {
     let totalQuantity = 0;
@@ -36,315 +100,69 @@ const Products: NextPage = () => {
     });
     return { totalPrice, totalQuantity };
   };
-
+  // ------------------------------------------------------------------------------------------------
   const matches = useMediaQuery('(max-width:850px)');
-  const [value, setValue] = React.useState(0);
+  const [value, setValue] = React.useState('0');
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
-  const products = [
-    {
-      id: 0,
-      name: 'Margherita',
-      description:
-        'سبرنج رول بالخضروات، اصابع دجاج محشوه بالجبن، كرة البطاطا الطازجه محشوه بلحم الانجوس، ساندويش بطاطس عمان بخلطة كوزي vegetable spring rolls, chicken finger with cheese, Fresh potato ball with Angus meat & Omani Chips Sandwich by Cozy way',
-      type: 'cozy',
-      ingredients: ['tomato sauce', 'mozzarella'],
-      spicy: false,
-      vegetarian: true,
-      price: 17.0,
-      image: 'https://i.imgur.com/8B8YLOo.jpg',
-    },
-    {
-      id: 1,
-      name: 'Pepperoni',
-      description:
-        'سبرنج رول بالخضروات، اصابع دجاج محشوه بالجبن، كرة البطاطا الطازجه محشوه بلحم الانجوس، ساندويش بطاطس عمان بخلطة كوزي vegetable spring rolls, chicken finger with cheese, Fresh potato ball with Angus meat & Omani Chips Sandwich by Cozy way',
-      type: 'cozy',
-      ingredients: ['tomato sauce', 'mozzarella', 'double pepperoni'],
-      spicy: false,
-      vegetarian: false,
-      price: 20.0,
-      image: 'https://i.imgur.com/OHHctnf.jpg',
-    },
-    {
-      id: 2,
-      name: 'Rome',
-      description:
-        'سبرنج رول بالخضروات، اصابع دجاج محشوه بالجبن، كرة البطاطا الطازجه محشوه بلحم الانجوس، ساندويش بطاطس عمان بخلطة كوزي vegetable spring rolls, chicken finger with cheese, Fresh potato ball with Angus meat & Omani Chips Sandwich by Cozy way',
-      type: 'cozy',
-      ingredients: ['tomato sauce', 'mozzarella', 'ham', 'mushrooms', 'beef cubes'],
-      spicy: false,
-      vegetarian: false,
-      price: 25.75,
-      image: 'https://i.imgur.com/3ZTwCfz.png',
-    },
-    {
-      id: 3,
-      name: 'American Spicy',
-      description:
-        'سبرنج رول بالخضروات، اصابع دجاج محشوه بالجبن، كرة البطاطا الطازجه محشوه بلحم الانجوس، ساندويش بطاطس عمان بخلطة كوزي vegetable spring rolls, chicken finger with cheese, Fresh potato ball with Angus meat & Omani Chips Sandwich by Cozy way',
-      type: 'hamo',
-      ingredients: [
-        'tomato sauce',
-        'mozzarella',
-        'pepperoni',
-        'tomatoes',
-        'green pepper',
-        'red onion',
-        'jalapenos',
-        'Samourai sauce',
-      ],
-      spicy: true,
-      vegetarian: false,
-      price: 30.25,
-      image: 'https://i.imgur.com/dyoOLCO.png',
-    },
-    {
-      id: 4,
-      name: 'Quattro Stagioni',
-      description:
-        'سبرنج رول بالخضروات، اصابع دجاج محشوه بالجبن، كرة البطاطا الطازجه محشوه بلحم الانجوس، ساندويش بطاطس عمان بخلطة كوزي vegetable spring rolls, chicken finger with cheese, Fresh potato ball with Angus meat & Omani Chips Sandwich by Cozy way',
-      type: 'hamo',
-      ingredients: ['tomato sauce', 'mozzarella', 'ham', 'pepperoni', 'mushrooms', 'green pepper'],
-      spicy: false,
-      vegetarian: false,
-      price: 27.25,
-      image: 'https://i.imgur.com/wOEuXuV.jpg',
-    },
-    {
-      id: 5,
-      name: 'Pork & Feta',
-      description: 'Cheesecake with berries topping',
-      type: 'ozy',
-      ingredients: ['tomato sauce', 'mozzarella', 'feta cheese', 'ham', 'pork cubes', 'red onion'],
-      spicy: false,
-      vegetarian: false,
-      price: 27.25,
-      image: 'https://i.imgur.com/48Zw4K3.png',
-    },
-    {
-      id: 6,
-      name: 'Quattro Formaggi',
-      description: 'Cheesecake with berries topping',
-      type: 'ozy',
+  // ----------------------------------------------------------------------------------------------
+  const fetchProducts = async () => {
+    setIsloading(true)
+    try {
+      const res = await findAllData(`products/${router.query.id}?all_data=1`);
+      setProducts(res.data.result);
+    } catch (err) {
+      Toastify('error', 'Something went wrong with getting products, please try again later!');
+    }
+  }
+  // ----------------------------------------------------------------------------------------------
+  const fetchCategories= async () => {
+    try {
+      const resCategories = await findAllData(`categories/${router.query.id}`);
+      setCategories(resCategories.data.result)
+    } catch (err) {
+      Toastify('error', 'Something went wrong with getting categories , please try again later!');
 
-      ingredients: ['mozzarella', 'cheddar cheese', 'emmentaler', 'blue cheese', 'oregano'],
-      spicy: false,
-      vegetarian: true,
-      price: 35.15,
-      image: 'https://i.imgur.com/MDrTvkI.jpg',
-    },
-    {
-      id: 7,
-      name: 'Carnivora',
-      description: 'Cheesecake with berries topping',
-      type: 'ozy',
+    }
+  }
+  // ----------------------------------------------------------------------------------------------
+  const fetchBrands = async () => {
+    try {
+      const resBrands = await findAllData(`brands/${router.query.id}`);
+      setBrands(resBrands.data.result)
+    } catch (err) {
+      Toastify('error', 'Something went wrong with getting brands, please try again later!');
 
-      ingredients: [
-        'tomato sauce',
-        'mozzarella',
-        'chicken breast',
-        'beef cubes',
-        'pepperoni',
-        'bacon',
-      ],
-      spicy: false,
-      vegetarian: false,
-      price: 27.25,
-      image: 'https://i.imgur.com/0vPtSSO.png',
-    },
-    {
-      id: 8,
-      name: 'Louisiana Chicken',
-      description: 'Cheesecake with berries topping',
-      type: 'ozy',
+    }
+  }
+    // ----------------------------------------------------------------------------------------------
+    useEffect(() => {
+     if(products.length>0&&brands.length>0&&categories.length>0&&isloading) setIsloading(false)
+      
+    },[products,categories,brands])
+    // ----------------------------------------------------------------------------------------------
 
-      ingredients: [
-        'marinated chicken',
-        'TABASCO spicy sauce',
-        'red pepper sauce',
-        'blue cheese',
-        'green pepper',
-        'red onion',
-      ],
-      spicy: true,
-      vegetarian: false,
-      price: 20.0,
-      image: 'https://i.imgur.com/lZtwJgy.png',
-    },
-    {
-      id: 9,
-      name: 'Honey Mustard Chicken',
-      description: 'Cheesecake with berries topping',
-      type: 'Pasta',
-
-      ingredients: [
-        'tomato sauce',
-        'mozzarella',
-        'marinated chicken in Honey Mustard sauce',
-        'cheddar cheese',
-        'red onion',
-      ],
-      spicy: false,
-      vegetarian: false,
-      price: 19.8,
-      image: 'https://i.imgur.com/SoZu61g.png',
-    },
-    {
-      id: 10,
-      name: 'Hawaiian',
-      description: 'Cheesecake with berries topping',
-      type: 'Pasta',
-      ingredients: [
-        'mozzarella',
-        'sweet chilli sauce',
-        'pepperoni',
-        'pineapple',
-        'jalapenos',
-        'red onion',
-      ],
-      spicy: true,
-      vegetarian: false,
-      price: 27.25,
-      image: 'https://i.imgur.com/mqTgvgl.png',
-    },
-    {
-      id: 11,
-      name: 'Classic',
-      description: 'Cheesecake with berries topping',
-      type: 'Pasta',
-      ingredients: ['tomato sauce', 'mozzarella', 'ham', 'mushrooms', 'olives'],
-      spicy: false,
-      vegetarian: false,
-      price: 27.25,
-      image: 'https://i.imgur.com/k6IGrUd.png',
-    },
-    {
-      id: 12,
-      name: 'Pastrami',
-      description: 'Cheesecake with berries topping',
-      type: 'Pasta',
-      ingredients: [
-        'tomato sauce',
-        'mozzarella',
-        'pastrami',
-        'salty cheese',
-        'baked green pepper',
-        'red onion',
-      ],
-      spicy: false,
-      vegetarian: false,
-      price: 27.25,
-      image: 'https://i.imgur.com/yOe5RtC.png',
-    },
-    {
-      id: 13,
-      name: 'Hot Pastrami',
-      description: 'Cheesecake with berries topping',
-      type: 'Pasta',
-      ingredients: [
-        'Honey Mustard sauce',
-        'mozzarella',
-        'pastrami',
-        'sausages',
-        'chilli pepper',
-        'red onion',
-      ],
-      spicy: true,
-      vegetarian: false,
-      price: 27.25,
-      image: 'https://i.imgur.com/ipMA5LP.png',
-    },
-    {
-      id: 14,
-      name: 'Country',
-      description: 'Cheesecake with berries topping',
-      type: 'Chicken',
-      ingredients: ['tomato sauce', 'mozzarella', 'bacon', 'corn', 'onion', 'mushrooms'],
-      spicy: false,
-      vegetarian: false,
-      price: 27.25,
-      image: 'https://i.imgur.com/E67Xf8Y.png',
-    },
-    {
-      id: 15,
-      name: 'Hot Cheese',
-      description: 'Cheesecake with berries topping',
-      type: 'Chicken',
-      ingredients: [
-        'tomato sauce',
-        'mozzarella',
-        'cheddar cheese',
-        'salty cheese',
-        'tomatoes',
-        'chilli pepper',
-        'oregano',
-      ],
-      spicy: true,
-      vegetarian: true,
-      price: 27.25,
-      image: 'https://i.imgur.com/v4sa2cA.png',
-    },
-    {
-      id: 16,
-      name: 'Ocean',
-      description: 'Cheesecake with berries topping',
-      type: 'Chicken',
-      ingredients: ['tomato sauce', 'mozzarella', 'tuna', 'corn', 'onion', 'olives'],
-      spicy: false,
-      vegetarian: false,
-      price: 30,
-      image: 'https://i.imgur.com/w5IQ2rX.png',
-    },
-    {
-      id: 17,
-      name: 'BBQ',
-      description: 'Cheesecake with berries topping',
-      type: 'Chicken',
-      ingredients: [
-        'tomato sauce',
-        'mozzarella',
-        'BBQ sauce',
-        'onion',
-        'corn',
-        'bacon',
-        'mushrooms',
-        'sausages',
-      ],
-      spicy: false,
-      vegetarian: false,
-      price: 28.5,
-      image: 'https://i.imgur.com/znqS9KD.png',
-    },
-    {
-      id: 18,
-      name: 'Mexicana',
-      description: 'Cheesecake with berries topping',
-      type: 'Chicken',
-      ingredients: [
-        'tomato sauce',
-        'mozzarella',
-        'salsa sauce',
-        'pepperoni',
-        'corn',
-        'onion',
-        'jalapenos',
-        'tortilla chips',
-      ],
-      spicy: true,
-      vegetarian: false,
-      price: 28.5,
-      image: 'https://i.imgur.com/cYpO8RT.png',
-    },
-  ];
-
-  return (
-    <AdminLayout>
+  useEffect(() => {
+   if(router.query.id){
+    fetchBrands()
+    fetchProducts()
+    fetchCategories()
+}
+  }, [router.query.id])
+  return (  <>  {renderedScreen==='products'?<AdminLayout>
       <div className="digital-products-main bg-white">
         <div className="digital-products-header">
           <h1>Digital Products</h1>
+        </div>
+        <div className='w-50  d-flex justify-content-center mx-auto bg-muted'>
+          <div onClick={() => {
+            setRenderedTabs("categories")
+          }} style={{ borderRadius: '8px', cursor: 'pointer' }} className={`w-50 p-2 text-center  ${renderedTabs === 'categories' ? 'bg-success':'bg-light'} ${renderedTabs === 'categories' ? 'text-light' : 'text-success'}`}>Categories</div>
+          <div onClick={() => {
+            setRenderedTabs("brands")
+          }} style={{ borderRadius: '8px', cursor: 'pointer' }} className={`w-50 p-2 text-center  ${renderedTabs === 'brands' ? 'bg-success':'bg-light'} ${renderedTabs === 'brands' ? 'text-light' : 'text-success'}`}>Brands</div>
         </div>
         <div className="digital-products-container">
           <div className="digital-products">
@@ -354,6 +172,7 @@ const Products: NextPage = () => {
                   maxWidth: { xs: '100%', sm: 500, md: 600, lg: 700 },
                   bgcolor: 'background.paper',
                 }}>
+
                 <Tabs
                   value={value}
                   onChange={handleChange}
@@ -364,56 +183,44 @@ const Products: NextPage = () => {
                   <Tab
                     className="filter_btn"
                     label="all"
-                    value="1"
+                    value='0'
                     onClick={(e: any) => {
                       setType(e.target.innerText);
                     }}
                   />
-                  <Tab
-                    className="filter_btn"
-                    label="Chicken"
-                    value="2"
-                    onClick={(e: any) => {
-                      setType(e.target.innerText);
-                    }}
-                  />
-                  <Tab
-                    className="filter_btn"
-                    label="ozy"
-                    value="3"
-                    onClick={(e: any) => {
-                      setType(e.target.innerText);
-                    }}
-                  />
-                  <Tab
-                    className="filter_btn"
-                    label="cozy"
-                    value="4"
-                    onClick={(e: any) => {
-                      setType(e.target.innerText);
-                    }}
-                  />
-                  <Tab
-                    className="filter_btn"
-                    label="Pasta"
-                    value="5"
-                    onClick={(e: any) => {
-                      setType(e.target.innerText);
-                    }}
-                  />
+                  {(renderedTabs === 'brands' ? brands : categories).map((el, i) => {
+                    return <Tab
+                      key={i + 1}
+                      className="filter_btn"
+                      label={el.name}
+                      value={i + 1}
+                      onClick={(e: any) => {
+                        setType(e.target.innerText);
+                      }}
+                    />
+                  })}
+
                 </Tabs>
               </Box>
             </div>
-
             <div className="digital-product-list">
+           
+              {isloading&&  <div className="d-flex justify-content-around w-100">
+            <Spinner animation="grow" />
+          </div>}
               {type === 'all'
-                ? products.map((product, ind) => <ProductItem product={product} key={ind} />)
-                : products
-                    .filter((product) => product.type == type)
-                    .map((product, ind) => <ProductItem product={product} key={product.id} />)}
+                ? products.map((product, ind) => <ProductItem addItemTocart={addItemTocart} product={product} key={ind} />)
+                :(renderedTabs==='categories'? products
+                  .filter((product) => product.category.name === type):brands.find(brand=>{
+                    
+                   return brand.name?.trim()===type?.trim()})?.products||[])
+                  .map((product) => <ProductItem addItemTocart={addItemTocart} product={product} key={product.id} />)}
+                  {
+
+                  }
             </div>
           </div>
-          <DigitalCart />
+          <DigitalCart totalPrice={getTotalPrice()}  setRenderedScreen={setRenderedScreen} removeFromCart={removeFromCart} addItemTocart={addItemTocart} cartItems={cartItems} />
           {matches ? (
             <div
               className="digital-cart-small"
@@ -434,6 +241,8 @@ const Products: NextPage = () => {
 
           {matches ? (
             <MobDrawer
+            removeFromCart={removeFromCart} 
+            addItemTocart={addItemTocart} 
               toggleDrawer={toggleDrawer}
               setOpen={setOpen}
               open={open}
@@ -442,7 +251,10 @@ const Products: NextPage = () => {
           ) : null}
         </div>
       </div>
-    </AdminLayout>
+    </AdminLayout>:renderedScreen==='checkout'&&
+    <Checkout totalPrice={getTotalPrice()} setRenderedScreen={setRenderedScreen}
+     addItemTocart={addItemTocart} removeFromCart={removeFromCart} 
+     cartItems={cartItems}/>}</>
   );
 };
 

@@ -1,6 +1,5 @@
 import { AdminLayout } from '@layout';
 import { ILocation } from '@models/auth.types';
-import { IProduct } from '@models/pos.types';
 import { EStatus, IItemSalesReport } from '@models/reports.types';
 import { Dialog, DialogActions, DialogContent, DialogTitle, MenuItem } from '@mui/material';
 import FormControl from '@mui/material/FormControl';
@@ -32,8 +31,6 @@ function ItemsReport() {
 
   const [sales, setSales] = useState<any>([]);
   const [filteredSales, setFilteredSales] = useState<any>([]);
-  console.log(filteredSales);
-  
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [selectId, setSelectId] = useState(0);
   const [selectRow, setSelectRow] = useState<any>({});
@@ -51,8 +48,6 @@ function ItemsReport() {
   const [locations, setLocations] = useState([]);
   const [suppliersOptions, setSuppliersOptions] = useState([]);
   const [customersOptions, setCustomersOptions] = useState([]);
-  console.log(customersOptions);
-  
 
   const handleChangeSupplier = (event: SelectChangeEvent<string>) => {
     setSelectedSupplier(event.target.value);
@@ -73,28 +68,18 @@ function ItemsReport() {
   };
 
   //table columns
-  const columns: GridColDef<IItemSalesReport & { product: IProduct }>[] = useMemo(
+  const columns: GridColDef<IItemSalesReport>[] = useMemo(
     () => [
+      { field: 'order_id', headerName: '#', maxWidth: 72, renderCell: ({ row }) => row.order_id },
       {
-        field: 'product_name',
-        headerName: 'Product',
-        renderCell: ({ row }) => row?.product?.name,
+        field: 'user_name',
+        headerName: 'Name',
+        renderCell: ({ row }) => `${row.user_first_name} ${row.user_last_name ?? ''}`,
       },
       {
-        field: 'product_sku',
-        headerName: 'SKU',
-        renderCell: ({ row }) => row?.product?.sku,
-      },
-      {
-        field: 'product_category',
-        headerName: 'Category',
-        renderCell: ({ row }) => row?.product?.category?.name,
-      },
-      {
-        field: 'product_brand',
-        headerName: 'Brand',
-        // @ts-ignore
-        renderCell: ({ row }) => row?.product?.brand?.name || '---',
+        field: 'contact_name',
+        headerName: 'Sold To',
+        renderCell: ({ row }) => `${row.contact_first_name} ${row.contact_last_name}`,
       },
       {
         field: 'Purchase Date',
@@ -103,45 +88,6 @@ function ItemsReport() {
         renderCell: ({ row }) =>
           `${new Date(row.date).toLocaleDateString()} ${new Date(row.date).toLocaleTimeString()}`,
       },
-      // {
-      //   field: 'purchase_id',
-      //   headerName: 'Purchase ID',
-      //   // @ts-ignore
-      //   renderCell: ({ row }) => row?.product?.supplier?.name || '---',
-      // },
-      {
-        field: 'supplier_name',
-        headerName: 'Supplier',
-        // @ts-ignore
-        renderCell: ({ row }) => row?.supplier_name || '---',
-      },
-      {
-        field: 'purchase_price',
-        headerName: 'Purchase Price',
-        renderCell: ({ row }) =>
-          (+row?.product?.cost_price).toFixed(locationSettings?.location_decimal_places) +
-          ' ' +
-          locationSettings?.currency_name,
-      },
-      {
-        field: 'sale_date',
-        headerName: 'Sale Date',
-        width: 180,
-        renderCell: ({ row }) =>
-          `${new Date(row.date).toLocaleDateString()} ${new Date(row.date).toLocaleTimeString()}`,
-      },
-      {
-        field: 'order_id',
-        headerName: 'Sale',
-        maxWidth: 72,
-        renderCell: ({ row }) => row.order_id,
-      },
-      {
-        field: 'contact_name',
-        headerName: 'Customer',
-        renderCell: ({ row }) => `${row.contact_first_name} ${row.contact_last_name}`,
-      },
-
       {
         field: 'qty',
         headerName: 'Qty',
@@ -149,9 +95,25 @@ function ItemsReport() {
       },
       {
         field: 'price',
-        headerName: 'Selling Price',
+        headerName: 'Total',
         renderCell: ({ row }) =>
-          (+row.product.sell_price).toFixed(locationSettings?.location_decimal_places) +
+          (+row.price).toFixed(locationSettings?.location_decimal_places) +
+          ' ' +
+          locationSettings?.currency_name,
+      },
+      {
+        field: 'tax',
+        headerName: 'Tax',
+        renderCell: ({ row }) =>
+          (+row.tax).toFixed(locationSettings?.location_decimal_places) +
+          ' ' +
+          locationSettings?.currency_name,
+      },
+      {
+        field: 'cost',
+        headerName: 'Cost',
+        renderCell: ({ row }) =>
+          (+row.tax).toFixed(locationSettings?.location_decimal_places) +
           ' ' +
           locationSettings?.currency_name,
       },
@@ -165,27 +127,15 @@ function ItemsReport() {
     api
       .get(`reports/item-sales/${shopId}`, { params: { all_data: 1 } })
       .then(({ data }) => {
-        const _salesList = data.result.data;
-        const mappedSalesList = [];
-
-        const _salesListWithoutProducts = _salesList.map((item) => {
-          const { products, ...rest } = item;
-          products.forEach((product) => {
-            mappedSalesList.push({ ...rest, product });
-          });
-          return rest;
-        });
-        setSales(mappedSalesList);
-        setFilteredSales(mappedSalesList);
+        setSales(data.result.data);
+        setFilteredSales(data.result.data);
       })
       .finally(() => {});
 
     const supplierRes = await findAllData(`suppliers/${shopId}`);
     setSuppliersOptions(supplierRes.data.result);
     const customerRes = await findAllData(`customers/${shopId}`);
-    console.log(customerRes);
-    
-    setCustomersOptions([...customerRes.data.result, { first_name: 'walk-in', last_name: "customer" }]);
+    setCustomersOptions([...customerRes.data.result, {name: "walk-in customer"}]);
 
     setIsLoadItems(false);
   }
@@ -246,16 +196,11 @@ function ItemsReport() {
       tax: taxAmount,
       cost: totalPriceAndTax,
     });
-    if (selectedSupplier?.length > 0)
-      localFilteredSales = localFilteredSales.filter(
-        (el) => el.supplier_name   === selectedSupplier
-      );
+    if(selectedSupplier?.length > 0)
+      localFilteredSales = localFilteredSales.filter((el) => el.user_first_name === selectedSupplier)
 
-    if (selectedCustomer?.length > 0)
-    
-      localFilteredSales = localFilteredSales.filter(
-        (el) => el.contact_first_name === selectedCustomer
-      );
+    if(selectedCustomer?.length > 0)
+      localFilteredSales = localFilteredSales.filter((el) => el.contact_first_name === selectedCustomer)
 
     setFilteredSales(localFilteredSales);
   }, [strSelectedDate, selectedSupplier, selectedCustomer]);

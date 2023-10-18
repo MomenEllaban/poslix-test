@@ -42,6 +42,10 @@ const Expenses: NextPage = ({ id }: any) => {
   const [key, setKey] = useState('list');
   const { locationSettings } = useUser();
 
+useEffect(()=>{
+  if(router.query.add){
+  setIsAddExpense(true)}
+},[])
   const columns: GridColDef[] = [
     { field: 'id', headerName: '#', minWidth: 50 },
     { field: 'name', headerName: 'Name', flex: 1 },

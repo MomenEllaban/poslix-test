@@ -21,3 +21,8 @@ button.hoverColor.btnLink:hover {
 .customIconHeight {
   height: 18px;
 }
+.drawer_plus_icon_wrapper{
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+}

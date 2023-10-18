@@ -91,6 +91,11 @@ const CustomerModal = (props: any) => {
         mutate('/customers/' + router.query.id);
         setCustomers([...customers, res]);
         Toastify('success', 'Successfully Created');
+        const currentPath = router.pathname;
+        
+          if (!currentPath.includes('customers')) {
+            router.push(`/shop/${shopId}/customers`);
+          }
         handleClose();
       })
       .catch(() => {
