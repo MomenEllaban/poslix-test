@@ -1,5 +1,6 @@
 import { AdminLayout } from '@layout';
 import { ILocation } from '@models/auth.types';
+import { IProduct } from '@models/pos.types';
 import { EStatus, IItemSalesReport } from '@models/reports.types';
 import { Dialog, DialogActions, DialogContent, DialogTitle, MenuItem } from '@mui/material';
 import FormControl from '@mui/material/FormControl';
@@ -68,18 +69,28 @@ function ItemsReport() {
   };
 
   //table columns
-  const columns: GridColDef<IItemSalesReport>[] = useMemo(
+  const columns: GridColDef<IItemSalesReport & { product: IProduct }>[] = useMemo(
     () => [
-      { field: 'order_id', headerName: '#', maxWidth: 72, renderCell: ({ row }) => row.order_id },
       {
-        field: 'user_name',
-        headerName: 'Name',
-        renderCell: ({ row }) => `${row.user_first_name} ${row.user_last_name ?? ''}`,
+        field: 'product_name',
+        headerName: 'Product',
+        renderCell: ({ row }) => row?.product?.name,
       },
       {
-        field: 'contact_name',
-        headerName: 'Sold To',
-        renderCell: ({ row }) => `${row.contact_first_name} ${row.contact_last_name}`,
+        field: 'product_sku',
+        headerName: 'SKU',
+        renderCell: ({ row }) => row?.product?.sku,
+      },
+      {
+        field: 'product_category',
+        headerName: 'Category',
+        renderCell: ({ row }) => row?.product?.category?.name,
+      },
+      {
+        field: 'product_brand',
+        headerName: 'Brand',
+        // @ts-ignore
+        renderCell: ({ row }) => row?.product?.brand?.name || '---',
       },
       {
         field: 'Purchase Date',
@@ -134,25 +145,9 @@ function ItemsReport() {
       },
       {
         field: 'price',
-        headerName: 'Total',
+        headerName: 'Selling Price',
         renderCell: ({ row }) =>
-          (+row.price).toFixed(locationSettings?.location_decimal_places) +
-          ' ' +
-          locationSettings?.currency_name,
-      },
-      {
-        field: 'tax',
-        headerName: 'Tax',
-        renderCell: ({ row }) =>
-          (+row.tax).toFixed(locationSettings?.location_decimal_places) +
-          ' ' +
-          locationSettings?.currency_name,
-      },
-      {
-        field: 'cost',
-        headerName: 'Cost',
-        renderCell: ({ row }) =>
-          (+row.tax).toFixed(locationSettings?.location_decimal_places) +
+          (+row.product.sell_price).toFixed(locationSettings?.location_decimal_places) +
           ' ' +
           locationSettings?.currency_name,
       },
