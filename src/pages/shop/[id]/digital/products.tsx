@@ -291,6 +291,7 @@ const fetchProducts = async () => {
 
           {matches ? (
             <MobDrawer
+            location={location}
             removeFromCart={removeFromCart} 
             addItemTocart={addItemTocart} 
               toggleDrawer={toggleDrawer}
