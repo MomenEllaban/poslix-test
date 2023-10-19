@@ -9,7 +9,7 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import FormField from 'src/components/form/FormField';
 import SelectField from 'src/components/form/SelectField';
 import { Toastify } from 'src/libs/allToasts';
-import { useBusinessTypesList, useCurrenciesList } from 'src/services/business.service';
+import { useCurrenciesList } from 'src/services/business.service';
 import { authApi } from 'src/utils/auth-api';
 import styles from './add-location.module.scss';
 import Joi from 'joi';
@@ -52,29 +52,14 @@ export default function AddBusinessLocationView({ businessId = '0' }: Props) {
   const { data: session } = useSession();
 
   const [isLoading, setLoading] = useState(false);
-  const [busniessTypesList, setBusniessTypesList] = useState(BusinessTypeData());
-  const [countries, setCountries] = useState<{ value: number; label: string }[]>([]);
   const [currencies, setCurrencies] = useState<{ value: number; label: string }[]>([]);
-  useCurrenciesList(null, {
-    onSuccess(data) {
-      const _countriesList = data.result.map((itm: any) => {
-        return { value: itm.id, label: itm.country };
-      });
-      const _currenciesList = data.result.map((itm: any) => {
-        return { value: itm.id, label: itm.code };
-      });
-
-      setCountries(_countriesList);
-      setCurrencies(_currenciesList);
-      setValue('currency_id', _currenciesList[0].value);
-    },
-  });
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     setValue,
+    getValues,
   } = useForm<Inputs>({
     mode: 'onTouched',
     resolver: joiResolver(createLocationSchema),
@@ -82,20 +67,21 @@ export default function AddBusinessLocationView({ businessId = '0' }: Props) {
     defaultValues: {
       name: '',
       status: '',
-      decimal: 1,
-      currency_id: 0,
+      decimal: 3,
+      currency_id: 90,
       business_id: +businessId,
     },
   });
 
-  const { businessTypesList } = useBusinessTypesList({
-    onSuccess(data, key, config) {
-      const _businessTypesList = data.result.map((itm: any) => {
-        return { value: itm.id, label: itm.name };
+  useCurrenciesList(null, {
+    onSuccess(data) {
+      const _currenciesList = data.result.map((itm: any) => {
+        return { value: itm.id, label: itm.code };
       });
-      setBusniessTypesList(_businessTypesList);
+      setCurrencies(_currenciesList);
     },
   });
+
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     setLoading(true);
     (await authApi(session))
@@ -115,7 +101,11 @@ export default function AddBusinessLocationView({ businessId = '0' }: Props) {
 
   useEffect(() => {
     setValue('business_id', +businessId);
-  }, [businessId]);
+    if (currencies.length > 0) {
+      setValue('currency_id', currencies[89].value);
+      console.log(getValues('currency_id'));
+    }
+  }, [businessId, currencies]);
   return (
     <Form noValidate onSubmit={handleSubmit(onSubmit, onError)} className={styles.form}>
       <div className={styles['form-image__container']}>
