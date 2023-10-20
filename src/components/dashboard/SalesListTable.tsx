@@ -27,7 +27,7 @@ import { findAllData } from 'src/services/crud.api';
 import { convertDateStringToDateAndTime } from '../../models/data';
 import SalesPaymentModal from '../pos/modals/SalesPaymentModal';
 
-export default function SalesListTable({ id, shopId, rules, salesList }: any) {
+export default function SalesListTable({ id, shopId, rules, salesList, loading }: any) {
   const dispatch = useAppDispatch();
   const componentRef = useRef(null);
 
@@ -102,15 +102,19 @@ export default function SalesListTable({ id, shopId, rules, salesList }: any) {
       flex: 1,
       field: 'due',
       headerName: 'Total Due',
-      renderCell: ({ row }: Partial<GridRowParams>) =>
-        Number(+row.due).toFixed(locationSettings?.location_decimal_places),
-    },
+      renderCell: ({ row }: Partial<GridRowParams>) =>{
+        let renderdDue = Number(+row.due);
+        if(renderdDue < 0){
+          renderdDue = 0;
+        }
+        return <>{renderdDue.toFixed(locationSettings?.location_decimal_places)}</>
+    }},
     {
       flex: 1,
       field: 'status',
       headerName: 'Status',
       renderCell: ({ row }: Partial<GridRowParams>) => {
-        if (row.due === 0) {
+        if ((row.due === 0) || (row.due < 0)) {
           return <div className="sty_Paid">Paid</div>;
         }
         if (row.due === row.sub_total) {
@@ -548,18 +552,18 @@ export default function SalesListTable({ id, shopId, rules, salesList }: any) {
   }
 
   // init sales data
-  async function initDataPage() {
-    // const { success, newdata } = await apiFetchCtr({
-    //   fetch: 'transactions',
-    //   subType: 'getSales',
-    //   shopId,
-    // });
-    // if (success) {
-    //   setSales(newdata.data);
-    //   if (newdata.invoiceDetails != null && newdata.invoiceDetails.length > 10)
-    //     setinvoiceDetails(JSON.parse(newdata.invoiceDetails));
-    // }
-  }
+  // async function initDataPage() {
+  //   // const { success, newdata } = await apiFetchCtr({
+  //   //   fetch: 'transactions',
+  //   //   subType: 'getSales',
+  //   //   shopId,
+  //   // });
+  //   // if (success) {
+  //   //   setSales(newdata.data);
+  //   //   if (newdata.invoiceDetails != null && newdata.invoiceDetails.length > 10)
+  //   //     setinvoiceDetails(JSON.parse(newdata.invoiceDetails));
+  //   // }
+  // }
 
   const getItems = async (id: number) => {
     setIsLoadItems(true);
@@ -582,7 +586,7 @@ export default function SalesListTable({ id, shopId, rules, salesList }: any) {
         ]
       );
 
-    initDataPage();
+    // initDataPage();
   }, [router.asPath]);
 
   const handleDeleteFuc = (result: boolean, msg: string, section: string) => {
@@ -668,7 +672,7 @@ export default function SalesListTable({ id, shopId, rules, salesList }: any) {
       </div>
       <div className="page-content-style card">
         <h5>Sales List</h5>
-        {salesList.data && (
+        {/* {salesList.data && ( */}
           <DataGrid
             className="datagrid-style"
             sx={{
@@ -679,7 +683,8 @@ export default function SalesListTable({ id, shopId, rules, salesList }: any) {
                 border: 'none',
               },
             }}
-            rows={salesList.data}
+            loading={loading}
+            rows={salesList.data || []}
             columns={columns}
             initialState={{
               columns: { columnVisibilityModel: { mobile: false } },
@@ -688,7 +693,7 @@ export default function SalesListTable({ id, shopId, rules, salesList }: any) {
             rowsPerPageOptions={[10]}
             components={{ Toolbar: CustomToolbar }}
           />
-        )}
+         {/* )} */}
       </div>
       {/* FOR VIEW ELEMENT */}
       <Dialog open={showViewPopUp} fullWidth={true} className="poslix-modal" onClose={handleClose}>

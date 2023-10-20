@@ -328,33 +328,23 @@ export default function SalesList(props: any) {
   }
   // init sales data
   async function initDataPage() {
-   if(router.isReady) {
-      const res = await findAllData(`reports/sales/${router.query.id}?all_data=1`)
+    if (router.isReady) {
+      setIsLoadItems(true);
+      const res = await findAllData(`reports/sales/${router.query.id}?all_data=1`);
       if (res.data.success) {
         setSales(res.data.result);
-      //   if (newdata.invoiceDetails != null && newdata.invoiceDetails?.length > 10)
-      //     setInvoicDetails(JSON.parse(newdata.invoiceDetails));
+        setIsLoadItems(false);
+        //   if (newdata.invoiceDetails != null && newdata.invoiceDetails?.length > 10)
+        //     setInvoicDetails(JSON.parse(newdata.invoiceDetails));
       }
-   }
-  }
-
-  async function getItems(id: number) {
-    setIsLoadItems(true);
-    const { success, newdata } = await apiFetchCtr({
-      fetch: 'transactions',
-      subType: 'getSaleItems',
-      shopId,
-      id,
-    });
-    if (success) {
-      setLines(newdata);
-      setIsLoadItems(false);
     }
   }
-  
+
   const [permissions, setPermissions] = useState<any>();
   useEffect(() => {
-    const perms = JSON.parse(localStorage.getItem('permissions')).filter(loc => loc.id==router.query.id)
+    const perms = JSON.parse(localStorage.getItem('permissions')).filter(
+      (loc) => loc.id == router.query.id
+    );
     const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
     perms[0]?.permissions?.map((perm) =>
       perm.name.includes('sales-list/view')
@@ -379,7 +369,7 @@ export default function SalesList(props: any) {
           })
         ]
       );
-    
+
     initDataPage();
   }, [router.asPath]);
 
@@ -415,7 +405,6 @@ export default function SalesList(props: any) {
   const onRowsSelectionHandler = (selectedRowsData: any) => {
     setSelectRow(selectedRowsData);
     setSelectId(selectedRowsData.id);
-    getItems(selectedRowsData.id);
     setShowViewPopUp(true);
   };
   const handleSearch = (e: any) => {
@@ -423,13 +412,13 @@ export default function SalesList(props: any) {
   };
   return (
     <AdminLayout shopId={id}>
-      <SalesListTable shopId={id} rules={permissions} salesList={sales} />
+      <SalesListTable shopId={id} rules={permissions} salesList={sales} loading={isLoadItems} />
     </AdminLayout>
   );
 }
 export async function getServerSideProps({ params }) {
-  const { id } = params
+  const { id } = params;
   return {
-    props: {id},
-  }
+    props: { id },
+  };
 }

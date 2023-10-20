@@ -89,7 +89,7 @@ const PurchasePaymentsList = (props: any) => {
               Total Paid: {information.totalPaid}{' '}
               {information.isPaid && <FontAwesomeIcon icon={faCircleCheck} />}
             </div>
-            <div>Total Left: {Math.max(0, information.totalLeft)}</div>
+            <div>Total Left: {information.totalLeft}</div>
           </div>
           {!information.isPaid && (
             <div className="mb-4">
@@ -109,7 +109,7 @@ const PurchasePaymentsList = (props: any) => {
               selectedIndex={selectedIndex}
               shopId={shopId}
               purchaseId={purchaseId}
-              totalLeft={Math.max(0, information.totalLeft)}
+              totalLeft={information.totalLeft}
               setIsAddNew={setIsAddNew}
             />
           )}

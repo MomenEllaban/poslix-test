@@ -127,9 +127,9 @@ const Purchases: NextPage = ({ shopId, id }: any) => {
     if (_locs.toString()?.length > 10)
       setLocationSettings(
         _locs[
-        _locs.findIndex((loc: any) => {
-          return loc.value == shopId;
-        })
+          _locs.findIndex((loc: any) => {
+            return loc.value == shopId;
+          })
         ]
       );
 
@@ -146,10 +146,10 @@ const Purchases: NextPage = ({ shopId, id }: any) => {
       perm.name.includes('purchases/add')
         ? (getPermissions.hasInsert = true)
         : perm.name.includes('purchases/update')
-          ? (getPermissions.hasEdit = true)
-          : perm.name.includes('purchases/delete')
-            ? (getPermissions.hasDelete = true)
-            : null
+        ? (getPermissions.hasEdit = true)
+        : perm.name.includes('purchases/delete')
+        ? (getPermissions.hasDelete = true)
+        : null
     );
 
     setPermissions(getPermissions);
@@ -180,7 +180,7 @@ const Purchases: NextPage = ({ shopId, id }: any) => {
     setSortModel(newSortModel);
   };
   return (
-    <AdminLayout shopId={shopId}>
+    <AdminLayout shopId={id}>
       <ToastContainer />
       <AlertDialog
         alertShow={show}

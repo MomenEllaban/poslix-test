@@ -77,13 +77,12 @@ const initFormError = {
 };
 
 const Product: NextPage = ({ editId, iType }: any) => {
-  const { locationSettings } = useUser();
-
+  const { locationSettings, setLocationSettings} = useUser();
+const [locations, setLocations] = useState();
   const [img, setImg] = useState<any>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
   const [errorForm, setErrorForm] = useState(initFormError);
   const [formObj, setFormObj] = useState<any>(initialFormObject);
-
   const [units, setUnits] = useState<{ value: number; label: string }[]>([]);
   const [brands, setBrands] = useState<{ value: number; label: string }[]>([]);
   const [cats, setCats] = useState<{ value: number; label: string }[]>([]);
@@ -120,13 +119,11 @@ const Product: NextPage = ({ editId, iType }: any) => {
   const [percent, setPercent] = useState(0);
   const router = useRouter();
   const shopId = router.query.id;
-
   const [show, setShow] = useState(false);
   const [open, setOpen] = useState(false);
   const [open2, setOpen2] = useState(false);
   const [open3, setOpen3] = useState(false);
   var errors = [];
-
   const barcodes = [
     { value: 'C39', label: 'C39' },
     { value: 'C128', label: 'C128' },
@@ -135,7 +132,6 @@ const Product: NextPage = ({ editId, iType }: any) => {
     { value: 'UPCA', label: 'UPCA' },
     { value: 'UPCE', label: 'UPCE' },
   ];
-
   const columns: GridColDef[] = [
     { field: 'name', headerName: 'Product Name', minWidth: 250 },
     { field: 'price', headerName: 'Price', minWidth: 150, editable: true, type: 'number' },
@@ -186,6 +182,7 @@ const Product: NextPage = ({ editId, iType }: any) => {
     },
   ];
   var formObjRef = useRef<any>();
+  
   formObjRef.current = formObj;
 
   var imgRef = useRef<any>();
@@ -201,12 +198,10 @@ const Product: NextPage = ({ editId, iType }: any) => {
       if (url?.length == 2) setIsEdit(true);
       if (url?.length == 2) {
         const res = await findAllData(`products/${url[1]}/show`);
-
         setSelectedProducts(res.data.result);
         // setSelectedFabrics(newdata.selectedFabrics);
         const itm = res.data.result;
-        setPreviewUrl(itm?.image);
-
+        setPreviewUrl(itm?.image)
         setFormObj({
           ...formObj,
           id: itm.id,
@@ -218,8 +213,8 @@ const Product: NextPage = ({ editId, iType }: any) => {
           unit_id: itm.unit_id,
           brand: itm.brand_id,
           sku: itm.sku,
-          sell_over_stock: itm.sell_over_stock == '001',
-          isSellOverStock: itm.sell_over_stock == '001',
+          sell_over_stock: !!itm.sell_over_stock,
+          isSellOverStock: !!itm.sell_over_stock,
           barcode_type: itm.barcode_type,
           category_id: itm.category_id,
           cost_price: Number(itm.cost_price).toFixed(locationSettings?.location_decimal_places),
@@ -305,8 +300,10 @@ const Product: NextPage = ({ editId, iType }: any) => {
     }
   }
 
-  async function insertProduct(url: string) {
-    if (!url) return Toastify('error', 'Please add image to the product!');
+  async function insertProduct(url: string = null) {
+    console.log(333333333333333);
+    
+    // if (!url) return Toastify('error', 'Please add image to the product!');
     const res = await createNewData('products', {
       name: formObjRef.current.name,
       category_id: formObjRef.current.category_id,
@@ -340,7 +337,7 @@ const Product: NextPage = ({ editId, iType }: any) => {
                   is_service: formObjRef.current.is_service,
                 };
               }),
-      image: url || '',
+      image: url,
     });
     if (res.data.success) {
       Toastify('success', 'Product Successfuly Created..');
@@ -355,7 +352,7 @@ const Product: NextPage = ({ editId, iType }: any) => {
     
     const { productName2, tax_id, ...form } = formObjRef.current as TFormObject;
     const _form = formObjRef.current;
-    
+    console.log("ffffffffffffffffffffff",(url || _form.img === 'n' ? null : _form.img));
     const _data =
       // : IPayload
       {
@@ -366,7 +363,7 @@ const Product: NextPage = ({ editId, iType }: any) => {
 
         name: _form.name,
         subproductname: _form.productName2,
-        image: url || _form.img || undefined,
+        // image: url || _form.img === 'n' ? null : _form.img,
 
         type: _form.type,
 
@@ -405,13 +402,7 @@ const Product: NextPage = ({ editId, iType }: any) => {
       if(_data['brand_id'] == 0){
         delete _data['brand_id']
       }
-      // const _cleaned = {};
-      // Object.keys(_data).map((item) => {
-      //   if (_data[item] !== undefined) {
-
-      //     _cleaned[item] = _data[item];
-      //   }
-      // });
+      console.log(_data);
       const res = await updateData('products', router.query.slug[1], _data);
       Toastify('success', 'Product updated successfully!');
       router.push('/shop/' + router.query.id + '/products');
@@ -441,6 +432,20 @@ const Product: NextPage = ({ editId, iType }: any) => {
     } else Toastify('error', 'Error, Try Again');
   }
 
+  useEffect(()=>{
+    const _locs = JSON.parse(localStorage.getItem('locations') || '[]');
+    setLocations(_locs);
+    if (_locs.length > 0){
+      setLocationSettings(
+        _locs[
+          _locs.findIndex((loc: any) => {
+            return loc.location_id == +shopId;
+          })
+        ]
+        );
+
+    }
+  },[router.query])
   useEffect(() => {
     if (router.isReady) initDataPage(router.query.slug, locationSettings);
   }, [router.asPath, locationSettings]);
@@ -455,7 +460,8 @@ const Product: NextPage = ({ editId, iType }: any) => {
   };
   const checkboxHandleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.name == 'is_service')
-      setFormObj({ ...formObj, is_service: event.target.checked, isSellOverStock: !formObj.isSellOverStock || false });
+      setFormObj({ ...formObj, is_service: event.target.checked });
+      // setFormObj({ ...formObj, is_service: event.target.checked, isSellOverStock: !formObj.isSellOverStock || false });
     else if (event.target.name == 'sell_over')
       setFormObj({ ...formObj, isSellOverStock: event.target.checked });
     else if (event.target.name == 'multi_price')
@@ -1211,14 +1217,10 @@ const Product: NextPage = ({ editId, iType }: any) => {
                               type="text"
                               className="form-control"
                               placeholder="Purchase Price"
-                              value={Number(formObj.cost_price).toFixed(
-                                locationSettings?.location_decimal_places
-                              )}
+                              value={formObj.cost_price}
                               onKeyPress={handleNumberKeyPress}
                               onChange={(e) => {
-                                setFormObj({ ...formObj, cost_price: Number(e.target.value).toFixed(
-                                  locationSettings?.location_decimal_places
-                                ) });
+                                setFormObj({ ...formObj, cost_price:e.target.value});
                               }}
                             />
                           </div>
@@ -1235,14 +1237,10 @@ const Product: NextPage = ({ editId, iType }: any) => {
                               type="text"
                               className="form-control"
                               placeholder="Sell Price"
-                              value={Number(formObj.sell_price).toFixed(
-                                locationSettings?.location_decimal_places
-                              )}
+                              value={formObj.sell_price}
                               onKeyPress={handleNumberKeyPress}
                               onChange={(e) => {
-                                setFormObj({ ...formObj, sell_price: Number(e.target.value).toFixed(
-                                  locationSettings?.location_decimal_places
-                                ) });
+                                setFormObj({ ...formObj, sell_price:e.target.value});
                               }}
                             />
                           </div>
@@ -1422,7 +1420,7 @@ const Product: NextPage = ({ editId, iType }: any) => {
                         if (errors.length == 0) {
                           setIsSaving(true);
                           if (isEdit) img == null ? editProduct() : handleUpload();
-                          else img != null ? handleUpload() : insertProduct('img');
+                          else img != null ? handleUpload() : insertProduct();
                         } else Toastify('error', 'Enter Requires Field');
                       }}>
                       {isEdit ? 'Edit' : 'Save'}

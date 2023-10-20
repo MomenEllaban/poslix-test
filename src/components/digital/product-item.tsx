@@ -7,6 +7,7 @@ import { useDispatch,useSelector } from 'react-redux';
 import CartModal from "./CartModal"
 import {addTodigitalCart ,incrementQuantity, decrementQuantity, removeItem} from '../../redux/slices/digitalCartSlice';
 import { useAppDispatch, useAppSelector } from "src/hooks";
+import ProductVariablesModal from "./product-variables-modal";
 
 const style = {
   position: 'absolute' as 'absolute',
@@ -18,9 +19,12 @@ const style = {
   boxShadow: 24,
   borderRadius: 1
 };
-const ProductItem = ({product}) => {
-    const {id, name, description, price, image , quantity } = product;
-    const [modalVisible, setModalVisible] = useState(false);
+const 
+
+ProductItem = ({product,addItemTocart,location}) => {
+    const {id, name, description, sell_price, image , quantity } = product;
+    
+    const [openVariablesModal, setOpenVariablesModal] = useState(false);
     const [open, setOpen] = useState(false);
     const [myId, setMyId] = useState(id);
     const [ moadlIsopen, setMoadlIsopen ] = useState(false);
@@ -39,13 +43,13 @@ const ProductItem = ({product}) => {
     
 const modalHandler = (event) => { 
     setMyId(event)
-    console.log(event,"event")
     handleOpen()
     setMoadlIsopen(true)
  }
+ 
     return (
         <>
-{moadlIsopen==true && product.id == myId ? 
+{/* {moadlIsopen==true && product.id == myId ? 
         <Modal
         open={open}
         onClose={handleClose}
@@ -53,32 +57,41 @@ const modalHandler = (event) => {
         aria-describedby="modal-modal-description">
          <CartModal onCloseModal={handleClose} idd={myId} product={product}/>
         </Modal>:null
-         }   
+         }    */}
   
  
-   <div className="digital-product-item" onClick={()=> modalHandler(id)} >
+   <div className="digital-product-item "  >
         
        
-        <img className="digital-product-image" src={image} alt="" width={'100%'} height={'100%'} />
+        {image&&<img className="digital-product-image" src={image} alt="" width={'100%'} height={'100%'} />}
         {/* </div> */}
-        <div className="digital-product-info">
+        <div className="digital-product-info d-flex w-100 justify-content-between">
             
             <div className="digital-product-title">
                 <h5>{name}</h5>
             </div>
             <div className="digital-product-price">
                 <p>
-                    <span>$</span>
-                    <span>{price}</span>
+                <span>{parseFloat(sell_price).toFixed(location?.location_decimal_places)}</span>{' '}
+                    <span>{location?.currency_code}</span>
+                    {/* <span>{sell_price?+sell_price?.toFixed(location?.location_decimal_places||2):0}</span> */}
                 </p>
             </div>
-            <div className="digital-product-description">
+            {/* <div className="digital-product-description">
                 <p>{description}</p>
-            </div>
+            </div> */}
         </div>
         <div className="digital-product-button">
-            <Button variant="">Buy Now</Button>
+            <Button variant="" onClick={(e)=>{
+                if(product.type==='variable'){
+                    setOpenVariablesModal(true)
+                    return
+                }
+                
+                addItemTocart(product)
+            }}>Buy Now</Button>
         </div>
+        <ProductVariablesModal location={location} addItemTocart={addItemTocart} product={product} open={openVariablesModal} setOpen={setOpenVariablesModal}/>
     </div>
     </>
    

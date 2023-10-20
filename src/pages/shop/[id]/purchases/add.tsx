@@ -73,6 +73,8 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
   const formObjRef = useRef<any>();
 
   const [formObj, setFormObj] = useState(purchasesInitFormObj);
+  console.log(formObj);
+  
   const [errorForm, setErrorForm] = useState(purchasesInitFormError);
   const [suppliers, setSuppliers] = useState<ISupplierSelect[]>(initialSupplier);
   const [purchaseDetails, setPurchaseDetails] = useState(purchasesInitPurchaseDetails);
@@ -176,11 +178,11 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
     const data = {
       // ...formObj,
       location_id: +shopId, //  "required|numeric",
-      status: formObj?.purchaseStatus, //  "required|string:in:draft,partially_received,processing,received,cancelled",
-      payment_status: formObj?.paymentStatus, //  "required|string:in:credit,partially_paid,paid,due",
-      supplier_id: formObj?.supplier_id || undefined,
-      payment_type: formObj?.paymentType,
-      currency_id: formObj?.currency_id,
+      status: formObj.purchaseStatus, //  "required|string:in:draft,partially_received,processing,received,cancelled",
+      payment_status: formObj.paymentStatus, //  "required|string:in:credit,partially_paid,paid,due",
+      supplier_id: formObj.supplier_id || undefined,
+      payment_type: formObj.paymentType,
+      currency_id: formObj.currency_id,
       cart: [...selectProducts.map((item) => ({ ...item, qty: item.quantity, note: '' }))],
       expense: {
         amount: null,
@@ -207,34 +209,40 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
     const locations: ILocation[] = getLocalStorage(ELocalStorageKeys.LOCATIONS);
     const currentLocation = locations.find((location) => +location.location_id === +shopId);
     setLocationSettings(currentLocation ?? locationSettings);
+    console.log(currentLocation??locationSettings.currency_id);
+    // setFormObj({
+    //   ...formObj,
+    //   currency_id: currentLocation.currency_id ?? locationSettings.currency_id,
+    //   currency_code: currentLocation.currency_code ?? locationSettings.currency_code
+    // })
   }, [shopId, router.query.slug]);
 
   function getPriority(type: string, subTotal: number): number {
     switch (type) {
       case 'discount':
-        return subTotal - formObj?.total_discount;
+        return subTotal - formObj.total_discount;
       case 'expense':
-        return subTotal + formObj?.total_expense;
+        return subTotal + formObj.total_expense;
       case 'taxes':
-        return (formObj?.total_tax / 100) * subTotal + subTotal;
+        return (formObj.total_tax / 100) * subTotal + subTotal;
     }
     return 0;
   }
   function finalCalculation(subTotal = 0) {
-    subTotal = subTotal > 0 ? subTotal : formObj?.subTotal_price;
+    subTotal = subTotal > 0 ? subTotal : formObj.subTotal_price;
     var _total = subTotal;
     if (_total <= 0) return;
     purchaseDetails.map((dp) => (_total = getPriority(dp.value, _total)));
 
-    setFormObj({
-      ...formObj,
+    setFormObj((prev) => ({
+      ...prev,
       total_price: _total,
       subTotal_price: subTotal,
       paid_amount:
-        formObj?.paymentStatus == 'paid' || formObj?.paymentStatus == 'credit'
+        formObj.paymentStatus == 'paid' || formObj.paymentStatus == 'credit'
           ? _total
-          : formObj?.paid_amount,
-    });
+          : formObj.paid_amount,
+    }));
   }
   useEffect(() => {
     var _prices = 0,
@@ -244,26 +252,26 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
       _prices += Number(p.lineTotal);
     });
     setTotal_qty(_qty);
-    setFormObj({ ...formObj, subTotal_price: _prices });
+    setFormObj((prev) => ({ ...prev, subTotal_price: _prices }));
     finalCalculation(_prices);
   }, [selectProducts]);
 
   useEffect(() => {
     var _disAmount = 0,
       _total = 0;
-    _disAmount = formObj?.discount_amount;
+    _disAmount = formObj.discount_amount;
 
-    // formObj?.discount_type == 'fixed' ?  : ((formObj?.discount_amount / 100) * formObj?.subTotal_price).toFixed(3)
+    // formObj.discount_type == 'fixed' ?  : ((formObj.discount_amount / 100) * formObj.subTotal_price).toFixed(3)
 
-    if (formObj?.discount_type == 'percent') {
+    if (formObj.discount_type == 'percent') {
       _disAmount = _disAmount > 100 ? 100 : _disAmount;
-      _total = (_disAmount / 100) * formObj?.subTotal_price;
+      _total = (_disAmount / 100) * formObj.subTotal_price;
     } else {
-      _disAmount = _disAmount > formObj?.subTotal_price ? formObj?.subTotal_price : _disAmount;
+      _disAmount = _disAmount > formObj.subTotal_price ? formObj.subTotal_price : _disAmount;
       _total = _disAmount;
     }
-    setFormObj({ ...formObj, total_discount: _total, discount_amount: _disAmount });
-  }, [formObj?.discount_type, formObj?.discount_amount]);
+    setFormObj((prev) => ({ ...prev, total_discount: _total, discount_amount: _disAmount }));
+  }, [formObj.discount_type, formObj.discount_amount]);
 
   //expenses
   useEffect(() => {
@@ -273,11 +281,11 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
     selectedExpendsEdit.map((ep) => (_sum += Number(ep.enterd_value * ep.currency_rate)));
     setTotalExpends(_sum);
 
-    setFormObj({
-      ...formObj,
+    setFormObj((prev) => ({
+      ...prev,
       total_expense: +_sum.toFixed(locationSettings?.location_decimal_places),
-    });
-    calculationLabels(_sum, formObj?.total_tax);
+    }));
+    calculationLabels(_sum, formObj.total_tax);
   }, [selectedExpends, selectedExpendsEdit]);
 
   useEffect(() => {
@@ -285,23 +293,25 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
   }, [purchaseDetails]);
   useEffect(() => {
     finalCalculation();
-  }, [formObj?.total_discount]);
+  }, [formObj.total_discount]);
   useEffect(() => {
     finalCalculation();
-  }, [formObj?.total_expense]);
+  }, [formObj.total_expense]);
   useEffect(() => {
     finalCalculation();
-  }, [formObj?.total_tax]);
+  }, [formObj.total_tax]);
+  
   useEffect(() => {
-    setFormObj({
-      ...formObj,
+    console.log('sssssssssssssssssssssssss',locationSettings);
+    
+    setFormObj((prev) => ({...prev,
       currency_id: locationSettings?.currency_id,
       currency_code: locationSettings?.currency_code,
-    });
+    }));
   }, [locationSettings]);
   useEffect(() => {
-    calculationLabels(formObj?.total_expense, formObj?.total_tax);
-  }, [formObj?.currency_rate]);
+    calculationLabels(formObj.total_expense, formObj.total_tax);
+  }, [formObj.currency_rate]);
 
   const addTableRows = (rowType = 'expense') => {
     if (rowType == 'expense') {
@@ -444,13 +454,13 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
           (sum, product) => sum + product.cost * product.quantity,
           0
         );
-        setFormObj({
-          ...formObj,
+        setFormObj((prev)=>({
+          ...prev,
           subTotal_price: totalPrice,
-        });
+        }));
       }
       setSelectProducts([..._datas]);
-      calculationLabels(formObj?.total_expense, formObj?.total_tax);
+      calculationLabels(formObj.total_expense, formObj.total_tax);
     }
   };
   const sortHandler = (i: number, type: string) => {
@@ -467,9 +477,9 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
     setPurchaseDetails(_data);
   };
   function getCost(cost = 0) {
-    return locationSettings?.currency_code == formObj?.currency_code
+    return locationSettings?.currency_code == formObj.currency_code
       ? cost
-      : cost * formObj?.currency_rate;
+      : cost * formObj.currency_rate;
   }
   function calculationLabels(totalEpx: number, totalTax: number) {
     var _subtotal = 0;
@@ -536,8 +546,11 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
           }))
       );
 
+
+
       setSuppliers([{ supplier_id: 0, id: 0, value: 0, label: 'walk-in supplier' }, ..._suppliers]);
-      setFormObj({ ...formObj, supplier_id: 0 });
+      setFormObj((prev)=>({ ...prev, supplier_id: 0}));
+
       setProducts(_products);
       setCurrencies(_currencies);
     } catch {
@@ -553,8 +566,8 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
   useEffect(() => {
     var _tx = 0;
     selectedTaxes.map((ep: any) => (_tx += Number(ep.converted_value)));
-    setFormObj({ ...formObj, total_tax: +_tx.toFixed(locationSettings?.location_decimal_places) });
-    calculationLabels(formObj?.total_expense, _tx);
+    setFormObj((prev) => ({ ...prev, total_tax: +_tx.toFixed(locationSettings?.location_decimal_places) }));
+    calculationLabels(formObj.total_expense, _tx);
   }, [selectedTaxes]);
   useEffect(() => {
     if (jobType.req == 4) {
@@ -664,9 +677,9 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                         styles={purchasesSelectStyle}
                         options={suppliers}
                         defaultValue={suppliers[0]}
-                        value={suppliers.filter((sp) => sp.value == formObj?.supplier_id)}
+                        value={suppliers.filter((sp) => sp.value == formObj.supplier_id)}
                         onChange={(itm) => {
-                          setFormObj({ ...formObj, supplier_id: itm.value });
+                          setFormObj((prev) => ({ ...prev, supplier_id: itm.value }));
                         }}
                       />
                       {errorForm.supplier_id && (
@@ -681,9 +694,9 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                         type="text"
                         className="form-control p-2"
                         placeholder="Reference No"
-                        value={formObj?.ref_no}
+                        value={formObj.ref_no}
                         onChange={(e) => {
-                          setFormObj({ ...formObj, ref_no: e.target.value });
+                          setFormObj((prev)=>({ ...prev, ref_no: e.target.value }));
                         }}
                       />
                     </div>
@@ -693,8 +706,8 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                       <label>Purchase Date :</label>
                       <DatePicker
                         className="form-control p-2"
-                        selected={formObj?.date}
-                        onChange={(date: Date) => setFormObj({ ...formObj, date: date })}
+                        selected={formObj.date}
+                        onChange={(date: Date) => setFormObj((prev) => ({ ...prev, date: date }))}
                       />
                     </div>
                   </div>
@@ -715,10 +728,10 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                         styles={purchasesColourStyles}
                         options={purchaseStatus}
                         value={purchaseStatus.filter((f: any) => {
-                          return f.value == formObj?.purchaseStatus;
+                          return f.value == formObj.purchaseStatus;
                         })}
                         onChange={(itm) => {
-                          setFormObj({ ...formObj, purchaseStatus: itm!.value });
+                          setFormObj((prev)=>({ ...prev, purchaseStatus: itm!.value }));
                         }}
                       />
                       {errorForm.purchaseStatus && (
@@ -728,7 +741,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                   </div>
                 </div>
 
-                {formObj?.purchaseStatus != 'draft' && formObj?.purchaseStatus != '' && (
+                {formObj.purchaseStatus != 'draft' && formObj.purchaseStatus != '' && (
                   <div className="row">
                     <div className="col-md-3">
                       <div className="form-group">
@@ -739,17 +752,17 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                           styles={purchasesColourStyles}
                           options={paymentStatus}
                           value={paymentStatus.filter((f: any) => {
-                            return f.value == formObj?.paymentStatus;
+                            return f.value == formObj.paymentStatus;
                           })}
                           onChange={(itm) => {
-                            setFormObj({
-                              ...formObj,
+                            setFormObj((prev)=>({
+                              ...prev,
                               paymentStatus: itm!.value,
                               paid_amount:
                                 itm!.value == 'paid' || itm!.value == 'credit'
-                                  ? formObj?.total_price
+                                  ? formObj.total_price
                                   : 0,
-                            });
+                            }));
                           }}
                         />
                         {errorForm.paymentStatus && (
@@ -757,7 +770,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                         )}
                       </div>
                     </div>
-                    {formObj?.paymentStatus == 'partially_paid' && (
+                    {formObj.paymentStatus == 'partially_paid' && (
                       <div className="col-md-3">
                         <div className="form-group2">
                           <label>Paid Amount :</label>
@@ -765,23 +778,23 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                             type="text"
                             className="form-control p-2"
                             placeholder="Paid Amount"
-                            value={formObj?.paid_amount}
+                            value={formObj.paid_amount}
                             onChange={(e) => {
-                              setFormObj({ ...formObj, paid_amount: +e.target.value });
+                              setFormObj((prev)=>({ ...prev, paid_amount: +e.target.value }));
                             }}
                           />
                           {errorForm.paid && <p className="p-1 h6 text-danger ">Enter A Amount</p>}
                         </div>
                       </div>
                     )}
-                    {formObj?.paymentStatus != 'due' && (
+                    {formObj.paymentStatus != 'due' && (
                       <div className="col-md-3">
                         <div className="form-group2">
                           <label>Payment Date :</label>
                           <DatePicker
                             className="form-control p-2"
-                            selected={formObj?.paymentDate}
-                            onChange={(date: Date) => setFormObj({ ...formObj, paymentDate: date })}
+                            selected={formObj.paymentDate}
+                            onChange={(date: Date) => setFormObj((prev)=>({ ...prev, paymentDate: date }))}
                           />
                           {errorForm.paymentDate && (
                             <p className="p-1 h6 text-danger ">Enter Payment Date From Calander</p>
@@ -796,10 +809,10 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                           styles={purchasesColourStyles}
                           options={paymentTypes}
                           value={paymentTypes.filter((f: any) => {
-                            return f.value == formObj?.paymentType;
+                            return f.value == formObj.paymentType;
                           })}
                           onChange={(itm) => {
-                            setFormObj({ ...formObj, paymentType: itm!.value });
+                            setFormObj((prev)=>({ ...prev, paymentType: itm!.value }));
                           }}
                         />
                         {errorForm.paymentType && (
@@ -813,19 +826,22 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
             </Card.Body>
           </Card>
           <div className="row">
+         
             <div className="col-md-3">
               <div className="form-group">
                 <Select
                   options={currencies}
                   isLoading={dataLoading}
                   styles={purchasesSelectStyle}
-                  value={currencies?.filter((f: any) => f.value == formObj?.currency_id)}
+                  value={currencies?.filter((f: any) => f.value == (formObj.currency_id || locationSettings.currency_id))}
                   onChange={(itm) => {
-                    setFormObj({
-                      ...formObj,
+                    console.log(itm);
+                    
+                    setFormObj((prev) => ({
+                      ...prev,
                       currency_code: itm!.currency_code,
                       currency_id: itm!.id,
-                    });
+                    }));
                   }}
                 />
                 {errorForm.currency_id && <p className="p-1 h6 text-danger ">Select a Currency</p>}
@@ -936,7 +952,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                       <div className="purchase-text">
                         <p>Sub Total</p>
                         <p>
-                          {Number(formObj?.subTotal_price).toFixed(
+                          {Number(formObj.subTotal_price).toFixed(
                             locationSettings?.location_decimal_places
                           )}{' '}
                           <span style={{ opacity: '0.5' }}> {locationSettings?.currency_code}</span>{' '}
@@ -970,7 +986,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                                     <Form.Select
                                       style={{ width: '130px' }}
                                       onChange={(e) => {
-                                        setFormObj({ ...formObj, discount_type: e.target.value });
+                                        setFormObj((prev)=> ({ ...prev, discount_type: e.target.value }));
                                       }}>
                                       <option value={'fixed'}>Fixed</option>
                                       <option value={'percent'}>Percent %</option>
@@ -981,18 +997,18 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                                       size="sm"
                                       type="number"
                                       min={0}
-                                      value={formObj?.discount_amount}
+                                      value={formObj.discount_amount}
                                       onChange={(e) => {
-                                        setFormObj({
-                                          ...formObj,
+                                        setFormObj((prev)=>({
+                                          ...prev,
                                           discount_amount: +e.target.value,
-                                        });
+                                        }));
                                       }}
                                     />
                                   </div>
                                   <p>&nbsp;</p>
                                   <p className="fixed-width">
-                                    {formObj?.total_discount.toFixed(
+                                    {formObj.total_discount.toFixed(
                                       locationSettings?.location_decimal_places
                                     )}{' '}
                                   </p>
@@ -1000,7 +1016,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                               )}
                               {pd.value == 'expense' && (
                                 <p>
-                                  {formObj?.total_expense.toFixed(
+                                  {formObj.total_expense.toFixed(
                                     locationSettings?.location_decimal_places
                                   )}
                                 </p>
@@ -1029,8 +1045,8 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                                     </tbody>
                                   </table>
                                   <p className="fixed-width">
-                                    {formObj?.total_tax}%(
-                                    {((formObj?.total_tax / 100) * formObj?.subTotal_price).toFixed(
+                                    {formObj.total_tax}%(
+                                    {((formObj.total_tax / 100) * formObj.subTotal_price).toFixed(
                                       locationSettings?.location_decimal_places
                                     )}
                                     )
@@ -1048,7 +1064,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                       <div className="purchase-text">
                         <p>Total</p>
                         <p>
-                          {Number(formObj?.total_price).toFixed(
+                          {Number(formObj.total_price).toFixed(
                             locationSettings?.location_decimal_places
                           )}
                           <span style={{ opacity: '0.5', fontSize: '10px' }}>
@@ -1060,7 +1076,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                       <div className="purchase-text">
                         <p>Total Paid</p>
                         <p>
-                          {formObj?.paid_amount.toFixed(locationSettings?.location_decimal_places)}
+                          {formObj.paid_amount.toFixed(locationSettings?.location_decimal_places)}
                           <span style={{ opacity: '0.5', fontSize: '10px' }}>
                             {' '}
                             {locationSettings?.currency_code}
@@ -1070,7 +1086,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                       <div className="purchase-text">
                         <p>Total Remaining</p>
                         <p>
-                          {(formObj?.total_price - formObj?.paid_amount).toFixed(
+                          {(formObj.total_price - formObj.paid_amount).toFixed(
                             locationSettings?.location_decimal_places
                           )}
                           <span style={{ opacity: '0.5', fontSize: '10px' }}>
@@ -1092,14 +1108,16 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                 onClick={(e) => {
                   e.preventDefault();
                   errors = [];
+                  console.log(formObj.currency_id);
+                  
                   if (
-                    formObj?.supplier_id === null ||
-                    formObj?.supplier_id === undefined ||
-                    formObj?.supplier_id.toString() === ''
+                    formObj.supplier_id === null ||
+                    formObj.supplier_id === undefined ||
+                    formObj.supplier_id.toString() === ''
                   )
                     errors.push('supplier id');
                   if (selectProducts.length == 0) errors.push('selected products');
-                  if (formObj?.currency_id == 0 || formObj?.currency_id == undefined)
+                  if (formObj.currency_id == 0 || formObj.currency_id == undefined)
                     errors.push('currency id');
                   if (formObj?.purchaseStatus.length <= 2)
                     errors.push('purchaseStatus less than 2');
@@ -1109,20 +1127,20 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                     if ((formObj?.paymentDate + '').length <= 2) errors.push('payment error');
                     if (formObj?.paymentType.length <= 2) errors.push('payment type');
                   }
-                  if (formObj?.paymentStatus == 'partially_paid' && formObj?.paid_amount < 0.5)
+                  if (formObj.paymentStatus == 'partially_paid' && formObj.paid_amount < 0.5)
                     errors.push(' partially paid');
-
+                    console.log(formObj.currency_id);
                   setErrorForm({
                     ...errorForm,
 
-                    currency_id: formObj?.currency_id == 0 || formObj?.currency_id == undefined,
-                    purchaseStatus: formObj?.purchaseStatus.length <= 2,
-                    paymentDate: (formObj?.paymentDate + '').length <= 2,
-                    paymentStatus: formObj?.paymentStatus.length <= 2,
-                    paymentType: formObj?.paymentType.length <= 2,
+                    currency_id: formObj.currency_id == 0 || formObj.currency_id == undefined,
+                    purchaseStatus: formObj.purchaseStatus.length <= 2,
+                    paymentDate: (formObj.paymentDate + '').length <= 2,
+                    paymentStatus: formObj.paymentStatus.length <= 2,
+                    paymentType: formObj.paymentType.length <= 2,
                     products: selectProducts.length == 0,
-                    paid: formObj?.paymentStatus == 'partially_paid' && formObj?.paid_amount < 0.5,
-                    morePaid: formObj?.paid_amount > formObj?.total_price,
+                    paid: formObj.paymentStatus == 'partially_paid' && formObj.paid_amount < 0.5,
+                    morePaid: formObj.paid_amount > formObj.total_price,
                   });
 
                   if (errors.length == 0) {

@@ -1250,17 +1250,24 @@ td {
   width: 50%;
   height: 35px;
 }
-
+.toggle-brands-catigories-buttons-wrapper{
+  width: 50%;
+  display: flex;
+  justify-content: center;
+  margin: 0 auto ;
+  box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+}
 .digital-product-list {
   padding: 10px;
-  height: 100%;
+  // height: 100%;
   width: 100%;
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
+  justify-content: flex-start;
   overflow-y: auto;
   row-gap: 10px;
   background: #f2efef;
+  gap: 1%;
 }
 
 // .digital-product-list .card{
@@ -1274,12 +1281,13 @@ td {
 
 .digital-product-item {
   border-radius: 5px;
-  width: 24.5%;
+  width: 24%;
   color: black;
   box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
   display: flex;
   flex-direction: column;
-  height: 330px;
+  flex-wrap: wrap;
+  // height: 330px;
   /* color: white !important; */
   padding: 7px;
   justify-content: flex-start;
@@ -1307,7 +1315,7 @@ td {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  width: 100%;
+  // width: 100%;
   min-height: 26px;
 }
 
@@ -1589,9 +1597,10 @@ td {
 
 @media only screen and (max-width: 948px) {
   .digital-product-item {
-    width: 49.5%;
+    width: 49%;
   }
 }
+
 
 @media only screen and (max-width: 850px) {
   .digital-cart {
@@ -1648,7 +1657,14 @@ td {
     flex: 49%;
   }
 }
-
+@media only screen and (max-width: 500px) {
+  .digital-product-item {
+    width: 95%;
+  }
+  .digital-product-list{
+    justify-content: center;
+  }
+}
 .listOfPrice {
   table {
     width: 100%;
