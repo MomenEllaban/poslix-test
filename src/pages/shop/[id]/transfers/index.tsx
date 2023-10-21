@@ -11,6 +11,7 @@ import Spinner from 'react-bootstrap/Spinner';
 import { ToastContainer } from 'react-toastify';
 import withAuth from 'src/HOCs/withAuth';
 import TransferModal from 'src/components/pos/modals/TransferModal';
+import { AddTranseferModal } from 'src/components/pos/modals/transefer-modals.js/add-transefer-modal';
 import AlertDialog from 'src/components/utils/AlertDialog';
 import { Toastify } from 'src/libs/allToasts';
 import CustomToolbar from 'src/modules/reports/_components/CustomToolbar';
@@ -217,6 +218,7 @@ const Transfer: NextPage = (props: any) => {
               }}>
               <FontAwesomeIcon icon={faPlus} /> Add New Transfer{' '}
             </button>
+            {/* <AddTranseferModal/> */}
           </div>
         )}
         {!isLoading ? (
