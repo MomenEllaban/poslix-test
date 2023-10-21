@@ -327,7 +327,7 @@ const Product: NextPage = ({ editId, iType }: any) => {
               .filter((va) => !!+va.cost && !!+va.price)
               .map((va) => {
                 return {
-                  name: va.name,
+                  name: va.name, 
                   sku: va.sku,
                   cost: va.cost,
                   price: va.price,
