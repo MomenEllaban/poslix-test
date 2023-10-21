@@ -157,36 +157,38 @@ export function AddTranseferModal({ getTransefers }) {
 
             return
         }
-        setIsloading(true)
+        // setIsloading(true)
 
         const body = {
             "location_id": from.location_id, // "required|numeric",
             "transferred_location_id": to.location_id, // "required|numeric",
-            "ref_no": Math.floor(Math.random() * 1000), // "required|numeric|unique",???????
-            "status": "processing", // "required|string:in:draft,partially_received,processing,received,cancelled",?????
+            "ref_no": Math.floor(Math.random() * 1000000), // "required|numeric|unique",???????
+            "status": "received", // "required|string:in:draft,partially_received,processing,received,cancelled",?????
             "notes": "", // "nullable|string",????
             // for transaction lines
             "cart":
                 selectedProducts.map(product => ({
                     "product_id": product.id, //  "required|numeric:exists:products,id",
-                    "transferred_product_id": product.id, //  "required|numeric:exists:products,id",
+                    "transferred_product_id": toProducts.find(p=>p.name===product.name).id, //  "required|numeric:exists:products,id",
                     // "variation_id" : 252, //  "nullable|numeric:exists:variations,id",
                     // "transferred_variation_id" : 124, //  "required|numeric:exists:variations,id",
                     "qty": product.quantity, //  "required|numeric",
-                    "cost": product.cost_price, //  "required|numeric",
-                    "price": product.sell_price, //  "required|numeric",
-                    "note": "test" //  "nullable|string",
+                    "cost": +product.cost_price, //  "required|numeric",
+                    "price":+ product.sell_price, //  "required|numeric",
+                    "note": "" //  "nullable|string",
                 }))
             ,
             // for expanses
             "currency_id": 1, // => "nullable|numeric|exists:currencies,id",
-            "expense": {
-                "amount": 12, // => "nullable|numeric",
-                "category": {
-                    "id": 25 //> "nullable|numeric|exists:expanse,id",
-                }
-            }
+            // "expense": {
+            //     "amount": 12, // => "nullable|numeric",
+            //     "category": {
+            //         "id": 25 //> "nullable|numeric|exists:expanse,id",
+            //     }
+            // }
         }
+        // console.log(body);
+        
         // return
 
         try {
@@ -287,7 +289,7 @@ export function AddTranseferModal({ getTransefers }) {
                                     return toProducts.some((toProduct) => fromProduct.name === toProduct.name) && !(selectedProducts.some((selectedProduct) => fromProduct.name === selectedProduct.name))
                                 })
                                 .map((product) => (
-                                    <MenuItem key={product.name} value={product} className='w-100 d-flex justify-content-between'>
+                                    <MenuItem key={product.id} value={product} className='w-100 d-flex justify-content-between'>
                                         {product.name} <span style={{ fontSize: '12px' }}>Stock:{product.stock}</span>
                                     </MenuItem>
                                 ))}
@@ -296,14 +298,14 @@ export function AddTranseferModal({ getTransefers }) {
                     {isProductsLoadingloading && <Spinner style={{ width: '30px', height: '30px' }} />}
                     <div className={styles.products_wrapper}>
                         {selectedProducts?.map(el => {
-                            return <Item removeFromCart={removeFromCart} addItemTocart={addItemTocart} item={el} />
+                            return <Item key={el.id} removeFromCart={removeFromCart} addItemTocart={addItemTocart} item={el} />
                         })}
                     </div>
                     <button
                         disabled={isProductsLoadingloading || isloading || !to?.location_id || !from?.location_id || selectedProducts?.length === 0}
                         className="btn btn-primary my-2"
                         onClick={addTransefer}>{isloading ? <Spinner style={{ width: '20px', height: '20px' }} /> : <FontAwesomeIcon icon={faPlus} />}
-                        Add New Transfer{' '}
+                        Send Transfer{' '}
                     </button>
                 </Box>
             </Modal>
