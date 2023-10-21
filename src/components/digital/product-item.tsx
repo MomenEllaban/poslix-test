@@ -19,7 +19,9 @@ const style = {
   boxShadow: 24,
   borderRadius: 1
 };
-const ProductItem = ({product,addItemTocart}) => {
+const 
+
+ProductItem = ({product,addItemTocart,location}) => {
     const {id, name, description, sell_price, image , quantity } = product;
     
     const [openVariablesModal, setOpenVariablesModal] = useState(false);
@@ -44,6 +46,7 @@ const modalHandler = (event) => {
     handleOpen()
     setMoadlIsopen(true)
  }
+ 
     return (
         <>
 {/* {moadlIsopen==true && product.id == myId ? 
@@ -57,25 +60,26 @@ const modalHandler = (event) => {
          }    */}
   
  
-   <div className="digital-product-item m-2"  >
+   <div className="digital-product-item "  >
         
        
         {image&&<img className="digital-product-image" src={image} alt="" width={'100%'} height={'100%'} />}
         {/* </div> */}
-        <div className="digital-product-info">
+        <div className="digital-product-info d-flex w-100 justify-content-between">
             
             <div className="digital-product-title">
                 <h5>{name}</h5>
             </div>
             <div className="digital-product-price">
                 <p>
-                    <span>$</span>
-                    <span>{+sell_price}</span>
+                <span>{parseFloat(sell_price).toFixed(location?.location_decimal_places)}</span>{' '}
+                    <span>{location?.currency_code}</span>
+                    {/* <span>{sell_price?+sell_price?.toFixed(location?.location_decimal_places||2):0}</span> */}
                 </p>
             </div>
-            <div className="digital-product-description">
+            {/* <div className="digital-product-description">
                 <p>{description}</p>
-            </div>
+            </div> */}
         </div>
         <div className="digital-product-button">
             <Button variant="" onClick={(e)=>{
@@ -87,7 +91,7 @@ const modalHandler = (event) => {
                 addItemTocart(product)
             }}>Buy Now</Button>
         </div>
-        <ProductVariablesModal addItemTocart={addItemTocart} product={product} open={openVariablesModal} setOpen={setOpenVariablesModal}/>
+        <ProductVariablesModal location={location} addItemTocart={addItemTocart} product={product} open={openVariablesModal} setOpen={setOpenVariablesModal}/>
     </div>
     </>
    

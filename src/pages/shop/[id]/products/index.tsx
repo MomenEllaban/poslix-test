@@ -72,6 +72,7 @@ import { grey } from '@mui/material/colors';
 
 const Product: NextPage = (props: any) => {
   const { id } = props;
+  const {locationSettings: mySit, setLocationSettings: setmySit} = useUser();  
   const [shopId, setShopId] = useState('');
   const myLoader = (img: any) => img.src;
   const [locationSettings, setLocationSettings] = useState<any>();
@@ -311,7 +312,12 @@ const Product: NextPage = (props: any) => {
             return loc.location_id == +id;
           })
         ]
-      );
+        );
+        setmySit(_locs[
+          _locs.findIndex((loc: any) => {
+            return loc.location_id == +id;
+          })
+        ])
   }, [router.asPath]);
 
   const handleDeleteFuc = (result: boolean, msg: string, section: string) => {

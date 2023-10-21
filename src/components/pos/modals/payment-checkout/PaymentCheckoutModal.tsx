@@ -126,6 +126,7 @@ export default function PaymentCheckoutModal({
   });
 const [sentData, setSentData] = useState<any>()
   const onSubmit = (data) => {
+    console.log("submittttt")
     const checkoutData = {
       notes: data?.notes,
       payment: data?.payment,

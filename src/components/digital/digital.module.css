@@ -1,6 +1,6 @@
 .checkout_wrapper {
     width: 100%;
-    padding: 20px;
+    padding:0 20px;
     min-height: 96vh;
     display: flex;
     justify-content: center;
@@ -70,4 +70,15 @@
     .checkout_left_side_container {
         width: 90%;
     }
+}
+.navbar_wrapper{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: .5rem;
+    border-bottom: 1px solid #ebebeb;
+    align-items: center;
+}
+.logo{
+    height: 25px;
 }

@@ -117,7 +117,6 @@ const Purchases: NextPage = ({ shopId, id }: any) => {
     if (router.query.id) {
       const res = await findAllData(`purchase/${router.query.id}`);
       if (res.data.success) {
-        console.log(res.data.result);
         setPurchases(res.data.result);
       }
     }

@@ -30,6 +30,7 @@ const initalInputState = {
 export default function RegisterPage() {
   const router = useRouter();
   const { user, setUser } = useUser();
+  
   const { data: session } = useSession();
   const { darkMode } = useContext(darkModeContext);
 

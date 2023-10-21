@@ -81,7 +81,7 @@ function LocationUpdateForm({ businessId, location }) {
   }, [currenciesList, location, setLocationValue]);
 
   function onLocationSubmit(data: any) {
-    console.log(data)
+    data['is_multi_language'] = 0
     setLoading(true);
     businessService
       .updateLocationSettings(location.location_id, data)
@@ -321,7 +321,6 @@ export default function BusinessSettingsView({ business }: { business: IUserBusi
 
   function onSubmit(data: any) {
     setLoading(true);
-    console.log(data)
     businessService
       .updateBusinessSettings(business.id, data)
       .then((res) => {

@@ -293,10 +293,10 @@ export interface IPurchaseExpndes {
   isNew: boolean;
 }
 export interface IPayment {
-  id: number;
+  id?: number;
   payment_type: string;
   amount: number;
-  created_at: string;
+  created_at?: string;
 }
 export interface IExpenseList {
   id: number;

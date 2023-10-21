@@ -1,14 +1,15 @@
+import { faArrowAltCircleLeft, faCircleCheck } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { DataGrid, GridColDef, GridRowParams } from '@mui/x-data-grid';
 import { useEffect, useState } from 'react';
 import { Spinner } from 'react-bootstrap';
-import { apiFetchCtr, apiInsertCtr } from 'src/libs/dbUtils';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowAltCircleLeft, faSave, faCircleCheck } from '@fortawesome/free-solid-svg-icons';
-import { DataGrid, GridColDef, GridRowParams } from '@mui/x-data-grid';
 import { Toastify } from 'src/libs/allToasts';
 import { findAllData } from 'src/services/crud.api';
+
 const PurchasesQtyCheckList = (props: any) => {
   const { shopId, purchaseId } = props;
   const [orderLines, setOrderLines] = useState<any[]>([]);
+  const [products, setProducts] = useState([])
   const [isLoading, setIsLoading] = useState(true);
   const [selectedIndex, setSlectedIndex] = useState(-1);
   async function intPageData() {
@@ -17,19 +18,28 @@ const PurchasesQtyCheckList = (props: any) => {
       alert("Failed");
       return;
     }
+    setProducts(res.data.result.products)
     setIsLoading(false);
     setOrderLines(res.data.result.stocks);
   }
 
   const columns: GridColDef[] = [
-    { field: 'name', headerName: 'Product Name', minWidth: 250 },
+    {
+      field: 'name', headerName: 'Product Name', minWidth: 250,
+      renderCell: ({ row }: Partial<GridRowParams>) => {
+
+        const product = products?.find(product => +product.id === +row.product_id)
+
+        return <p>{product?.name}</p>
+      },
+    },
     { field: 'cost', headerName: 'Cost', minWidth: 150 },
     { field: 'price', headerName: 'Price', minWidth: 150 },
     {
       field: 'qty',
       headerName: 'Total Qty',
       minWidth: 150,
-      renderCell: ({ row }: Partial<GridRowParams>) => <>{Number(row.qty).toFixed(2)}</>,
+      renderCell: ({ row }: Partial<GridRowParams>) => <>{Number(row.qty_received).toFixed(2) || "-"}</>,
     },
     {
       field: 'qty_received',
@@ -44,13 +54,13 @@ const PurchasesQtyCheckList = (props: any) => {
         </>
       ),
     },
-    {
-      field: 'qty_entered',
-      headerName: 'Enter Qty',
-      minWidth: 150,
-      type: 'number',
-      editable: true,
-    },
+    // {
+    //   field: 'qty_entered',
+    //   headerName: 'Enter Qty',
+    //   minWidth: 150,
+    //   type: 'number',
+    //   editable: true,
+    // },
   ];
   const onRowsSelectionHandler = (params: any) => {
     const found = orderLines.findIndex((el) => el.id === params.id);
@@ -92,7 +102,7 @@ const PurchasesQtyCheckList = (props: any) => {
           <h5>Purchase Quantity Manager List {props.purchases[selectedIndex].status}</h5>
           <hr />
           <div className="quick-suppier-info">
-            <div>Supplier: {props.purchases[selectedIndex].supplier}</div>
+            <div>Supplier: {props.purchases[selectedIndex]?.supplier?.name || "walk-in supplier"}</div>
             <div>Status: {props.purchases[selectedIndex].status}</div>
             <div>Total Price: {props.purchases[selectedIndex].total_price}</div>
           </div>

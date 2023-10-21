@@ -22,7 +22,8 @@ const style = {
   overflowY:'auto !important'
 };
 
-export default function ProductVariablesModal({open, setOpen,product,addItemTocart}) {
+export default function ProductVariablesModal({open, setOpen,product,addItemTocart,location}) {
+  
   // const [open, setOpen] = React.useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -37,7 +38,7 @@ export default function ProductVariablesModal({open, setOpen,product,addItemToca
       >
         
         <Box sx={style}>
-        {product.variations?.map((product,i)=> <ProductItem addItemTocart={addItemTocart} product={{...product,sell_price:product.cost}} key={i} />)}
+        {product.variations?.map((product,i)=> <ProductItem location={location} addItemTocart={addItemTocart} product={{...product,sell_price:product.price}} key={i} />)}
         </Box>
       </Modal>
     </div>

@@ -73,6 +73,8 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
   const formObjRef = useRef<any>();
 
   const [formObj, setFormObj] = useState(purchasesInitFormObj);
+  console.log(formObj);
+  
   const [errorForm, setErrorForm] = useState(purchasesInitFormError);
   const [suppliers, setSuppliers] = useState<ISupplierSelect[]>(initialSupplier);
   const [purchaseDetails, setPurchaseDetails] = useState(purchasesInitPurchaseDetails);
@@ -137,21 +139,33 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
     const data = {
       // ...formObj,
       location_id: +shopId, //  "required|numeric",
-      status: formObj.purchaseStatus, //  "required|string:in:draft,partially_received,processing,received,cancelled",
-      payment_status: formObj.paymentStatus, //  "required|string:in:credit,partially_paid,paid,due",
-      supplier_id: formObj.supplier_id || undefined,
-      payment_type: formObj.paymentType,
-      currency_id: formObj.currency_id,
-      cart: [...selectProducts.map((item) => ({ ...item, qty: item.quantity, note: '' }))],
-      expense: {
-        amount: null,
-        category: {
-          id: 35,
-        },
-      },
+      status: formObj?.purchaseStatus, //  "required|string:in:draft,partially_received,processing,received,cancelled",
+      payment_status: formObj?.paymentStatus, //  "required|string:in:credit,partially_paid,paid,due",
+      supplier_id: formObj?.supplier_id || undefined,
+      payment_type: formObj?.paymentType,
+      currency_id: formObj?.currency_id,
+      ...((formObj?.paymentStatus === 'partially_paid') && {total_paid: formObj?.paid_amount}),
+      cart: [
+        ...selectProducts.map((item) => ({
+          product_id: item.product_id,
+          variation_id: item.variation_id,
+          qty: item.quantity,
+          note: '',
+          cost: item.cost,
+          price: item.price,
+        })),
+      ],
+      // expense: {
+      //   amount: null,
+      //   category: {
+      //     id: 35,
+      //   },
+      // },
       notes: '',
     };
+
     api.post(`/purchase/${shopId}`, data).then((res) => {
+
       if (!res.data.success) {
         alert('Has Error ,try Again');
         return;
@@ -195,6 +209,12 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
     const locations: ILocation[] = getLocalStorage(ELocalStorageKeys.LOCATIONS);
     const currentLocation = locations.find((location) => +location.location_id === +shopId);
     setLocationSettings(currentLocation ?? locationSettings);
+    console.log(currentLocation??locationSettings.currency_id);
+    // setFormObj({
+    //   ...formObj,
+    //   currency_id: currentLocation.currency_id ?? locationSettings.currency_id,
+    //   currency_code: currentLocation.currency_code ?? locationSettings.currency_code
+    // })
   }, [shopId, router.query.slug]);
 
   function getPriority(type: string, subTotal: number): number {
@@ -214,15 +234,15 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
     if (_total <= 0) return;
     purchaseDetails.map((dp) => (_total = getPriority(dp.value, _total)));
 
-    setFormObj({
-      ...formObj,
+    setFormObj((prev) => ({
+      ...prev,
       total_price: _total,
       subTotal_price: subTotal,
       paid_amount:
         formObj.paymentStatus == 'paid' || formObj.paymentStatus == 'credit'
           ? _total
           : formObj.paid_amount,
-    });
+    }));
   }
   useEffect(() => {
     var _prices = 0,
@@ -232,7 +252,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
       _prices += Number(p.lineTotal);
     });
     setTotal_qty(_qty);
-    setFormObj({ ...formObj, subTotal_price: _prices });
+    setFormObj((prev) => ({ ...prev, subTotal_price: _prices }));
     finalCalculation(_prices);
   }, [selectProducts]);
 
@@ -250,7 +270,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
       _disAmount = _disAmount > formObj.subTotal_price ? formObj.subTotal_price : _disAmount;
       _total = _disAmount;
     }
-    setFormObj({ ...formObj, total_discount: _total, discount_amount: _disAmount });
+    setFormObj((prev) => ({ ...prev, total_discount: _total, discount_amount: _disAmount }));
   }, [formObj.discount_type, formObj.discount_amount]);
 
   //expenses
@@ -261,10 +281,10 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
     selectedExpendsEdit.map((ep) => (_sum += Number(ep.enterd_value * ep.currency_rate)));
     setTotalExpends(_sum);
 
-    setFormObj({
-      ...formObj,
+    setFormObj((prev) => ({
+      ...prev,
       total_expense: +_sum.toFixed(locationSettings?.location_decimal_places),
-    });
+    }));
     calculationLabels(_sum, formObj.total_tax);
   }, [selectedExpends, selectedExpendsEdit]);
 
@@ -280,12 +300,14 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
   useEffect(() => {
     finalCalculation();
   }, [formObj.total_tax]);
+  
   useEffect(() => {
-    setFormObj({
-      ...formObj,
+    console.log('sssssssssssssssssssssssss',locationSettings);
+    
+    setFormObj((prev) => ({...prev,
       currency_id: locationSettings?.currency_id,
       currency_code: locationSettings?.currency_code,
-    });
+    }));
   }, [locationSettings]);
   useEffect(() => {
     calculationLabels(formObj.total_expense, formObj.total_tax);
@@ -432,10 +454,10 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
           (sum, product) => sum + product.cost * product.quantity,
           0
         );
-        setFormObj({
-          ...formObj,
+        setFormObj((prev)=>({
+          ...prev,
           subTotal_price: totalPrice,
-        });
+        }));
       }
       setSelectProducts([..._datas]);
       calculationLabels(formObj.total_expense, formObj.total_tax);
@@ -524,8 +546,10 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
           }))
       );
 
+
+
       setSuppliers([{ supplier_id: 0, id: 0, value: 0, label: 'walk-in supplier' }, ..._suppliers]);
-      setFormObj({ ...formObj, supplier_id: 0 });
+      setFormObj((prev)=>({ ...prev, supplier_id: 0}));
 
       setProducts(_products);
       setCurrencies(_currencies);
@@ -542,7 +566,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
   useEffect(() => {
     var _tx = 0;
     selectedTaxes.map((ep: any) => (_tx += Number(ep.converted_value)));
-    setFormObj({ ...formObj, total_tax: +_tx.toFixed(locationSettings?.location_decimal_places) });
+    setFormObj((prev) => ({ ...prev, total_tax: +_tx.toFixed(locationSettings?.location_decimal_places) }));
     calculationLabels(formObj.total_expense, _tx);
   }, [selectedTaxes]);
   useEffect(() => {
@@ -655,7 +679,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                         defaultValue={suppliers[0]}
                         value={suppliers.filter((sp) => sp.value == formObj.supplier_id)}
                         onChange={(itm) => {
-                          setFormObj({ ...formObj, supplier_id: itm.value });
+                          setFormObj((prev) => ({ ...prev, supplier_id: itm.value }));
                         }}
                       />
                       {errorForm.supplier_id && (
@@ -672,7 +696,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                         placeholder="Reference No"
                         value={formObj.ref_no}
                         onChange={(e) => {
-                          setFormObj({ ...formObj, ref_no: e.target.value });
+                          setFormObj((prev)=>({ ...prev, ref_no: e.target.value }));
                         }}
                       />
                     </div>
@@ -683,7 +707,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                       <DatePicker
                         className="form-control p-2"
                         selected={formObj.date}
-                        onChange={(date: Date) => setFormObj({ ...formObj, date: date })}
+                        onChange={(date: Date) => setFormObj((prev) => ({ ...prev, date: date }))}
                       />
                     </div>
                   </div>
@@ -707,7 +731,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                           return f.value == formObj.purchaseStatus;
                         })}
                         onChange={(itm) => {
-                          setFormObj({ ...formObj, purchaseStatus: itm!.value });
+                          setFormObj((prev)=>({ ...prev, purchaseStatus: itm!.value }));
                         }}
                       />
                       {errorForm.purchaseStatus && (
@@ -731,14 +755,14 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                             return f.value == formObj.paymentStatus;
                           })}
                           onChange={(itm) => {
-                            setFormObj({
-                              ...formObj,
+                            setFormObj((prev)=>({
+                              ...prev,
                               paymentStatus: itm!.value,
                               paid_amount:
                                 itm!.value == 'paid' || itm!.value == 'credit'
                                   ? formObj.total_price
                                   : 0,
-                            });
+                            }));
                           }}
                         />
                         {errorForm.paymentStatus && (
@@ -756,7 +780,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                             placeholder="Paid Amount"
                             value={formObj.paid_amount}
                             onChange={(e) => {
-                              setFormObj({ ...formObj, paid_amount: +e.target.value });
+                              setFormObj((prev)=>({ ...prev, paid_amount: +e.target.value }));
                             }}
                           />
                           {errorForm.paid && <p className="p-1 h6 text-danger ">Enter A Amount</p>}
@@ -770,7 +794,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                           <DatePicker
                             className="form-control p-2"
                             selected={formObj.paymentDate}
-                            onChange={(date: Date) => setFormObj({ ...formObj, paymentDate: date })}
+                            onChange={(date: Date) => setFormObj((prev)=>({ ...prev, paymentDate: date }))}
                           />
                           {errorForm.paymentDate && (
                             <p className="p-1 h6 text-danger ">Enter Payment Date From Calander</p>
@@ -788,7 +812,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                             return f.value == formObj.paymentType;
                           })}
                           onChange={(itm) => {
-                            setFormObj({ ...formObj, paymentType: itm!.value });
+                            setFormObj((prev)=>({ ...prev, paymentType: itm!.value }));
                           }}
                         />
                         {errorForm.paymentType && (
@@ -802,19 +826,22 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
             </Card.Body>
           </Card>
           <div className="row">
+         
             <div className="col-md-3">
               <div className="form-group">
                 <Select
                   options={currencies}
                   isLoading={dataLoading}
                   styles={purchasesSelectStyle}
-                  value={currencies?.filter((f: any) => f.value == formObj.currency_id)}
+                  value={currencies?.filter((f: any) => f.value == (formObj.currency_id || locationSettings.currency_id))}
                   onChange={(itm) => {
-                    setFormObj({
-                      ...formObj,
+                    console.log(itm);
+                    
+                    setFormObj((prev) => ({
+                      ...prev,
                       currency_code: itm!.currency_code,
                       currency_id: itm!.id,
-                    });
+                    }));
                   }}
                 />
                 {errorForm.currency_id && <p className="p-1 h6 text-danger ">Select a Currency</p>}
@@ -959,7 +986,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                                     <Form.Select
                                       style={{ width: '130px' }}
                                       onChange={(e) => {
-                                        setFormObj({ ...formObj, discount_type: e.target.value });
+                                        setFormObj((prev)=> ({ ...prev, discount_type: e.target.value }));
                                       }}>
                                       <option value={'fixed'}>Fixed</option>
                                       <option value={'percent'}>Percent %</option>
@@ -972,10 +999,10 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                                       min={0}
                                       value={formObj.discount_amount}
                                       onChange={(e) => {
-                                        setFormObj({
-                                          ...formObj,
+                                        setFormObj((prev)=>({
+                                          ...prev,
                                           discount_amount: +e.target.value,
-                                        });
+                                        }));
                                       }}
                                     />
                                   </div>
@@ -1081,6 +1108,8 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                 onClick={(e) => {
                   e.preventDefault();
                   errors = [];
+                  console.log(formObj.currency_id);
+                  
                   if (
                     formObj.supplier_id === null ||
                     formObj.supplier_id === undefined ||
@@ -1090,15 +1119,17 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                   if (selectProducts.length == 0) errors.push('selected products');
                   if (formObj.currency_id == 0 || formObj.currency_id == undefined)
                     errors.push('currency id');
-                  if (formObj.purchaseStatus.length <= 2) errors.push('purchaseStatus less than 2');
-                  if (formObj.purchaseStatus != 'draft') {
-                    if (formObj.paymentStatus.length <= 2) errors.push('paymentStatus less than 2');
-                    if ((formObj.paymentDate + '').length <= 2) errors.push('payment error');
-                    if (formObj.paymentType.length <= 2) errors.push('payment type');
+                  if (formObj?.purchaseStatus.length <= 2)
+                    errors.push('purchaseStatus less than 2');
+                  if (formObj?.purchaseStatus != 'draft') {
+                    if (formObj?.paymentStatus.length <= 2)
+                      errors.push('paymentStatus less than 2');
+                    if ((formObj?.paymentDate + '').length <= 2) errors.push('payment error');
+                    if (formObj?.paymentType.length <= 2) errors.push('payment type');
                   }
                   if (formObj.paymentStatus == 'partially_paid' && formObj.paid_amount < 0.5)
                     errors.push(' partially paid');
-
+                    console.log(formObj.currency_id);
                   setErrorForm({
                     ...errorForm,
 

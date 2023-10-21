@@ -16,6 +16,7 @@ import { findAllData } from 'src/services/crud.api';
 import { Checkout } from 'src/components/digital/checkout';
 import { Toastify } from 'src/libs/allToasts';
 import category from '../category';
+import { DigitalNavbar } from 'src/components/digital/digital-navbar';
 
 const Products: NextPage = () => {
   const [type, setType] = useState('all');
@@ -28,54 +29,58 @@ const Products: NextPage = () => {
   const [cartItems, setCartItems] = useState<Array<any>>([]);
   const [renderedScreen, setRenderedScreen] = useState<string>('products');
   const [isloading, setIsloading] = useState<boolean>(false);
+  const [appearance, setAppearance] = useState<any>()
+  const [location, setLocation] = useState<any>()
 
   // ------------------------------------------------------------------------------------------------
-  const getTotalPrice=()=>{
-    let totalPrice=0
-    cartItems.forEach((item)=>{
-        totalPrice=totalPrice+item.itemTotalPrice
+  const getTotalPrice = () => {
+    let totalPrice = 0
+    cartItems.forEach((item) => {
+      totalPrice = totalPrice + item.itemTotalPrice
     })
-    
-return totalPrice
-}
+
+    return totalPrice
+  }
   // ------------------------------------------------------------------------------------------------
-  const addItemTocart=(item:any)=>{
+  const addItemTocart = (item: any) => {
     console.log(item);
 
-if(cartItems.find(p => p.id === item.id)){
-  
-    const updatedItems = cartItems.map(cart_item => {
-      if (item.id === cart_item.id) {
-        
-        return { ...cart_item, quantity: cart_item.quantity+1 ,itemTotalPrice:+(item.sell_price||item.price)*(cart_item.quantity+1) };
-      }
-      return cart_item;
-    });
-    setCartItems(updatedItems);
-}else{  
+    if (cartItems.find(p => p.id === item.id)) {
 
-setCartItems([...cartItems,{...item,quantity:1,itemTotalPrice:+(item.sell_price||item.price)}])
+      const updatedItems = cartItems.map(cart_item => {
+        if (item.id === cart_item.id) {
 
-  }  }
+          return { ...cart_item, quantity: cart_item.quantity + 1, itemTotalPrice: +(item.sell_price || item.price) * (cart_item.quantity + 1) };
+        }
+        return cart_item;
+      });
+      setCartItems(updatedItems);
+    } else {
+
+      setCartItems([...cartItems, { ...item, quantity: 1, itemTotalPrice: +(item.sell_price || item.price) }])
+
+    }
+  }
   // ------------------------------------------------------------------------------------------------
-  const removeFromCart=(item:any)=>{
-   
-    
-    if(cartItems.find(p => p.id === item.id).quantity>1){
-      
-        const updatedItems = cartItems.map(cart_item => {
-          if (item.id === cart_item.id) {
-            
-            return { ...cart_item, quantity: cart_item.quantity-1,itemTotalPrice:(item.sell_price||item.price)*(cart_item.quantity-1) };
-          }
-          return cart_item;
-        });
-        setCartItems(updatedItems);
-    }else{  
-    
-    setCartItems(cartItems.filter(el=>el.id!==item.id))
-    
-      }  }
+  const removeFromCart = (item: any) => {
+
+
+    if (cartItems.find(p => p.id === item.id).quantity > 1) {
+
+      const updatedItems = cartItems.map(cart_item => {
+        if (item.id === cart_item.id) {
+
+          return { ...cart_item, quantity: cart_item.quantity - 1, itemTotalPrice: (item.sell_price || item.price) * (cart_item.quantity - 1) };
+        }
+        return cart_item;
+      });
+      setCartItems(updatedItems);
+    } else {
+
+      setCartItems(cartItems.filter(el => el.id !== item.id))
+
+    }
+  }
   // ------------------------------------------------------------------------------------------------
   const router = useRouter()
   let toggleDrawer = (newOpen) => () => {
@@ -108,6 +113,30 @@ setCartItems([...cartItems,{...item,quantity:1,itemTotalPrice:+(item.sell_price|
     setValue(newValue);
   };
   // ----------------------------------------------------------------------------------------------
+  const fetchApperance = async () => {
+    try {
+      const res = await findAllData(`appearance/${router.query.id}`);
+      console.log(res.data.result);
+
+      setAppearance(res.data.result);
+    } catch (err) {
+      Toastify('error', 'Something went wrong with getting Apperance, please try again later!');
+    }
+  }
+
+  // ----------------------------------------------------------------------------------------------
+  // ----------------------------------------------------------------------------------------------
+  const fetchLocation = async () => {
+    try {
+      const res = await findAllData(`business/locations/${router.query.id}`);
+
+      setLocation(res.data.result);
+    } catch (err) {
+      Toastify('error', 'Something went wrong with getting locations, please try again later!');
+    }
+  }
+
+  // ----------------------------------------------------------------------------------------------
   const fetchProducts = async () => {
     setIsloading(true)
     try {
@@ -118,7 +147,7 @@ setCartItems([...cartItems,{...item,quantity:1,itemTotalPrice:+(item.sell_price|
     }
   }
   // ----------------------------------------------------------------------------------------------
-  const fetchCategories= async () => {
+  const fetchCategories = async () => {
     try {
       const resCategories = await findAllData(`categories/${router.query.id}`);
       setCategories(resCategories.data.result)
@@ -137,49 +166,61 @@ setCartItems([...cartItems,{...item,quantity:1,itemTotalPrice:+(item.sell_price|
 
     }
   }
-    // ----------------------------------------------------------------------------------------------
-    useEffect(() => {
-     if(products.length>0&&brands.length>0&&categories.length>0&&isloading) setIsloading(false)
-      
-    },[products,categories,brands])
-    // ----------------------------------------------------------------------------------------------
+
+  // ----------------------------------------------------------------------------------------------
+  useEffect(() => {
+    if (products.length > 0 && brands.length > 0 && categories.length > 0 && isloading) setIsloading(false)
+
+  }, [products, categories, brands])
+  // ----------------------------------------------------------------------------------------------
 
   useEffect(() => {
-   if(router.query.id){
-    fetchBrands()
-    fetchProducts()
-    fetchCategories()
-}
+
+    if (router.query.id) {
+      fetchApperance()
+      fetchLocation()
+      fetchBrands()
+      fetchProducts()
+      fetchCategories()
+    }
   }, [router.query.id])
-  return (  <>  {renderedScreen==='products'?<AdminLayout>
+  return (<>
+    <DigitalNavbar appearance={appearance} />
+    {renderedScreen === 'products' ? <>
       <div className="digital-products-main bg-white">
         <div className="digital-products-header">
           <h1>Digital Products</h1>
         </div>
-        <div className='w-50  d-flex justify-content-center mx-auto bg-muted'>
-          <div onClick={() => {
-            setRenderedTabs("categories")
-          }} style={{ borderRadius: '8px', cursor: 'pointer' }} className={`w-50 p-2 text-center  ${renderedTabs === 'categories' ? 'bg-success':'bg-light'} ${renderedTabs === 'categories' ? 'text-light' : 'text-success'}`}>Categories</div>
-          <div onClick={() => {
-            setRenderedTabs("brands")
-          }} style={{ borderRadius: '8px', cursor: 'pointer' }} className={`w-50 p-2 text-center  ${renderedTabs === 'brands' ? 'bg-success':'bg-light'} ${renderedTabs === 'brands' ? 'text-light' : 'text-success'}`}>Brands</div>
-        </div>
+
         <div className="digital-products-container">
           <div className="digital-products">
-            <div className="margin:0 auto w-100 justify-content-center d-flex">
+            {/* <div className="margin:0 auto w-100 justify-content-center d-flex">
               <Box
                 sx={{
                   maxWidth: { xs: '100%', sm: 500, md: 600, lg: 700 },
                   bgcolor: 'background.paper',
                 }}>
 
+              
+              </Box>
+            </div> */}
+            <div className="digital-product-list bg-light">
+              <div style={{ borderRadius: '8px' }} className='toggle-brands-catigories-buttons-wrapper '>
+                <div onClick={() => {
+                  setRenderedTabs("categories")
+                }} style={{ borderRadius: '8px', cursor: 'pointer' }} className={`w-50 p-2 text-center  ${renderedTabs === 'categories' ? 'bg-success' : 'bg-light'} ${renderedTabs === 'categories' ? 'text-light' : 'text-success'}`}>Categories</div>
+                <div onClick={() => {
+                  setRenderedTabs("brands")
+                }} style={{ borderRadius: '8px', cursor: 'pointer' }} className={`w-50 p-2 text-center  ${renderedTabs === 'brands' ? 'bg-success' : 'bg-light'} ${renderedTabs === 'brands' ? 'text-light' : 'text-success'}`}>Brands</div>
+              </div>
+              <div className='w-100 d-flex justify-content-center bg-light'>
                 <Tabs
                   value={value}
                   onChange={handleChange}
                   variant="scrollable"
                   scrollButtons="auto"
                   aria-label="digital-products-filter"
-                  sx={{ textTransform: 'none' }}>
+                  sx={{ textTransform: 'none', marginX: 'auto' }}>
                   <Tab
                     className="filter_btn"
                     label="all"
@@ -201,26 +242,35 @@ setCartItems([...cartItems,{...item,quantity:1,itemTotalPrice:+(item.sell_price|
                   })}
 
                 </Tabs>
-              </Box>
-            </div>
-            <div className="digital-product-list">
-           
-              {isloading&&  <div className="d-flex justify-content-around w-100">
-            <Spinner animation="grow" />
-          </div>}
-              {type === 'all'
-                ? products.map((product, ind) => <ProductItem addItemTocart={addItemTocart} product={product} key={ind} />)
-                :(renderedTabs==='categories'? products
-                  .filter((product) => product.category.name === type):brands.find(brand=>{
-                    
-                   return brand.name?.trim()===type?.trim()})?.products||[])
-                  .map((product) => <ProductItem addItemTocart={addItemTocart} product={product} key={product.id} />)}
-                  {
+              </div>
+              {isloading && <div className="d-flex justify-content-around w-100">
+                <Spinner animation="grow" />
+              </div>}
+              {/* categories */}
+              {type === 'all' && renderedTabs === 'categories' ?
+                products.map((product, ind) => <ProductItem location={location} addItemTocart={addItemTocart} product={product} key={ind} />)
+                : (
+                  products
+                    .filter((product) => product.category.name === type) || [])
+                  .map((product) => <ProductItem location={location} addItemTocart={addItemTocart} product={product} key={product.id} />)}
+              {/* brands */}
+              {type === 'all' && renderedTabs === 'brands' ?
+                brands?.map((brand, index) => (
+                  <div className='w-100' key={index}>
 
-                  }
+                    {brand.products.map((product, productIndex) => (
+                      <div key={productIndex}> <ProductItem location={location} addItemTocart={addItemTocart} product={product} key={product.id} /></div>
+                    ))}
+                  </div>
+                )) : (
+                  brands.find(brand => {
+                    return brand.name?.trim() === type?.trim()
+                  })?.products || [])
+                  .map((product) => <ProductItem location={location} addItemTocart={addItemTocart} product={product} key={product.id} />)}
+
             </div>
           </div>
-          <DigitalCart totalPrice={getTotalPrice()}  setRenderedScreen={setRenderedScreen} removeFromCart={removeFromCart} addItemTocart={addItemTocart} cartItems={cartItems} />
+          <DigitalCart location={location} totalPrice={getTotalPrice()} setRenderedScreen={setRenderedScreen} removeFromCart={removeFromCart} addItemTocart={addItemTocart} cartItems={cartItems} />
           {matches ? (
             <div
               className="digital-cart-small"
@@ -241,8 +291,9 @@ setCartItems([...cartItems,{...item,quantity:1,itemTotalPrice:+(item.sell_price|
 
           {matches ? (
             <MobDrawer
-            removeFromCart={removeFromCart} 
-            addItemTocart={addItemTocart} 
+              location={location}
+              removeFromCart={removeFromCart}
+              addItemTocart={addItemTocart}
               toggleDrawer={toggleDrawer}
               setOpen={setOpen}
               open={open}
@@ -251,10 +302,10 @@ setCartItems([...cartItems,{...item,quantity:1,itemTotalPrice:+(item.sell_price|
           ) : null}
         </div>
       </div>
-    </AdminLayout>:renderedScreen==='checkout'&&
-    <Checkout totalPrice={getTotalPrice()} setRenderedScreen={setRenderedScreen}
-     addItemTocart={addItemTocart} removeFromCart={removeFromCart} 
-     cartItems={cartItems}/>}</>
+    </> : renderedScreen === 'checkout' &&
+    <Checkout location={location} totalPrice={getTotalPrice()} setRenderedScreen={setRenderedScreen}
+      addItemTocart={addItemTocart} removeFromCart={removeFromCart}
+      cartItems={cartItems} />}</>
   );
 };
 
