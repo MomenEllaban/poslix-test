@@ -72,9 +72,7 @@ import { grey } from '@mui/material/colors';
 
 const Product: NextPage = (props: any) => {
   const { id } = props;
-  const {locationSettings: mySit, setLocationSettings: setmySit} = useUser();
-  console.log(mySit);
-  
+  const {locationSettings: mySit, setLocationSettings: setmySit} = useUser();  
   const [shopId, setShopId] = useState('');
   const myLoader = (img: any) => img.src;
   const [locationSettings, setLocationSettings] = useState<any>();
@@ -121,7 +119,7 @@ const Product: NextPage = (props: any) => {
           loader={myLoader}
           width={50}
           height={50}
-          src={row.image && row.image.length > 0 ? row.image : '/images/pos/placeholder.png'}
+          src={row.image && row.image.length > 1 ? row.image : '/images/pos/placeholder.png'}
         />
       ),
     },

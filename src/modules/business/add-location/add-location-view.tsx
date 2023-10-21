@@ -88,9 +88,10 @@ export default function AddBusinessLocationView({ businessId = '0' }: Props) {
       .postForm('/business/locations', data)
       .then((res) => {
         Toastify('success', 'Location created successfully');
-        console.log(res);
-        
-        // router.push('/[username]/business', `/${session?.user?.username}/business`);
+        let permissions = localStorage.getItem('permissions');
+        permissions = res.data.result.permissions
+        localStorage.setItem('permissions', JSON.stringify(permissions))
+        router.push('/[username]/business', `/${session?.user?.username}/business`);
       })
       .catch((err) => {
         Toastify('error', 'error occurred, try agian');

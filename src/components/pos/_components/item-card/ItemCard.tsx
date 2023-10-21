@@ -19,7 +19,7 @@ export const ItemCard = ({ product }: { product: IProduct }) => {
   const [productVariations, setProductVariations] = useState<IProduct['variations']>([]);
 
   const handleAddToCart = () => {
-    let test = product.stock > 0 || (product.sell_over_stock === "001")
+    let test = product.stock > 0 || product.sell_over_stock
     console.log(test);
     
     if (product.type?.includes('variable') && test) {
@@ -44,7 +44,7 @@ export const ItemCard = ({ product }: { product: IProduct }) => {
             !product.is_service &&
             !product.type?.includes('variable') &&
             !product.type?.includes('package') &&
-            !(product.sell_over_stock==="001") &&
+            !product.sell_over_stock &&
             product.stock == 0
           )
             Toastify('error', 'This product is out of stock');
@@ -56,7 +56,7 @@ export const ItemCard = ({ product }: { product: IProduct }) => {
             !product.is_service &&
             !product.type?.includes('variable') &&
             !product.type?.includes('package') &&
-            !(product.sell_over_stock==="001") &&
+            !product.sell_over_stock &&
             product.stock == 0
               ? 'none'
               : 'auto',
@@ -70,7 +70,7 @@ export const ItemCard = ({ product }: { product: IProduct }) => {
         {!product.is_service &&
           !product.type?.includes('variable') &&
           !product.type?.includes('package') &&
-          !(product.sell_over_stock==="001") &&
+          !product.sell_over_stock &&
           product.stock == 0 && <div className="out-of-stock">Out Of Stock</div>}
 
         <div className={classNames('product-img')}>
