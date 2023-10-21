@@ -65,6 +65,15 @@ export function AddTranseferModal({ getTransefers }) {
     }
     // ------------------------------------------------------------------------------------------------
     useEffect(() => {
+        setSelectedproducts([]);
+        setFromProducts([]);
+        setToProducts([]);
+        setTo('');
+        setFrom(locations.find(el => el.location_id === +router.query.id));
+    }, [open])
+
+    // ------------------------------------------------------------------------------------------------
+    useEffect(() => {
         setSelectedproducts([])
         if (from) {
 
@@ -261,7 +270,7 @@ export function AddTranseferModal({ getTransefers }) {
                             <TextField {...params} label="Select Product" />}
                     /> */}
                     <FormControl size='small'
-                        sx={{ width: '48%' ,marginBottom:'8px'}}>
+                        sx={{ width: '48%', marginBottom: '8px' }}>
                         <InputLabel id="select-product-label">Select Product</InputLabel>
                         <Select
                             size='small'
@@ -273,9 +282,9 @@ export function AddTranseferModal({ getTransefers }) {
                             <MenuItem value="">
                                 <em>None</em>
                             </MenuItem>
-                            {toProducts
-                                .filter((toProduct) => {
-                                    return fromProducts.some((fromProduct) => fromProduct.name === toProduct.name) && !(selectedProducts.some((selectedProduct) => toProduct.name === selectedProduct.name))
+                            {fromProducts
+                                .filter((fromProduct) => {
+                                    return toProducts.some((toProduct) => fromProduct.name === toProduct.name) && !(selectedProducts.some((selectedProduct) => fromProduct.name === selectedProduct.name))
                                 })
                                 .map((product) => (
                                     <MenuItem key={product.name} value={product} className='w-100 d-flex justify-content-between'>

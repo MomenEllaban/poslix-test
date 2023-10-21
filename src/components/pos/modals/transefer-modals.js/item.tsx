@@ -1,6 +1,7 @@
 import React from 'react';
 
 const Item = ({addItemTocart,removeFromCart,item}) => {
+    console.log(item);
     
     return (
         <div className="cart-item">
