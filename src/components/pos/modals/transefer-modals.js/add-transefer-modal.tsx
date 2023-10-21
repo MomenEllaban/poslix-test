@@ -35,9 +35,9 @@ export function AddTranseferModal({ getTransefers }) {
     const handleClose = () => setOpen(false);
     // ------------------------------------------------------------------------------------------------
     const handleSelectProduct = (e) => {
-                const item = e.target.value
+        const item = e.target.value
 
-        if(item.stock==0){
+        if (item.stock == 0) {
             Toastify('error', 'this item is currently out of stock.');
 
             return
@@ -48,7 +48,7 @@ export function AddTranseferModal({ getTransefers }) {
 
     // ------------------------------------------------------------------------------------------------
     const getFromProducts = async () => {
-        
+
         setIsProductsLoadingloading(true)
 
         try {
@@ -67,7 +67,7 @@ export function AddTranseferModal({ getTransefers }) {
     useEffect(() => {
         setSelectedproducts([])
         if (from) {
-            
+
             getFromProducts()
         }
     }, [from])
@@ -98,26 +98,26 @@ export function AddTranseferModal({ getTransefers }) {
             geToProducts()
 
         }
-        
+
     }, [to])
     // ------------------------------------------------------------------------------------------------
     const addItemTocart = (item: any) => {
-if(item.stock>selectedProducts.find(p => p.id === item.id).quantity){
+        if (item.stock > selectedProducts.find(p => p.id === item.id).quantity) {
 
-        const updatedItems = selectedProducts.map(cart_item => {
-            if (item.id === cart_item.id) {
+            const updatedItems = selectedProducts.map(cart_item => {
+                if (item.id === cart_item.id) {
 
-                return { ...cart_item, quantity: cart_item.quantity + 1, itemTotalPrice: +(item.sell_price || item.price) * (cart_item.quantity + 1) };
-            }
-            return cart_item;
-        });
-        setSelectedproducts(updatedItems);
-            
-}else{
-    Toastify('error', `Sorry, You exceeded the maximum stock quantity of ${item.name}`);
+                    return { ...cart_item, quantity: cart_item.quantity + 1, itemTotalPrice: +(item.sell_price || item.price) * (cart_item.quantity + 1) };
+                }
+                return cart_item;
+            });
+            setSelectedproducts(updatedItems);
 
-}
-  
+        } else {
+            Toastify('error', `Sorry, You exceeded the maximum stock quantity of ${item.name}`);
+
+        }
+
     }
 
     // ------------------------------------------------------------------------------------------------
@@ -143,8 +143,8 @@ if(item.stock>selectedProducts.find(p => p.id === item.id).quantity){
     }
     // ------------------------------------------------------------------------------------------------
     const addTransefer = async () => {
-        if(from.location_id===to.location_id){
-            Toastify('error', 'You cant transefer to the same location you are transefering from');
+        if (from.location_id === to.location_id) {
+            Toastify('error', 'Transfer to the same location is not allowed.');
 
             return
         }
@@ -153,7 +153,7 @@ if(item.stock>selectedProducts.find(p => p.id === item.id).quantity){
         const body = {
             "location_id": from.location_id, // "required|numeric",
             "transferred_location_id": to.location_id, // "required|numeric",
-            "ref_no": Math.floor(Math.random()*1000), // "required|numeric|unique",???????
+            "ref_no": Math.floor(Math.random() * 1000), // "required|numeric|unique",???????
             "status": "processing", // "required|string:in:draft,partially_received,processing,received,cancelled",?????
             "notes": "", // "nullable|string",????
             // for transaction lines
@@ -192,7 +192,6 @@ if(item.stock>selectedProducts.find(p => p.id === item.id).quantity){
 
     }
     // ------------------------------------------------------------------------------------------------
-console.log(fromProducts);
 
 
     return (
@@ -262,7 +261,7 @@ console.log(fromProducts);
                             <TextField {...params} label="Select Product" />}
                     /> */}
                     <FormControl size='small'
-                        sx={{ width: '48%' }}>
+                        sx={{ width: '48%' ,marginBottom:'8px'}}>
                         <InputLabel id="select-product-label">Select Product</InputLabel>
                         <Select
                             size='small'
@@ -280,23 +279,23 @@ console.log(fromProducts);
                                 })
                                 .map((product) => (
                                     <MenuItem key={product.name} value={product} className='w-100 d-flex justify-content-between'>
-                                        {product.name} <span style={{fontSize:'12px'}}>Stock:{product.stock}</span>
+                                        {product.name} <span style={{ fontSize: '12px' }}>Stock:{product.stock}</span>
                                     </MenuItem>
                                 ))}
                         </Select>
                     </FormControl>
-{isProductsLoadingloading&&<Spinner style={{width:'30px',height:'30px'}}/>}
+                    {isProductsLoadingloading && <Spinner style={{ width: '30px', height: '30px' }} />}
                     <div className={styles.products_wrapper}>
                         {selectedProducts?.map(el => {
                             return <Item removeFromCart={removeFromCart} addItemTocart={addItemTocart} item={el} />
                         })}
                     </div>
                     <button
-                    disabled={isProductsLoadingloading||isloading||!to?.location_id||!from?.location_id||selectedProducts?.length===0}
-                className="btn btn-primary my-2"
-                onClick={addTransefer}>{isloading?<Spinner style={{width:'20px',height:'20px'}}/>: <FontAwesomeIcon icon={faPlus} /> }
-               Add New Transfer{' '}
-            </button>
+                        disabled={isProductsLoadingloading || isloading || !to?.location_id || !from?.location_id || selectedProducts?.length === 0}
+                        className="btn btn-primary my-2"
+                        onClick={addTransefer}>{isloading ? <Spinner style={{ width: '20px', height: '20px' }} /> : <FontAwesomeIcon icon={faPlus} />}
+                        Add New Transfer{' '}
+                    </button>
                 </Box>
             </Modal>
         </div>

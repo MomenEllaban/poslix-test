@@ -9,3 +9,7 @@
         width: 800px;
         background-color: white;
   }
+  .products_wrapper{
+    max-height: 25vh;
+    overflow-y: auto;
+  }
