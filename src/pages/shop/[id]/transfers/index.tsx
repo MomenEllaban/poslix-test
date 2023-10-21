@@ -47,6 +47,7 @@ const Transfer: NextPage = (props: any) => {
         Toastify('error', 'Somthing wrong!!, try agian');
         return;
       }
+      
       setProducts(res.data.result);
       setIsLoading(false);
     }
@@ -211,14 +212,14 @@ const Transfer: NextPage = (props: any) => {
         </AlertDialog>
         {!isLoading && permissions.hasInsert && (
           <div className="mb-2">
-            <button
+            {/* <button
               className="btn btn-primary p-3"
               onClick={() => {
                 setCustomerIsModal(true);
               }}>
               <FontAwesomeIcon icon={faPlus} /> Add New Transfer{' '}
-            </button>
-            {/* <AddTranseferModal/> */}
+            </button> */}
+            <AddTranseferModal getTransefers={initDataPage}/>
           </div>
         )}
         {!isLoading ? (

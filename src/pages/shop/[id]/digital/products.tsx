@@ -251,7 +251,7 @@ const Products: NextPage = () => {
                 products.map((product, ind) => <ProductItem location={location} addItemTocart={addItemTocart} product={product} key={ind} />)
                 : (
                   products
-                    .filter((product) => product.category.name === type) || [])
+                    .filter((product) => product.category?.name === type) || [])
                   .map((product) => <ProductItem location={location} addItemTocart={addItemTocart} product={product} key={product.id} />)}
               {/* brands */}
               {type === 'all' && renderedTabs === 'brands' ?

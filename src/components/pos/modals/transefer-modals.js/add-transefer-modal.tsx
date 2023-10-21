@@ -4,18 +4,22 @@ import styles from './transefer-modals.module.css';
 import Modal from '@mui/material/Modal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
-import { Autocomplete, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
+import { Autocomplete, Button, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { findAllData } from 'src/services/crud.api';
+import { createNewData, findAllData } from 'src/services/crud.api';
 import { Toastify } from 'src/libs/allToasts';
 import async from 'react-select/dist/declarations/src/async/index';
 import { useRouter } from 'next/router';
+import { Item } from './item';
+import { Spinner } from 'react-bootstrap';
 
 
 
-export function AddTranseferModal() {
+export function AddTranseferModal({ getTransefers }) {
     const locations = JSON.parse(localStorage.getItem('locations') || '[]');
 
+    const [isloading, setIsloading] = useState(false);
+    const [isProductsLoadingloading, setIsProductsLoadingloading] = useState(false);
     const [open, setOpen] = useState(false);
     const router = useRouter()
     // const [locations, setLocations] = useState([]);
@@ -30,12 +34,22 @@ export function AddTranseferModal() {
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
     // ------------------------------------------------------------------------------------------------
-    const handleSelectProduct = (product) => {
-        setSelectedproducts(prev => ([...prev, product]))
+    const handleSelectProduct = (e) => {
+                const item = e.target.value
+
+        if(item.stock==0){
+            Toastify('error', 'this item is currently out of stock.');
+
+            return
+        }
+
+        setSelectedproducts(prev => ([...prev, { ...item, quantity: 1, itemTotalPrice: +(item.sell_price || item.price) }]))
     }
 
     // ------------------------------------------------------------------------------------------------
     const getFromProducts = async () => {
+        
+        setIsProductsLoadingloading(true)
 
         try {
             const res = await findAllData(`products/${from.location_id}`);
@@ -46,17 +60,21 @@ export function AddTranseferModal() {
             Toastify('error', 'Somthing wrong!!, try agian');
             return;
         }
+        setIsProductsLoadingloading(false)
+
     }
     // ------------------------------------------------------------------------------------------------
     useEffect(() => {
+        setSelectedproducts([])
         if (from) {
+            
             getFromProducts()
         }
     }, [from])
-   
+
     // ------------------------------------------------------------------------------------------------
     const geToProducts = async () => {
-
+        setIsProductsLoadingloading(true)
         try {
             const res = await findAllData(`products/${to?.location_id}`);
             setToProducts(res.data.result.data);
@@ -67,23 +85,120 @@ export function AddTranseferModal() {
             Toastify('error', 'Somthing wrong!!, try agian');
             return;
         }
+        setIsProductsLoadingloading(false)
+
     }
 
 
 
 
     useEffect(() => {
+        setSelectedproducts([])
         if (to) {
-            
             geToProducts()
-          
+
         }
+        
     }, [to])
     // ------------------------------------------------------------------------------------------------
+    const addItemTocart = (item: any) => {
+if(item.stock>selectedProducts.find(p => p.id === item.id).quantity){
+
+        const updatedItems = selectedProducts.map(cart_item => {
+            if (item.id === cart_item.id) {
+
+                return { ...cart_item, quantity: cart_item.quantity + 1, itemTotalPrice: +(item.sell_price || item.price) * (cart_item.quantity + 1) };
+            }
+            return cart_item;
+        });
+        setSelectedproducts(updatedItems);
+            
+}else{
+    Toastify('error', `Sorry, You exceeded the maximum stock quantity of ${item.name}`);
+
+}
+  
+    }
+
+    // ------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------------------------------------
+    const removeFromCart = (item: any) => {
+
+
+        if (selectedProducts.find(p => p.id === item.id).quantity > 1) {
+
+            const updatedItems = selectedProducts.map(cart_item => {
+                if (item.id === cart_item.id) {
+
+                    return { ...cart_item, quantity: cart_item.quantity - 1, itemTotalPrice: (item.sell_price || item.price) * (cart_item.quantity - 1) };
+                }
+                return cart_item;
+            });
+            setSelectedproducts(updatedItems);
+        } else {
+
+            setSelectedproducts(selectedProducts.filter(el => el.id !== item.id))
+
+        }
+    }
+    // ------------------------------------------------------------------------------------------------
+    const addTransefer = async () => {
+        if(from.location_id===to.location_id){
+            Toastify('error', 'You cant transefer to the same location you are transefering from');
+
+            return
+        }
+        setIsloading(true)
+
+        const body = {
+            "location_id": from.location_id, // "required|numeric",
+            "transferred_location_id": to.location_id, // "required|numeric",
+            "ref_no": Math.floor(Math.random()*1000), // "required|numeric|unique",???????
+            "status": "processing", // "required|string:in:draft,partially_received,processing,received,cancelled",?????
+            "notes": "", // "nullable|string",????
+            // for transaction lines
+            "cart":
+                selectedProducts.map(product => ({
+                    "product_id": product.id, //  "required|numeric:exists:products,id",
+                    "transferred_product_id": product.id, //  "required|numeric:exists:products,id",
+                    // "variation_id" : 252, //  "nullable|numeric:exists:variations,id",
+                    // "transferred_variation_id" : 124, //  "required|numeric:exists:variations,id",
+                    "qty": product.quantity, //  "required|numeric",
+                    "cost": product.cost_price, //  "required|numeric",
+                    "price": product.sell_price, //  "required|numeric",
+                    "note": "test" //  "nullable|string",
+                }))
+            ,
+            // for expanses
+            "currency_id": 1, // => "nullable|numeric|exists:currencies,id",
+            "expense": {
+                "amount": 12, // => "nullable|numeric",
+                "category": {
+                    "id": 25 //> "nullable|numeric|exists:expanse,id",
+                }
+            }
+        }
+        // return
+
+        try {
+            const res = await createNewData('transfer', body);
+            getTransefers()
+            handleClose()
+        } catch {
+            Toastify('error', 'Somthing wrong!!, try agian');
+
+        }
+        setIsloading(false)
+
+    }
+    // ------------------------------------------------------------------------------------------------
+console.log(fromProducts);
+
+
     return (
         <div>
             <button
-                className="btn btn-primary p-3"
+                className="btn btn-primary p-2"
                 onClick={handleOpen}>
                 <FontAwesomeIcon icon={faPlus} /> Add New Transfer{' '}
             </button>
@@ -96,33 +211,45 @@ export function AddTranseferModal() {
             >
                 <Box className={styles.modal_wrapper}>
                     {/* from auto compolete */}
-                    <Autocomplete
-                        disablePortal
-                        id="From"
-                        options={locations}
-                        value={from}
-                        getOptionLabel={(option) => option?.location_name || ''}
-                        onChange={(e, newValue) => {
-                            setFrom(newValue)
-                        }}
-                        renderInput={(params) =>
-                            <TextField {...params} label="From" />}
-                    />
-                    {/* to auto compolete */}
-                    <Autocomplete
-                        disablePortal
-                        id="To"
-                        getOptionLabel={(option: any) => option?.location_name || ''}
-                        options={locations}
-                        value={to}
-                        onChange={(e, newValue) => {
-                            setTo(newValue)
-                        }}
-                        renderInput={(params) =>
-                            <TextField {...params} label="To" />}
-                    />
+                    <h5 className='p-2'>Add New Transfer{' '}</h5>
+                    <div className='d-flex justify-content-between mb-3'>
+                        <Autocomplete
+                            size='small'
+                            isOptionEqualToValue={(option, value) => option.name === value.name}
+                            // disablePortal
+                            id="From"
+                            options={locations}
+                            value={from}
+                            getOptionLabel={(option) => option?.location_name || ''}
+                            onChange={(e, newValue) => {
+                                setFrom(newValue)
+                            }}
+                            sx={{ width: '48%' }}
+                            renderInput={(params) =>
+                                <TextField size='small'
+                                    {...params} label="From" />}
+                        />
+                        {/* to auto compolete */}
+                        <Autocomplete
+                            size='small'
+                            isOptionEqualToValue={(option, value) => option.name === value.name}
+
+                            // disablePortal
+                            id="To"
+                            getOptionLabel={(option: any) => option?.location_name || ''}
+                            options={locations}
+                            value={to}
+                            onChange={(e, newValue) => {
+                                setTo(newValue)
+                            }}
+                            sx={{ width: '48%' }}
+                            renderInput={(params) =>
+                                <TextField size='small'
+                                    {...params} label="To" />}
+                        />
+                    </div>
                     {/* products auto complete */}
-                    <Autocomplete
+                    {/* <Autocomplete
                         disablePortal
                         id="Select Product"
                         getOptionLabel={(option: any) => option?.name || ''}
@@ -133,29 +260,43 @@ export function AddTranseferModal() {
                         }}
                         renderInput={(params) =>
                             <TextField {...params} label="Select Product" />}
-                    />
-                     <FormControl>
-    <InputLabel id="select-product-label">Select Product</InputLabel>
-    <Select
-      labelId="select-product-label"
-      id="select-product"
-      value={''}
-      onChange={handleSelectProduct}
-    >
-      <MenuItem value="">
-        <em>None</em>
-      </MenuItem>
-      {fromProducts
-        .filter((fromProduct) =>
-          toProducts.some((toProduct) => fromProduct.name === toProduct.name)
-        )
-        .map((product) => (
-          <MenuItem key={product.name} value={product.name}>
-            {product.name}
-          </MenuItem>
-        ))}
-    </Select>
-  </FormControl>
+                    /> */}
+                    <FormControl size='small'
+                        sx={{ width: '48%' }}>
+                        <InputLabel id="select-product-label">Select Product</InputLabel>
+                        <Select
+                            size='small'
+                            labelId="select-product-label"
+                            id="select-product"
+                            value={''}
+                            onChange={handleSelectProduct}
+                        >
+                            <MenuItem value="">
+                                <em>None</em>
+                            </MenuItem>
+                            {toProducts
+                                .filter((toProduct) => {
+                                    return fromProducts.some((fromProduct) => fromProduct.name === toProduct.name) && !(selectedProducts.some((selectedProduct) => toProduct.name === selectedProduct.name))
+                                })
+                                .map((product) => (
+                                    <MenuItem key={product.name} value={product} className='w-100 d-flex justify-content-between'>
+                                        {product.name} <span style={{fontSize:'12px'}}>Stock:{product.stock}</span>
+                                    </MenuItem>
+                                ))}
+                        </Select>
+                    </FormControl>
+{isProductsLoadingloading&&<Spinner style={{width:'30px',height:'30px'}}/>}
+                    <div className={styles.products_wrapper}>
+                        {selectedProducts?.map(el => {
+                            return <Item removeFromCart={removeFromCart} addItemTocart={addItemTocart} item={el} />
+                        })}
+                    </div>
+                    <button
+                    disabled={isProductsLoadingloading||isloading||!to?.location_id||!from?.location_id||selectedProducts?.length===0}
+                className="btn btn-primary my-2"
+                onClick={addTransefer}>{isloading?<Spinner style={{width:'20px',height:'20px'}}/>: <FontAwesomeIcon icon={faPlus} /> }
+               Add New Transfer{' '}
+            </button>
                 </Box>
             </Modal>
         </div>
