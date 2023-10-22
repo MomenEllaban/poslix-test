@@ -17,12 +17,12 @@ const PricingModal = (props: any) => {
     props;
   const pricingTemplate = { id: 0, name: '' };
   const [pricingName, setPricingName] = useState(pricingTemplate);
-  const [pricingGroup, setPricingGroup] = useState({name: '', price: null});
+  const [pricingGroup, setPricingGroup] = useState({name: ''});
   const { customers, setCustomers } = useContext(ProductContext);
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const handleClose = () => {
-    setPricingGroup({name: '', price: null})
+    setPricingGroup({name: ''})
     setOpen(false);
     openDialog(false);
   };
@@ -36,12 +36,12 @@ const PricingModal = (props: any) => {
   }, [statusDialog]);
 
   useEffect(() => {
-    if(showType === 'edit') setPricingGroup({name: userdata.name, price: userdata.price})
+    if(showType === 'edit') setPricingGroup({name: userdata.name})
   }, [userdata])
 
   const router = useRouter()
   const handleSubmit = async () => {
-    if(pricingGroup.name.length === 0 || pricingGroup.price <= 0) {
+    if(pricingGroup.name.length === 0) {
       Toastify("error", "Please enter all the fields.");
       return
     }
@@ -80,17 +80,6 @@ const PricingModal = (props: any) => {
                           placeholder="Enter Name"
                           value={pricingGroup.name}
                           onChange={(e) => setPricingGroup({ ...pricingGroup, name: e.target.value })}
-                        />
-                      </div>
-                      <div className="col-lg-4 mb-3" style={{ minWidth: '400px' }}>
-                        <label>Price:</label>
-                        <input
-                          type="number"
-                          name="cname"
-                          className="form-control"
-                          placeholder="Enter Price"
-                          value={pricingGroup.price}
-                          onChange={(e) => setPricingGroup({ ...pricingGroup, price: +e.target.value })}
                         />
                       </div>
                     </div>

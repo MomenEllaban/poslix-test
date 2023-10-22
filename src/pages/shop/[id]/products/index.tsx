@@ -119,7 +119,7 @@ const Product: NextPage = (props: any) => {
           loader={myLoader}
           width={50}
           height={50}
-          src={row.image && row.image.length > 0 ? row.image : '/images/pos/placeholder.png'}
+          src={row.image && row.image.length > 1 ? row.image : '/images/pos/placeholder.png'}
         />
       ),
     },
