@@ -43,7 +43,6 @@ const Products: NextPage = () => {
   }
   // ------------------------------------------------------------------------------------------------
   const addItemTocart = (item: any) => {
-    console.log(item);
 
     if (cartItems.find(p => p.id === item.id)) {
 

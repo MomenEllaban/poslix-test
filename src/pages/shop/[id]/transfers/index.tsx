@@ -212,14 +212,14 @@ const Transfer: NextPage = (props: any) => {
         </AlertDialog>
         {!isLoading && permissions.hasInsert && (
           <div className="mb-2">
-            {/* <button
+            <button
               className="btn btn-primary p-3"
               onClick={() => {
-                setCustomerIsModal(true);
+                router.push(`/shop/${router.query.id}/transfers/add`);
               }}>
               <FontAwesomeIcon icon={faPlus} /> Add New Transfer{' '}
-            </button> */}
-            <AddTranseferModal getTransefers={initDataPage}/>
+            </button>
+            {/* <AddTranseferModal getTransefers={initDataPage}/> */}
           </div>
         )}
         {!isLoading ? (

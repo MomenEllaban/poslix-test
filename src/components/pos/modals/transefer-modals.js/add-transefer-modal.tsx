@@ -8,7 +8,6 @@ import { Autocomplete, Button, FormControl, InputLabel, MenuItem, Select, TextFi
 import { useEffect, useState } from 'react';
 import { createNewData, findAllData } from 'src/services/crud.api';
 import { Toastify } from 'src/libs/allToasts';
-import async from 'react-select/dist/declarations/src/async/index';
 import { useRouter } from 'next/router';
 import { Item } from './item';
 import { Spinner } from 'react-bootstrap';
@@ -208,7 +207,7 @@ export function AddTranseferModal({ getTransefers }) {
     return (
         <div>
             <button
-                className="btn btn-primary p-2"
+                className="btn btn-primary "
                 onClick={handleOpen}>
                 <FontAwesomeIcon icon={faPlus} /> Add New Transfer{' '}
             </button>
