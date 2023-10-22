@@ -65,7 +65,7 @@ export default function OrderInfoTable({ isOrderDetails, setIsOrderDetails, orde
                   {(+(item.tax ?? 0)).toFixed(locationSettings.location_decimal_places)}{' '}
                   {locationSettings.currency_name}
                 </td>
-                <td>{item.products.map((prod) => {return prod.name + ', '})}</td>
+                <td>{item.products.map((prod) => {return prod.name + ', '})}</td> 
                 <td>{(+(item?.qty ?? 0)).toFixed(0)}</td>
               </tr>
             ))}

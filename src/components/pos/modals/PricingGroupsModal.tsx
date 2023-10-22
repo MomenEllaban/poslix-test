@@ -73,7 +73,7 @@ const PricingModal = (props: any) => {
                     <div className="">
                       <div className="col-lg-4 mb-3" style={{ minWidth: '400px' }}>
                         <label>Name:</label>
-                        <input
+                        <input  
                           type="text"
                           name="cname"
                           className="form-control"
