@@ -41,9 +41,9 @@ export default function CartPanel({ shopId }) {
   const selectCartForLocation = selectCartByLocation(shopId ?? 0);
   const cart = useAppSelector(selectCartForLocation);
 
-  useEffect(() => {
-    dispatch(clearCart({ location_id: shopId }));
-  }, [])
+  // useEffect(() => {
+  //   // dispatch(clearCart({ location_id: shopId }));
+  // }, [])
 
   const [customer, setCustomer] = useState<ICustomerItem>({
     ...initCustomer,

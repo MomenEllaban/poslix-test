@@ -5,6 +5,7 @@ type ICartProduct = IProduct & {
   quantity: number;
   product_id: number;
   variation_id?: number | null;
+  pivot?: any;
 };
 
 export interface ICart {
@@ -94,6 +95,7 @@ const cartSlice = createSlice({
       cart.cartSellTotal += +action.payload.sell_price;
       cart.cartCostTotal += +action.payload.cost_price;
       localStorage.setItem('cart', JSON.stringify(state));
+      return state;
     },
     removeFromCart: (state, action) => {
       const { id, location_id } = action.payload;
@@ -155,14 +157,15 @@ const cartSlice = createSlice({
       products.map((prod) => {
         const existingItem = cart.cartItems.find((item) => item.id === prod.id);
         if (existingItem) {
-          existingItem.quantity += 1;
+          existingItem.quantity = +existingItem.pivot.qty;
         } else {
-          cart.cartItems.push({ ...prod, product_id: prod.id, quantity: 1 });
+          cart.cartItems.push({ ...prod, product_id: prod.id, quantity: +prod.pivot.qty });
         }
-        cart.cartSellTotal += +prod.sell_price;
-        cart.cartCostTotal += +prod.cost_price;
+        cart.cartSellTotal += +prod.sell_price * +prod.pivot.qty;
+        cart.cartCostTotal += +prod.cost_price * +prod.pivot.qty;
       });
       localStorage.setItem('cart', JSON.stringify(state));
+      state = [cart];
     },
   },
 });

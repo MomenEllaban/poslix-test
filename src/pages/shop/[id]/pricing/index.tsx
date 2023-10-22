@@ -36,6 +36,7 @@ const PricingGroups = (props) => {
   const [show, setShow] = useState(false);
   const [selectId, setSelectId] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  console.log(isLoading)
 
   const [showType, setShowType] = useState(String);
   const [currentPricingGroup, setCurrentPricingGroup] = useState<{
@@ -188,7 +189,7 @@ const PricingGroups = (props) => {
             </button>
           </div>
         )}
-        {!isLoading && pricingGroups?.length > 0 ? (
+        {!isLoading && pricingGroups && (
           <div className="page-content-style card">
             <h5>Pricing Group List</h5>
             <DataGrid
@@ -208,11 +209,13 @@ const PricingGroups = (props) => {
               onSelectionModelChange={(ids: any) => onRowsSelectionHandler(ids)}
             />
           </div>
-        ) : (
-          <div className="d-flex justify-content-around">
-            <Spinner animation="grow" />
-          </div>
-        )}
+        )
+        //  : (
+        //   <div className="d-flex justify-content-around">
+        //     <Spinner animation="grow" />
+        //   </div>
+        // )
+        }
       </AdminLayout>
       <PricingModal
         shopId={shopId}

@@ -73,7 +73,6 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
   const formObjRef = useRef<any>();
 
   const [formObj, setFormObj] = useState(purchasesInitFormObj);
-  console.log(formObj);
   
   const [errorForm, setErrorForm] = useState(purchasesInitFormError);
   const [suppliers, setSuppliers] = useState<ISupplierSelect[]>(initialSupplier);
@@ -209,12 +208,6 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
     const locations: ILocation[] = getLocalStorage(ELocalStorageKeys.LOCATIONS);
     const currentLocation = locations.find((location) => +location.location_id === +shopId);
     setLocationSettings(currentLocation ?? locationSettings);
-    console.log(currentLocation??locationSettings.currency_id);
-    // setFormObj({
-    //   ...formObj,
-    //   currency_id: currentLocation.currency_id ?? locationSettings.currency_id,
-    //   currency_code: currentLocation.currency_code ?? locationSettings.currency_code
-    // })
   }, [shopId, router.query.slug]);
 
   function getPriority(type: string, subTotal: number): number {
@@ -302,8 +295,6 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
   }, [formObj.total_tax]);
   
   useEffect(() => {
-    console.log('sssssssssssssssssssssssss',locationSettings);
-    
     setFormObj((prev) => ({...prev,
       currency_id: locationSettings?.currency_id,
       currency_code: locationSettings?.currency_code,
@@ -445,8 +436,8 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
     const found = selectProducts.findIndex((el) => el.id === params.id);
     if (found > -1) {
       var _datas: any = selectProducts;
-      _datas[found][params.field] = params.value;
-      if (params.field == 'cost' || params.field == 'quantity') {
+      _datas[found][params.field] = params.value < 0 ? 0 : params.value; 
+      if ((params.field == 'cost' || params.field == 'quantity') && (params.value >= 0)) {
         _datas[found].lineTotal = Number(_datas[found].cost * _datas[found].quantity).toFixed(
           locationSettings?.location_decimal_places
         );

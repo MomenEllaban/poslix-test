@@ -1,7 +1,7 @@
 import { IReportData } from '@models/pos.types';
 import classNames from 'classnames';
 import Fuse from 'fuse.js';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Button, Table } from 'react-bootstrap';
 import { MdAutorenew, MdInfoOutline } from 'react-icons/md';
 // import { FixedSizeList } from 'react-window';
@@ -31,7 +31,7 @@ export default function OrdersTable({ lang, shopId, searchQuery = '', closeModal
     setIsOrderDetails(true);
   };
 
-  const renderItems = () => {
+  const renderItems = useMemo(() => {
     if (!salesReport?.data?.length) return <></>;
 
     let orderlistPaginated = salesReport?.data;
@@ -48,10 +48,8 @@ export default function OrdersTable({ lang, shopId, searchQuery = '', closeModal
         <motion.tr
           key={item.id + '-table-' + idx}
           onViewportEnter={() => {
-            console.log('enter', idx, visibleItems);
             if (idx === visibleItems - 3) {
               setvisibleItems((p) => p + 10);
-              console.log('first');
             }
           }}>
           <td>#{item.id}</td>
@@ -84,7 +82,7 @@ export default function OrdersTable({ lang, shopId, searchQuery = '', closeModal
         </motion.tr>
       );
     });
-  };
+  },[salesReport, searchQuery, visibleItems]);
 
   return (
     <>
@@ -124,7 +122,7 @@ export default function OrdersTable({ lang, shopId, searchQuery = '', closeModal
             style={{
               maxHeight: '50vh',
             }}>
-            {renderItems()}
+            {renderItems}
           </tbody>
 
           {!isLoading && (

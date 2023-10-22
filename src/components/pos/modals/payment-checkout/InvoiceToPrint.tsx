@@ -241,7 +241,7 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
                     {invoiceDetails?.en?.is_multi_language && 'المتبقى'}
                   </td>
                   <td className="txt_bold_invoice">
-                    {Number(printReceipt?.due).toFixed(locationSettings?.location_decimal_places)}
+                    {Number(printReceipt?.due) < 0 ? 0 : Number(printReceipt?.due).toFixed(locationSettings?.location_decimal_places)}
                   </td>
                 </tr>
               </tbody>
@@ -384,7 +384,7 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
               </td>
               <td></td>
               <td className="txt-bold">
-                {Number(printReceipt?.due).toFixed(
+                {Number(printReceipt?.due) < 0 ? 0 : Number(printReceipt?.due).toFixed(
                   this.props.locationSettings?.location_decimal_places
                 )}
               </td>

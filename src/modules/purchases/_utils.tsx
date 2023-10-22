@@ -1,4 +1,4 @@
-import { GridColDef, GridRowParams } from '@mui/x-data-grid';
+import { GridColDef, GridEditInputCell, GridRowParams } from '@mui/x-data-grid';
 import { Button } from 'react-bootstrap';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { ILocationSettings } from '@models/common-model';
@@ -80,7 +80,7 @@ export const purchasesColumns: ({
     headerName: 'Cost',
     colSpan: 1,
     minWidth: 350,
-    editable: true,
+    // editable: true,
     type: 'number',
     renderCell: ({ row }: Partial<GridRowParams>) => (
       <>
@@ -122,7 +122,7 @@ export const purchasesColumns: ({
     field: 'price',
     headerName: 'Price',
     minWidth: 150,
-    editable: true,
+    // editable: true,
     type: 'number',
     renderCell: ({ row }: Partial<GridRowParams>) => (
       <div>
@@ -147,7 +147,7 @@ export const purchasesColumns: ({
     type: 'number',
     renderCell: ({ row }: Partial<GridRowParams>) => (
       <div>
-        {+row.quantity}
+      {(+row.quantity) < 0 ? 0 : +row.quantity}
       </div>
     )
   },

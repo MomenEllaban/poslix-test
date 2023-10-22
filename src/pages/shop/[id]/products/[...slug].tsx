@@ -77,8 +77,8 @@ const initFormError = {
 };
 
 const Product: NextPage = ({ editId, iType }: any) => {
-  const { locationSettings, setLocationSettings} = useUser();
-const [locations, setLocations] = useState();
+  const { locationSettings, setLocationSettings } = useUser();
+  const [locations, setLocations] = useState();
   const [img, setImg] = useState<any>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
   const [errorForm, setErrorForm] = useState(initFormError);
@@ -182,7 +182,7 @@ const [locations, setLocations] = useState();
     },
   ];
   var formObjRef = useRef<any>();
-  
+
   formObjRef.current = formObj;
 
   var imgRef = useRef<any>();
@@ -192,7 +192,6 @@ const [locations, setLocations] = useState();
   prevUrlRef.current = previewUrl;
 
   async function initDataPage(url, locationSettings) {
-    
     setLoading(true);
     try {
       if (url?.length == 2) setIsEdit(true);
@@ -201,7 +200,7 @@ const [locations, setLocations] = useState();
         setSelectedProducts(res.data.result);
         // setSelectedFabrics(newdata.selectedFabrics);
         const itm = res.data.result;
-        setPreviewUrl(itm?.image)
+        setPreviewUrl(itm?.image);
         setFormObj({
           ...formObj,
           id: itm.id,
@@ -302,7 +301,7 @@ const [locations, setLocations] = useState();
 
   async function insertProduct(url: string = null) {
     console.log(333333333333333);
-    
+
     // if (!url) return Toastify('error', 'Please add image to the product!');
     const res = await createNewData('products', {
       name: formObjRef.current.name,
@@ -328,7 +327,7 @@ const [locations, setLocations] = useState();
               .filter((va) => !!+va.cost && !!+va.price)
               .map((va) => {
                 return {
-                  name: va.name,
+                  name: va.name, 
                   sku: va.sku,
                   cost: va.cost,
                   price: va.price,
@@ -348,13 +347,11 @@ const [locations, setLocations] = useState();
       setIsSaving(false);
     }
   }
-  async function editProduct(url = 'nmn') {
-    
+  async function editProduct(url: string = '') {
     const { productName2, tax_id, ...form } = formObjRef.current as TFormObject;
     const _form = formObjRef.current;
-    console.log(url);
-    
-    console.log("ffffffffffffffffffffff",(url || _form.img === 'n' ? 'sss' : _form.img));
+    const originalImageUrl = _form.img === 'n' ? null : _form.img;
+    const newUrl = url || originalImageUrl;
     const _data =
       // : IPayload
       {
@@ -365,8 +362,7 @@ const [locations, setLocations] = useState();
 
         name: _form.name,
         subproductname: _form.productName2,
-        image: url || _form.img === 'n' ? null : _form.img,
-        // image: url || _form.img === 'n' ? null : _form.img,
+        image: newUrl,
 
         type: _form.type,
 
@@ -400,10 +396,10 @@ const [locations, setLocations] = useState();
                   };
                 }),
       };
-      
+
     try {
-      if(_data['brand_id'] == 0){
-        delete _data['brand_id']
+      if (_data['brand_id'] == 0) {
+        delete _data['brand_id'];
       }
       console.log(_data);
       const res = await updateData('products', router.query.slug[1], _data);
@@ -435,20 +431,19 @@ const [locations, setLocations] = useState();
     } else Toastify('error', 'Error, Try Again');
   }
 
-  useEffect(()=>{
+  useEffect(() => {
     const _locs = JSON.parse(localStorage.getItem('locations') || '[]');
     setLocations(_locs);
-    if (_locs.length > 0){
+    if (_locs.length > 0) {
       setLocationSettings(
         _locs[
           _locs.findIndex((loc: any) => {
             return loc.location_id == +shopId;
           })
         ]
-        );
-
+      );
     }
-  },[router.query])
+  }, [router.query]);
   useEffect(() => {
     if (router.isReady) initDataPage(router.query.slug, locationSettings);
   }, [router.asPath, locationSettings]);
@@ -464,7 +459,7 @@ const [locations, setLocations] = useState();
   const checkboxHandleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.name == 'is_service')
       setFormObj({ ...formObj, is_service: event.target.checked });
-      // setFormObj({ ...formObj, is_service: event.target.checked, isSellOverStock: !formObj.isSellOverStock || false });
+    // setFormObj({ ...formObj, is_service: event.target.checked, isSellOverStock: !formObj.isSellOverStock || false });
     else if (event.target.name == 'sell_over')
       setFormObj({ ...formObj, isSellOverStock: event.target.checked });
     else if (event.target.name == 'multi_price')
@@ -1223,7 +1218,7 @@ const [locations, setLocations] = useState();
                               value={formObj.cost_price}
                               onKeyPress={handleNumberKeyPress}
                               onChange={(e) => {
-                                setFormObj({ ...formObj, cost_price:e.target.value});
+                                setFormObj({ ...formObj, cost_price: e.target.value });
                               }}
                             />
                           </div>
@@ -1243,7 +1238,7 @@ const [locations, setLocations] = useState();
                               value={formObj.sell_price}
                               onKeyPress={handleNumberKeyPress}
                               onChange={(e) => {
-                                setFormObj({ ...formObj, sell_price:e.target.value});
+                                setFormObj({ ...formObj, sell_price: e.target.value });
                               }}
                             />
                           </div>
