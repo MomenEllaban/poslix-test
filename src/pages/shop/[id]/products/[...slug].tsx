@@ -348,11 +348,13 @@ const [locations, setLocations] = useState();
       setIsSaving(false);
     }
   }
-  async function editProduct(url = '') {
+  async function editProduct(url = 'nmn') {
     
     const { productName2, tax_id, ...form } = formObjRef.current as TFormObject;
     const _form = formObjRef.current;
-    console.log("ffffffffffffffffffffff",(url || _form.img === 'n' ? null : _form.img));
+    console.log(url);
+    
+    console.log("ffffffffffffffffffffff",(url || _form.img === 'n' ? 'sss' : _form.img));
     const _data =
       // : IPayload
       {
@@ -363,6 +365,7 @@ const [locations, setLocations] = useState();
 
         name: _form.name,
         subproductname: _form.productName2,
+        image: url || _form.img === 'n' ? null : _form.img,
         // image: url || _form.img === 'n' ? null : _form.img,
 
         type: _form.type,
