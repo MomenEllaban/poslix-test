@@ -58,7 +58,7 @@ export default function OrderInfoTable({ isOrderDetails, setIsOrderDetails, orde
               </p>
             </div>
           </div>
-          <Table responsive>
+          <Table responsive> 
             {' '}
             <thead className="text-muted table-light">
               <tr>
