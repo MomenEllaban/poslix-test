@@ -270,7 +270,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
                 Transfers <Soon />
                 <div className={styles.drawer_plus_icon_wrapper}><AddBoxTwoToneIcon onClick={(e) => {
                   e.preventDefault();                  
-                  setIsAddTranseferModalOpen(true)
+                  router.push(`/shop/${router.query.id}/transfers/add`);
                 }} sx={{ color: '#25a0e2' }} /></div>
               
               </SidebarNavItem>
