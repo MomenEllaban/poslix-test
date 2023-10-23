@@ -39,7 +39,7 @@ export default function OrderInfoTable({ isOrderDetails, setIsOrderDetails, orde
   return (
     <div
       className={classNames({
-        'd-none': !isOrderDetails,
+        'd-none': !isOrderDetails, 
       })}>
       {isLoading && (
         <div className="d-flex justify-content-center align-items-center">Loading...</div>
