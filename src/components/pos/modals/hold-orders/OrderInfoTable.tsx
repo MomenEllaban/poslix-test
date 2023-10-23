@@ -29,7 +29,7 @@ export default function OrderInfoTable({ isOrderDetails, setIsOrderDetails, orde
     let total = 0;
     if (orderItems !== null) {
       orderItems.forEach((ele) => {
-        const productTotal = ele.product_qty * +ele.cost_price;
+        const productTotal = ele.product_qty * +ele.sell_price;
         total += productTotal;
       });
       setTotal(total);
@@ -52,9 +52,9 @@ export default function OrderInfoTable({ isOrderDetails, setIsOrderDetails, orde
               <p>{orderDetails.order_id}</p>
             </div>
             <div className="d-flex flex-row justify-content-space-between align-items-center">
-              <p>Customer</p>
+              <p>Customer: </p>
               <p>
-                {orderDetails.contact_first_name} {orderDetails.contact_last_name}
+               {orderDetails.contact_first_name} {orderDetails.contact_last_name}
               </p>
             </div>
           </div>
@@ -77,7 +77,7 @@ export default function OrderInfoTable({ isOrderDetails, setIsOrderDetails, orde
                     {item.name}
                   </td>
                   <td>
-                    {(+(item.cost_price ?? 0)).toFixed(locationSettings.location_decimal_places)}{' '}
+                    {(+(item.sell_price ?? 0)).toFixed(locationSettings.location_decimal_places)}{' '}
                     {locationSettings.currency_name}
                   </td>{' '}
                   {/* <td>
@@ -99,7 +99,7 @@ export default function OrderInfoTable({ isOrderDetails, setIsOrderDetails, orde
                   {locationSettings.currency_name}
                 </td>
                 <td></td>
-                <td>{orderItems?.length ?? 0}</td>
+                {/* <td>{orderItems?.length ?? 0}</td> */}
               </tr>
             </tfoot>
           </Table>
