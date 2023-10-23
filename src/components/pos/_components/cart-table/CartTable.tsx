@@ -67,7 +67,7 @@ export default function CartTable({ shopId }) {
                     variant="outline-info"
                     // className={styles['cart-quantity-btn']}
                     onClick={() => {
-                      if (product.quantity < product.stock) dispatch(addToCart(product));
+                      dispatch(addToCart(product));
                     }}>
                     <BsPlusLg size={13} />
                   </Button>

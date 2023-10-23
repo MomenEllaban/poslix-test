@@ -97,7 +97,7 @@ const Home: NextPage = ({ shopId: _id }: any) => {
     if (isLoading) return <PosLoader />;
     if (pos?.register?.status === 'open') return <PosCart shopId={shopId} />;
     return <OpenRegisterView shopId={shopId} setShopId={setShopId} />;
-  }, [isLoading, pos, shopId, setIsLoading, dispatch]);
+  }, [isLoading, pos, shopId]);
 
   // useLayoutEffect(() => {
   // const registerObject = getLocalStorage<IRegister>(ELocalStorageKeys.POS_REGISTER_STATE);
@@ -109,13 +109,9 @@ const Home: NextPage = ({ shopId: _id }: any) => {
     api
       .get(`reports/latest-register/${shopId}?all_data=1`)
       .then(({ data }) => {
-        console.log(data.result);
-
         return data.result.data[0];
       })
       .then((registerObject) => {
-        console.log(registerObject);
-
         const checkPos: any = getLocalStorage<{ hand_cash: number; state: string }>(
           ELocalStorageKeys.POS_REGISTER_STATE
         );
@@ -134,7 +130,6 @@ const Home: NextPage = ({ shopId: _id }: any) => {
     const perms = JSON.parse(localStorage.getItem('permissions')).filter(
       (loc) => loc.id == router.query.id
     );
-    console.log(perms);
     if (!perms[0]?.permissions?.length) {
       Toastify('error', "You don't have access to this page!");
       router.replace(`/shop/${_id}/`);

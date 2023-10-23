@@ -21,9 +21,9 @@ export default function OrdersTable({ lang, shopId, searchQuery = '', closeModal
 
   const { locationSettings } = useUser();
   const [isOrderDetails, setIsOrderDetails] = useState<boolean>(false);
+  console.log(isOrderDetails);
   const [orderId, setOrderId] = useState<string | number>('');
-  const [page, setPage] = useState<number>(0);
-  const [visibleItems, setvisibleItems] = useState<number>(10);
+  console.log(orderId);
   const [renderdItems, setRenderdItems] = useState<IReportData[]>([]);
   // this listing all orders once
   const { isLoading, salesReport } = useGetSalesReport(shopId, null, {});
@@ -126,9 +126,9 @@ export default function OrdersTable({ lang, shopId, searchQuery = '', closeModal
       });
       const result = fuse.search(searchQuery);
       if (searchQuery) orderlistPaginated = result.map((r) => r.item);
-      setRenderdItems(orderlistPaginated.slice(0, visibleItems));
+      setRenderdItems(orderlistPaginated);
     }
-  }, [salesReport]);
+  }, [salesReport, searchQuery]);
 
   return (
     <>
@@ -142,7 +142,8 @@ export default function OrdersTable({ lang, shopId, searchQuery = '', closeModal
             '&.MuiDataGrid-root': {
               border: 'none',
             },
-            minHeight: '100px'
+            display: isOrderDetails? 'none' : 'flex',
+            height: isLoading ? '200px': '630px'
           }}
           loading={isLoading}
           rows={renderdItems}
@@ -184,7 +185,7 @@ export default function OrdersTable({ lang, shopId, searchQuery = '', closeModal
             style={{
               maxHeight: '50vh',
             }}>
-            {renderItems()}
+            {renderItems}
           </tbody>
 
           {!isLoading && (

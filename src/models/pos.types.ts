@@ -65,6 +65,7 @@ export interface IProduct {
   packages: IPackage[];
   stocks: IStock[];
   category: ICategory;
+  product_qty?: number;
 }
 
 export interface IVariation {
