@@ -8,7 +8,8 @@ import CartModal from "./CartModal"
 import {addTodigitalCart ,incrementQuantity, decrementQuantity, removeItem} from '../../redux/slices/digitalCartSlice';
 import { useAppDispatch, useAppSelector } from "src/hooks";
 import ProductVariablesModal from "./product-variables-modal";
-
+import place_holder from "../../../public/images/pos/placeholder.png"
+import Image from "next/image";
 const style = {
   position: 'absolute' as 'absolute',
   top: '50%',
@@ -47,6 +48,7 @@ const modalHandler = (event) => {
     setMoadlIsopen(true)
  }
  
+ 
     return (
         <>
 {/* {moadlIsopen==true && product.id == myId ? 
@@ -62,8 +64,9 @@ const modalHandler = (event) => {
  
    <div className="digital-product-item "  >
         
-       
-        {image&&<img className="digital-product-image" src={image} alt="" width={'100%'} height={'100%'} />}
+   <img className="digital-product-image" src={(image === 'n' || !image) ? place_holder.src : image} alt="" width={'100%'} height={'100%'} />
+
+       {/* <img className="digital-product-image" src={(image==='n'||!image)?place_holder:image} alt="" width={'100%'} height={'100%'} /> */}
         {/* </div> */}
         <div className="digital-product-info d-flex w-100 justify-content-between">
             
