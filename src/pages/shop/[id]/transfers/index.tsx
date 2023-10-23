@@ -47,6 +47,7 @@ const Transfer: NextPage = (props: any) => {
         Toastify('error', 'Somthing wrong!!, try agian');
         return;
       }
+      
       setProducts(res.data.result);
       setIsLoading(false);
     }
@@ -214,11 +215,11 @@ const Transfer: NextPage = (props: any) => {
             <button
               className="btn btn-primary p-3"
               onClick={() => {
-                setCustomerIsModal(true);
+                router.push(`/shop/${router.query.id}/transfers/add`);
               }}>
               <FontAwesomeIcon icon={faPlus} /> Add New Transfer{' '}
             </button>
-            {/* <AddTranseferModal/> */}
+            {/* <AddTranseferModal getTransefers={initDataPage}/> */}
           </div>
         )}
         {!isLoading ? (
