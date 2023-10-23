@@ -130,7 +130,7 @@ export const OrderCalcs = ({
             </div>
             <div className="py-1 calcs-details-col">
               <div>{lang.cartComponent.difference}</div>
-              <div>{(+totalAmount - +cart.lastTotal + +cart.lastDue)
+              <div>{(+totalAmount - +cart.lastTotal + (+cart.lastDue < 0 ? 0 : +cart.lastDue))
                 .toFixed(locationSettings?.location_decimal_places)}{' '}
                 <span style={{ fontSize: '10px' }}>{locationSettings?.currency_code}</span>
               </div>
