@@ -77,8 +77,8 @@ const PricingGroup = (props: any) => {
       subType: 'getProducts',
       shopId,
     });
-    if (success) setProducts(data.products);
-    console.log(data.products);
+    if (success) setProducts(data?.products);
+    console.log(data?.products);
 
     setIsLoading(false);
   }
@@ -87,7 +87,7 @@ const PricingGroup = (props: any) => {
   useEffect(() => {
     const perms = JSON.parse(localStorage.getItem('permissions'));
     const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
-    perms.pos.map((perm) =>
+    perms?.pos?.map((perm) =>
       perm.name.includes('getpricinggroup get GET')
         ? (getPermissions.hasView = true)
         : perm.name.includes('pricinggroup add POST')
@@ -103,7 +103,7 @@ const PricingGroup = (props: any) => {
 
     const _locs = JSON.parse(localStorage.getItem('locations') || '[]');
     setLocations(_locs);
-    if (_locs.toString().length > 10)
+    if (_locs.toString()?.length > 10)
       setLocationSettings(
         _locs[
           _locs.findIndex((loc: any) => {

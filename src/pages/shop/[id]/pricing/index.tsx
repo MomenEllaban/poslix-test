@@ -97,12 +97,12 @@ const PricingGroups = (props) => {
                 <FontAwesomeIcon icon={faTrash} />
               </Button>
             )}
-            {/* <Button
+            <Button
               onClick={() => {
                 router.push('/shop/' + shopId + '/pricing/' + row.id);
               }}>
               <FontAwesomeIcon icon={faEye} />
-            </Button> */}
+            </Button>
           </ButtonGroup>
         </>
       ),
