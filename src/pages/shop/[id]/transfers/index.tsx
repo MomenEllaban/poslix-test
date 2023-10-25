@@ -161,9 +161,11 @@ const updatedProduct:any=products.find((p:any)=>p.id===id)
       headerName: 'Products',
       flex: 1,
       valueGetter: (params) => {
+        console.log(params);
+        
         let name = '';
-        params.row.products.map((prod, i) => {
-          name += prod.name + (i === (params.row.products.length - 1) ? '' : ', ');
+        params.row.products.map((prod:any, i:number) => {
+          name += prod.name +'('+ parseFloat(prod?.pivot?.qty)+')'  + (i === (params.row.products.length - 1) ? '' : ', ');
         });
         return name;
       },
