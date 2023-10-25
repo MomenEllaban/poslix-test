@@ -38,7 +38,6 @@ const PricingGroups = (props) => {
   const [selectGroup, setSelectGroup] = useState();
   
   const [isLoading, setIsLoading] = useState(true);
-  console.log(isLoading)
 
   const [showType, setShowType] = useState(String);
   const [currentPricingGroup, setCurrentPricingGroup] = useState<{
@@ -90,7 +89,7 @@ const PricingGroups = (props) => {
                   event.stopPropagation();
                   setSelectId(row.id);
                   setShow(true);
-                  const _data = [...pricingGroups];
+                  // const _data = [...pricingGroups];
                     // const idx = _data.findIndex((itm: any) => itm.id == row.id);
                     // if (idx != -1) {
                     //   _data.splice(idx, 1);

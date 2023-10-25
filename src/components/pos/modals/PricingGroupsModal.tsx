@@ -13,16 +13,16 @@ import { createNewData, updateData } from 'src/services/crud.api';
 import { useRouter } from 'next/router';
 
 const PricingModal = (props: any) => {
-  const { openDialog, statusDialog, userdata, showType, shopId, pricingGroups, setPricingGroups,selectGroup } =
+  const { openDialog, statusDialog, userdata, showType, shopId, pricingGroups, setPricingGroups, selectGroup } =
     props;
   const pricingTemplate = { id: 0, name: '' };
   const [pricingName, setPricingName] = useState(pricingTemplate);
-  const [pricingGroup, setPricingGroup] = useState({name: ''});
+  const [pricingGroup, setPricingGroup] = useState({ name: '' });
   const { customers, setCustomers } = useContext(ProductContext);
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const handleClose = () => {
-    setPricingGroup({name: ''})
+    setPricingGroup({ name: '' })
     setOpen(false);
     openDialog(false);
   };
@@ -36,30 +36,43 @@ const PricingModal = (props: any) => {
   }, [statusDialog]);
 
   useEffect(() => {
-    if(showType === 'edit') setPricingGroup({name: userdata.name})
+    if (showType === 'edit') setPricingGroup({ name: userdata.name })
   }, [userdata])
 
   const router = useRouter()
   const handleSubmit = async () => {
-    if(pricingGroup.name.length === 0) {
+    if (pricingGroup.name.length === 0) {
       Toastify("error", "Please enter all the fields.");
       return
     }
     let res;
-    if(showType === 'edit') {console.log({...pricingGroup});
-    const body={
-      "location_id": selectGroup.location_id,
-      "business_id": selectGroup.business_id,
-      "customers":selectGroup.customers?.map?.(el=>el.id),
-      "products": selectGroup.products
-  }
-      res = await updateData('pricing-group', userdata.id, {...body,...pricingGroup})}
-    else 
-      res = await createNewData('pricing-group', {...pricingGroup, location_id: router.query.id})
-    if(res.data.success) {
-      Toastify('success','Group successfully updated')
-      handleClose()
+    if (showType === 'edit') {
+      console.log({ ...pricingGroup });
+      const body = {
+        "location_id": selectGroup.location_id,
+        "business_id": selectGroup.business_id,
+        "customers": selectGroup.customers?.map?.(el => el.id),
+        "products": selectGroup.products
+      }
+      try {
+        res = await updateData('pricing-group', userdata.id, { ...body, ...pricingGroup })
+        Toastify('success', 'Group successfully updated')
+        handleClose()
+      } catch (e) {
+        Toastify('error', 'Somthing wrong!!, try agian')
+      }
     }
+    else
+      try {
+        res = await createNewData('pricing-group', { ...pricingGroup, location_id: router.query.id })
+        Toastify('success', 'Group successfully added')
+        handleClose()
+      } catch (e) {
+        Toastify('error', 'Somthing wrong!!, try agian')
+       
+      }
+
+
   }
   return (
     <>
@@ -80,7 +93,7 @@ const PricingModal = (props: any) => {
                     <div className="">
                       <div className="col-lg-4 mb-3" style={{ minWidth: '400px' }}>
                         <label>Name:</label>
-                        <input  
+                        <input
                           type="text"
                           name="cname"
                           className="form-control"

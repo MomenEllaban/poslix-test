@@ -10,7 +10,7 @@ export default function AlertDialog(props: any) {
     async function deletePrint() {
         const res = await deleteDataWithLocID(url,id,shopId)
         if (res.data.status) {
-            props.alertFun(true, "Item successfully canceled!!", id)
+            props.alertFun(true, "Item successfully Deleted!!", id)
         } else
             props.alertFun(false, "Please try again!")
 
