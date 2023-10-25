@@ -57,7 +57,7 @@ const PricingGroups = (props) => {
   const columns: GridColDef[] = [
     { field: 'id', headerName: '#', minWidth: 50 },
     { field: 'name', headerName: 'Name', flex: 1 },
-    { field: 'price', headerName: 'Price', flex: 1 },
+    // { field: 'price', headerName: 'Price', flex: 1 },
     {
       field: 'action',
       headerName: 'Action ',
@@ -102,7 +102,7 @@ const PricingGroups = (props) => {
             )}
             <Button
               onClick={() => {
-                router.push('/shop/' + shopId + '/pricing/' + row.id);
+                router.push('/shop/' + router.query.id + '/pricing/' + row.id);
               }}>
               <FontAwesomeIcon icon={faEye} />
             </Button>
