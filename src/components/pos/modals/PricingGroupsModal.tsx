@@ -13,7 +13,7 @@ import { createNewData, updateData } from 'src/services/crud.api';
 import { useRouter } from 'next/router';
 
 const PricingModal = (props: any) => {
-  const { openDialog, statusDialog, userdata, showType, shopId, pricingGroups, setPricingGroups } =
+  const { openDialog, statusDialog, userdata, showType, shopId, pricingGroups, setPricingGroups,selectGroup } =
     props;
   const pricingTemplate = { id: 0, name: '' };
   const [pricingName, setPricingName] = useState(pricingTemplate);
@@ -46,11 +46,18 @@ const PricingModal = (props: any) => {
       return
     }
     let res;
-    if(showType === 'edit') 
-      res = await updateData('update-pricing', userdata.id, {...pricingGroup})
+    if(showType === 'edit') {console.log({...pricingGroup});
+    const body={
+      "location_id": selectGroup.location_id,
+      "business_id": selectGroup.business_id,
+      "customers":selectGroup.customers?.map?.(el=>el.id),
+      "products": selectGroup.products
+  }
+      res = await updateData('pricing-group', userdata.id, {...body,...pricingGroup})}
     else 
       res = await createNewData('pricing-group', {...pricingGroup, location_id: router.query.id})
     if(res.data.success) {
+      Toastify('success','Group successfully updated')
       handleClose()
     }
   }
