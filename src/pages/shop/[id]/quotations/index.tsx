@@ -24,7 +24,7 @@ import { Button, ButtonGroup } from 'react-bootstrap';
 import { useRouter } from 'next/router';
 import AlertDialog from 'src/components/utils/AlertDialog';
 import { apiFetch, apiFetchCtr } from 'src/libs/dbUtils';
-import { Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { Box, Dialog, DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material';
 import { ILocationSettings, ITokenVerfy } from '@models/common-model';
 import * as cookie from 'cookie';
 import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/checkUtils';
@@ -36,7 +36,6 @@ import { findAllData, updateData } from 'src/services/crud.api';
 
 export default function SalesList(props: any) {
   const { id } = props;
-  console.log(props);
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
     // @ts-ignore
     value: 0,
@@ -48,10 +47,22 @@ export default function SalesList(props: any) {
     currency_symbol: '',
   });
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
   const handleClose = () => {
-    setAnchorEl(null);
+    setShowViewPopUp(false);
+    setShowQuotation({
+      transferID: null,
+      from: '',
+      status: '',
+      total: 0,
+      products: [],
+      createdBy: '',
+      ceartedAt: '',
+    });
   };
   const [sales, setsales] = useState<any>([]);
+  console.log(sales);
+
   const [customersNames, setCustomersNames] = useState<any>([]);
   const router = useRouter();
   const shopId = router.query.id;
@@ -64,7 +75,24 @@ export default function SalesList(props: any) {
   const [showViewPopUp, setShowViewPopUp] = useState(false);
   const [handleSearchTxt, setHandleSearchTxt] = useState('');
   const { setInvoicDetails, invoicDetails } = useContext(UserContext);
-  const [accept, setAccept] = useState(false);
+  const [showingQuotation, setShowQuotation] = useState<{
+    transferID: number | null;
+    from: string;
+    status: string;
+    total: number;
+    products: { name: string; qty: number }[];
+    createdBy: string;
+    ceartedAt: string;
+  }>({
+    transferID: null,
+    from: '',
+    status: '',
+    total: 0,
+    products: [],
+    createdBy: '',
+    ceartedAt: '',
+  });
+  console.log(showingQuotation);
 
   const updateStatus = async (id: number, status: string) => {
     const res = await updateData('quotations-list', id, { status });
@@ -72,6 +100,31 @@ export default function SalesList(props: any) {
     else Toastify('error', 'Error');
     initDataPage();
   };
+
+  const formatQuotation = (quotation: any) => {
+    let total = 0;
+    const products: { name: string; qty: number }[] = [];
+    const status = quotation.status;
+    const transferID = quotation.id;
+    const _locs = JSON.parse(localStorage.getItem('locations') || '[]');
+    const from = _locs.find((el) => el.location_id == quotation.location_id).location_name;
+    const ceartedAt = quotation.created_at;
+    quotation.quotation_list_lines.forEach((el) => {
+      total += el.qty * +el.quotation_line_product.sell_price;
+      products.push({ name: el.quotation_line_product.name, qty: el.qty });
+    });
+
+    setShowQuotation({
+      total,
+      from,
+      transferID,
+      products,
+      status,
+      ceartedAt,
+      createdBy: from,
+    });
+  };
+
   //table columns
   const columns: GridColDef[] = [
     { field: 'id', headerName: '#', minWidth: 50 },
@@ -130,13 +183,13 @@ export default function SalesList(props: any) {
       renderCell: ({ row }: Partial<GridRowParams>) => (
         <>
           <ButtonGroup className="mb-2 m-buttons-style">
-            <Button
+            {/* <Button
               onClick={() => {
                 localStorage.setItem('currentQuotation', JSON.stringify(row));
                 router.push('/shop/' + shopId + '/quotations/edit');
               }}>
               <FontAwesomeIcon icon={faPenToSquare} />
-            </Button>
+            </Button> */}
             <Button
               onClick={() => {
                 setSelectId(row.id);
@@ -144,13 +197,22 @@ export default function SalesList(props: any) {
               }}>
               <FontAwesomeIcon icon={faTrash} />
             </Button>
-            <Button onClick={() => {}}>
+            <Button
+              onClick={() => {
+                // localStorage.setItem('showingQuotation', JSON.stringify(row));
+                formatQuotation(row);
+                setShowViewPopUp(true);
+              }}>
               <FontAwesomeIcon icon={faEye} />
             </Button>
-            <Button onClick={() => updateStatus(row.id, 'accepted')}>
+            <Button
+              disabled={!(row.status === 'waiting')}
+              onClick={() => updateStatus(row.id, 'accepted')}>
               <FontAwesomeIcon icon={faCheck} />
             </Button>
-            <Button onClick={() => updateStatus(row.id, 'canceled')}>
+            <Button
+              disabled={!(row.status === 'waiting')}
+              onClick={() => updateStatus(row.id, 'canceled')}>
               <FontAwesomeIcon icon={faXmark} />
             </Button>
           </ButtonGroup>
@@ -368,25 +430,10 @@ export default function SalesList(props: any) {
     const res = await findAllData(`quotations-list?location_id=${shopId}`);
     const customers_names = await findAllData(`customers/${shopId}`);
     setCustomersNames(customers_names.data.result);
-    console.log(customers_names.data.result, 'customers_names');
     if (res.data.success) {
       setsales(res.data.result.quotationsList);
       // if (res.data.result.invoiceDetails != null && res.data.result.invoiceDetails.length > 10)
       //   setInvoicDetails(JSON.parse(res.data.result.invoiceDetails));
-    }
-  }
-
-  async function getItems(id: number) {
-    setIsLoadItems(true);
-    const { success, newdata } = await apiFetchCtr({
-      fetch: 'transactions',
-      subType: 'getSaleItems',
-      shopId,
-      id,
-    });
-    if (success) {
-      setLines(newdata);
-      setIsLoadItems(false);
     }
   }
 
@@ -456,12 +503,6 @@ export default function SalesList(props: any) {
   const handlePrint2 = useReactToPrint({
     content: () => componentRef2.current,
   });
-  const onRowsSelectionHandler = (selectedRowsData: any) => {
-    setSelectRow(selectedRowsData);
-    setSelectId(selectedRowsData.id);
-    getItems(selectedRowsData.id);
-    setShowViewPopUp(true);
-  };
   const handleSearch = (e: any) => {
     setHandleSearchTxt(e.target.value);
   };
@@ -518,12 +559,125 @@ export default function SalesList(props: any) {
         />
       </div>
       {/* FOR VIEW ELEMENT */}
-      <Dialog open={showViewPopUp} fullWidth={true} className="poslix-modal" onClose={handleClose}>
-        <DialogTitle className="poslix-modal text-primary">
+      <Dialog open={showViewPopUp} fullWidth={true} maxWidth={'md'} onClose={handleClose}>
+        {/* <DialogTitle className="poslix-modal text-primary">
           {edit ? 'Edit Sale' : 'Sale Details'}
-        </DialogTitle>
+        </DialogTitle> */}
         <DialogContent className="poslix-modal-content">
-          <div className="poslix-modal">
+          <Box
+            component={'div'}
+            sx={{
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}>
+            <Box
+              component={'div'}
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                width: '50%',
+                gap: '10px',
+                padding: '20px',
+              }}>
+              <Typography
+                variant="h4"
+                sx={{
+                  borderBottom: '1px solid gray',
+                }}>
+                Quotaion Details
+              </Typography>
+              <Box
+                component={'div'}
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}>
+                <Typography variant="h5">Qutation ID:</Typography>
+                <Typography>{showingQuotation.transferID}</Typography>
+              </Box>
+              <Box
+                component={'div'}
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}>
+                <Typography variant="h5">Status:</Typography>
+                <Typography>{showingQuotation.status}</Typography>
+              </Box>
+              <Box
+                component={'div'}
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}>
+                <Typography variant="h5">Total Price:</Typography>
+                <Typography>{showingQuotation.total}</Typography>
+              </Box>
+            </Box>
+            <Box
+              component={'div'}
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                borderLeft: '1px solid gray',
+                width: '50%',
+                padding: '20px',
+                gap: '10px',
+              }}>
+              <Typography
+                variant="h5"
+                sx={{
+                  borderBottom: '1px solid gray',
+                }}>
+                Products:
+              </Typography>
+              {showingQuotation.products.map((ele, index) => (
+                <Box
+                  key={index}
+                  component={'div'}
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}>
+                  <Typography variant="h6">{ele.name}</Typography>
+                  <Typography>{ele.qty} Qty</Typography>
+                </Box>
+              ))}
+              <Box
+                component={'div'}
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}>
+                <Typography variant="h5">Created By:</Typography>
+                <Typography>{showingQuotation.createdBy}</Typography>
+              </Box>
+              <Box
+                component={'div'}
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}>
+                <Typography variant="h5">Created At:</Typography>
+                <Typography>{showingQuotation.ceartedAt}</Typography>
+              </Box>
+            </Box>
+          </Box>
+          {/* <div className="poslix-modal">
             <div className="top-section-details">
               <img src={invoicDetails.logo} style={{ width: '80px', marginBottom: '10px' }} />
               <div className="item-sections">
@@ -647,7 +801,7 @@ export default function SalesList(props: any) {
             ) : (
               <div>laoding...</div>
             )}
-          </div>
+          </div> */}
         </DialogContent>
         <DialogActions>
           {edit && (

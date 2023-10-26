@@ -219,8 +219,8 @@ const AddQuotations: NextPage = (props: any) => {
         <>
           <div>
             {locationSettings?.currency_id == formObj.currency_id
-              ? Number(row.cost * row.quantity).toFixed(locationSettings?.location_decimal_places)
-              : (formObj.currency_rate * row.cost).toFixed(
+              ? Number(row.price * row.quantity).toFixed(locationSettings?.location_decimal_places)
+              : (formObj.currency_rate * row.price).toFixed(
                 locationSettings?.location_decimal_places
               )}
           </div>
@@ -374,6 +374,7 @@ const AddQuotations: NextPage = (props: any) => {
       }
     }
   }
+console.log(selectProducts);
 
   useEffect(() => {
     const currentQuot = localStorage.getItem('currentQuotation') ?
@@ -436,7 +437,8 @@ const AddQuotations: NextPage = (props: any) => {
       setLocationSettings(
         _locs[
         _locs.findIndex((loc: any) => {
-          return loc.value == id;
+          return loc.location_id
+          == id;
         })
         ]
       );
@@ -459,7 +461,7 @@ const AddQuotations: NextPage = (props: any) => {
   }
   function finalCalculation(subTotal = 0) {
     subTotal = subTotal > 0 ? subTotal : formObj.subTotal_price;
-    var _total = subTotal;
+    let _total = subTotal;
     if (_total <= 0) return;
     purchaseDetails.map((dp) => (_total = getPriority(dp.value, _total)));
     console.log('subTotal_price ', subTotal);
@@ -481,6 +483,8 @@ const AddQuotations: NextPage = (props: any) => {
       _qty += Number(p.quantity);
       _prices += Number(p.lineTotal);
     });
+    console.log(_qty, _prices);
+    
     setTotal_qty(_qty);
     setFormObj({ ...formObj, subTotal_price: _prices });
     finalCalculation(_prices);
@@ -505,9 +509,7 @@ const AddQuotations: NextPage = (props: any) => {
 
   //expenses
   useEffect(() => {
-    var _sum = 0;
-    console.log(selectedExpends);
-
+    var _sum = 0; 
     selectedExpends.map((ep) => (_sum += Number(ep.enterd_value * ep.currency_rate)));
     selectedExpendsEdit.map((ep) => (_sum += Number(ep.enterd_value * ep.currency_rate)));
     setTotalExpends(_sum);
@@ -707,7 +709,7 @@ const AddQuotations: NextPage = (props: any) => {
           quantity: 1,
           price: e.sell_price,
           cost: e.cost_price,
-          lineTotal: e.cost_price,
+          lineTotal: e.sell_price,
           taxAmount: 0,
           costType: 0,
           isNew: true,
@@ -724,10 +726,10 @@ const AddQuotations: NextPage = (props: any) => {
       if (params.field == 'cost' || params.field == 'quantity')
         _datas[found].lineTotal =
           locationSettings?.currency_id == formObj.currency_id
-            ? Number(_datas[found].cost * _datas[found].quantity).toFixed(
+            ? Number(_datas[found].price * _datas[found].quantity).toFixed(
               locationSettings?.location_decimal_places
             )
-            : Number(_datas[found].cost * formObj.currency_rate * _datas[found].quantity).toFixed(
+            : Number(_datas[found].price * formObj.currency_rate * _datas[found].quantity).toFixed(
               locationSettings?.location_decimal_places
             );
 
@@ -1022,7 +1024,7 @@ const AddQuotations: NextPage = (props: any) => {
                     styles={selectStyle}
                     options={currencies}
                     value={currencies.filter((f: any) => {
-                      return f.value == formObj.currency_id;
+                      return f.value ==  (formObj.currency_id || locationSettings.currency_id);
                     })}
                     onChange={(itm) => {
                       console.log(itm);
