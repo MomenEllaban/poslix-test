@@ -16,6 +16,7 @@ import AlertDialog from 'src/components/utils/AlertDialog';
 import { Toastify } from 'src/libs/allToasts';
 import CustomToolbar from 'src/modules/reports/_components/CustomToolbar';
 import { findAllData } from 'src/services/crud.api';
+import {ReceiveTransferModal} from '../../../../components/transefers/recieve-transfer-modal';
 import {TransferDetailsModal} from '../../../../components/transefers/transefer-details-modal'
 import CloseIcon from '@mui/icons-material/Close';
 
@@ -161,7 +162,6 @@ const updatedProduct:any=products.find((p:any)=>p.id===id)
       headerName: 'Products',
       flex: 1,
       valueGetter: (params) => {
-        console.log(params);
         
         let name = '';
         params.row.products.map((prod:any, i:number) => {
@@ -188,7 +188,7 @@ const updatedProduct:any=products.find((p:any)=>p.id===id)
       headerName: 'Action ',
       sortable: false,
       disableExport: true,
-      flex: 1,
+      flex: 1.5,
       renderCell: ({ row }: Partial<GridRowParams>) => (
         <>
           <ButtonGroup className="mb-2 m-buttons-style">
@@ -203,16 +203,18 @@ const updatedProduct:any=products.find((p:any)=>p.id===id)
             )} */}
             {permissions.hasDelete && (
               <Button
+              disabled={row.status==='received'||row.status==='cancelled'}
                 onClick={(event) => {
                   event.stopPropagation();
                   setSelectId(row.id);
                   setShow(true);
                 }}>
-                <CloseIcon  />
+                <CloseIcon  style={{color:(row.status==='received'||row.status==='cancelled')?'gray':''}}/>
               </Button>
             )}
            
-            <TransferDetailsModal locations={locations} shopId={shopId} transfer={row}/>
+           <TransferDetailsModal locations={locations} shopId={shopId} transfer={row}/>
+           <ReceiveTransferModal setProducts={setProducts} locations={locations} shopId={shopId} transfer={row}/>
           </ButtonGroup>
         </>
       ),
@@ -268,6 +270,7 @@ const updatedProduct:any=products.find((p:any)=>p.id===id)
               pageSize={10}
               rowsPerPageOptions={[10]}
               components={{ Toolbar: CustomToolbar }}
+            
             />
           </div>
         ) : (

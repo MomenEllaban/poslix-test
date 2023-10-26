@@ -68,7 +68,7 @@ const Customers: NextPage = ({ id }: any) => {
   }
 
   const handleDeleteFuc = (result: boolean, msg: string, section: string) => {
-    if (msg.length > 0) Toastify(result ? 'success' : 'error', msg);
+    if (msg.length > 0) Toastify(result ? 'success' : 'error', 'Item successfully canceled!!');
     initDataPage();
     setShow(false);
   };

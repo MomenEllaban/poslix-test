@@ -35,8 +35,9 @@ const PricingGroups = (props) => {
 
   const [show, setShow] = useState(false);
   const [selectId, setSelectId] = useState(0);
+  const [selectGroup, setSelectGroup] = useState();
+  
   const [isLoading, setIsLoading] = useState(true);
-  console.log(isLoading)
 
   const [showType, setShowType] = useState(String);
   const [currentPricingGroup, setCurrentPricingGroup] = useState<{
@@ -55,7 +56,7 @@ const PricingGroups = (props) => {
   const columns: GridColDef[] = [
     { field: 'id', headerName: '#', minWidth: 50 },
     { field: 'name', headerName: 'Name', flex: 1 },
-    { field: 'price', headerName: 'Price', flex: 1 },
+    // { field: 'price', headerName: 'Price', flex: 1 },
     {
       field: 'action',
       headerName: 'Action ',
@@ -76,6 +77,7 @@ const PricingGroups = (props) => {
                     price: row.price
                   });
                   setShowType('edit');
+                  setSelectGroup(row)
                   setAddPricingModal(true);
                 }}>
                 <FontAwesomeIcon icon={faPenToSquare} />
@@ -85,24 +87,24 @@ const PricingGroups = (props) => {
               <Button
                 onClick={(event) => {
                   event.stopPropagation();
-                  // setSelectId(row.id);
-                  // setShow(true);
-                  const _data = [...pricingGroups];
-                  const idx = _data.findIndex((itm: any) => itm.id == row.id);
-                  if (idx != -1) {
-                    _data.splice(idx, 1);
-                    setPricingGroups(_data);
-                  }
+                  setSelectId(row.id);
+                  setShow(true);
+                  // const _data = [...pricingGroups];
+                    // const idx = _data.findIndex((itm: any) => itm.id == row.id);
+                    // if (idx != -1) {
+                    //   _data.splice(idx, 1);
+                    //   setPricingGroups(_data);
+                    // }
                 }}>
                 <FontAwesomeIcon icon={faTrash} />
               </Button>
             )}
-            {/* <Button
+            <Button
               onClick={() => {
-                router.push('/shop/' + shopId + '/pricing/' + row.id);
+                router.push('/shop/' + router.query.id + '/pricing/' + row.id);
               }}>
               <FontAwesomeIcon icon={faEye} />
-            </Button> */}
+            </Button>
           </ButtonGroup>
         </>
       ),
@@ -172,8 +174,8 @@ const PricingGroups = (props) => {
           alertFun={handleDeleteFuc}
           shopId={id}
           id={selectId}
-          url="customers">
-          Are you Sure You Want Delete This Customer ?
+          url="pricing-group">
+          Are you Sure You Want Delete This Group ?
         </AlertDialog>
         {/* start */}
         {/* router.push('/shop/' + shopId + '/customers/add') */}
@@ -218,6 +220,7 @@ const PricingGroups = (props) => {
         }
       </AdminLayout>
       <PricingModal
+      selectGroup={selectGroup}
         shopId={shopId}
         showType={showType}
         userdata={currentPricingGroup}

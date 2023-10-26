@@ -10,7 +10,7 @@ export default function AlertDialog(props: any) {
     async function deletePrint() {
         const res = await deleteDataWithLocID(url,id,shopId)
         if (res.data.status) {
-            props.alertFun(true, "Item successfully canceled!!", id)
+            props.alertFun(true, "Item successfully Deleted!!", id)
         } else
             props.alertFun(false, "Please try again!")
 
@@ -35,7 +35,7 @@ export default function AlertDialog(props: any) {
                 </Modal.Body>
                 <Modal.Footer className='d-flex '>
                     <Button className='p-2' style={{ background: '#ffffff', color: '#000', border: 'none' }} onClick={handleClose}>   Dismiss   </Button>
-                    <Button className='p-2' style={{ background: '#e75050', color: '#ffffff' }} onClick={actionHandle}>   Cancel Transefer </Button>
+                    <Button className='p-2' style={{ background: '#e75050', color: '#ffffff' }} onClick={actionHandle}> {url==='transfer'?'Cancel Transefer' : 'Delete'} </Button>
                 </Modal.Footer>
             </Modal>
         </>

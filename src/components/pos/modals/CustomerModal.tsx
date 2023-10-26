@@ -84,6 +84,8 @@ const CustomerModal = (props: any) => {
   };
 
   const handleAddCustomer = (data: any) => {
+    // console.log({ ...data, price_groups_id: currentPricingGroup });
+    // return
     api
       .post('/customers/' + router.query.id, { ...data, price_groups_id: currentPricingGroup })
       .then((res) => res.data.result)
