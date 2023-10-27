@@ -51,16 +51,16 @@ const PricingGroup = (props: any) => {
       headerName: 'Price',
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) => <input
-        value={productsPricing?.find(p => p.id === row.id)?.pivot?.price||''}
+        value={productsPricing?.find(p => p.id === row.id)?.pivot?.price || ''}
         onChange={(e) => {
           setProductsPricing((prev: any) => {
             const updatedProducts = prev.map((product: any) => {
               if (product.id === row.id) {
                 return {
                   ...product,
-                  pivot:  {
-                  ...product?.pivot,
-                   price: e.target.value
+                  pivot: {
+                    ...product?.pivot,
+                    price: e.target.value
                   },
                 };
               }
@@ -69,21 +69,21 @@ const PricingGroup = (props: any) => {
 
             return updatedProducts;
           });
-              setProducts((prev: any) => {
-                const updatedProducts = prev.map((product: any) => {
-                  if (product.id === row.id) {
-                    return {
-                      ...product,
-                      price: e.target.value,
-                    };
-                  }
-                  return product;
-                });
+          setProducts((prev: any) => {
+            const updatedProducts = prev.map((product: any) => {
+              if (product.id === row.id) {
+                return {
+                  ...product,
+                  price: e.target.value,
+                };
+              }
+              return product;
+            });
 
-                return updatedProducts;
-              });
-            }
-          }
+            return updatedProducts;
+          });
+        }
+        }
 
         type="number" />,
     },
@@ -123,15 +123,16 @@ const PricingGroup = (props: any) => {
   // ----------------------------------------------------------------------------------------------
   const updatePricing = async () => {
     const url = 'pricing-group'
-const data={"location_id":router.query.id,
-products:products.map(p=>({id:p.id, price:+(p.price?p.price:p.sell_price)}))
-}
+    const data = {
+      "location_id": router.query.id,
+      products: products.map(p => ({ id: p.id, price: +(p.price ? p.price : p.sell_price) }))
+    }
     try {
       const res = await updateData(url, router.query.pricingId, data)
       Toastify('success', 'Groups updated successfully')
 
     } catch (e) {
-     
+
       Toastify('error', 'Something went wrong')
     }
   }
@@ -153,7 +154,6 @@ products:products.map(p=>({id:p.id, price:+(p.price?p.price:p.sell_price)}))
       const res2: any = await findAllData(`pricing-group/${router.query.id}?group_id=${router.query.pricingId}`);
 
       setProductsPricing(res2?.data?.result?.products)
-console.log(res2?.data?.result?.products);
 
       setProducts(res?.data?.result);
     } catch (e) {
@@ -205,31 +205,31 @@ console.log(res2?.data?.result?.products);
       <AdminLayout shopId={shopId}>
         <div>PricingGroup</div>
         <ToastContainer />
-       
-            <div className="page-content-style card">
-              <h5>Pricing Group List</h5>
 
-              <DataGrid
-              loading={isLoading}
-                className="datagrid-style"
-                sx={{
-                  '.MuiDataGrid-columnSeparator': {
-                    display: 'none',
-                  },
-                  '&.MuiDataGrid-root': {
-                    border: 'none',
-                  },
-                }}
-                rows={products || []}
-                columns={columns || []}
-                pageSize={10}
-                rowsPerPageOptions={[10]}
-                onSelectionModelChange={(ids: any) => onRowsSelectionHandler(ids)}
-                components={{
-                  Toolbar: CustomToolbar,
-                }}
-              /></div>
-        
+        <div className="page-content-style card">
+          <h5>Pricing Group List</h5>
+
+          <DataGrid
+            loading={isLoading}
+            className="datagrid-style"
+            sx={{
+              '.MuiDataGrid-columnSeparator': {
+                display: 'none',
+              },
+              '&.MuiDataGrid-root': {
+                border: 'none',
+              },
+            }}
+            rows={products || []}
+            columns={columns || []}
+            pageSize={10}
+            rowsPerPageOptions={[10]}
+            onSelectionModelChange={(ids: any) => onRowsSelectionHandler(ids)}
+            components={{
+              Toolbar: CustomToolbar,
+            }}
+          /></div>
+
       </AdminLayout>
     </>
   );
