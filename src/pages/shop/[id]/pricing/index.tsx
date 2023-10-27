@@ -191,10 +191,11 @@ const PricingGroups = (props) => {
             </button>
           </div>
         )}
-        {!isLoading && pricingGroups && (
+       
           <div className="page-content-style card">
             <h5>Pricing Group List</h5>
             <DataGrid
+            loading={isLoading}
               className="datagrid-style"
               sx={{
                 '.MuiDataGrid-columnSeparator': {
@@ -204,20 +205,15 @@ const PricingGroups = (props) => {
                   border: 'none',
                 },
               }}
-              rows={pricingGroups}
+              rows={pricingGroups||[]}
               columns={columns}
               pageSize={10}
               rowsPerPageOptions={[10]}
               onSelectionModelChange={(ids: any) => onRowsSelectionHandler(ids)}
             />
           </div>
-        )
-        //  : (
-        //   <div className="d-flex justify-content-around">
-        //     <Spinner animation="grow" />
-        //   </div>
-        // )
-        }
+        
+     
       </AdminLayout>
       <PricingModal
       selectGroup={selectGroup}

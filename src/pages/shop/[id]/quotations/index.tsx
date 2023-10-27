@@ -74,6 +74,7 @@ export default function SalesList(props: any) {
   const [isLoadItems, setIsLoadItems] = useState(false);
   const [showViewPopUp, setShowViewPopUp] = useState(false);
   const [handleSearchTxt, setHandleSearchTxt] = useState('');
+  const [isloading, setIsloading] = useState<any>(false);
   const { setInvoicDetails, invoicDetails } = useContext(UserContext);
   const [showingQuotation, setShowQuotation] = useState<{
     transferID: number | null;
@@ -427,14 +428,24 @@ export default function SalesList(props: any) {
 
   // init sales data
   async function initDataPage() {
-    const res = await findAllData(`quotations-list?location_id=${shopId}`);
-    const customers_names = await findAllData(`customers/${shopId}`);
-    setCustomersNames(customers_names.data.result);
-    if (res.data.success) {
+    setIsloading(true)
+    try{
+      const res = await findAllData(`quotations-list?location_id=${shopId}`);
+      const customers_names = await findAllData(`customers/${shopId}`);
+      setCustomersNames(customers_names.data.result);
       setsales(res.data.result.quotationsList);
-      // if (res.data.result.invoiceDetails != null && res.data.result.invoiceDetails.length > 10)
-      //   setInvoicDetails(JSON.parse(res.data.result.invoiceDetails));
-    }
+    
+      if (res.data.result.invoiceDetails != null && res.data.result.invoiceDetails.length > 10){
+        setInvoicDetails(JSON.parse(res.data.result.invoiceDetails));
+}
+    
+    console.log(res,'res');
+    }catch(e){
+    Toastify("error",'Something went wrong')
+  }
+    // console.log(customers_names);
+    setIsloading(false)
+
   }
 
   const [permissions, setPermissions] = useState<any>();
@@ -539,6 +550,7 @@ export default function SalesList(props: any) {
         </div>
         <h5>Quotations List</h5>
         <DataGrid
+        loading={isloading}
           className="datagrid-style"
           sx={{
             '.MuiDataGrid-columnSeparator': {
