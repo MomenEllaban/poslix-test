@@ -60,6 +60,8 @@ export const OrderCalcs = ({
 
   const totalNoTax = +(cart?.cartSellTotal ?? 0) + +(cart?.shipping ?? 0);
   const totalAmount = totalNoTax + totalTax - totalDiscount;
+  console.log(totalAmount);
+  
 
   return (
     <div className="table calcs-table table-borderless  align-middle mb-0 border-top border-top-dashed mt-2">

@@ -129,6 +129,8 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
       __WithDiscountFeature__total,
     } = this.props;
     if (invoiceType.toLowerCase() === 'a4')
+    console.log(printReceipt);
+    
       return (
         <div className="appear-body-item a4">
           <div className="bill2">
@@ -256,6 +258,7 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
           </div>
         </div>
       );
+console.log(printReceipt);
 
     // ------------------ //
     return (

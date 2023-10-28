@@ -333,16 +333,16 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
               href={'/shop/' + shopId + '/quotations'}
               sub={true}
               isShown={!!router.query.id}>
-              Quotations List
+              Quotations
             </SidebarNavItem>
           )}
           {permissions.hasSalesList && (
             <SidebarNavItem
-              href={'/shop/' + shopId + '/sales'}
+              href={'/shop/' + shopId + '/invoices'}
               sub={true}
               isShown={!!router.query.id}>
               {' '}
-              Sales List
+              Invoices
             </SidebarNavItem>
           )}
 

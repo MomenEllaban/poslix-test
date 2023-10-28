@@ -43,7 +43,7 @@ export default function SalesListTable({ id, shopId, rules, salesList, loading }
   const [selectRow, setSelectRow] = useState<any>({});
   const [, setJobType] = useRecoilState(cartJobType);
   const [lines, setLines] = useState<any>([]);
-  const [salesRep, setSalesRep] = useState<any>([]);
+  const [salesRep, setSalesRep] = useState<any>({});
 
   const [show, setShow] = useState(false);
   const [edit, setEdit] = useState(false);
@@ -229,7 +229,8 @@ export default function SalesListTable({ id, shopId, rules, salesList, loading }
                 {invoiceDetails?.en?.txtDate}{' '}
                 {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtDate}
               </div>
-              <div>{new Date().toISOString().slice(0, 10)}</div>
+              <div>{salesRep?.created_at ? new Date(salesRep?.created_at).toISOString().slice(0, 10) : 
+              new Date().toISOString().slice(0, 10)}</div>
             </div>
           </div>
           <table className="table">
@@ -366,7 +367,8 @@ export default function SalesListTable({ id, shopId, rules, salesList, loading }
                         <br />
                         {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtDate}
                       </td>
-                      <td>{new Date().toISOString().slice(0, 10)}</td>
+                      <td>{salesRep?.created_at ? new Date(salesRep?.created_at).toISOString().slice(0, 10) : 
+                      new Date().toISOString().slice(0, 10)}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -671,7 +673,7 @@ export default function SalesListTable({ id, shopId, rules, salesList, loading }
         <ComponentToPrint2 ref={componentRef2} />
       </div>
       <div className="page-content-style card">
-        <h5>Sales List</h5>
+        <h5>Invoices List</h5>
         {/* {salesList.data && ( */}
           <DataGrid
             className="datagrid-style"

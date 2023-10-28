@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Button, Table } from 'react-bootstrap';
 import { useAppDispatch, useAppSelector } from 'src/hooks';
 import {
@@ -12,6 +12,7 @@ import styles from './CartTable.module.scss';
 import { MdDeleteForever } from 'react-icons/md';
 import { BsDashLg, BsPlusLg } from 'react-icons/bs';
 import { usePosContext } from 'src/modules/pos/_context/PosContext';
+import { ILocationSettings } from '@models/common-model';
 
 export default function CartTable({ shopId }) {
   const { lang: _lang } = usePosContext();
@@ -22,9 +23,29 @@ export default function CartTable({ shopId }) {
 
   const dispatch = useAppDispatch();
 
+  const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
+    // @ts-ignore
+    value: 0,
+    label: '',
+    currency_decimal_places: 0,
+    currency_code: '',
+    currency_id: 0,
+    currency_rate: 1,
+    currency_symbol: '',
+  });
+
   useEffect(() => {
     const cart = localStorage.getItem('cart');
     if (cart) dispatch(setCart(JSON.parse(cart)));
+    var _locs = JSON.parse(localStorage.getItem('locations') || '[]');
+    if (_locs.toString().length > 10)
+      setLocationSettings(
+        _locs[
+          _locs.findIndex((loc: any) => {
+            return loc.location_id == shopId;
+          })
+        ]
+      );
   }, []);
 
   return (
@@ -73,7 +94,7 @@ export default function CartTable({ shopId }) {
                   </Button>
                 </span>
               </td>
-              <td>{(product.quantity * +product.sell_price).toFixed(2)}</td>
+              <td>{(product.quantity * +product.sell_price).toFixed(locationSettings?.location_decimal_places)}</td>
               <td className={styles['delete-col']}>
                 <Button
                   size="sm"
