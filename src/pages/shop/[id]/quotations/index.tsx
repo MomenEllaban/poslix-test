@@ -62,7 +62,6 @@ export default function SalesList(props: any) {
   };
   const [sales, setsales] = useState<any>([]);
   console.log(sales);
-
   const [customersNames, setCustomersNames] = useState<any>([]);
   const router = useRouter();
   const shopId = router.query.id;
@@ -431,6 +430,8 @@ export default function SalesList(props: any) {
     const customers_names = await findAllData(`customers/${shopId}`);
     setCustomersNames(customers_names.data.result);
     if (res.data.success) {
+      console.log(res.data.result);
+      
       setsales(res.data.result.quotationsList);
       // if (res.data.result.invoiceDetails != null && res.data.result.invoiceDetails.length > 10)
       //   setInvoicDetails(JSON.parse(res.data.result.invoiceDetails));
