@@ -105,6 +105,7 @@ const AddTranseferComponent = () => {
 
         }
 
+
     }, [to])
     // ------------------------------------------------------------------------------------------------
     const addItemTocart = (item: any) => {
@@ -177,7 +178,7 @@ const AddTranseferComponent = () => {
             "cart":
                 selectedProducts.map(product => ({
                     "product_id": product.id, //  "required|numeric:exists:products,id",
-                    "transferred_product_id": toProducts.find(p => p.name === product.name).id, //  "required|numeric:exists:products,id",
+                    "transferred_product_id": toProducts.find(p => p.name?.trim() === product.name?.trim())?.id, //  "required|numeric:exists:products,id",
                     // "variation_id" : 252, //  "nullable|numeric:exists:variations,id",
                     // "transferred_variation_id" : 124, //  "required|numeric:exists:variations,id",
                     "qty": product.quantity, //  "required|numeric",
@@ -254,7 +255,7 @@ const AddTranseferComponent = () => {
                                 {...params} label="To" />}
                     />
                     {/* referance texfeild*/}
-                    <TextField sx={{ width: '30%' }} id="ref no" label="Referance Number" placeholder="Reference Number" variant='outlined' size='small' value={referanceNumber} onChange={(e) => {
+                    <TextField type='number' sx={{ width: '30%' }} id="ref no" label="Referance Number" placeholder="Reference Number" variant='outlined' size='small' value={referanceNumber} onChange={(e) => {
                         setReferanceNumber(e.target.value)
                     }} />
                     {/* products auto complete */}
@@ -266,7 +267,7 @@ const AddTranseferComponent = () => {
                         getOptionLabel={(option: any) => option?.name || ''}
                         options={fromProducts
                             .filter((fromProduct) => {
-                                return toProducts.some((toProduct) => fromProduct.name === toProduct.name) && !(selectedProducts.some((selectedProduct) => fromProduct.name === selectedProduct.name))
+                                return toProducts.some((toProduct) => fromProduct.name?.trim() === toProduct.name?.trim()) && !(selectedProducts.some((selectedProduct) => fromProduct.name?.trim() === selectedProduct.name?.trim()))
                             }) || []}
                         value={''}
                         onChange={(e, newValue) => {

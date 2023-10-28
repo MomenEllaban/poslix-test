@@ -380,6 +380,7 @@ const AddQuotations: NextPage = (props: any) => {
       }
     }
   }
+console.log(selectProducts);
 
   useEffect(() => {
     const currentQuot = localStorage.getItem('currentQuotation') ?
@@ -470,7 +471,7 @@ const AddQuotations: NextPage = (props: any) => {
   }
   function finalCalculation(subTotal = 0) {
     subTotal = subTotal > 0 ? subTotal : formObj.subTotal_price;
-    var _total = subTotal;
+    let _total = subTotal;
     if (_total <= 0) return;
     purchaseDetails.map((dp) => (_total = getPriority(dp.value, _total)));
     console.log('subTotal_price ', subTotal);
@@ -492,6 +493,8 @@ const AddQuotations: NextPage = (props: any) => {
       _qty += Number(p.quantity);
       _prices += Number(p.lineTotal);
     });
+    console.log(_qty, _prices);
+    
     setTotal_qty(_qty);
     setFormObj({ ...formObj, subTotal_price: _prices });
     finalCalculation(_prices);
@@ -516,9 +519,7 @@ const AddQuotations: NextPage = (props: any) => {
 
   //expenses
   useEffect(() => {
-    var _sum = 0;
-    console.log(selectedExpends);
-
+    var _sum = 0; 
     selectedExpends.map((ep) => (_sum += Number(ep.enterd_value * ep.currency_rate)));
     selectedExpendsEdit.map((ep) => (_sum += Number(ep.enterd_value * ep.currency_rate)));
     setTotalExpends(_sum);
@@ -1033,7 +1034,9 @@ console.log(formObj.subTotal_price);
                   <Select
                     styles={selectStyle}
                     options={currencies}
-                    value={currencies?.filter((f: any) => f.value == (formObj.currency_id || locationSettings.currency_id))}
+                    value={currencies.filter((f: any) => {
+                      return f.value ==  (formObj.currency_id || locationSettings.currency_id);
+                    })}
                     onChange={(itm) => {
                       console.log(itm);
 

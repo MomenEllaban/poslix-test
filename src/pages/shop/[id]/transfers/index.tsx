@@ -10,13 +10,15 @@ import { Button, ButtonGroup } from 'react-bootstrap';
 import Spinner from 'react-bootstrap/Spinner';
 import { ToastContainer } from 'react-toastify';
 import withAuth from 'src/HOCs/withAuth';
-import TransferModal from 'src/components/pos/modals/TransferModal';
+// import TransferModal from 'src/components/pos/modals/TransferModal';
 import { AddTranseferModal } from 'src/components/pos/modals/transefer-modals.js/add-transefer-modal';
 import AlertDialog from 'src/components/utils/AlertDialog';
 import { Toastify } from 'src/libs/allToasts';
 import CustomToolbar from 'src/modules/reports/_components/CustomToolbar';
 import { findAllData } from 'src/services/crud.api';
+import {ReceiveTransferModal} from '../../../../components/transefers/recieve-transfer-modal';
 import {TransferDetailsModal} from '../../../../components/transefers/transefer-details-modal'
+import CloseIcon from '@mui/icons-material/Close';
 
 let locations;
 const Transfer: NextPage = (props: any) => {
@@ -111,13 +113,14 @@ const Transfer: NextPage = (props: any) => {
       setIsOpenPriceDialog(true);
     }
   };
-  const handleDeleteFuc = (result: boolean, msg: string, section: string) => {
+  const handleDeleteFuc = (result: boolean, msg: string, id: string) => {
     if (result) {
       const _data = [...products];
       const idx = _data.findIndex((itm: any) => itm.id == selectId);
+const updatedProduct:any=products.find((p:any)=>p.id===id)
 
       if (idx != -1) {
-        _data.splice(idx, 1);
+        _data.splice(idx, 1,{...updatedProduct,status:"cancelled"});
         setProducts(_data);
       }
     }
@@ -126,7 +129,6 @@ const Transfer: NextPage = (props: any) => {
   };
 
   const [transferList, setTransferList] = useState<ITransferItem[]>([]);
-  console.log(products);
 
   const columns: GridColDef[] = [
     { field: 'id', headerName: '#', minWidth: 50 },
@@ -146,17 +148,13 @@ const Transfer: NextPage = (props: any) => {
     { field: 'ref_no', headerName: 'Refrence No', flex: 1 },
     { field: 'status', headerName: 'Status', flex: 1 },
     {
-      field: 'location_id', headerName: 'Location From', flex: 1, valueGetter: (params) => {
-        return locations.find((l: any) => {
-          return l[params.value] === shopId
-        }).location_name
+      field: 'location_from_name', headerName: 'Location From', flex: 1, valueGetter: (params) => {
+       return params.value
       },
     },
     {
-      field: 'transferred_location_id', headerName: 'Location To', flex: 1, valueGetter: (params) => {
-        return locations.find((l: any) => {
-          return l[params.value] === shopId
-        }).location_name
+      field: 'location_to_name', headerName: 'Location To', flex: 1, valueGetter: (params) => {
+      return  params.value
       },
     },
     {
@@ -164,9 +162,10 @@ const Transfer: NextPage = (props: any) => {
       headerName: 'Products',
       flex: 1,
       valueGetter: (params) => {
+        
         let name = '';
-        params.row.products.map((prod, i) => {
-          name += prod.name + (i === (params.row.products.length - 1) ? '' : ', ');
+        params.row.products.map((prod:any, i:number) => {
+          name += prod.name +'('+ parseFloat(prod?.pivot?.qty)+')'  + (i === (params.row.products.length - 1) ? '' : ', ');
         });
         return name;
       },
@@ -189,7 +188,7 @@ const Transfer: NextPage = (props: any) => {
       headerName: 'Action ',
       sortable: false,
       disableExport: true,
-      flex: 1,
+      flex: 1.5,
       renderCell: ({ row }: Partial<GridRowParams>) => (
         <>
           <ButtonGroup className="mb-2 m-buttons-style">
@@ -204,16 +203,18 @@ const Transfer: NextPage = (props: any) => {
             )} */}
             {permissions.hasDelete && (
               <Button
+              disabled={row.status==='received'||row.status==='cancelled'}
                 onClick={(event) => {
                   event.stopPropagation();
                   setSelectId(row.id);
                   setShow(true);
                 }}>
-                <FontAwesomeIcon icon={faTrash} />
+                <CloseIcon  style={{color:(row.status==='received'||row.status==='cancelled')?'gray':''}}/>
               </Button>
             )}
            
-            <TransferDetailsModal locations={locations} shopId={shopId} transfer={row}/>
+           <TransferDetailsModal locations={locations} shopId={shopId} transfer={row}/>
+           <ReceiveTransferModal setProducts={setProducts} locations={locations} shopId={shopId} transfer={row}/>
           </ButtonGroup>
         </>
       ),
@@ -237,7 +238,7 @@ const Transfer: NextPage = (props: any) => {
           shopId={id}
           id={selectId}
           url={'transfer'}>
-          Are you Sure You Want Delete This Item ?
+          Are you Sure You Want Cancel This transefer ?
         </AlertDialog>
         {!isLoading && permissions.hasInsert && (
           <div className="mb-2">
@@ -269,6 +270,7 @@ const Transfer: NextPage = (props: any) => {
               pageSize={10}
               rowsPerPageOptions={[10]}
               components={{ Toolbar: CustomToolbar }}
+            
             />
           </div>
         ) : (
@@ -277,7 +279,7 @@ const Transfer: NextPage = (props: any) => {
           </div>
         )}
       </AdminLayout>
-      <TransferModal
+      {/* <TransferModal
         shopId={shopId}
         showType={'add'}
         userdata={{}}
@@ -285,7 +287,7 @@ const Transfer: NextPage = (props: any) => {
         statusDialog={customerIsModal}
         openDialog={customerModalHandler}
         initData={initDataPage}
-      />
+      /> */}
     </>
   );
 };
