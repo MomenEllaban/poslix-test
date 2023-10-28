@@ -52,6 +52,8 @@ export default function SalesList(props: any) {
     setAnchorEl(null);
   };
   const [sales, setsales] = useState<any>([]);
+  console.log(sales[0] || []);
+  
   const [customersNames, setCustomersNames] = useState<any>([]);
   const router = useRouter();
   const shopId = router.query.id;
@@ -370,6 +372,8 @@ export default function SalesList(props: any) {
     setCustomersNames(customers_names.data.result);
     console.log(customers_names.data.result, 'customers_names');
     if (res.data.success) {
+      console.log(res.data.result);
+      
       setsales(res.data.result.quotationsList);
       // if (res.data.result.invoiceDetails != null && res.data.result.invoiceDetails.length > 10)
       //   setInvoicDetails(JSON.parse(res.data.result.invoiceDetails));

@@ -64,6 +64,8 @@ const AddQuotations: NextPage = (props: any) => {
     currency_rate: 1,
     currency_symbol: '',
   });
+  console.log(locationSettings);
+  
   const [formObj, setFormObj] = useState<any>({
     id: 0,
     customer_id: 0,
@@ -89,6 +91,8 @@ const AddQuotations: NextPage = (props: any) => {
     paymentDate: new Date(),
     payment_id: 0,
   });
+  console.log(formObj);
+  
   const [errorForm, setErrorForm] = useState({
     morePaid: false,
     paid: false,
@@ -127,6 +131,8 @@ const AddQuotations: NextPage = (props: any) => {
   const [quotationStatus, setQuotationStatus] = useState<{ value: string; label: string }[]>();
   const [purchaseStatus, setPurchaseStatus] =
     useState<{ value: string; label: string }[]>(quotationStatusDataAdd);
+    console.log(purchaseStatus);
+    
   const [paymentTypes, setPaymentTypes] =
     useState<{ value: string; label: string }[]>(paymentTypeData);
   const [paymentStatus, setPaymentStatus] =
@@ -219,8 +225,8 @@ const AddQuotations: NextPage = (props: any) => {
         <>
           <div>
             {locationSettings?.currency_id == formObj.currency_id
-              ? Number(row.cost * row.quantity).toFixed(locationSettings?.location_decimal_places)
-              : (formObj.currency_rate * row.cost).toFixed(
+              ? Number(row.price * row.quantity).toFixed(locationSettings?.location_decimal_places)
+              : (formObj.currency_rate * row.price).toFixed(
                 locationSettings?.location_decimal_places
               )}
           </div>
@@ -431,12 +437,17 @@ const AddQuotations: NextPage = (props: any) => {
   }
   var errors = [];
   useEffect(() => {
-    var _locs = JSON.parse(localStorage.getItem('locations') || '[]');
+    var _locs = JSON.parse(localStorage.getItem('locations'));
+    console.log(11111111111111111);
+    console.log(_locs);
+    
     if (_locs.toString().length > 10)
+    console.log(555555555555555);
+    
       setLocationSettings(
         _locs[
         _locs.findIndex((loc: any) => {
-          return loc.value == id;
+          return loc.location_id == id;
         })
         ]
       );
@@ -707,7 +718,7 @@ const AddQuotations: NextPage = (props: any) => {
           quantity: 1,
           price: e.sell_price,
           cost: e.cost_price,
-          lineTotal: e.cost_price,
+          lineTotal: e.sell_price,
           taxAmount: 0,
           costType: 0,
           isNew: true,
@@ -724,10 +735,10 @@ const AddQuotations: NextPage = (props: any) => {
       if (params.field == 'cost' || params.field == 'quantity')
         _datas[found].lineTotal =
           locationSettings?.currency_id == formObj.currency_id
-            ? Number(_datas[found].cost * _datas[found].quantity).toFixed(
+            ? Number(_datas[found].price * _datas[found].quantity).toFixed(
               locationSettings?.location_decimal_places
             )
-            : Number(_datas[found].cost * formObj.currency_rate * _datas[found].quantity).toFixed(
+            : Number(_datas[found].price * formObj.currency_rate * _datas[found].quantity).toFixed(
               locationSettings?.location_decimal_places
             );
 
@@ -785,6 +796,7 @@ const AddQuotations: NextPage = (props: any) => {
     });
     setSelectProducts(_rows);
   }
+console.log(formObj.subTotal_price);
 
   return (
     <>
@@ -1021,9 +1033,7 @@ const AddQuotations: NextPage = (props: any) => {
                   <Select
                     styles={selectStyle}
                     options={currencies}
-                    value={currencies.filter((f: any) => {
-                      return f.value == formObj.currency_id;
-                    })}
+                    value={currencies?.filter((f: any) => f.value == (formObj.currency_id || locationSettings.currency_id))}
                     onChange={(itm) => {
                       console.log(itm);
 

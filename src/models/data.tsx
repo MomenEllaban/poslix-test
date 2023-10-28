@@ -18,7 +18,7 @@ export function quotationStatusDataAdd(): {
   return [
     { label: 'Accepted', value: 'accepted' },
     { label: 'Waiting', value: 'waiting' },
-    { label: 'Cancelled', value: 'cancelled' },
+    { label: 'Canceled', value: 'canceled' },
   ];
 }
 export function purchaseStatusData(): {
