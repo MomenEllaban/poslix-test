@@ -969,7 +969,7 @@ const Product: NextPage = ({ editId, iType }: any) => {
                       </div>
                       <div className="field-section">
                         <Select
-                          isDisabled={isEdit}
+                          // isDisabled={isEdit}
                           styles={colourStyles}
                           options={producTypes}
                           value={producTypes.find((f: any) => {

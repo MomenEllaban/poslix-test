@@ -25,8 +25,8 @@ const PackageItemsModal = ({
     setShow(false);
   };
   const handleAddItem = (item: IVariation) => {
-    if (+item.stock < 1) return;
-    console.log(product, item);
+    // if (+item.stock < 1) return;
+    // console.log(product, item);
     const _product: IProduct = {
       ...product,
       ...item,
@@ -52,7 +52,7 @@ const PackageItemsModal = ({
               <button
                 onClick={() => handleAddItem(v)}
                 className={styles['item']}
-                disabled={+v.stock < 1}
+                // disabled={+v.stock < 1}
                 key={v.id}>
                 <div className={styles['icon']}>
                   <MdAddShoppingCart />
