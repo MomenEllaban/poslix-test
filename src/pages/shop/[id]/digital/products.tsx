@@ -31,7 +31,6 @@ const Products: NextPage = () => {
   const [isloading, setIsloading] = useState<boolean>(false);
   const [appearance, setAppearance] = useState<any>()
   const [location, setLocation] = useState<any>()
-
   // ------------------------------------------------------------------------------------------------
   const getTotalPrice = () => {
     let totalPrice = 0
