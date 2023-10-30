@@ -17,6 +17,7 @@ import { Checkout } from 'src/components/digital/checkout';
 import { Toastify } from 'src/libs/allToasts';
 import category from '../category';
 import { DigitalNavbar } from 'src/components/digital/digital-navbar';
+import { usePosContext } from 'src/modules/pos/_context/PosContext';
 
 const Products: NextPage = () => {
   const [type, setType] = useState('all');
@@ -31,7 +32,7 @@ const Products: NextPage = () => {
   const [isloading, setIsloading] = useState<boolean>(false);
   const [appearance, setAppearance] = useState<any>()
   const [location, setLocation] = useState<any>()
-
+  const { lang:_lang } = usePosContext();
   // ------------------------------------------------------------------------------------------------
   const getTotalPrice = () => {
     let totalPrice = 0
@@ -188,7 +189,7 @@ const Products: NextPage = () => {
     {renderedScreen === 'products' ? <>
       <div className="digital-products-main bg-white">
         <div className="digital-products-header">
-          <h1>Digital Products</h1>
+          <h1>{_lang?.digital?.Digital_Products}</h1>
         </div>
 
         <div className="digital-products-container">
@@ -207,10 +208,10 @@ const Products: NextPage = () => {
               <div style={{ borderRadius: '8px' }} className='toggle-brands-catigories-buttons-wrapper '>
                 <div onClick={() => {
                   setRenderedTabs("categories")
-                }} style={{ borderRadius: '8px', cursor: 'pointer' }} className={`w-50 p-2 text-center  ${renderedTabs === 'categories' ? 'bg-success' : 'bg-light'} ${renderedTabs === 'categories' ? 'text-light' : 'text-success'}`}>Categories</div>
+                }} style={{ borderRadius: '8px', cursor: 'pointer' }} className={`w-50 p-2 text-center  ${renderedTabs === 'categories' ? 'bg-success' : 'bg-light'} ${renderedTabs === 'categories' ? 'text-light' : 'text-success'}`}>{_lang?.digital?.Categories}</div>
                 <div onClick={() => {
                   setRenderedTabs("brands")
-                }} style={{ borderRadius: '8px', cursor: 'pointer' }} className={`w-50 p-2 text-center  ${renderedTabs === 'brands' ? 'bg-success' : 'bg-light'} ${renderedTabs === 'brands' ? 'text-light' : 'text-success'}`}>Brands</div>
+                }} style={{ borderRadius: '8px', cursor: 'pointer' }} className={`w-50 p-2 text-center  ${renderedTabs === 'brands' ? 'bg-success' : 'bg-light'} ${renderedTabs === 'brands' ? 'text-light' : 'text-success'}`}>{_lang?.digital?.Brands}</div>
               </div>
               <div className='w-100 d-flex justify-content-center bg-light'>
                 <Tabs

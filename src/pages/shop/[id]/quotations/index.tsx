@@ -61,7 +61,6 @@ export default function SalesList(props: any) {
     });
   };
   const [sales, setsales] = useState<any>([]);
-  console.log(sales);
 
   const [customersNames, setCustomersNames] = useState<any>([]);
   const router = useRouter();
@@ -75,7 +74,8 @@ export default function SalesList(props: any) {
   const [showViewPopUp, setShowViewPopUp] = useState(false);
   const [handleSearchTxt, setHandleSearchTxt] = useState('');
   const [isloading, setIsloading] = useState<any>(false);
-  const { setInvoicDetails, invoicDetails } = useContext(UserContext);
+  const [invoiceDetails, setInvoiceDetails] = useState<any>();
+  // const { setInvoiceDetails, invoiceDetails } = useContext(UserContext);
   const [showingQuotation, setShowQuotation] = useState<{
     transferID: number | null;
     from: string;
@@ -93,7 +93,6 @@ export default function SalesList(props: any) {
     createdBy: '',
     ceartedAt: '',
   });
-  console.log(showingQuotation);
 
   const updateStatus = async (id: number, status: string) => {
     const res = await updateData('quotations-list', id, { status });
@@ -101,7 +100,27 @@ export default function SalesList(props: any) {
     else Toastify('error', 'Error');
     initDataPage();
   };
+  const checkPrintType = async () => {
+    const res = await findAllData(`appearance/${router.query.id}`);
+    setInvoiceDetails({
+      ...res.data.result,
+      en: { ...res.data.result.en, is_multi_language: !!res.data.result.en.is_multi_language },
+    });
+  };
+  const getItems = async (id: number) => {
+    setIsLoadItems(true);
+    try {
+      const res = await findAllData(`quotations-list/${id}`);
+      setLines(res.data.result.quotationsList.quotation_list_lines);
 
+    } catch (e) {
+      Toastify('error', 'Something went wrong')
+    }
+    // if (res.data.success) {
+    //   setSalesRep(res.data.result);
+    setIsLoadItems(false);
+    // }
+  };
   const formatQuotation = (quotation: any) => {
     let total = 0;
     const products: { name: string; qty: number }[] = [];
@@ -124,8 +143,22 @@ export default function SalesList(props: any) {
       ceartedAt,
       createdBy: from,
     });
-  };
+    getItems(transferID)
+    // calc total price
+    let total_price: number = 0;
+    quotation?.quotation_list_lines.forEach(el => {
 
+      total_price = total_price + ((+el.qty) * (+el?.quotation_line_product?.sell_price))
+    });
+
+    setSelectRow({ ...quotation, total_price })
+  };
+  // ------------------------------------------------------------------------------------------------
+  useEffect(() => {
+    checkPrintType();
+  }, []);
+  
+  // ------------------------------------------------------------------------------------------------
   //table columns
   const columns: GridColDef[] = [
     { field: 'id', headerName: '#', minWidth: 50 },
@@ -225,90 +258,142 @@ export default function SalesList(props: any) {
   const componentRef = React.useRef(null);
   class ComponentToPrint extends React.PureComponent {
     render() {
+
       if (!selectRow) return;
       return (
         <div className="bill">
           <div className="brand-logo">
-            <img src={invoicDetails.logo} />
+            <img src={invoiceDetails?.en?.logo} />
           </div>
           <br />
-          <div className="brand-name">{invoicDetails.name}</div>
-          <div className="shop-details">{invoicDetails.tell}</div>
+          <div className="brand-name">{invoiceDetails?.en?.name}</div>
+          <div className="shop-details">{invoiceDetails?.en?.tell}</div>
           <br />
           <div className="bill-details">
             <div className="flex justify-between">
               <div>
-                {invoicDetails.txtCustomer}{' '}
-                {invoicDetails.isMultiLang && invoicDetails.txtCustomer2}
+                {invoiceDetails?.en?.txtCustomer}{' '}
+                {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtCustomer}
               </div>
-              <div>{selectRow.customer_name}</div>
+              <div>{selectRow?.customer?.first_name} {selectRow?.customer?.last_name}</div>
             </div>
             <div className="flex justify-between">
               <div>
-                {invoicDetails.orderNo} {invoicDetails.isMultiLang && invoicDetails.orderNo2}
+                {invoiceDetails?.en?.orderNo}{' '}
+                {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.orderNo}
               </div>
               <div>{selectRow.id}</div>
             </div>
             <div className="flex justify-between">
               <div>
-                {invoicDetails.txtDate} {invoicDetails.isMultiLang && invoicDetails.txtDate2}
+                {invoiceDetails?.en?.txtDate}{' '}
+                {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtDate}
               </div>
-              <div>{new Date().toISOString().slice(0, 10)}</div>
+              <div>{selectRow?.created_at ? new Date(selectRow?.created_at).toISOString().slice(0, 10) : ''}</div>
             </div>
           </div>
+          {/*  */}
           <table className="table">
             <thead>
               <tr className="header">
                 <th>
-                  {invoicDetails.txtQty}
+                  {invoiceDetails?.en?.txtQty}
                   <br />
-                  {invoicDetails.isMultiLang && invoicDetails.txtQty2}
+                  {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtQty}
                 </th>
                 <th>
-                  {invoicDetails.txtItem}
+                  {invoiceDetails?.en?.txtItem}
                   <br />
-                  {invoicDetails.isMultiLang && invoicDetails.txtItem2}
+                  {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtItem}
                 </th>
                 <th></th>
                 <th>
-                  {invoicDetails.txtAmount}
+                  {invoiceDetails?.en?.txtAmount}
                   <br />
-                  {invoicDetails.isMultiLang && invoicDetails.txtAmount2}
+                  {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtAmount}
                 </th>
               </tr>
-              {lines &&
+              {lines.length > 0 &&
                 lines.map((line: any, index: number) => {
+
                   return (
                     <tr key={index}>
-                      <td>{Number(line.qty)}</td>
-                      <td>{line.name}</td>
+                      <td>{Number(line.qty).toFixed(0)}</td>
+                      <td>{line?.quotation_line_product?.name}</td>
                       <td></td>
-                      <td>{line.price}</td>
+                      <td>
+                        {Number(+line.qty * +line?.quotation_line_product?.sell_price).toFixed(
+                          locationSettings?.location_decimal_places || 4
+                        )}
+                      </td>
                     </tr>
                   );
                 })}
+              <tr style={{ borderTop: '2px', height: '2px' }}></tr>
               <tr className="net-amount">
                 <td></td>
                 <td>
-                  {invoicDetails.txtTax} {invoicDetails.isMultiLang && invoicDetails.txtTax2}
+                  {invoiceDetails?.en?.txtTax}{' '}
+                  {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtTax}
                 </td>
                 <td></td>
+                <td>
+                  {(
+                    ((+selectRow.sub_total / (1 + +selectRow?.tax / 100)) * +selectRow?.tax) /
+                    100
+                  ).toFixed(locationSettings?.location_decimal_places)}
+                </td>
+              </tr>
+              <tr className="net-amount">
+                <td></td>
+                <td>
+                  {invoiceDetails?.en?.txtDiscount}
+                  {'Discount'} {invoiceDetails?.en?.is_multi_language && 'التخفيضات'}
+                  {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtDiscount}
+                </td>
+                <td></td>
+                <td>{(+selectRow?.discount).toFixed(locationSettings?.location_decimal_places)}</td>
               </tr>
               <tr className="net-amount">
                 <td></td>
                 <td className="txt-bold">
-                  {invoicDetails.txtTotal} {invoicDetails.isMultiLang && invoicDetails.txtTotal2}
+                  {invoiceDetails?.en?.txtTotal}{' '}
+                  {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtTotal}
                 </td>
                 <td></td>
                 <td className="txt-bold">
-                  {Number(selectRow.total_price).toFixed(locationSettings?.location_decimal_places)}
+                  {Number(selectRow?.total_price).toFixed(
+                    locationSettings?.location_decimal_places || 4
+                  )}
                 </td>
               </tr>
+              {/* <tr className="net-amount">
+                <td></td>
+                <td className="txt-bold">
+                  Total Paid {invoiceDetails?.en?.is_multi_language && 'إجمالى المدفوعات'}
+                </td>
+                <td></td>
+                <td className="txt-bold">
+                  {Number(selectRow.payed).toFixed(locationSettings?.location_decimal_places)}
+                </td>
+              </tr> */}
+              {/* <tr className="net-amount">
+                <td></td>
+                <td className="txt-bold">
+                  Total Due {invoiceDetails?.en?.is_multi_language && 'المتبقى'}
+                </td>
+                <td></td>
+                <td className="txt-bold">
+                  {Number(selectRow.discount).toFixed(locationSettings?.location_decimal_places)}
+                </td>
+              </tr> */}
             </thead>
           </table>
+          {/*  */}
           <p className="recipt-footer">
-            {invoicDetails.footer}
-            {invoicDetails.isMultiLang && invoicDetails.footer2}
+            {invoiceDetails?.en?.footer}
+            <br />
+            {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.footer}
           </p>
           <p className="recipt-footer">{selectRow.notes}</p>
           <br />
@@ -324,19 +409,27 @@ export default function SalesList(props: any) {
       return (
         <div className="bill2">
           <div className="brand-logo">
-            <img src={invoicDetails.logo} />
+            <img src={invoiceDetails?.en?.logo} />
             <div className="invoice-print">
               INVOICE
               <div>
                 <table className="GeneratedTable">
                   <tbody>
                     <tr>
-                      <td className="td_bg">INVOICE NUMBER </td>
-                      <td>{selectRow.id}</td>
+                      <td className="td_bg">
+                        {invoiceDetails?.en?.orderNo}
+                        <br />
+                        {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.orderNo}
+                      </td>
+                      <td>{selectRow?.id}</td>
                     </tr>
                     <tr>
-                      <td className="td_bg">INVOICE DATE </td>
-                      <td>{new Date().toISOString().slice(0, 10)}</td>
+                      <td className="td_bg">
+                        {invoiceDetails?.en?.txtDate}
+                        <br />
+                        {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtDate}
+                      </td>
+                      <td>{selectRow?.created_at ? new Date(selectRow?.created_at).toISOString().slice(0, 10) : ""}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -348,78 +441,97 @@ export default function SalesList(props: any) {
           <div className="up_of_table flex justify-between">
             <div className="left_up_of_table">
               <div>Billed From</div>
-              <div>Global Tech Projects</div>
-              <div>info@poslix.com</div>
-              <div>+986 2428 8077</div>
-              <div>Office 21-22, Building 532, Mazoon St. Muscat, Oman</div>
-              <div>VAT Number: OM1100270001</div>
+              <div>{invoiceDetails?.en?.name}</div>
+              <div>{invoiceDetails?.en?.email}</div>
+              <div>{invoiceDetails?.en?.tell}</div>
+              <div>{invoiceDetails?.en?.address}</div>
+              <div>VAT Number: {invoiceDetails?.en?.vatNumber}</div>
             </div>
             <div className="right_up_of_table">
               <div>Billed To</div>
-              <div>{selectRow.customer_name}</div>
+              <div>
+                {invoiceDetails?.en?.txtCustomer}{' '}
+                {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtCustomer}
+              </div>
+              <div>{selectRow?.customer?.first_name} {selectRow?.customer?.last_name}</div>
             </div>
           </div>
           <br />
 
+
           <table className="GeneratedTable2">
             <thead>
               <tr>
-                <th>Description</th>
+                <th>
+                  {invoiceDetails?.en?.txtItem} <br />
+                  {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtItem}
+                </th>
                 <th>
                   {' '}
-                  {invoicDetails.txtQty}
+                  {invoiceDetails?.en?.txtQty}
                   <br />
-                  {invoicDetails.isMultiLang && invoicDetails.txtQty2}
+                  {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtQty}
                 </th>
                 <th>Unit Price</th>
-
-                <th>Tax</th>
+                <th>
+                  {invoiceDetails?.en?.txtTax}
+                  <br />
+                  {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtTax}
+                </th>
                 <th>
                   {' '}
-                  {invoicDetails.txtAmount}
+                  {invoiceDetails?.en?.txtAmount}
                   <br />
-                  {invoicDetails.isMultiLang && invoicDetails.txtAmount2}
+                  {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtAmount}
                 </th>
               </tr>
             </thead>
-            {lines &&
+            {lines.length > 0 &&
               lines.map((line: any, index: number) => {
                 return (
                   <tr key={index}>
-                    <td>{line.name}</td>
-                    <td>{Number(line.qty)}</td>
-                    <td>{line.price}</td>
-                    <td></td>
-                    <td>{line.price * Number(line.qty)}</td>
+                    <td>{line?.quotation_line_product?.name}</td>
+                    <td>{Number(line?.qty).toFixed(0)}</td>
+                    <td>
+                      {Number(line?.quotation_line_product?.sell_price).toFixed(locationSettings?.location_decimal_places || 4)}
+                    </td>
+                    <td>
+                      {Number((+line?.pivot?.tax_amount / 100) * +line?.pivot?.price).toFixed(
+                        locationSettings?.location_decimal_places
+                      )}
+                    </td>
+
+                    <td>
+                      {Number(line?.qty * line?.quotation_line_product?.sell_price).toFixed(locationSettings?.location_decimal_places || 4)}
+                    </td>
+
                   </tr>
                 );
               })}
 
             <tbody>
-              <tr>
-                {/* <td>{invoicDetails.txtTax} {invoicDetails.isMultiLang && invoicDetails.txtTax2}</td> */}
-                <td colSpan={4} className="txt_bold_invoice">
-                  Sub Total
-                </td>
-                <td></td>
-              </tr>
+
               <tr>
                 <td colSpan={4} className="txt_bold_invoice">
-                  {invoicDetails.txtTotal} {invoicDetails.isMultiLang && invoicDetails.txtTotal2}
+                  {invoiceDetails?.en?.txtTotal}{' '}
+                  {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtTotal}
                 </td>
                 <td className="txt_bold_invoice">
-                  {Number(selectRow.total_price).toFixed(locationSettings?.location_decimal_places)}
+                  {Number(selectRow.total_price).toFixed(locationSettings?.location_decimal_places || 4)}
                 </td>
               </tr>
+
+
             </tbody>
           </table>
+
+          {/*         
           <p className="recipt-footer">
-            {invoicDetails.footer}
+            {invoiceDetails?.en?.footer}
             <br />
-            {invoicDetails.footersecond}
-            {invoicDetails.isMultiLang && invoicDetails.footer2}
-          </p>
-          <p className="recipt-footer">{selectRow.notes}</p>
+            {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.footer}
+          </p> */}
+          {/* <p className="recipt-footer">{selectRow.notes}</p> */}
           <br />
         </div>
       );
@@ -429,21 +541,19 @@ export default function SalesList(props: any) {
   // init sales data
   async function initDataPage() {
     setIsloading(true)
-    try{
+    try {
       const res = await findAllData(`quotations-list?location_id=${shopId}`);
       const customers_names = await findAllData(`customers/${shopId}`);
       setCustomersNames(customers_names.data.result);
       setsales(res.data.result.quotationsList);
-    
-      if (res.data.result.invoiceDetails != null && res.data.result.invoiceDetails.length > 10){
-        setInvoicDetails(JSON.parse(res.data.result.invoiceDetails));
-}
-    
-    console.log(res,'res');
-    }catch(e){
-    Toastify("error",'Something went wrong')
-  }
-    // console.log(customers_names);
+
+      //       if (res.data.result.invoiceDetails != null && res.data.result.invoiceDetails.length > 10){
+      //         setInvoiceDetails(JSON.parse(res.data.result.invoiceDetails));
+      // }
+
+    } catch (e) {
+      Toastify("error", 'Something went wrong')
+    }
     setIsloading(false)
 
   }
@@ -461,12 +571,12 @@ export default function SalesList(props: any) {
       perm.name.includes('quotations-list/show')
         ? (getPermissions.hasView = true)
         : perm.name.includes('quotations-list/add')
-        ? (getPermissions.hasInsert = true)
-        : perm.name.includes('quotations-list/update')
-        ? (getPermissions.hasEdit = true)
-        : perm.name.includes('quotations-list/delete')
-        ? (getPermissions.hasDelete = true)
-        : null
+          ? (getPermissions.hasInsert = true)
+          : perm.name.includes('quotations-list/update')
+            ? (getPermissions.hasEdit = true)
+            : perm.name.includes('quotations-list/delete')
+              ? (getPermissions.hasDelete = true)
+              : null
     );
 
     setPermissions(getPermissions);
@@ -475,9 +585,9 @@ export default function SalesList(props: any) {
     if (_locs.toString().length > 10)
       setLocationSettings(
         _locs[
-          _locs.findIndex((loc: any) => {
-            return loc.value == shopId;
-          })
+        _locs.findIndex((loc: any) => {         
+          return loc.location_id == shopId;
+        })
         ]
       );
 
@@ -487,7 +597,6 @@ export default function SalesList(props: any) {
   const handleDeleteFuc = (result: boolean, msg: string, section: string) => {
     if (result) {
       const _data = [...sales];
-      console.log(selectId);
       const idx = _data.findIndex((itm: any) => itm.id == selectId);
 
       if (idx != -1) {
@@ -548,9 +657,10 @@ export default function SalesList(props: any) {
             <FontAwesomeIcon icon={faPlus} /> Add Quotation{' '}
           </button>
         </div>
+
         <h5>Quotations List</h5>
         <DataGrid
-        loading={isloading}
+          loading={isloading}
           className="datagrid-style"
           sx={{
             '.MuiDataGrid-columnSeparator': {
@@ -570,6 +680,7 @@ export default function SalesList(props: any) {
           components={{ Toolbar: CustomToolbar }}
         />
       </div>
+     
       {/* FOR VIEW ELEMENT */}
       <Dialog open={showViewPopUp} fullWidth={true} maxWidth={'md'} onClose={handleClose}>
         {/* <DialogTitle className="poslix-modal text-primary">
@@ -691,7 +802,7 @@ export default function SalesList(props: any) {
           </Box>
           {/* <div className="poslix-modal">
             <div className="top-section-details">
-              <img src={invoicDetails.logo} style={{ width: '80px', marginBottom: '10px' }} />
+              <img src={invoiceDetails.logo} style={{ width: '80px', marginBottom: '10px' }} />
               <div className="item-sections">
                 <div className="top-detials-invoice">
                   <div className="top-detials-item">
@@ -824,6 +935,23 @@ export default function SalesList(props: any) {
               }}>
               Save
             </Button>
+          )}
+          {!edit && (
+            <div className='mx-3'>
+              <Button
+                className="mr-right"
+                onClick={() => {
+                  handlePrint();
+                }}>
+                Print Recipt
+              </Button>
+              <Button
+                onClick={() => {
+                  handlePrint2();
+                }}>
+                Print Invoice
+              </Button>
+            </div>
           )}
           <Button
             onClick={() => {

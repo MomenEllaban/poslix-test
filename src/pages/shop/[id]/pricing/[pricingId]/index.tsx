@@ -27,7 +27,7 @@ const PricingGroup = (props: any) => {
     currency_symbol: '',
   });
   const [products, setProducts] = useState<any>();
-  const [productsPricing, setProductsPricing] = useState<any>();
+  const [productsPricingGroup, setProductsPricingGroup] = useState<any>();
   const columns: GridColDef[] = [
     { field: 'id', headerName: '#', minWidth: 50 },
     { field: 'name', headerName: 'Name', flex: 1 },
@@ -51,17 +51,15 @@ const PricingGroup = (props: any) => {
       headerName: 'Price',
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) => <input
-        value={productsPricing?.find(p => p.id === row.id)?.pivot?.price || ''}
+        value={productsPricingGroup?.find(p => p.id === row.id)?.price || ''}
         onChange={(e) => {
-          setProductsPricing((prev: any) => {
+
+          setProductsPricingGroup((prev: any) => {
             const updatedProducts = prev.map((product: any) => {
               if (product.id === row.id) {
                 return {
                   ...product,
-                  pivot: {
-                    ...product?.pivot,
-                    price: e.target.value
-                  },
+                price:e.target.value
                 };
               }
               return product;
@@ -69,19 +67,20 @@ const PricingGroup = (props: any) => {
 
             return updatedProducts;
           });
-          setProducts((prev: any) => {
-            const updatedProducts = prev.map((product: any) => {
-              if (product.id === row.id) {
-                return {
-                  ...product,
-                  price: e.target.value,
-                };
-              }
-              return product;
-            });
 
-            return updatedProducts;
-          });
+          // setProducts((prev: any) => {
+          //   const updatedProducts = prev.map((product: any) => {
+          //     if (product.id === row.id) {
+          //       return {
+          //         ...product,
+          //         price: e.target.value,
+          //       };
+          //     }
+          //     return product;
+          //   });
+
+          //   return updatedProducts;
+          // });
         }
         }
 
@@ -123,10 +122,13 @@ const PricingGroup = (props: any) => {
   // ----------------------------------------------------------------------------------------------
   const updatePricing = async () => {
     const url = 'pricing-group'
+    
     const data = {
       "location_id": router.query.id,
-      products: products.map(p => ({ id: p.id, price: +(p.price ? p.price : p.sell_price) }))
+      products: productsPricingGroup
     }
+
+
     try {
       const res = await updateData(url, router.query.pricingId, data)
       Toastify('success', 'Groups updated successfully')
@@ -136,6 +138,8 @@ const PricingGroup = (props: any) => {
       Toastify('error', 'Something went wrong')
     }
   }
+  // ----------------------------------------------------------------------------------------------
+
   // ----------------------------------------------------------------------------------------------
   const onRowsSelectionHandler = (ids: any) => { };
   async function initDataPage() {
@@ -152,8 +156,8 @@ const PricingGroup = (props: any) => {
 
       const res: any = await findAllData(`products/${router.query.id}?all_data=1`);
       const res2: any = await findAllData(`pricing-group/${router.query.id}?group_id=${router.query.pricingId}`);
-
-      setProductsPricing(res2?.data?.result?.products)
+// set pricing for grop with old pricing if exist if not set it with the prodact normal sell price
+      setProductsPricingGroup(res2?.data?.result?.products.map((p:any)=>({id:p.id,price:p.pivot.price?p.pivot.price:res?.data?.result.sell_price})))
 
       setProducts(res?.data?.result);
     } catch (e) {
