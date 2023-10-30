@@ -11,6 +11,7 @@ import { Toastify } from 'src/libs/allToasts';
 import PosCart from 'src/modules/pos/PosCart';
 import PosLoader from 'src/modules/pos/_components/PosLoader';
 import PosLayout from 'src/modules/pos/_components/layout/pos.layout';
+import { PosProvider } from 'src/modules/pos/_context/PosContext';
 import { OpenRegisterView } from 'src/modules/pos/_views/open-register.view';
 import { selectPos, setPosRegister } from 'src/redux/slices/pos.slice';
 import { useGetBusinessLocation } from 'src/services/business.service';
@@ -137,9 +138,11 @@ const Home: NextPage = ({ shopId: _id }: any) => {
   }, [_id]);
 
   return (
-    <PosLayout>
-      <StepRender />
-    </PosLayout>
+    <PosProvider>
+      <PosLayout>
+        <StepRender />
+      </PosLayout>
+    </PosProvider>
   );
 };
 
