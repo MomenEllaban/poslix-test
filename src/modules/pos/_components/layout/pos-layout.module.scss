@@ -12,4 +12,15 @@
       margin: 10px 10px 15px 0px;
     }
   }
+
+  .pos-flex-ar {
+    display: flex;
+    flex-direction: row-reverse;
+    min-width: 100%;
+    min-height: 100vh;
+
+    :global(.card) {
+      margin: 10px 10px 15px 0px;
+    }
+  }
 }

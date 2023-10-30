@@ -88,6 +88,10 @@ const cartSlice = createSlice({
       const existingItem = cart.cartItems.find((item) => item.id === id);
 
       if (existingItem) {
+        const newQty = existingItem.quantity + 1
+        if((existingItem.stock < newQty) && (+existingItem.sell_over_stock === 0)){
+          return
+        }
         existingItem.quantity += 1;
       } else {
         cart.cartItems.push({ ...action.payload, quantity: 1 });
@@ -137,7 +141,35 @@ const cartSlice = createSlice({
         }
         cart.cartSellTotal -= +action.payload.sell_price;
         cart.cartCostTotal -= +action.payload.cost_price;
-        localStorage.setItem('cart', JSON.stringify(state)); 
+        localStorage.setItem('cart', JSON.stringify(state));
+      }
+
+      if (!cart.cartItems.length) {
+        cart.orderId = null;
+        cart.lastTotal = 0;
+        cart.lastDue = 0;
+        cart.customer_id = 0;
+      }
+    },
+    changeWithSpesificAmount: (state, { payload }) => {
+      const { product, newQty } = payload;
+      console.log(product);
+      
+      const { id, location_id, sell_price, cost_price } = product;
+      const cart = findOrCreateCart(state, location_id);
+      const existingItem = cart.cartItems.find((item) => item.id === id);
+
+      if (existingItem) {
+        const oldQty = existingItem.quantity;
+        existingItem.quantity = newQty;
+        if (existingItem.quantity === 0) {
+          cart.cartItems = cart.cartItems.filter((item) => item.id !== id);
+        }
+        cart.cartSellTotal -= (+sell_price * oldQty);
+        cart.cartSellTotal += (+sell_price * newQty);
+        cart.cartCostTotal -= (+cost_price * oldQty);
+        cart.cartCostTotal += (+cost_price * newQty);
+        localStorage.setItem('cart', JSON.stringify(state));
       }
 
       if (!cart.cartItems.length) {
@@ -190,5 +222,6 @@ export const {
   decreaseItemQuantity,
   clearCart,
   removeFromCart,
+  changeWithSpesificAmount,
   addMultipleToCart,
 } = cartSlice.actions;

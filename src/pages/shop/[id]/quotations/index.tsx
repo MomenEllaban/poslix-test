@@ -62,7 +62,6 @@ export default function SalesList(props: any) {
   };
   const [sales, setsales] = useState<any>([]);
   console.log(sales);
-
   const [customersNames, setCustomersNames] = useState<any>([]);
   const router = useRouter();
   const shopId = router.query.id;

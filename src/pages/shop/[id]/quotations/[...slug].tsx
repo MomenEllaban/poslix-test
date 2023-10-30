@@ -64,6 +64,8 @@ const AddQuotations: NextPage = (props: any) => {
     currency_rate: 1,
     currency_symbol: '',
   });
+  console.log(locationSettings);
+  
   const [formObj, setFormObj] = useState<any>({
     id: 0,
     customer_id: 0,
@@ -89,6 +91,8 @@ const AddQuotations: NextPage = (props: any) => {
     paymentDate: new Date(),
     payment_id: 0,
   });
+  console.log(formObj);
+  
   const [errorForm, setErrorForm] = useState({
     morePaid: false,
     paid: false,
@@ -127,6 +131,8 @@ const AddQuotations: NextPage = (props: any) => {
   const [quotationStatus, setQuotationStatus] = useState<{ value: string; label: string }[]>();
   const [purchaseStatus, setPurchaseStatus] =
     useState<{ value: string; label: string }[]>(quotationStatusDataAdd);
+    console.log(purchaseStatus);
+    
   const [paymentTypes, setPaymentTypes] =
     useState<{ value: string; label: string }[]>(paymentTypeData);
   const [paymentStatus, setPaymentStatus] =
@@ -432,13 +438,17 @@ console.log(selectProducts);
   }
   var errors = [];
   useEffect(() => {
-    var _locs = JSON.parse(localStorage.getItem('locations') || '[]');
+    var _locs = JSON.parse(localStorage.getItem('locations'));
+    console.log(11111111111111111);
+    console.log(_locs);
+    
     if (_locs.toString().length > 10)
+    console.log(555555555555555);
+    
       setLocationSettings(
         _locs[
         _locs.findIndex((loc: any) => {
-          return loc.location_id
-          == id;
+          return loc.location_id == id;
         })
         ]
       );
@@ -787,6 +797,7 @@ console.log(selectProducts);
     });
     setSelectProducts(_rows);
   }
+console.log(formObj.subTotal_price);
 
   return (
     <>

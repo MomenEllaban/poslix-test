@@ -19,9 +19,7 @@ export const ItemCard = ({ product }: { product: IProduct }) => {
   const [productVariations, setProductVariations] = useState<IProduct['variations']>([]);
 
   const handleAddToCart = () => {
-    let test = product.stock > 0 || product.sell_over_stock
-    console.log(test);
-    
+    let test = product.stock > 0 || product.sell_over_stock    
     if (product.type?.includes('variable') && test) {
       setProductVariations(product.variations);
       setIsOpenDialog(true);
