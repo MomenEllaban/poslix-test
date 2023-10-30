@@ -30,62 +30,60 @@ const PricingGroup = (props: any) => {
   const [productsPricingGroup, setProductsPricingGroup] = useState<any>();
   const columns: GridColDef[] = [
     { field: 'id', headerName: '#', minWidth: 50 },
-    { field: 'name', headerName: 'Name', flex: 1 },
+    { field: 'name', headerName: 'Name', flex: 1 ,renderCell: ({ row }: Partial<GridRowParams>) => {
+
+        return<div>{row.name} {row.parent_name?' , ':''}<span style={{fontSize:'10px'}} className='text-primary'>{row.parent_name}</span></div> }
+    },
+    { field: 'type', headerName: 'Type', flex: 1 },
+    // { field: 'parent_name', headerName: 'parent Name', flex: 1 },
+    // { field: 'sku', headerName: 'SKU', flex: 1 },
     {
       field: 'sell_price',
       headerName: 'Sell',
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) => {
-        if (row.type == 'single')
-          return Number(row.sell_price).toFixed(locationSettings?.location_decimal_places);
-        else
+        if (row.type == 'variable') {
           return (
-            Number(row.min_price).toFixed(locationSettings?.location_decimal_places) +
+            Number(row.min_price || 0).toFixed(locationSettings?.location_decimal_places) +
             ' - ' +
-            Number(row.max_price).toFixed(locationSettings?.location_decimal_places)
+            Number(row.max_price || 0).toFixed(locationSettings?.location_decimal_places)
           );
+        } else {
+          return Number(row.sell_price).toFixed(locationSettings?.location_decimal_places);
+        }
       },
     },
     {
       field: 'price',
       headerName: 'Price',
       flex: 1,
-      renderCell: ({ row }: Partial<GridRowParams>) => <input
-        value={productsPricingGroup?.find(p => p.id === row.id)?.price || ''}
-        onChange={(e) => {
+      renderCell: ({ row }: Partial<GridRowParams>) => {
+        if (row.type == 'variable') {
+          return <div>-</div>
+        } else {
+          return <input
+            value={productsPricingGroup?.find(p => p.id === row.id)?.price || ''}
+            onChange={(e) => {
 
-          setProductsPricingGroup((prev: any) => {
-            const updatedProducts = prev.map((product: any) => {
-              if (product.id === row.id) {
-                return {
-                  ...product,
-                price:e.target.value
-                };
-              }
-              return product;
-            });
+              setProductsPricingGroup((prev: any) => {
+                const updatedProducts = prev.map((product: any) => {
+                  if (product.id === row.id) {
+                    return {
+                      ...product,
+                      price: e.target.value
+                    };
+                  }
+                  return product;
+                });
 
-            return updatedProducts;
-          });
-
-          // setProducts((prev: any) => {
-          //   const updatedProducts = prev.map((product: any) => {
-          //     if (product.id === row.id) {
-          //       return {
-          //         ...product,
-          //         price: e.target.value,
-          //       };
-          //     }
-          //     return product;
-          //   });
-
-          //   return updatedProducts;
-          // });
+                return updatedProducts;
+              })
+            }
+            }
+            type="number" />
         }
-        }
-
-        type="number" />,
-    },
+      }
+    }
     // {
     //   field: 'action',
     //   headerName: 'Action ',
@@ -122,7 +120,7 @@ const PricingGroup = (props: any) => {
   // ----------------------------------------------------------------------------------------------
   const updatePricing = async () => {
     const url = 'pricing-group'
-    
+
     const data = {
       "location_id": router.query.id,
       products: productsPricingGroup
@@ -143,23 +141,53 @@ const PricingGroup = (props: any) => {
   // ----------------------------------------------------------------------------------------------
   const onRowsSelectionHandler = (ids: any) => { };
   async function initDataPage() {
-    // const { success, data } = await apiFetchCtr({
-    //   fetch: 'products',
-    //   subType: 'getProducts',
-    //   shopId,
-    // });
-    // if (success) setProducts(data?.products);
-    // console.log(data?.products);
-    // console.log(shopId,router.query.id);
 
     try {
 
       const res: any = await findAllData(`products/${router.query.id}?all_data=1`);
       const res2: any = await findAllData(`pricing-group/${router.query.id}?group_id=${router.query.pricingId}`);
-// set pricing for grop with old pricing if exist if not set it with the prodact normal sell price
-      setProductsPricingGroup(res2?.data?.result?.products.map((p:any)=>({id:p.id,price:p.pivot.price?p.pivot.price:res?.data?.result.sell_price})))
+      // set pricing for grop with old pricing if exist if not set it with the prodact normal sell price
+      
+      setProductsPricingGroup(res2?.data?.result?.products.map((p: any) => ({
+        id: p.id,
+        price: p.pivot.price ? p.pivot.price : res?.data?.result.sell_price
+      })));
+      // compose products with variants
+      let productsData = [...res?.data?.result];
 
-      setProducts(res?.data?.result);
+      productsData?.forEach((p, index) => {
+        if (p.type === "variable" && Array.isArray(p.variations) && p.variations.length > 0) {
+          const parentIndex = index;
+
+          // Create an array of variation objects with additional properties
+          const variableProducts = p.variations.map((v) => ({
+            ...v,
+            sell_price: v.price,
+            bg: '#9ee8f176',
+            parent_name: p.name,
+            type: 'sub-variable',
+          }));
+
+          // Calculate min and max prices for variations
+          const minPrice = Math.min(...variableProducts.map((v) => v.price));
+          const maxPrice = Math.max(...variableProducts.map((v) => v.price));
+
+          // Insert the variation objects after the parent object
+          productsData.splice(parentIndex + 1, 0, ...variableProducts);
+          setProductsPricingGroup(prev=>{
+            return [...prev,...variableProducts]
+          })
+          // Update the parent object with min_price and max_price
+          p.min_price = minPrice;
+          p.max_price = maxPrice;
+        }
+      });
+
+
+      // 
+
+      setProducts(productsData);
+
     } catch (e) {
       Toastify('error', 'Something went wrong')
     }
@@ -203,6 +231,14 @@ const PricingGroup = (props: any) => {
     if (router.query.id) initDataPage();
   }, [router.query.id])
   // /-------------------------------------------------------------------------------------------
+  const getRowClass = (params) => {
+    
+    if (params?.row?.type!=='single') {
+      return "variants-bg";
+    }
+    return "";
+  };
+  // /-------------------------------------------------------------------------------------------
 
   return (
     <>
@@ -214,6 +250,7 @@ const PricingGroup = (props: any) => {
           <h5>Pricing Group List</h5>
 
           <DataGrid
+            getRowClassName={getRowClass}
             loading={isLoading}
             className="datagrid-style"
             sx={{
