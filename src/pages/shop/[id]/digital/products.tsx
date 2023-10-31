@@ -7,7 +7,6 @@ import DigitalCart from 'src/modules/digital/_views/DigitalCart';
 const Products: NextPage = () => {
   const router = useRouter();
   const shopId = router.query.id;
-  console.log(shopId);
   
   return (
     <DigitalProvider>

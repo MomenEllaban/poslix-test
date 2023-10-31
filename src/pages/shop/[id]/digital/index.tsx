@@ -16,7 +16,7 @@ const Digital: NextPage = ({ shopId }: any) => {
   const router = useRouter()
   const [appearance, setAppearance] = useState<any>()
   const [loading, setLoading] = useState<any>(false)
-
+ 
     // ----------------------------------------------------------------------------------------------
     const fetchApperance = async () => {
       setLoading(true)
@@ -29,6 +29,7 @@ const Digital: NextPage = ({ shopId }: any) => {
       setLoading(false)
 
     }
+  console.log(appearance);
   
     // ----------------------------------------------------------------------------------------------
   useEffect(()=>{
@@ -41,7 +42,10 @@ const Digital: NextPage = ({ shopId }: any) => {
        <Image src={appearance?.en?.logo} alt={'logo'} style={{maxHeight:'33vh'}} width={300} height={200}/>:
         <Image src={img1} alt={'logo'} />}
         <h2>Poslix @poslix.com</h2>
-        <p>@poslix</p>
+        {/* <p>@poslix</p> */}  
+        <a style={{color:'#000',textDecoration:'none'}} target="_blank"  href={appearance?.en?.website} rel="noopener noreferrer">{appearance?.en?.website}</a>
+        
+        {/* <p><a href={`mailto:${appearance?.en?.website}`}>{appearance?.en?.website}</a></p> */}
         <p>Pos, ecommirce, and more</p>
         <div className="digital-big-btn">
           <Link className="digital-big-btn-link" href={`/shop/${shopId}/digital/products`}>
@@ -49,8 +53,10 @@ const Digital: NextPage = ({ shopId }: any) => {
           </Link>
         </div>
         <div className="digital-socials">
-          <FontAwesomeIcon className="icon-clicable" icon={faWhatsapp} />
-          <FontAwesomeIcon className="icon-clicable" icon={faInstagram} />
+        <a style={{color:'#000',textDecoration:'none'}} target="_blank" href={appearance?.en?.whatsapp} rel="noopener noreferrer"><FontAwesomeIcon 
+                  className="icon-clicable" icon={faWhatsapp} /></a>
+        <a style={{color:'#000',textDecoration:'none'}} target="_blank"  href={appearance?.en?.instagram} rel="noopener noreferrer"><FontAwesomeIcon className="icon-clicable" icon={faInstagram} /></a>
+          
         </div>
       </div>
     </div>

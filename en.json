@@ -1,4 +1,9 @@
-{
+{"digital":{
+ "View_Products":"View Products",
+ "Categories":"Categories",
+ "Brands":"Brands",
+ "Digital_Products":"Digital Products"
+},
   "pos": {
     "search": "Search...",
     "navmenu": {
