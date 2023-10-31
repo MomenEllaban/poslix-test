@@ -137,7 +137,7 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
             <div className="brand-logo">
               <img
                 src={invoiceDetails?.en?.logo}
-                style={{ width: '50%', height: 'auto', objectFit: 'contain' }}
+                style={{ width: '35%', height: 'auto', objectFit: 'contain' }}
               />
               <div className="invoice-print">
                 INVOICE

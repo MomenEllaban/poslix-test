@@ -300,7 +300,6 @@ const Product: NextPage = ({ editId, iType }: any) => {
   }
 
   async function insertProduct(url: string = null) {
-    console.log(333333333333333);
 
     // if (!url) return Toastify('error', 'Please add image to the product!');
     const res = await createNewData('products', {
