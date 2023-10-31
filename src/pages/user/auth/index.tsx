@@ -1,40 +1,28 @@
 import DarkModeToggle from '@layout/AdminLayout/DarkModeToggle';
-import { IUserBusiness } from '@models/auth.types';
-import { ICustomResponse } from '@models/global.types';
-import { AxiosResponse } from 'axios';
 import clsx from 'clsx';
-import { setCookie } from 'cookies-next';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/router';
+import Image from 'next/image';
+// import { setCookie } from 'cookies-next';
+// import { useSession } from 'next-auth/react';
 import { useContext, useEffect, useState } from 'react';
 import 'react-phone-input-2/lib/style.css';
 import { darkModeContext } from 'src/context/DarkModeContext';
-import { useUser } from 'src/context/UserContext';
+// import { useUser } from 'src/context/UserContext';
 import LoginView from 'src/modules/auth/_views/login-view';
 import RegisterBusinessView from 'src/modules/auth/_views/register-business-view';
 import RegisterView from 'src/modules/auth/_views/register-view';
-import api from 'src/utils/app-api';
-import { ELocalStorageKeys } from 'src/utils/app-constants';
+// import { ELocalStorageKeys } from 'src/utils/app-constants';
 
-const initalInputState = {
-  id: '',
-  username: '',
-  password: '',
-  name: '',
-  phone: '',
-  mail: '',
-  businessname: '',
-  businesstype: 0,
-};
+
+import logo from "../../../../public/images/logo1.png"
+
 
 export default function RegisterPage() {
-  const router = useRouter();
-  const { user, setUser } = useUser();
+  // const {  setUser } = useUser();
   
-  const { data: session } = useSession();
+  // const { data: session } = useSession();  
   const { darkMode } = useContext(darkModeContext);
 
-  const [isRegisterDone, setIsRegisterDone] = useState(false);
+  const [isRegisterDone, setIsRegisterDone]  = useState(false);
   const [showLoginDialog, setShowLoginDialog] = useState(true);
 
   const RenderForm = () => {
@@ -43,44 +31,29 @@ export default function RegisterPage() {
     return <RegisterView setIsRegisterDone={setIsRegisterDone} />;
   };
 
-  async function getBusiness(user) {
-    const { data } = await api.get<any, AxiosResponse<ICustomResponse<IUserBusiness>>, any>(
-      '/business'
-    );
 
-    const { result } = data;
-    const { locations } = result;
-    localStorage.setItem(ELocalStorageKeys.USER_LOCATIONS, JSON.stringify(locations));
-    if (user.user_type === 'user') {
-      router.push('/shop/' + result[0].id);
-    } else router.push('/' + user.id + '/business');
-  }
 
-  useEffect(() => {
-    if (session) {
-      const { user } = session;
 
-      setCookie('tokend', user.token);
-      setUser(user);
+  // useEffect(() => {
+  //   if (session) {
+  //     const { user } = session;
 
-      localStorage.setItem('userdata', JSON.stringify(user));
-      localStorage.setItem(ELocalStorageKeys.TOKEN, user.token);
-      localStorage.setItem(
-        ELocalStorageKeys.FULL_NAME,
-        `${user.first_name} ${user.last_name ?? ''}`
-      );
-      localStorage.setItem(ELocalStorageKeys.USER_NAME, user.username);
-      localStorage.setItem(ELocalStorageKeys.LEVELS, user.user_type);
+  //     setCookie('tokend', user.token);
+  //     setUser(user);
 
-      if (user.user_type === 'owner') getBusiness(user);
-    }
-  }, [session]);
+  //     localStorage.setItem('userdata', JSON.stringify(user));
+  //     localStorage.setItem(ELocalStorageKeys.TOKEN, user.token);
+  //     localStorage.setItem(
+  //       ELocalStorageKeys.FULL_NAME,
+  //       `${user.first_name} ${user.last_name ?? ''}`
+  //     );
+  //     localStorage.setItem(ELocalStorageKeys.USER_NAME, user.username);
+  //     localStorage.setItem(ELocalStorageKeys.LEVELS, user.user_type);
 
-  // if the user already logged then redirect to another page
+  //   }
+  // }, [session]);
 
-  if (user?.user_type === 'owner') {
-    getBusiness(user);
-  }
+
 
   return (
     <div>
@@ -115,7 +88,7 @@ export default function RegisterPage() {
           <div className="card">
             <div className="form">
               <div className="form-item left-side">
-                <img src="https://app.dubbpie.com/assets/images/login-img.png" />
+                <img src="https://app.dubbpie.com/assets/images/login-img.png" alt='image login' />
                 <div className="login-ads-text">
                   <h3>Manage Your Business</h3>
                   <p>
@@ -135,7 +108,7 @@ export default function RegisterPage() {
               </div>
               <div className="form-item right-side">
                 <div className="login-logo-box">
-                  <img src="/images/logo1.png" />
+                  <Image src={logo} alt='logo poslix'  width={100} height={20} />
                 </div>
                 {!isRegisterDone && (
                   <div className="login-register-box">
