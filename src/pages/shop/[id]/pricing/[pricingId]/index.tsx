@@ -120,10 +120,25 @@ const PricingGroup = (props: any) => {
   // ----------------------------------------------------------------------------------------------
   const updatePricing = async () => {
     const url = 'pricing-group'
-
+   let  products=JSON.parse(JSON.stringify(productsPricingGroup))
+  //  compose products with variants for backend req
+  products = products.filter((item) => {
+    if (item.parent_id) {
+      const parent = products.find((parentItem) => parentItem.id === item.parent_id);
+      if (parent) {
+        if (!parent.variants) {
+          parent.variants = [];
+        }
+        parent.variants.push({id:item.id,price:+item.price});
+      }
+      return false; // Remove the child object from the updated array
+    }
+    return true; // Keep the parent object in the updated array
+  });
+  
     const data = {
       "location_id": router.query.id,
-      products: productsPricingGroup
+      products: products
     }
 
 
@@ -162,6 +177,7 @@ const PricingGroup = (props: any) => {
           // Create an array of variation objects with additional properties
           const variableProducts = p.variations.map((v) => ({
             ...v,
+            parent_id:p.id,
             sell_price: v.price,
             bg: '#9ee8f176',
             parent_name: p.name,

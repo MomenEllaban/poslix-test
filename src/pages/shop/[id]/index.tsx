@@ -34,6 +34,7 @@ import { ILocationSettings } from '@models/common-model';
 import { Switch } from '@mui/material';
 import { findAllData } from 'src/services/crud.api';
 import { useRouter } from 'next/router';
+import { Spinner } from 'react-bootstrap';
 
 ChartJS.register(
   CategoryScale,
@@ -67,6 +68,7 @@ const data22 = {
   ],
 };
 let _locs = []
+const periods=["daily","weekly",'monthly',"yearly"]
 const Home = (props: any) => {
   const router = useRouter()
   const { shopId } = props;
@@ -79,11 +81,11 @@ const Home = (props: any) => {
     labels: [],
     values: [],
   });
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [txtP1, setTxtP1] = useState({ name: '', index: 1 });
-  // const [txtP1, setTxtP1] = useState({ name: '', index: 1 });
-  // const [txtP1, setTxtP1] = useState({ name: '', index: 1 });
-  // const [txtP1, setTxtP1] = useState({ name: '', index: 1 });
+  const [txtP2, setTxtP2] = useState({ name: '', index: 1 });
+  const [txtP3, setTxtP3] = useState({ name: '', index: 1 });
+  const [txtP4, setTxtP4] = useState({ name: '', index: 1 });
   const [profitMonthLabels, setProfitMonthLabels] = useState([]);
   const [profitMonthValues, setProfitMonthValues] = useState([]);
   const [box1Price, setBox1Price] = useState([1, 2, 3, 4]);
@@ -106,7 +108,6 @@ const Home = (props: any) => {
   });
 
   async function initData() {
-    setIsLoading(false);
     // setProfitMonthLabels(data.months_name);
     // setProfitMonthValues(data.profit_months);
     // setFacrtors(data.factors_lsit);
@@ -138,9 +139,10 @@ const Home = (props: any) => {
   // ----------------------------------------------------------------------------------------------
   const getDashbordData = async () => {
     // setIsProductsLoadingloading(true)
-
+// console.log(`location-report?location_id=${router.query.id}&salesPeriod=${periods[txtP1?.index-1]}&purchasePeriod=${periods[txtP2?.index-1]}&expensesPeriod=${periods[txtP3?.index-1]}&CustomerPeriod=${periods[txtP4?.index-1]}`);
+setIsLoading(true)
     try {
-      const res = await findAllData(`location-report?period=${period}&location_id=${router.query.id}`);
+      const res = await findAllData(`location-report?location_id=${router.query.id}&salesPeriod=${periods[txtP1?.index-1]}&purchasePeriod=${periods[txtP2?.index-1]}&expensesPeriod=${periods[txtP3?.index-1]}&CustomerPeriod=${periods[txtP4?.index-1]}`);
       setDashboardData(res?.data?.result);
       console.log(res?.data?.result);
 
@@ -150,13 +152,14 @@ const Home = (props: any) => {
       return;
     }
     // setIsProductsLoadingloading(false)
+    setIsLoading(false)
 
   }
 
   // ----------------------------------------------------------------------------------------------
   useEffect(() => {
     getDashbordData()
-  }, [period,router.query.id])
+  }, [txtP1,txtP2,txtP3,txtP4,router.query.id])
   // ----------------------------------------------------------------------------------------------
   useEffect(() => {
     initData();
@@ -174,9 +177,9 @@ const Home = (props: any) => {
 
 
     setTxtP1({ name: getTxtTimeFrame(1), index: 1 });
-    setTxtP1({ name: getTxtTimeFrame(1), index: 1 });
-    setTxtP1({ name: getTxtTimeFrame(1), index: 1 });
-    setTxtP1({ name: getTxtTimeFrame(1), index: 1 });
+    setTxtP2({ name: getTxtTimeFrame(1), index: 1 });
+    setTxtP3({ name: getTxtTimeFrame(1), index: 1 });
+    setTxtP4({ name: getTxtTimeFrame(1), index: 1 });
   }, []);
   function getTxtTimeFrame(p: number) {
     setPeriod(p == 1 ? 'daily' : p == 2 ? 'weekly' : p == 3 ? 'monthly' : p == 4 ? 'yearly' : '')
@@ -192,11 +195,12 @@ const Home = (props: any) => {
     return p;
   }
   const btnHandleTimeFrame = (index: number, p: number) => {
+    
     index = getRightNum(index);
     if (p == 1) setTxtP1({ name: getTxtTimeFrame(index), index: index });
-    else if (p == 2) setTxtP1({ name: getTxtTimeFrame(index), index: index });
-    else if (p == 3) setTxtP1({ name: getTxtTimeFrame(index), index: index });
-    else if (p == 4) setTxtP1({ name: getTxtTimeFrame(index), index: index });
+    else if (p == 2) setTxtP2({ name: getTxtTimeFrame(index), index: index });
+    else if (p == 3) setTxtP3({ name: getTxtTimeFrame(index), index: index });
+    else if (p == 4) setTxtP4({ name: getTxtTimeFrame(index), index: index });
   };
   useEffect(() => {
     const text = new ShuffleText(title1.current);
@@ -205,15 +209,15 @@ const Home = (props: any) => {
   useEffect(() => {
     const text = new ShuffleText(title2.current);
     text.start();
-  }, [txtP1]);
+  }, [txtP2]);
   useEffect(() => {
     const text = new ShuffleText(title3.current);
     text.start();
-  }, [txtP1]);
+  }, [txtP3]);
   useEffect(() => {
     const text = new ShuffleText(title4.current);
     text.start();
-  }, [txtP1]);
+  }, [txtP4]);
 
   const options = {
     responsive: true,
@@ -263,13 +267,13 @@ const Home = (props: any) => {
   };
 
   const data_last_low = {
-    // labels: upDown ? topProdcutsDown.labels : topProdcuts.labels,
-    labels: dashboardData?.topProducts?.map(item => item.product_name),
+    labels: upDown ? dashboardData?.bottomProducts?.map(item => item.product_name) :  dashboardData?.topProducts?.map(item => item.product_name),
+    // labels: dashboardData?.topProducts?.map(item => item.product_name),
     datasets: [
       {
         label: 'TOP/Down Products',
-        // data: upDown ? topProdcutsDown.values : topProdcuts.values,
-        data: dashboardData?.topProducts?.map(item => parseFloat(item.transaction_count)) || [],
+        data: upDown ? dashboardData?.bottomProducts?.map(item => parseFloat(item.transaction_count)) || [] : dashboardData?.topProducts?.map(item => parseFloat(item.transaction_count)) || [],
+        // data: dashboardData?.topProducts?.map(item => parseFloat(item.transaction_count)) || [],
         backgroundColor: [
           'rgba(255, 99, 132, 0.2)',
           'rgba(54, 162, 235, 0.2)',
@@ -293,6 +297,9 @@ const Home = (props: any) => {
 
   return (
     <AdminLayout shopId={shopId}>
+      {isLoading?<div className='centered-dev' style={{zIndex:'2'}} >
+        <Spinner/>
+      </div>:null}
       <div className="row loc-dash-top" style={{ background: '#f6f8fa' }}>
         <div className="loc-dash-top-items">
           <div className="inner-loc-dash-top-items">
@@ -329,20 +336,20 @@ const Home = (props: any) => {
           </div>
           <div className="inner-loc-dash-top-items dash-top-items-details">
             <h4>PURCHASES</h4>
-            <h5 ref={title3}>{txtP1.name}</h5>
+            <h5 ref={title2}>{txtP2.name}</h5>
             <h3>
               {dashboardData?.purchases}
-              {/* {Number(box3Price[txtP1.index - 1]).toFixed(
+              {/* {Number(box3Price[txtP2.index - 1]).toFixed(
                 locationSettings?.location_decimal_places
               )} */}
               <span>{locationSettings?.currency_code}</span>
             </h3>
           </div>
           <div className="inner-loc-dash-top-items arrows-details">
-            <div className="arrow-updown" onClick={() => btnHandleTimeFrame(txtP1.index + 1, 3)}>
+            <div className="arrow-updown" onClick={() => btnHandleTimeFrame(txtP2.index + 1, 2)}>
               <FontAwesomeIcon icon={faArrowUp} />
             </div>
-            <div className="arrow-updown" onClick={() => btnHandleTimeFrame(txtP1.index - 1, 3)}>
+            <div className="arrow-updown" onClick={() => btnHandleTimeFrame(txtP2.index - 1, 2)}>
               <FontAwesomeIcon icon={faArrowDown} />
             </div>
           </div>
@@ -356,20 +363,20 @@ const Home = (props: any) => {
           </div>
           <div className="inner-loc-dash-top-items dash-top-items-details">
             <h4>EXPENSES</h4>
-            <h5 ref={title2}>{txtP1.name}</h5>
+            <h5 ref={title3}>{txtP3.name}</h5>
             <h3>
               {dashboardData?.expenses}
-              {/* {Number(box2Price[txtP1.index - 1]).toFixed(
+              {/* {Number(box2Price[txtP3.index - 1]).toFixed(
                 locationSettings?.location_decimal_places
               )} */}
               <span>{locationSettings?.currency_code}</span>
             </h3>
           </div>
           <div className="inner-loc-dash-top-items arrows-details">
-            <div className="arrow-updown" onClick={() => btnHandleTimeFrame(txtP1.index + 1, 2)}>
+            <div className="arrow-updown" onClick={() => btnHandleTimeFrame(txtP3.index + 1, 3)}>
               <FontAwesomeIcon icon={faArrowUp} />
             </div>
-            <div className="arrow-updown" onClick={() => btnHandleTimeFrame(txtP1.index - 1, 2)}>
+            <div className="arrow-updown" onClick={() => btnHandleTimeFrame(txtP3.index - 1, 3)}>
               <FontAwesomeIcon icon={faArrowDown} />
             </div>
           </div>
@@ -383,18 +390,18 @@ const Home = (props: any) => {
           </div>
           <div className="inner-loc-dash-top-items dash-top-items-details">
             <h4>CUSTOMERS</h4>
-            <h5 ref={title4}>{txtP1.name}</h5>
+            <h5 ref={title4}>{txtP4.name}</h5>
             <h3>
               {dashboardData?.customers}
-              {/* {Number(box4Price[txtP1.index - 1])} */}
+              {/* {Number(box4Price[txtP4.index - 1])} */}
               <span></span>
             </h3>
           </div>
           <div className="inner-loc-dash-top-items arrows-details">
-            <div className="arrow-updown" onClick={() => btnHandleTimeFrame(txtP1.index + 1, 4)}>
+            <div className="arrow-updown" onClick={() => btnHandleTimeFrame(txtP4.index + 1, 4)}>
               <FontAwesomeIcon icon={faArrowUp} />
             </div>
-            <div className="arrow-updown" onClick={() => btnHandleTimeFrame(txtP1.index - 1, 4)}>
+            <div className="arrow-updown" onClick={() => btnHandleTimeFrame(txtP4.index - 1, 4)}>
               <FontAwesomeIcon icon={faArrowDown} />
             </div>
           </div>
@@ -418,7 +425,7 @@ const Home = (props: any) => {
         <div className="loc-dash-small-chart">
           <h4>
             Top 7 Products
-            {/* <Switch checked={upDown} onChange={handleUpDown} /> */}
+            <Switch checked={upDown} onChange={handleUpDown} />
             <span>{upDown ? 'Down' : 'Up'}</span>
           </h4>
           <div>

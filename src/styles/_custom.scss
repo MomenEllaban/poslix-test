@@ -1578,6 +1578,12 @@ td {
 .variants-bg{
   background-color: #b0edf676 !important;
 }
+.centered-dev{
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%)
+}
 @media only screen and (max-width: 1200px) {
   .digital-products-container .digital-cart {
     width: 30%;
