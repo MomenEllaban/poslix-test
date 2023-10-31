@@ -106,5 +106,20 @@
       "remove": "إزالة",
       "completeOrder": "اكمل الطلب"
     }
+  },
+  "digital":{
+    "digital_product": "المنتجات الرقمية",
+    "apply_coupon":"استخدام كوبون",
+    "your_orders": "طلباتك",
+    "cart_empty":"السلة فارغه",
+    "order_now": "اطلب الان",
+    "your_info" : "بياناتك",
+    "phone_number" : "رقم الهاتف",
+    "full_name" : "الاسم كامل",
+    "email_address" : "البريد الالكتروني",
+    "order_note": "ملاحظات الطلب",
+    "your_order": "طلبك",
+    "add_more_items" : "اضافة المزيد من العناصر",
+    "order_summary" : "ملخص الطلب"
   }
 }

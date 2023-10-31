@@ -106,5 +106,20 @@
       "remove": "Remove",
       "completeOrder": "Complete Order"
     }
+  },
+  "digital":{
+    "digital_product": "Digital Products",
+    "apply_coupon":"APPLY COUPON",
+    "your_orders": "YOUR ORDER",
+    "cart_empty":"Cart is empty",
+    "order_now": "Order Now",
+    "your_info" : "Your Info",
+    "phone_number" : "Phone Number",
+    "full_name" : "Full Name",
+    "email_address" : "Email Address",
+    "order_note": "Order Note",
+    "your_order": "Your Order",
+    "add_more_items" : "Add More Items",
+    "order_summary" : "Order Summary"
   }
 }
