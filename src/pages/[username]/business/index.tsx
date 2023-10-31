@@ -25,9 +25,6 @@ const MyBusinessesPage = () => {
   useEffect(() => {
     refetch();
   }, [router.asPath]);
-  useEffect(() => {
-    console.log(businessList);
-  });
 
   return (
     <OwnerAdminLayout>
