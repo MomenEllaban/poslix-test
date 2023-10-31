@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { PropsWithChildren } from 'react';
 import { Dropdown, Nav, NavItem } from 'react-bootstrap';
-import { ROUTES } from 'src/utils/app-routes';
+import { deleteCookie } from 'cookies-next';
 
 type NavItemProps = {
   icon: IconDefinition;
@@ -26,10 +26,23 @@ const ProfileDropdownItem = (props: NavItemProps) => {
 
 export default function HeaderProfileNav() {
   const router = useRouter();
+
+  const handelCleanStorage = () => {
+    deleteCookie('next-auth.session-token');
+    deleteCookie('tokend');
+    router.push('/user/auth');
+    localStorage.clear();
+  };
+
   const handleLogout = () => {
-    signOut({ redirect: false }).then(() => {
-      router.push("/"); // Redirect to the home page after signing out
-    });
+    signOut({ redirect: false })
+      .then(() => {
+        handelCleanStorage();
+      })
+      .catch((error) => {
+        handelCleanStorage();
+        signOut({ redirect: false });
+      });
   };
   return (
     <Nav>
