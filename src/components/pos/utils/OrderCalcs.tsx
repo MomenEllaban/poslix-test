@@ -60,7 +60,6 @@ export const OrderCalcs = ({
 
   const totalNoTax = +(cart?.cartSellTotal ?? 0) + +(cart?.shipping ?? 0);
   const totalAmount = totalNoTax + totalTax - totalDiscount;
-  console.log(totalAmount);
   
 
   return (

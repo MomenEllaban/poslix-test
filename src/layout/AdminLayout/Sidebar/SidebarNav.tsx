@@ -10,7 +10,7 @@ import SidebarNavGroup from './_components/SidebarNavGroup';
 import SidebarNavItem from './_components/SidebarNavItem';
 import styles from './sideBarNav.module.css';
 import AddBoxTwoToneIcon from '@mui/icons-material/AddBoxTwoTone';
-import TransferModal from 'src/components/pos/modals/TransferModal';
+// import TransferModal from 'src/components/pos/modals/TransferModal';
 import { findAllData } from 'src/services/crud.api';
 import { Toastify } from 'src/libs/allToasts';
 import SupplierModal from 'src/components/pos/modals/SupplierModal';
@@ -198,7 +198,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
     );
   return (
     <ul className="list-unstyled">
-         <TransferModal
+         {/* <TransferModal
         shopId={shopId}
         showType={'add'}
         userdata={{}}
@@ -206,7 +206,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
         statusDialog={isAddTranseferModalOpen}
         openDialog={handleTranseferModalCLose}
         initData={initDataPageTransefer}
-      />
+      /> */}
        <SupplierModal
         shopId={shopId}
         showType={'add'}

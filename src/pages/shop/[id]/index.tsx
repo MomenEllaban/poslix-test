@@ -32,6 +32,8 @@ import { Bar } from 'react-chartjs-2';
 import { Toastify } from 'src/libs/allToasts';
 import { ILocationSettings } from '@models/common-model';
 import { Switch } from '@mui/material';
+import { findAllData } from 'src/services/crud.api';
+import { useRouter } from 'next/router';
 
 ChartJS.register(
   CategoryScale,
@@ -64,9 +66,12 @@ const data22 = {
     },
   ],
 };
-
+let _locs = []
 const Home = (props: any) => {
+  const router = useRouter()
   const { shopId } = props;
+  const [period, setPeriod] = useState('weakly');
+  const [dashboardData, setDashboardData] = useState<any>();
   const [facrtors, setFacrtors] = useState([]);
   const [upDown, setUpDown] = useState(false);
   const [topProdcuts, setTopProdcuts] = useState({ labels: [], values: [] });
@@ -76,9 +81,9 @@ const Home = (props: any) => {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [txtP1, setTxtP1] = useState({ name: '', index: 1 });
-  const [txtP2, setTxtP2] = useState({ name: '', index: 1 });
-  const [txtP3, setTxtP3] = useState({ name: '', index: 1 });
-  const [txtP4, setTxtP4] = useState({ name: '', index: 1 });
+  // const [txtP1, setTxtP1] = useState({ name: '', index: 1 });
+  // const [txtP1, setTxtP1] = useState({ name: '', index: 1 });
+  // const [txtP1, setTxtP1] = useState({ name: '', index: 1 });
   const [profitMonthLabels, setProfitMonthLabels] = useState([]);
   const [profitMonthValues, setProfitMonthValues] = useState([]);
   const [box1Price, setBox1Price] = useState([1, 2, 3, 4]);
@@ -130,25 +135,51 @@ const Home = (props: any) => {
     //     values: [0, 0, 0, 0, 0, 0, 0],
     //   });
   }
+  // ----------------------------------------------------------------------------------------------
+  const getDashbordData = async () => {
+    // setIsProductsLoadingloading(true)
+
+    try {
+      const res = await findAllData(`location-report?period=${period}&location_id=${router.query.id}`);
+      setDashboardData(res?.data?.result);
+      console.log(res?.data?.result);
+
+    }
+    catch (e) {
+      Toastify('error', 'Somthing wrong!!, try agian');
+      return;
+    }
+    // setIsProductsLoadingloading(false)
+
+  }
+
+  // ----------------------------------------------------------------------------------------------
+  useEffect(() => {
+    getDashbordData()
+  }, [period,router.query.id])
+  // ----------------------------------------------------------------------------------------------
   useEffect(() => {
     initData();
-    var _locs = JSON.parse(localStorage.getItem('locations') || '[]');
+    _locs = JSON.parse(localStorage.getItem('locations') || '[]');
+    console.log(_locs);
+
     if (_locs.toString().length > 10)
       setLocationSettings(
         _locs[
-          _locs.findIndex((loc: any) => {
-            return loc.value == shopId;
-          })
+        _locs.findIndex((loc: any) => {
+          return loc.location_id == shopId;
+        })
         ]
       );
-    
+
 
     setTxtP1({ name: getTxtTimeFrame(1), index: 1 });
-    setTxtP2({ name: getTxtTimeFrame(1), index: 1 });
-    setTxtP3({ name: getTxtTimeFrame(1), index: 1 });
-    setTxtP4({ name: getTxtTimeFrame(1), index: 1 });
+    setTxtP1({ name: getTxtTimeFrame(1), index: 1 });
+    setTxtP1({ name: getTxtTimeFrame(1), index: 1 });
+    setTxtP1({ name: getTxtTimeFrame(1), index: 1 });
   }, []);
   function getTxtTimeFrame(p: number) {
+    setPeriod(p == 1 ? 'daily' : p == 2 ? 'weekly' : p == 3 ? 'monthly' : p == 4 ? 'yearly' : '')
     if (p == 1) return 'Daily';
     else if (p == 2) return 'Weekly';
     else if (p == 3) return 'Monthly';
@@ -163,9 +194,9 @@ const Home = (props: any) => {
   const btnHandleTimeFrame = (index: number, p: number) => {
     index = getRightNum(index);
     if (p == 1) setTxtP1({ name: getTxtTimeFrame(index), index: index });
-    else if (p == 2) setTxtP2({ name: getTxtTimeFrame(index), index: index });
-    else if (p == 3) setTxtP3({ name: getTxtTimeFrame(index), index: index });
-    else if (p == 4) setTxtP4({ name: getTxtTimeFrame(index), index: index });
+    else if (p == 2) setTxtP1({ name: getTxtTimeFrame(index), index: index });
+    else if (p == 3) setTxtP1({ name: getTxtTimeFrame(index), index: index });
+    else if (p == 4) setTxtP1({ name: getTxtTimeFrame(index), index: index });
   };
   useEffect(() => {
     const text = new ShuffleText(title1.current);
@@ -174,15 +205,15 @@ const Home = (props: any) => {
   useEffect(() => {
     const text = new ShuffleText(title2.current);
     text.start();
-  }, [txtP2]);
+  }, [txtP1]);
   useEffect(() => {
     const text = new ShuffleText(title3.current);
     text.start();
-  }, [txtP3]);
+  }, [txtP1]);
   useEffect(() => {
     const text = new ShuffleText(title4.current);
     text.start();
-  }, [txtP4]);
+  }, [txtP1]);
 
   const options = {
     responsive: true,
@@ -205,11 +236,11 @@ const Home = (props: any) => {
 
   // const labels = ['January', 'February', 'March', 'April', 'May', 'June', 'July'];
   const data_bar = {
-    labels: profitMonthLabels,
+    labels: dashboardData?.monthlySales?.map(item => `Month ${item.month}`) || [],
     datasets: [
       {
         label: 'Monthly Sales',
-        data: profitMonthValues,
+        data: dashboardData?.monthlySales?.map(item => parseFloat(item.total)) || [],
         backgroundColor: [
           'rgba(255, 99, 132, 0.2)',
           'rgba(54, 162, 235, 0.2)',
@@ -230,12 +261,15 @@ const Home = (props: any) => {
       },
     ],
   };
+
   const data_last_low = {
-    labels: upDown ? topProdcutsDown.labels : topProdcuts.labels,
+    // labels: upDown ? topProdcutsDown.labels : topProdcuts.labels,
+    labels: dashboardData?.topProducts?.map(item => item.product_name),
     datasets: [
       {
         label: 'TOP/Down Products',
-        data: upDown ? topProdcutsDown.values : topProdcuts.values,
+        // data: upDown ? topProdcutsDown.values : topProdcuts.values,
+        data: dashboardData?.topProducts?.map(item => parseFloat(item.transaction_count)) || [],
         backgroundColor: [
           'rgba(255, 99, 132, 0.2)',
           'rgba(54, 162, 235, 0.2)',
@@ -270,9 +304,10 @@ const Home = (props: any) => {
             <h4>SALES</h4>
             <h5 ref={title1}>{txtP1.name}</h5>
             <h3>
-              {Number(box1Price[txtP1.index - 1]).toFixed(
+              {dashboardData?.sales}
+              {/* {Number(box1Price[txtP1.index - 1]).toFixed(
                 locationSettings?.location_decimal_places
-              )}
+              )} */}
               <span>{locationSettings?.currency_code}</span>
             </h3>
           </div>
@@ -294,19 +329,20 @@ const Home = (props: any) => {
           </div>
           <div className="inner-loc-dash-top-items dash-top-items-details">
             <h4>PURCHASES</h4>
-            <h5 ref={title3}>{txtP3.name}</h5>
+            <h5 ref={title3}>{txtP1.name}</h5>
             <h3>
-              {Number(box3Price[txtP3.index - 1]).toFixed(
+              {dashboardData?.purchases}
+              {/* {Number(box3Price[txtP1.index - 1]).toFixed(
                 locationSettings?.location_decimal_places
-              )}
+              )} */}
               <span>{locationSettings?.currency_code}</span>
             </h3>
           </div>
           <div className="inner-loc-dash-top-items arrows-details">
-            <div className="arrow-updown" onClick={() => btnHandleTimeFrame(txtP3.index + 1, 3)}>
+            <div className="arrow-updown" onClick={() => btnHandleTimeFrame(txtP1.index + 1, 3)}>
               <FontAwesomeIcon icon={faArrowUp} />
             </div>
-            <div className="arrow-updown" onClick={() => btnHandleTimeFrame(txtP3.index - 1, 3)}>
+            <div className="arrow-updown" onClick={() => btnHandleTimeFrame(txtP1.index - 1, 3)}>
               <FontAwesomeIcon icon={faArrowDown} />
             </div>
           </div>
@@ -320,19 +356,20 @@ const Home = (props: any) => {
           </div>
           <div className="inner-loc-dash-top-items dash-top-items-details">
             <h4>EXPENSES</h4>
-            <h5 ref={title2}>{txtP2.name}</h5>
+            <h5 ref={title2}>{txtP1.name}</h5>
             <h3>
-              {Number(box2Price[txtP2.index - 1]).toFixed(
+              {dashboardData?.expenses}
+              {/* {Number(box2Price[txtP1.index - 1]).toFixed(
                 locationSettings?.location_decimal_places
-              )}
+              )} */}
               <span>{locationSettings?.currency_code}</span>
             </h3>
           </div>
           <div className="inner-loc-dash-top-items arrows-details">
-            <div className="arrow-updown" onClick={() => btnHandleTimeFrame(txtP2.index + 1, 2)}>
+            <div className="arrow-updown" onClick={() => btnHandleTimeFrame(txtP1.index + 1, 2)}>
               <FontAwesomeIcon icon={faArrowUp} />
             </div>
-            <div className="arrow-updown" onClick={() => btnHandleTimeFrame(txtP2.index - 1, 2)}>
+            <div className="arrow-updown" onClick={() => btnHandleTimeFrame(txtP1.index - 1, 2)}>
               <FontAwesomeIcon icon={faArrowDown} />
             </div>
           </div>
@@ -346,17 +383,18 @@ const Home = (props: any) => {
           </div>
           <div className="inner-loc-dash-top-items dash-top-items-details">
             <h4>CUSTOMERS</h4>
-            <h5 ref={title4}>{txtP4.name}</h5>
+            <h5 ref={title4}>{txtP1.name}</h5>
             <h3>
-              {Number(box4Price[txtP4.index - 1])}
+              {dashboardData?.customers}
+              {/* {Number(box4Price[txtP1.index - 1])} */}
               <span></span>
             </h3>
           </div>
           <div className="inner-loc-dash-top-items arrows-details">
-            <div className="arrow-updown" onClick={() => btnHandleTimeFrame(txtP4.index + 1, 4)}>
+            <div className="arrow-updown" onClick={() => btnHandleTimeFrame(txtP1.index + 1, 4)}>
               <FontAwesomeIcon icon={faArrowUp} />
             </div>
-            <div className="arrow-updown" onClick={() => btnHandleTimeFrame(txtP4.index - 1, 4)}>
+            <div className="arrow-updown" onClick={() => btnHandleTimeFrame(txtP1.index - 1, 4)}>
               <FontAwesomeIcon icon={faArrowDown} />
             </div>
           </div>
@@ -379,7 +417,8 @@ const Home = (props: any) => {
         </div>
         <div className="loc-dash-small-chart">
           <h4>
-            Top 7 Products <Switch checked={upDown} onChange={handleUpDown} />
+            Top 7 Products
+            {/* <Switch checked={upDown} onChange={handleUpDown} /> */}
             <span>{upDown ? 'Down' : 'Up'}</span>
           </h4>
           <div>
@@ -398,23 +437,27 @@ const Home = (props: any) => {
         <div className="">
           <div className="loc-dasg-box">
             <h4>The last 10 invoices</h4>
-            <div className="loc-dasg-box-content">
+            <div className="loc-dasg-box-content  d-flex justify-content-between flex-wrap">
               <div className="me-head-table">
-                <div className="m-fileds">#</div>
-                {/* <div className="m-fileds">Date</div> */}
-                <div className="m-fileds">final Total</div>
-                <div className="m-fileds">Created By</div>
+                <div className="m-fileds text-start" style={{ width: '20%' }}>#</div>
+                {/* <div className="m-fileds text-start">Date</div> */}
+                <div className="m-fileds text-start" style={{ width: '30%' }}>Date</div>
+                <div className="m-fileds text-start" style={{ width: '25%' }}>final Total</div>
+                <div className="m-fileds text-start" style={{ width: '25%' }}>Created By</div>
               </div>
-              {facrtors.map((itm, i: number) => {
+              {dashboardData?.lastInvoices?.map((itm, i: number) => {
                 return (
                   <div key={i} className="me-tr-table">
-                    <div className="m-fileds">{itm.id}</div>
-                    <div className="m-fileds">{getRightTime(itm.created_at)}</div>
-                    <div className="m-fileds">
+                    <div className="m-fileds" style={{ width: '20%' }}>{itm.id}</div>
+                    <div className="m-fileds" style={{ width: '30%' }}>{getRightTime(itm.created_at)}</div>
+                    <div className="m-fileds" style={{ width: '25%' }}>
                       {Number(itm.total_price).toFixed(locationSettings?.location_decimal_places)}{' '}
                       {locationSettings?.currency_code}
                     </div>
-                    <div className="m-fileds">{itm.created_by}</div>
+                    <div className="m-fileds" style={{ width: '25%' }}>
+                      {/* {_locs.find(l => l.location_id == itm.created_by
+                      )?.location_name} */}
+                      {itm.created_by}</div>
                   </div>
                 );
               })}

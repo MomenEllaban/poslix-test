@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 import { Button, Table } from 'react-bootstrap';
 import { useAppDispatch, useAppSelector } from 'src/hooks';
 import {
   addToCart,
+  changeWithSpesificAmount,
   decreaseItemQuantity,
   removeFromCart,
   selectCartByLocation,
@@ -13,6 +14,8 @@ import { MdDeleteForever } from 'react-icons/md';
 import { BsDashLg, BsPlusLg } from 'react-icons/bs';
 import { usePosContext } from 'src/modules/pos/_context/PosContext';
 import { ILocationSettings } from '@models/common-model';
+import { TextField } from '@mui/material';
+import { Toastify } from 'src/libs/allToasts';
 
 export default function CartTable({ shopId }) {
   const { lang: _lang } = usePosContext();
@@ -82,19 +85,58 @@ export default function CartTable({ shopId }) {
                     onClick={() => dispatch(decreaseItemQuantity(product))}>
                     <BsDashLg size={13} />
                   </Button>
-                  <span className={styles['qty']}>{product.quantity}</span>
+                  <TextField
+                    id="product-qty"
+                    className={styles['qty']}
+                    variant="outlined"
+                    inputProps={{
+                      inputMode: 'numeric',
+                      pattern: '[0-9]*',
+                      min: 1,
+                      value: product.quantity,
+                      style:{
+                        textAlign: 'center',
+                        height: '0'
+                      }
+                    }}
+                    onInput={(e: ChangeEvent<HTMLInputElement>) => {
+                      const newQty = +e.target.value === 0 ? 1 : +e.target.value;
+                      if((product.stock < newQty) && (+product.sell_over_stock === 0)){
+                        Toastify('error', 'Out of stock!')
+                        return
+                      }
+                      const value = {
+                        product,
+                        newQty
+                      }
+                      dispatch(changeWithSpesificAmount(value))
+                    }}
+                    sx={{
+                      minWidth: '5px',
+                    }}
+                  />
+                  {/* <span className={styles['qty']}>{product.quantity}</span> */}
                   <Button
                     size="sm"
                     variant="outline-info"
                     // className={styles['cart-quantity-btn']}
                     onClick={() => {
+                      const newQty = product.quantity + 1
+                      if((product.stock < newQty) && (+product.sell_over_stock === 0)){
+                        Toastify('error', 'Out of stock!')
+                        return
+                      }
                       dispatch(addToCart(product));
                     }}>
                     <BsPlusLg size={13} />
                   </Button>
                 </span>
               </td>
-              <td>{(product.quantity * +product.sell_price).toFixed(locationSettings?.location_decimal_places)}</td>
+              <td>
+                {(product.quantity * +product.sell_price).toFixed(
+                  locationSettings?.location_decimal_places
+                )}
+              </td>
               <td className={styles['delete-col']}>
                 <Button
                   size="sm"

@@ -9,7 +9,10 @@ import { DataGrid, GridColDef, GridRowParams } from '@mui/x-data-grid';
 import { faPenToSquare } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { ROUTES } from 'src/utils/app-routes';
+import { useRouter } from 'next/router';
+import { findAllData } from 'src/services/crud.api';
 const PricingGroup = (props: any) => {
+  const router=useRouter()
   const { shopId, initData } = props;
   const [isLoading, setIsLoading] = useState(true);
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
@@ -72,13 +75,17 @@ const PricingGroup = (props: any) => {
   ];
   const onRowsSelectionHandler = (ids: any) => {};
   async function initDataPage() {
-    const { success, data } = await apiFetchCtr({
-      fetch: 'products',
-      subType: 'getProducts',
-      shopId,
-    });
-    if (success) setProducts(data.products);
-    console.log(data.products);
+    // const { success, data } = await apiFetchCtr({
+    //   fetch: 'products',
+    //   subType: 'getProducts',
+    //   shopId,
+    // });
+    // if (success) setProducts(data?.products);
+    // console.log(data?.products);
+    // console.log(shopId,router.query.id);
+    
+    const res:any = await findAllData(`products/${router.query.id}?all_data=1`);
+    if (res?.success) setProducts(res?.data?.products);
 
     setIsLoading(false);
   }
@@ -87,7 +94,7 @@ const PricingGroup = (props: any) => {
   useEffect(() => {
     const perms = JSON.parse(localStorage.getItem('permissions'));
     const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
-    perms.pos.map((perm) =>
+    perms?.pos?.map((perm) =>
       perm.name.includes('getpricinggroup get GET')
         ? (getPermissions.hasView = true)
         : perm.name.includes('pricinggroup add POST')
@@ -103,7 +110,7 @@ const PricingGroup = (props: any) => {
 
     const _locs = JSON.parse(localStorage.getItem('locations') || '[]');
     setLocations(_locs);
-    if (_locs.toString().length > 10)
+    if (_locs?.toString()?.length > 10)
       setLocationSettings(
         _locs[
           _locs.findIndex((loc: any) => {
@@ -133,8 +140,8 @@ const PricingGroup = (props: any) => {
                     border: 'none',
                   },
                 }}
-                rows={products}
-                columns={columns}
+                rows={products||[]}
+                columns={columns||[]}
                 pageSize={10}
                 rowsPerPageOptions={[10]}
                 onSelectionModelChange={(ids: any) => onRowsSelectionHandler(ids)}

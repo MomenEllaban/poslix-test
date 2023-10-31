@@ -51,7 +51,7 @@ export default function Breadcrumb(props: any) {
   const [breadcrumbs, setBreadcrumbs] = useState<any>([]);
   const [locations, setLocations] = useState<{ value: number; label: string }[]>([]);
   const [locationIndex, setLocationIndex] = useState<number>(-1);
-  const [currentPageName, setCurrentPageName] = useState('products');
+  const [currentPageName, setCurrentPageName] = useState('');
   const [isSlug, setIsSlug] = useState(false);
   const { user, setUser } = useContext(UserContext);
   const { darkMode } = useContext(darkModeContext);
