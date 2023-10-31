@@ -79,6 +79,9 @@
     border-bottom: 1px solid #ebebeb;
     align-items: center;
 }
+.ar{
+    flex-direction: row-reverse;
+}
 .logo{
     height: 25px;
 }
