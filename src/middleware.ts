@@ -6,7 +6,12 @@ export async function middleware(request: NextRequest) {
 
   if (pathname.startsWith('/_next')) return NextResponse.next();
 
-  const hasToken = cookies.get('next-auth.session-token')?.value ?? undefined;
+  const KEY_COOKIES_TOKE =
+    process.env.NODE_ENV !== 'production'
+      ? 'next-auth.session-token'
+      : '__Secure-next-auth.session-token';
+
+  const hasToken = cookies.get(KEY_COOKIES_TOKE)?.value ?? undefined;
 
   if (!hasToken) {
     if (pathname !== '/user/auth' && !pathname.includes('/api/auth')) {
