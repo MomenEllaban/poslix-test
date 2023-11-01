@@ -15,7 +15,29 @@ import { Toastify } from 'src/libs/allToasts';
 import { generateUniqueString } from 'src/libs/toolsUtils';
 import { createNewData, findAllData } from 'src/services/crud.api';
 import withAuth from 'src/HOCs/withAuth';
+function findFalsyKeys(obj):any {
+  console.log(obj);
+  
+  const falsyKeys = [];
 
+  function exploreObject(obj, currentPath = '') {
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        const value = obj[key];
+        const path = currentPath ? `${currentPath}.${key}` : key;
+
+        if (typeof value === 'object'  ) {
+          exploreObject(value, path);
+        } else if (!value &&key!=='is_multi_language') {
+          falsyKeys.push(path);
+        }
+      }
+    }
+  }
+
+  exploreObject(obj);
+  return falsyKeys;
+}
 const Appearance: NextPage = (props: any) => {
   const { shopId, id } = props;
   const router = useRouter();
@@ -43,6 +65,15 @@ const Appearance: NextPage = (props: any) => {
     setIsLoading(false);
   }
   async function editInvoice(url = '0') {
+    if(!formObj.en.logo) delete formObj.en.logo
+    if(!formObj.ar.logo) delete formObj.ar.logo
+    formObj.location_id= router.query.id
+  
+    if( findFalsyKeys(formObj)?.length>0){
+     Toastify('error',`${findFalsyKeys(formObj)?.join(', ').replace(/en\.|ar\./g, "")} required`);
+     return
+    }
+     if (isLoading) return;
     if (isLoading) return;
     setIsLoading(true);
     const res = await createNewData(`appearance`, {
