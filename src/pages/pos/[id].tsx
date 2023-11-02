@@ -1,7 +1,7 @@
 import { ICustomer, ITax } from '@models/pos.types';
 import type { NextPage } from 'next';
 import { useRouter } from 'next/router';
-import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
+import { useCallback, useLayoutEffect, useState } from 'react';
 import 'remixicon/fonts/remixicon.css';
 import withAuth from 'src/HOCs/withAuth';
 import { useProducts } from 'src/context/ProductContext';
@@ -25,20 +25,23 @@ import {
 import api from 'src/utils/app-api';
 import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
 
-interface IRegister {
-  state: 'open' | 'close';
-  hand_cash: number;
+// interface IRegister {
+//   state: 'open' | 'close';
+//   hand_cash: number;
+// }
+
+interface Props {
+  shopId: string;
 }
 
-const Home: NextPage = ({ shopId: _id }: any) => {
+const Home: NextPage = ({ shopId }: Props) => {
   const { setCats, setBrands, setProducts, setCustomers, setTaxes, setTaxGroups } = useProducts();
   const { setLocationSettings } = useUser();
   const pos = useAppSelector(selectPos);
   const dispatch = useAppDispatch();
   const router = useRouter();
 
-  const [shopId, setShopId] = useState(_id);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useGetBusinessLocation(shopId, {
     onSuccess(data) {
@@ -87,26 +90,12 @@ const Home: NextPage = ({ shopId: _id }: any) => {
     },
   });
 
-  //   setIsLoading(false);
-  //   if (data.cash.length > 0 && data.cash[0].status == 'open') {
-  //     setIsOpenRegister(true);
-  //     setIsLoading(false);
-  //   }
-  // }
-
   const StepRender = useCallback(() => {
-    if (isLoading) return <PosLoader />;
     if (pos?.register?.status === 'open') return <PosCart shopId={shopId} />;
-    return <OpenRegisterView shopId={shopId} setShopId={setShopId} />;
-  }, [isLoading, pos, shopId]);
-
-  // useLayoutEffect(() => {
-  // const registerObject = getLocalStorage<IRegister>(ELocalStorageKeys.POS_REGISTER_STATE);
-  //   dispatch(setPosRegister(registerObject));
-  // }, []);
+    return <OpenRegisterView shopId={shopId} />;
+  }, [pos, shopId]);
 
   const handleCheckRegister = () => {
-    setIsLoading(true);
     api
       .get(`reports/latest-register/${shopId}?all_data=1`)
       .then(({ data }) => {
@@ -127,15 +116,19 @@ const Home: NextPage = ({ shopId: _id }: any) => {
       });
   };
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    setIsLoading(true);
+
     const perms = JSON.parse(localStorage.getItem('permissions')).filter(
-      (loc) => loc.id == router.query.id
+      (loc: any) => loc.id == router.query.id
     );
     if (!perms[0]?.permissions?.length) {
       Toastify('error', "You don't have access to this page!");
-      router.replace(`/shop/${_id}/`);
+      router.replace(`/shop/${shopId}/`);
     } else handleCheckRegister();
-  }, [_id]);
+  }, [shopId, pos?.register?.status]);
+
+  if (isLoading) return <PosLoader />;
 
   return (
     <PosProvider>
