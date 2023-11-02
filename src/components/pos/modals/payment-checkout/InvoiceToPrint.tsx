@@ -22,7 +22,7 @@ interface IProductWithPivot extends IProduct {
   };
 }
 interface IProps {
-  invoiceType: 'A4' | 'reciept';
+  invoiceType: 'A4' | 'receipt';
   // invoiceDetails?: {
   //   logo: string;
   //   name: string;
@@ -128,9 +128,8 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
       locationSettings,
       __WithDiscountFeature__total,
     } = this.props;
-    if (invoiceType.toLowerCase() === 'a4')
-    console.log(printReceipt);
-    
+
+    if (invoiceType === 'A4') {
       return (
         <div className="appear-body-item a4">
           <div className="bill2">
@@ -219,8 +218,7 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
                 <tr>
                   {/* <td>{invoiceDetails?.txtTax} {invoiceDetails?.en?.is_multi_language && invoiceDetails?.txtTax}</td> */}
                   <td colSpan={4} className="txt_bold_invoice">
-                    Total Paid {' '}
-                    {invoiceDetails?.en?.is_multi_language && 'إجمالى المدفوعات'}
+                    Total Paid {invoiceDetails?.en?.is_multi_language && 'إجمالى المدفوعات'}
                   </td>
                   <td>
                     {Number(printReceipt?.paid).toFixed(locationSettings?.location_decimal_places)}
@@ -239,11 +237,14 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
                 </tr>
                 <tr>
                   <td colSpan={4} className="txt_bold_invoice">
-                    Total Due {' '}
-                    {invoiceDetails?.en?.is_multi_language && 'المتبقى'}
+                    Total Due {invoiceDetails?.en?.is_multi_language && 'المتبقى'}
                   </td>
                   <td className="txt_bold_invoice">
-                    {Number(printReceipt?.due) < 0 ? 0 : Number(printReceipt?.due).toFixed(locationSettings?.location_decimal_places)}
+                    {Number(printReceipt?.due) < 0
+                      ? 0
+                      : Number(printReceipt?.due).toFixed(
+                          locationSettings?.location_decimal_places
+                        )}
                   </td>
                 </tr>
               </tbody>
@@ -258,151 +259,150 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
           </div>
         </div>
       );
-console.log(printReceipt);
-
-    // ------------------ //
-    return (
-      <div className="bill">
-        <div className="brand-logo">
-          <img src={invoiceDetails?.en?.logo} />
-        </div>
-        <br />
-        <div className="brand-name">{invoiceDetails?.en?.name}</div>
-        <div className="shop-details">{invoiceDetails?.en?.tell}</div>
-        <br />
-        <div className="bill-details">
-          <div className="flex justify-between">
-            <div>
-              {invoiceDetails?.en?.txtCustomer}{' '}
-              {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtCustomer}
-            </div>
-            <div>{printReceipt?.customerName}</div>
+    }
+    if (invoiceType === 'receipt') {
+      return (
+        <div className="bill">
+          <div className="brand-logo">
+            <img src={invoiceDetails?.en?.logo} />
           </div>
-          <div className="flex justify-between">
-            <div>
-              {invoiceDetails?.en?.orderNo}{' '}
-              {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.orderNo}
+          <br />
+          <div className="brand-name">{invoiceDetails?.en?.name}</div>
+          <div className="shop-details">{invoiceDetails?.en?.tell}</div>
+          <br />
+          <div className="bill-details">
+            <div className="flex justify-between">
+              <div>
+                {invoiceDetails?.en?.txtCustomer}{' '}
+                {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtCustomer}
+              </div>
+              <div>{printReceipt?.customerName}</div>
             </div>
-            <div>{printReceipt?.id}</div>
-          </div>
-          <div className="flex justify-between">
-            <div>
-              {invoiceDetails?.en?.txtDate}{' '}
-              {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtDate}
+            <div className="flex justify-between">
+              <div>
+                {invoiceDetails?.en?.orderNo}{' '}
+                {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.orderNo}
+              </div>
+              <div>{printReceipt?.id}</div>
             </div>
-            <div>{new Date().toISOString().slice(0, 10)}</div>
+            <div className="flex justify-between">
+              <div>
+                {invoiceDetails?.en?.txtDate}{' '}
+                {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtDate}
+              </div>
+              <div>{new Date().toISOString().slice(0, 10)}</div>
+            </div>
           </div>
-        </div>
-        <table className="table">
-          <thead>
-            <tr className="header">
-              <th>
-                {invoiceDetails?.en?.txtQty}
-                <br />
-                {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtQty}
-              </th>
-              <th>
-                {invoiceDetails?.en?.txtItem}
-                <br />
-                {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtItem}
-              </th>
-              <th></th>
-              <th>
-                {invoiceDetails?.en?.txtAmount}
-                <br />
-                {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtAmount}
-              </th>
-            </tr>
-            {this.perperdForPrint(printReceipt?.products)}
-            <tr style={{ borderTop: '2px', height: '2px' }}></tr>
-            <tr></tr>
-            <tr className="net-amount">
-              <td></td>
-              <td>
-                {invoiceDetails?.en?.txtTax}{' '}
-                {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtTax}
-              </td>
-              <td></td>
-              <td>
-                {(
-                  ((+printReceipt?.total_price / (1 + +printReceipt?.tax / 100)) *
-                    +printReceipt?.tax) /
-                  100
-                ).toFixed(locationSettings?.location_decimal_places)}
-              </td>
-            </tr>
-            <tr className="net-amount">
-              <td></td>
-              <td>
-                {/* {invoiceDetails?.txtDiscount}
+          <table className="table">
+            <thead>
+              <tr className="header">
+                <th>
+                  {invoiceDetails?.en?.txtQty}
+                  <br />
+                  {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtQty}
+                </th>
+                <th>
+                  {invoiceDetails?.en?.txtItem}
+                  <br />
+                  {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtItem}
+                </th>
+                <th></th>
+                <th>
+                  {invoiceDetails?.en?.txtAmount}
+                  <br />
+                  {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtAmount}
+                </th>
+              </tr>
+              {this.perperdForPrint(printReceipt?.products)}
+              <tr style={{ borderTop: '2px', height: '2px' }}></tr>
+              <tr></tr>
+              <tr className="net-amount">
+                <td></td>
+                <td>
+                  {invoiceDetails?.en?.txtTax}{' '}
+                  {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtTax}
+                </td>
+                <td></td>
+                <td>
+                  {(
+                    ((+printReceipt?.total_price / (1 + +printReceipt?.tax / 100)) *
+                      +printReceipt?.tax) /
+                    100
+                  ).toFixed(locationSettings?.location_decimal_places)}
+                </td>
+              </tr>
+              <tr className="net-amount">
+                <td></td>
+                <td>
+                  {/* {invoiceDetails?.txtDiscount}
                 {invoiceDetails?.en?.is_multi_language && invoiceDetails?.txtDiscount2} */}
-                {'Discount'} {' '}
-                {invoiceDetails?.en?.is_multi_language && 'التخفيضات'}
-              </td>
-              <td></td>
-              <td>
-                {(+printReceipt?.discount_amount).toFixed(
-                  locationSettings?.location_decimal_places
-                )}
-              </td>
-            </tr>
-            <tr className="net-amount">
-              <td></td>
-              <td className="txt-bold">
-                {invoiceDetails?.en?.txtTotal}{' '}
-                {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtTotal}
-              </td>
-              <td></td>
-              <td className="txt-bold">
-                {/* {Number(__WithDiscountFeature__total + (totalAmount - printReceipt.totalPrice)).toFixed(
+                  {'Discount'} {invoiceDetails?.en?.is_multi_language && 'التخفيضات'}
+                </td>
+                <td></td>
+                <td>
+                  {(+printReceipt?.discount_amount).toFixed(
+                    locationSettings?.location_decimal_places
+                  )}
+                </td>
+              </tr>
+              <tr className="net-amount">
+                <td></td>
+                <td className="txt-bold">
+                  {invoiceDetails?.en?.txtTotal}{' '}
+                  {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtTotal}
+                </td>
+                <td></td>
+                <td className="txt-bold">
+                  {/* {Number(__WithDiscountFeature__total + (totalAmount - printReceipt.totalPrice)).toFixed(
                   locationSettings?.location_decimal_places
                 )} */}
-                {Number(+printReceipt?.total_price - +printReceipt?.discount_amount).toFixed(
-                  locationSettings?.location_decimal_places
-                )}
-              </td>
-            </tr>
-            <tr className="net-amount">
-              <td></td>
-              <td className="txt-bold">
-                {/* {invoiceDetails?.txtAmountpaid}{' '}
+                  {Number(+printReceipt?.total_price - +printReceipt?.discount_amount).toFixed(
+                    locationSettings?.location_decimal_places
+                  )}
+                </td>
+              </tr>
+              <tr className="net-amount">
+                <td></td>
+                <td className="txt-bold">
+                  {/* {invoiceDetails?.txtAmountpaid}{' '}
                 {invoiceDetails?.en?.is_multi_language && invoiceDetails?.txtAmountpaid2} */}
-                Total Paid {' '}
-                {invoiceDetails?.en?.is_multi_language && 'إجمالى المدفوعات'}
-              </td>
-              <td></td>
-              <td className="txt-bold">
-                {Number(printReceipt?.paid).toFixed(
-                  this.props.locationSettings?.location_decimal_places
-                )}
-              </td>
-            </tr>
-            <tr className="net-amount">
-              <td></td>
-              <td className="txt-bold">
-                {/* {invoiceDetails?.txtTotalDue}{' '}
+                  Total Paid {invoiceDetails?.en?.is_multi_language && 'إجمالى المدفوعات'}
+                </td>
+                <td></td>
+                <td className="txt-bold">
+                  {Number(printReceipt?.paid).toFixed(
+                    this.props.locationSettings?.location_decimal_places
+                  )}
+                </td>
+              </tr>
+              <tr className="net-amount">
+                <td></td>
+                <td className="txt-bold">
+                  {/* {invoiceDetails?.txtTotalDue}{' '}
                 {invoiceDetails?.en?.is_multi_language && invoiceDetails?.txtTotalDue2} */}
-                Total Due {' '}
-                {invoiceDetails?.en?.is_multi_language && 'المتبقى'}
-              </td>
-              <td></td>
-              <td className="txt-bold">
-                {Number(printReceipt?.due) < 0 ? 0 : Number(printReceipt?.due).toFixed(
-                  this.props.locationSettings?.location_decimal_places
-                )}
-              </td>
-            </tr>
-          </thead>
-        </table>
-        <p className="recipt-footer">
-          {invoiceDetails?.en?.footer}
+                  Total Due {invoiceDetails?.en?.is_multi_language && 'المتبقى'}
+                </td>
+                <td></td>
+                <td className="txt-bold">
+                  {Number(printReceipt?.due) < 0
+                    ? 0
+                    : Number(printReceipt?.due).toFixed(
+                        this.props.locationSettings?.location_decimal_places
+                      )}
+                </td>
+              </tr>
+            </thead>
+          </table>
+          <p className="recipt-footer">
+            {invoiceDetails?.en?.footer}
+            <br />
+            {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.footer}
+          </p>
+          {/* <p className="recipt-footer">{orderNote}</p> */}
           <br />
-          {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.footer}
-        </p>
-        {/* <p className="recipt-footer">{orderNote}</p> */}
-        <br />
-      </div>
-    );
+        </div>
+      );
+    }
   }
 }
 export default InvoiceToPrint;
