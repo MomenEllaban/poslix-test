@@ -10,7 +10,7 @@ import { useAppDispatch } from 'src/hooks';
 import { setPosRegister } from 'src/redux/slices/pos.slice';
 import { createNewData, findAllData } from 'src/services/crud.api';
 
-export function OpenRegisterView({ setShopId, shopId: _shopId }) {
+export function OpenRegisterView({ shopId: _shopId }) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
   const shopId = router.query.id ?? 0;
@@ -52,14 +52,14 @@ export function OpenRegisterView({ setShopId, shopId: _shopId }) {
         ELocalStorageKeys.POS_REGISTER_STATE,
         JSON.stringify({ status: 'open', hand_cash: +cashHand })
       );
-      router.replace(`/pos/${currentShopId}`).then(() => router.reload());
+      router.replace(`/pos/${currentShopId}`);
     } else alert('error..Try Again');
     setIsLoading(false);
   }
 
-  useEffect(() => {
-    setCurrentShopId(router.query.id);
-  }, [router.asPath]);
+  // useEffect(() => {
+  //   setCurrentShopId(router.query.id);
+  // }, [router.asPath]);
 
   useEffect(() => {
     const locs = getLocalStorage<any[]>(ELocalStorageKeys.CUSTOEMR_LOCATIONS) ?? [];
@@ -76,7 +76,7 @@ export function OpenRegisterView({ setShopId, shopId: _shopId }) {
       }}>
       <img className="logo" src="/images/logo1.png" />
       <div className="text-center">
-        <p className='mb-0'>You have to ppen the Register first!</p>
+        <p className="mb-0">You have to ppen the Register first!</p>
         <small>Please select a location or continue with the current one.</small>
       </div>
       <div className="col-lg-4 mb-3">
