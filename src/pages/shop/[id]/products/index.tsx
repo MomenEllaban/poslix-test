@@ -463,11 +463,12 @@ const Product: NextPage = (props: any) => {
         </div>
       )}
 
-      {!isLoading ? (
+  
         <>
           <div className="page-content-style card">
             <h5>Product List</h5>
             <DataGrid
+            loading={isLoading}
               ref={dataGridRef}
               checkboxSelection
               className="datagrid-style"
@@ -489,11 +490,7 @@ const Product: NextPage = (props: any) => {
             />
           </div>
         </>
-      ) : (
-        <div className="d-flex justify-content-around">
-          <Spinner animation="grow" />
-        </div>
-      )}
+      
     </AdminLayout>
   );
 };

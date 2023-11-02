@@ -120,6 +120,7 @@ export interface ICustomer {
   deleted_at?: string;
   created_at: string;
   updated_at?: string;
+  pricing_group:IGroup
 }
 
 export interface IPackageType {
@@ -133,6 +134,12 @@ export interface IPackageType {
 }
 
 export interface IUnit {
+  id: number;
+  type: string;
+  name: string;
+  unit: string;
+  created_at?: any;
+}export interface IGroup {
   id: number;
   type: string;
   name: string;

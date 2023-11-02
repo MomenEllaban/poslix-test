@@ -252,10 +252,11 @@ const updatedProduct:any=products.find((p:any)=>p.id===id)
             {/* <AddTranseferModal getTransefers={initDataPage}/> */}
           </div>
         )}
-        {!isLoading ? (
+       
           <div className="page-content-style card">
             <h5>Transfers List</h5>
             <DataGrid
+            loading={isLoading}
               className="datagrid-style"
               sx={{
                 '.MuiDataGrid-columnSeparator': {
@@ -273,11 +274,7 @@ const updatedProduct:any=products.find((p:any)=>p.id===id)
             
             />
           </div>
-        ) : (
-          <div className="d-flex justify-content-around">
-            <Spinner animation="grow" />
-          </div>
-        )}
+        ) 
       </AdminLayout>
       {/* <TransferModal
         shopId={shopId}

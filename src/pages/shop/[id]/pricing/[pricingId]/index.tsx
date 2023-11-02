@@ -5,14 +5,15 @@ import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/chec
 import * as cookie from 'cookie';
 import { Button, ButtonGroup, Spinner, ToastContainer } from 'react-bootstrap';
 import { apiFetchCtr } from 'src/libs/dbUtils';
-import { DataGrid, GridColDef, GridRowParams } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridRowParams, GridToolbarContainer } from '@mui/x-data-grid';
 import { faPenToSquare } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { ROUTES } from 'src/utils/app-routes';
 import { useRouter } from 'next/router';
-import { findAllData } from 'src/services/crud.api';
+import { findAllData, updateData } from 'src/services/crud.api';
+import { Toastify } from 'src/libs/allToasts';
 const PricingGroup = (props: any) => {
-  const router=useRouter()
+  const router = useRouter()
   const { shopId, initData } = props;
   const [isLoading, setIsLoading] = useState(true);
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
@@ -25,7 +26,8 @@ const PricingGroup = (props: any) => {
     currency_rate: 1,
     currency_symbol: '',
   });
-  const [products, setProducts] = useState();
+  const [products, setProducts] = useState<any>();
+  const [productsPricingGroup, setProductsPricingGroup] = useState<any>();
   const columns: GridColDef[] = [
     { field: 'id', headerName: '#', minWidth: 50 },
     { field: 'name', headerName: 'Name', flex: 1 },
@@ -48,32 +50,98 @@ const PricingGroup = (props: any) => {
       field: 'price',
       headerName: 'Price',
       flex: 1,
-      renderCell: ({ row }: Partial<GridRowParams>) => <input type="number" />,
+      renderCell: ({ row }: Partial<GridRowParams>) => <input
+        value={productsPricingGroup?.find(p => p.id === row.id)?.price || ''}
+        onChange={(e) => {
+
+          setProductsPricingGroup((prev: any) => {
+            const updatedProducts = prev.map((product: any) => {
+              if (product.id === row.id) {
+                return {
+                  ...product,
+                price:e.target.value
+                };
+              }
+              return product;
+            });
+
+            return updatedProducts;
+          });
+
+          // setProducts((prev: any) => {
+          //   const updatedProducts = prev.map((product: any) => {
+          //     if (product.id === row.id) {
+          //       return {
+          //         ...product,
+          //         price: e.target.value,
+          //       };
+          //     }
+          //     return product;
+          //   });
+
+          //   return updatedProducts;
+          // });
+        }
+        }
+
+        type="number" />,
     },
-    {
-      field: 'action',
-      headerName: 'Action ',
-      sortable: false,
-      disableExport: true,
-      flex: 1,
-      renderCell: ({ row }: Partial<GridRowParams>) => (
-        <>
-          <ButtonGroup className="mb-2 m-buttons-style">
-            {permissions.hasEdit && (
-              <Button
-                onClick={(event) => {
-                  // router.push('/shop/' + shopId + '/customers/edit/' + row.id)
-                  event.stopPropagation();
-                }}>
-                <FontAwesomeIcon icon={faPenToSquare} />
-              </Button>
-            )}
-          </ButtonGroup>
-        </>
-      ),
-    },
+    // {
+    //   field: 'action',
+    //   headerName: 'Action ',
+    //   sortable: false,
+    //   disableExport: true,
+    //   flex: 1,
+    //   renderCell: ({ row }: Partial<GridRowParams>) => (
+    //     <>
+    //       <ButtonGroup className="mb-2 m-buttons-style">
+    //         {permissions.hasEdit && (
+    //           <Button
+    //             onClick={(event) => {
+    //               // router.push('/shop/' + shopId + '/customers/edit/' + row.id)
+    //               event.stopPropagation();
+    //             }}>
+    //             <FontAwesomeIcon icon={faPenToSquare} />
+    //           </Button>
+    //         )}
+    //       </ButtonGroup>
+    //     </>
+    //   ),
+    // },
   ];
-  const onRowsSelectionHandler = (ids: any) => {};
+  // ----------------------------------------------------------------------------------------------
+  function CustomToolbar() {
+    return (
+      <GridToolbarContainer>
+        <Button variant='success' onClick={updatePricing}>
+          Save
+        </Button>
+      </GridToolbarContainer>
+    );
+  }
+  // ----------------------------------------------------------------------------------------------
+  const updatePricing = async () => {
+    const url = 'pricing-group'
+    
+    const data = {
+      "location_id": router.query.id,
+      products: productsPricingGroup
+    }
+
+
+    try {
+      const res = await updateData(url, router.query.pricingId, data)
+      Toastify('success', 'Groups updated successfully')
+
+    } catch (e) {
+
+      Toastify('error', 'Something went wrong')
+    }
+  }
+  // ----------------------------------------------------------------------------------------------
+
+  // ----------------------------------------------------------------------------------------------
+  const onRowsSelectionHandler = (ids: any) => { };
   async function initDataPage() {
     // const { success, data } = await apiFetchCtr({
     //   fetch: 'products',
@@ -83,9 +151,19 @@ const PricingGroup = (props: any) => {
     // if (success) setProducts(data?.products);
     // console.log(data?.products);
     // console.log(shopId,router.query.id);
-    
-    const res:any = await findAllData(`products/${router.query.id}?all_data=1`);
-    if (res?.success) setProducts(res?.data?.products);
+
+    try {
+
+      const res: any = await findAllData(`products/${router.query.id}?all_data=1`);
+      const res2: any = await findAllData(`pricing-group/${router.query.id}?group_id=${router.query.pricingId}`);
+// set pricing for grop with old pricing if exist if not set it with the prodact normal sell price
+      setProductsPricingGroup(res2?.data?.result?.products.map((p:any)=>({id:p.id,price:p.pivot.price?p.pivot.price:res?.data?.result.sell_price})))
+
+      setProducts(res?.data?.result);
+    } catch (e) {
+      Toastify('error', 'Something went wrong')
+    }
+
 
     setIsLoading(false);
   }
@@ -98,12 +176,12 @@ const PricingGroup = (props: any) => {
       perm.name.includes('getpricinggroup get GET')
         ? (getPermissions.hasView = true)
         : perm.name.includes('pricinggroup add POST')
-        ? (getPermissions.hasInsert = true)
-        : perm.name.includes('pricinggroup update PUT')
-        ? (getPermissions.hasEdit = true)
-        : perm.name.includes('pricinggroup delete DELETE')
-        ? (getPermissions.hasDelete = true)
-        : null
+          ? (getPermissions.hasInsert = true)
+          : perm.name.includes('pricinggroup update PUT')
+            ? (getPermissions.hasEdit = true)
+            : perm.name.includes('pricinggroup delete DELETE')
+              ? (getPermissions.hasDelete = true)
+              : null
     );
 
     setPermissions(getPermissions);
@@ -113,46 +191,49 @@ const PricingGroup = (props: any) => {
     if (_locs?.toString()?.length > 10)
       setLocationSettings(
         _locs[
-          _locs.findIndex((loc: any) => {
-            return loc.value == shopId;
-          })
+        _locs.findIndex((loc: any) => {
+          return loc.value == shopId;
+        })
         ]
       );
-    
-    initDataPage();
+
   }, []);
+  // /-------------------------------------------------------------------------------------------
+  useEffect(() => {
+    if (router.query.id) initDataPage();
+  }, [router.query.id])
+  // /-------------------------------------------------------------------------------------------
+
   return (
     <>
       <AdminLayout shopId={shopId}>
         <div>PricingGroup</div>
         <ToastContainer />
-        {!isLoading ? (
-          <>
-            <div className="page-content-style card">
-              <h5>Pricing Group List</h5>
-              <DataGrid
-                className="datagrid-style"
-                sx={{
-                  '.MuiDataGrid-columnSeparator': {
-                    display: 'none',
-                  },
-                  '&.MuiDataGrid-root': {
-                    border: 'none',
-                  },
-                }}
-                rows={products||[]}
-                columns={columns||[]}
-                pageSize={10}
-                rowsPerPageOptions={[10]}
-                onSelectionModelChange={(ids: any) => onRowsSelectionHandler(ids)}
-              />
-            </div>
-          </>
-        ) : (
-          <div className="d-flex justify-content-around">
-            <Spinner animation="grow" />
-          </div>
-        )}
+
+        <div className="page-content-style card">
+          <h5>Pricing Group List</h5>
+
+          <DataGrid
+            loading={isLoading}
+            className="datagrid-style"
+            sx={{
+              '.MuiDataGrid-columnSeparator': {
+                display: 'none',
+              },
+              '&.MuiDataGrid-root': {
+                border: 'none',
+              },
+            }}
+            rows={products || []}
+            columns={columns || []}
+            pageSize={10}
+            rowsPerPageOptions={[10]}
+            onSelectionModelChange={(ids: any) => onRowsSelectionHandler(ids)}
+            components={{
+              Toolbar: CustomToolbar,
+            }}
+          /></div>
+
       </AdminLayout>
     </>
   );

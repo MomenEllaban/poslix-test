@@ -223,11 +223,12 @@ const Purchases: NextPage = ({ shopId, id }: any) => {
                 </button>
               </div>
             )}
-            {!isloading ? (
+         
               <div>
                 <div className="page-content-style card">
                   <h5>Purchases List</h5>
                   <DataGrid
+                  loading={isloading}
                     className="datagrid-style"
                     sx={{
                       '.MuiDataGrid-columnSeparator': { display: 'none' },
@@ -243,11 +244,7 @@ const Purchases: NextPage = ({ shopId, id }: any) => {
                   />
                 </div>
               </div>
-            ) : (
-              <div className="d-flex justify-content-around">
-                <Spinner animation="grow" />
-              </div>
-            )}
+           
           </div>
         </div>
       )}
