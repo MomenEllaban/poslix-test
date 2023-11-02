@@ -51,34 +51,42 @@ const CloseRegister = ({ openDialog, statusDialog, shopId }: any) => {
   };
   useEffect(() => {
     if (!statusDialog) return;
-    setHandCash(+JSON.parse(localStorage.getItem('posRegister')).hand_cash)
+    setHandCash(+JSON.parse(localStorage.getItem('posRegister')).hand_cash);
     setOpen(statusDialog);
-    getCloseData()
+    getCloseData();
   }, [statusDialog]);
 
   const closeRegisterReq = async () => {
     const res = await createNewData(`registration/${shopId}/close`, {
       hand_cash: handCash,
-      note
-    })
-    if(res.data.success) {
+      note,
+    });
+    if (res.data.success) {
       handleClose();
       setJobType({ req: 101, val: 'closeRegister' });
       Toastify('success', 'successfully done');
-      const registerObject = getLocalStorage<{hand_cash: number; state: string}>(ELocalStorageKeys.POS_REGISTER_STATE);
-      dispatch(setPosRegister({...registerObject, hand_cash: 0, status: 'close'}));
+      const registerObject = getLocalStorage<{ hand_cash: number; state: string }>(
+        ELocalStorageKeys.POS_REGISTER_STATE
+      );
+      dispatch(setPosRegister({ ...registerObject, hand_cash: 0, status: 'close' }));
     } else Toastify('error', 'Something went wrong!');
-  }
+  };
 
   const getCloseData = async () => {
-    setIsLoading(true)
-    const res = await findAllData(`registration/${shopId}/close`)
-    setCash(res.data.result.cash);
-    setCard(res.data.result.card);
-    setBank(res.data.result.bank);
-    setCheque(res.data.result.cheque);
-    setIsLoading(false)
-  }
+    setIsLoading(true);
+    try {
+      const res = await findAllData(`registration/${shopId}/close`);
+      setCash(res.data.result.cash);
+      setCard(res.data.result.card);
+      setBank(res.data.result.bank);
+      setCheque(res.data.result.cheque);
+      setIsLoading(false);
+    } catch (error) {
+      console.log(error.message);
+      const { response } = error;
+      Toastify('error', response?.data?.error?.message);
+    }
+  };
 
   const makeShowSnake = (val: any) => {
     setOpenSnakeBar(val);
@@ -94,9 +102,7 @@ const CloseRegister = ({ openDialog, statusDialog, shopId }: any) => {
         aria-describedby="modal-modal-description"
         maxWidth={'xl'}>
         <DialogTitle className={mStyle.bgg} id="scroll-dialog-title">
-          <h5 className="modal-title" id="myLargeModalLabel">
-            Close Register
-          </h5>
+          Close Register
         </DialogTitle>
         <DialogContent>
           {isLoading ? (
@@ -108,15 +114,14 @@ const CloseRegister = ({ openDialog, statusDialog, shopId }: any) => {
               <div className="modal-content">
                 <div className="modal-body">
                   <div className="close-register-box">
-                  <div className="close-item">
+                    <div className="close-item">
                       <div className="close-item-inner">
                         <div className="close-item-inner-icon">
                           <FontAwesomeIcon icon={faCreditCard} />
                         </div>
                         <p className="close-item-title">Cash in hand</p>
                         <p className="close-item-title">
-                          {Number(handCash).toFixed(3)}{' '}
-                          {locationSettings?.currency_code}
+                          {Number(handCash).toFixed(3)} {locationSettings?.currency_code}
                         </p>
                       </div>
                     </div>
@@ -183,22 +188,17 @@ const CloseRegister = ({ openDialog, statusDialog, shopId }: any) => {
                   className="form-control close-note mb-4 mt-4"
                   placeholder="Your Note here"
                   rows={6}
-                  onChange={(e) => setNote(e.target.value)}>
-                  {note}
-                </textarea>
+                  onChange={(e) => setNote(e.target.value)}
+                  defaultValue={note}
+                />
+
                 <div className="modal-footer mt-4">
-                  <a
-                    href="javascript:void(0);"
+                  <button
                     className="btn btn-link link-success fw-medium"
                     onClick={() => handleClose()}>
                     <i className="ri-close-line me-1 align-middle" /> Dismise
-                  </a>
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    onClick={() => {
-                      closeRegisterReq();
-                    }}>
+                  </button>
+                  <button type="button" className="btn btn-primary" onClick={closeRegisterReq}>
                     Close Register
                   </button>
                 </div>
