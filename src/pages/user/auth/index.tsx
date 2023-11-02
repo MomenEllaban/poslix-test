@@ -108,7 +108,7 @@ export default function RegisterPage() {
               </div>
               <div className="form-item right-side">
                 <div className="login-logo-box">
-                  <Image src={logo} alt='logo poslix'  width={100} height={20} />
+                  <img src={logo.src} alt='logo poslix'   />
                 </div>
                 {!isRegisterDone && (
                   <div className="login-register-box">
