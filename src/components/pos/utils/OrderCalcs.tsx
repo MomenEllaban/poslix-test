@@ -29,24 +29,25 @@ export const OrderCalcs = ({
 
   const [isDiscountModalOpen, setIsDiscountModalOpen] = useState(false);
 
-  const [taxList, setTaxList] = useState<any>()
+  const [taxList, setTaxList] = useState<any>();
   const { taxesList } = useTaxesList(shopId);
   useEffect(() => {
-    setTaxList(taxesList?.taxes)
-    const _tax: any = taxesList?.taxes?.filter((tax: any) => tax?.is_primary)
-    const _taxGroup: any = taxesList?.taxes?.filter((tax: any) => tax?.is_tax_group && tax?.is_primary)
+    setTaxList(taxesList?.taxes);
+    const _tax: any = taxesList?.taxes?.filter((tax: any) => tax?.is_primary);
+    const _taxGroup: any = taxesList?.taxes?.filter(
+      (tax: any) => tax?.is_tax_group && tax?.is_primary
+    );
     let finalTax;
     let finalTaxType;
-    if(_taxGroup.length > 0) {
+    if (_taxGroup?.length > 0) {
       finalTax = _taxGroup[0].tax_group.reduce((total, tax) => total + (tax.amount || 0), 0);
+    } else if (_tax?.length > 0) {
+      finalTax = _tax[0]?.amount ?? 0;
+    } else {
+      finalTax = 0;
     }
-    else {
-      finalTax = _tax[0]?.amount ?? 0
-    }
-    dispatch(
-      setCartTax({ tax: finalTax, location_id: shopId, type: 'percentage' })
-    );
-  }, [taxesList])
+    dispatch(setCartTax({ tax: finalTax, location_id: shopId, type: 'percentage' }));
+  }, [taxesList]);
 
   const totalDiscount =
     cart?.cartDiscountType === 'percentage'
@@ -60,7 +61,6 @@ export const OrderCalcs = ({
 
   const totalNoTax = +(cart?.cartSellTotal ?? 0) + +(cart?.shipping ?? 0);
   const totalAmount = totalNoTax + totalTax - totalDiscount;
-  
 
   return (
     <div className="table calcs-table table-borderless  align-middle mb-0 border-top border-top-dashed mt-2">
@@ -123,7 +123,7 @@ export const OrderCalcs = ({
           </div>
         </div>
 
-        {cart?.orderId &&
+        {cart?.orderId && (
           <div className="calcs-details-row">
             <div className="py-1 calcs-details-col">
               <div></div>
@@ -131,13 +131,15 @@ export const OrderCalcs = ({
             </div>
             <div className="py-1 calcs-details-col">
               <div>{lang.cartComponent.difference}</div>
-              <div>{(+totalAmount - +cart.lastTotal + (+cart.lastDue < 0 ? 0 : +cart.lastDue))
-                .toFixed(locationSettings?.location_decimal_places)}{' '}
+              <div>
+                {(+totalAmount - +cart.lastTotal + (+cart.lastDue < 0 ? 0 : +cart.lastDue)).toFixed(
+                  locationSettings?.location_decimal_places
+                )}{' '}
                 <span style={{ fontSize: '10px' }}>{locationSettings?.currency_code}</span>
               </div>
             </div>
           </div>
-        }
+        )}
         <EditDiscountModal
           shopId={shopId}
           show={isDiscountModalOpen}
