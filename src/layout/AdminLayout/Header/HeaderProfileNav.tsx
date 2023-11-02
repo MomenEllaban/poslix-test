@@ -8,6 +8,7 @@ import { useRouter } from 'next/router';
 import { PropsWithChildren } from 'react';
 import { Dropdown, Nav, NavItem } from 'react-bootstrap';
 import { deleteCookie } from 'cookies-next';
+import { removeItemsInLocalStorage } from 'src/utils/local-storage';
 
 type NavItemProps = {
   icon: IconDefinition;
@@ -30,8 +31,8 @@ export default function HeaderProfileNav() {
   const handelCleanStorage = () => {
     deleteCookie('next-auth.session-token');
     deleteCookie('tokend');
+    removeItemsInLocalStorage();
     router.push('/user/auth');
-    localStorage.clear();
   };
 
   const handleLogout = () => {

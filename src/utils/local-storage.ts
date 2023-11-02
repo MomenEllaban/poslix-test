@@ -1,7 +1,9 @@
 export enum ELocalStorageKeys {
   TOKEN = 'userinfo',
   TOKEN_COOKIE = 'tokend',
-
+  PERMISSIONS = 'permissions',
+  CART = 'cart',
+  BUSINESS_ID = 'businessId',
   LANGUAGE = 'lang',
   USER = 'userdata',
   USER_NAME = 'username',
@@ -10,7 +12,6 @@ export enum ELocalStorageKeys {
   FULL_NAME = 'userfullname',
   LEVELS = 'levels',
   LOCATIONS = 'locations',
-
   POS_REGISTER_STATE = 'posRegister',
 }
 
@@ -33,3 +34,15 @@ export function getLocalStorage<T>(key: ELocalStorageKeys): T | null {
   }
   return null;
 }
+
+export const removeItemsInLocalStorage = (): void => {
+  const KEYS_LOCAL_STORAGE = JSON.parse(JSON.stringify(ELocalStorageKeys));
+
+  delete KEYS_LOCAL_STORAGE.POS_REGISTER_STATE;
+  delete KEYS_LOCAL_STORAGE.TOKEN_COOKIE;
+
+  for (const value of Object.values(KEYS_LOCAL_STORAGE)) {
+    const _v = value as string;
+    localStorage.removeItem(_v);
+  }
+};
