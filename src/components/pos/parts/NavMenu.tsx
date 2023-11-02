@@ -73,7 +73,10 @@ const NavMenu: any = ({ shopId }: any) => {
             <i className="ri-dashboard-2-line"></i>
             <span data-key="t-dashboards">{lang.pos.navmenu.dashboard}</span>
           </Link>
-          <button className="nav-link menu-link d-flex" onClick={handleSwitchRegister}>
+          <button
+            className="nav-link menu-link d-flex"
+            type="button"
+            onClick={handleSwitchRegister}>
             <i className="ri-stack-line"></i>
             <span data-key="t-dashboards">
               {/* Open registeration will not appear */}
