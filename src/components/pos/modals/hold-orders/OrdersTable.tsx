@@ -1,14 +1,14 @@
 import { IReportData } from '@models/pos.types';
 // import classNames from 'classnames';
 import Fuse from 'fuse.js';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Button } from 'react-bootstrap';
 import { MdAutorenew, MdInfoOutline } from 'react-icons/md';
 // import { FixedSizeList } from 'react-window';
 // import InfiniteLoader from 'react-window-infinite-loader';
 // import { useUser } from 'src/context/UserContext';
 import { addMultipleToCart } from 'src/redux/slices/cart.slice';
-import { useGetSalesReport } from 'src/services/pos.service';
+import posService, { useGetSalesReport } from 'src/services/pos.service';
 import OrderInfoTable from './OrderInfoTable';
 // import { motion } from 'framer-motion';
 import { useAppDispatch } from 'src/hooks';
@@ -22,17 +22,25 @@ export default function OrdersTable({ lang, shopId, searchQuery = '', closeModal
 
   // const { locationSettings } = useUser();
   const [isOrderDetails, setIsOrderDetails] = useState<boolean>(false);
-  console.log(isOrderDetails);
+
   const [orderId, setOrderId] = useState<string | number>('');
-  console.log(orderId);
+
   const [renderdItems, setRenderdItems] = useState<IReportData[]>([]);
 
   const NUMBER_PAGE_DEFAULT = 1;
 
-  const [pageNumRef, setPageNumRef] = useState(NUMBER_PAGE_DEFAULT);
+  const pageNumRef = useRef(NUMBER_PAGE_DEFAULT);
+
+  const [loadingChangePage, setLoadingChangePage] = useState(true);
 
   // this listing all orders once
-  const { isLoading, salesReport, refetch } = useGetSalesReport(shopId, null, {}, pageNumRef);
+  const { isLoading, salesReport, refetch } = useGetSalesReport(
+    shopId,
+    null,
+    {},
+    pageNumRef.current,
+    setLoadingChangePage
+  );
 
   const handleOrderInfo = (order_id: string | number) => {
     setOrderId(order_id);
@@ -123,6 +131,7 @@ export default function OrdersTable({ lang, shopId, searchQuery = '', closeModal
 
   useEffect(() => {
     if (salesReport.data.length === 0) setRenderdItems([]);
+    else if (!searchQuery) setRenderdItems(salesReport?.data);
     else {
       let orderlistPaginated = salesReport?.data;
       const fuse = new Fuse(orderlistPaginated, {
@@ -138,7 +147,7 @@ export default function OrdersTable({ lang, shopId, searchQuery = '', closeModal
 
   useEffect(() => {
     refetch();
-  }, [pageNumRef]);
+  }, [pageNumRef.current]);
 
   function CustomPagination() {
     return (
@@ -146,9 +155,12 @@ export default function OrdersTable({ lang, shopId, searchQuery = '', closeModal
         color="primary"
         variant="outlined"
         shape="rounded"
-        page={pageNumRef}
+        page={pageNumRef.current}
         count={salesReport?.pagination?.last_page}
-        onChange={(event, value) => setPageNumRef(value)}
+        onChange={(event, value) => {
+          pageNumRef.current = value;
+          setLoadingChangePage(true);
+        }}
       />
     );
   }
@@ -168,7 +180,7 @@ export default function OrdersTable({ lang, shopId, searchQuery = '', closeModal
           display: isOrderDetails ? 'none' : 'flex',
           height: isLoading ? '200px' : '630px',
         }}
-        loading={isLoading}
+        loading={isLoading || loadingChangePage}
         rows={renderdItems}
         columns={columns}
         initialState={{
