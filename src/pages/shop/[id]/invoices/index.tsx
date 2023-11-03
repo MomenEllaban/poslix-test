@@ -377,7 +377,7 @@ export default function SalesList(props: any) {
     initDataPage(NUMBER_PAGE_DEFAULT);
   }, [router.asPath]);
 
-  function CustomPagination() {
+  function CustomPagination(): React.JSX.Element {
     return (
       <Pagination
         color="primary"
