@@ -671,11 +671,12 @@ export default function SalesListTable({
   };
 
   const handleComponentsDataGrid = () => {
-    const components = {
+    let components: any = {
       Toolbar: CustomToolbar,
     };
+
     if (isValidElement(<CustomPagination />)) {
-      components?.Pagination = CustomPagination;
+      components.Pagination = CustomPagination;
     }
 
     return components;
