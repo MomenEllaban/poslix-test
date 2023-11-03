@@ -8,7 +8,7 @@ const nextConfig = {
     includePaths: [path.join(__dirname, 'styles')],
   },
   images: {
-    domains: ['img.pokemondb.net','firebasestorage.googleapis.com'],
+    domains: ['img.pokemondb.net','firebasestorage.googleapis.com', 'app.poslix.com'],
   },
 }
 

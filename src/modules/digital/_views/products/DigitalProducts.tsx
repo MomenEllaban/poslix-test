@@ -75,6 +75,19 @@ export default function DigitalProducts({ shopId }) {
       setCartItems(cartItems.filter((el) => el.id !== item.id));
     }
   };
+  //-------------------------------------------------------------------------------------------------
+  const addByQuantity = (item: any, quantity: number) => {
+    const index = cartItems.findIndex((p) => p.id === item.id);
+    const cartItms = [...cartItems];
+    if (index > -1) {
+      cartItms[index].quantity = quantity;
+      if (cartItms[index].quantity === 0) {
+        setCartItems(cartItms.filter((el) => el.id !== item.id));
+      }
+      cartItms[index].itemTotalPrice = (cartItms[index].sell_price || cartItms[index].price) * cartItms[index].quantity;   
+      setCartItems(cartItms);
+    }
+  };
   // ------------------------------------------------------------------------------------------------
   let toggleDrawer = (newOpen) => () => {
     setOpen(newOpen);
@@ -162,7 +175,7 @@ export default function DigitalProducts({ shopId }) {
   return (
     <>
       {renderedScreen === 'products' ? (
-        <div style={{direction: lang == en ? "ltr": "rtl"}}>
+        <div style={{ direction: lang == en ? 'ltr' : 'rtl' }}>
           <div className="digital-products-main bg-white">
             <div className="digital-products-header">
               <h1>{lang.digital.digital_product}</h1>
@@ -288,6 +301,7 @@ export default function DigitalProducts({ shopId }) {
                 setRenderedScreen={setRenderedScreen}
                 removeFromCart={removeFromCart}
                 addItemTocart={addItemTocart}
+                addByQuantity={addByQuantity}
                 cartItems={cartItems}
               />
               {matches ? (

@@ -4,7 +4,7 @@ import  CartItem  from "./CartItem"
 import { useDispatch,useSelector } from 'react-redux';
 import {addTodigitalCart ,incrementQuantity, decrementQuantity, removeItem} from '../../redux/slices/digitalCartSlice';
 import { useDigitalContext } from "src/modules/digital/_context/DigitalContext";
-const DigitalCart = ({cartItems,addItemTocart,removeFromCart,setRenderedScreen,totalPrice,location}) => {
+const DigitalCart = ({cartItems,addItemTocart,removeFromCart,addByQuantity,setRenderedScreen,totalPrice,location}) => {
     const {digitalCart} = useSelector((state:any) => state.digitalCart)
     const { lang, setLang } = useDigitalContext();
     // const dispatch = useDispatch()
@@ -36,6 +36,7 @@ const DigitalCart = ({cartItems,addItemTocart,removeFromCart,setRenderedScreen,t
                 price={item.itemTotalPrice} 
                 quantity={item.quantity}
                 addItemTocart={addItemTocart}
+                addByQuantity={addByQuantity}
                 item={item}
                 removeFromCart={removeFromCart}
                 />

@@ -153,8 +153,6 @@ const cartSlice = createSlice({
     },
     changeWithSpesificAmount: (state, { payload }) => {
       const { product, newQty } = payload;
-      console.log(product);
-      
       const { id, location_id, sell_price, cost_price } = product;
       const cart = findOrCreateCart(state, location_id);
       const existingItem = cart.cartItems.find((item) => item.id === id);
