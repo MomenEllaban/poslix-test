@@ -250,7 +250,8 @@ const posService = {
   getSalesReport: async (
     location_id: string | number,
     order_id?: string | number,
-    page?: number
+    page?: number,
+    setLoadingChangePage?: (prev: boolean) => void
   ) => {
     let param = {} as { page: number; all_data: number };
     typeof +page === 'number' ? (param.page = page) : (param.all_data = 1);
@@ -261,7 +262,9 @@ const posService = {
           params: param,
         }
       )
-      .then((data) => data.data);
+      .then((data) => data.data)
+      .catch((err) => console.log(err))
+      .finally(() => setLoadingChangePage(false));
   },
 
   getItemsSalesReport: async (location_id: string | number, order_id?: string | number) =>
@@ -620,11 +623,12 @@ export const useGetSalesReport = (
   location_id: string | number,
   order_id?: string | number,
   config?: SWRConfiguration,
-  page?: number
+  page?: number,
+  setLoadingChangePage?: (prev: boolean) => void
 ) => {
   const { data, error, isLoading, mutate } = useSWR(
     `/reports/sales/${location_id}` + (order_id ? `/${order_id}` : ''),
-    () => posService.getSalesReport(location_id, order_id, page),
+    () => posService.getSalesReport(location_id, order_id, page, setLoadingChangePage),
     {
       ...config,
     }
