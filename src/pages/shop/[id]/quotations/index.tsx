@@ -129,8 +129,8 @@ export default function SalesList(props: any) {
     const from = _locs.find((el) => el.location_id == quotation.location_id).location_name;
     const ceartedAt = quotation.created_at;
     quotation.quotation_list_lines.forEach((el) => {
-      total += el.qty * +el.quotation_line_product.sell_price;
-      products.push({ name: el.quotation_line_product.name, qty: el.qty });
+      total += el.qty * +el.quotation_line_product?.sell_price;
+      products.push({ name: el.quotation_line_product?.name, qty: el.qty });
     });
 
     setShowQuotation({
@@ -156,7 +156,7 @@ export default function SalesList(props: any) {
   useEffect(() => {
     checkPrintType();
   }, []);
-  
+
   // ------------------------------------------------------------------------------------------------
   //table columns
   const columns: GridColDef[] = [
@@ -584,7 +584,7 @@ export default function SalesList(props: any) {
     if (_locs.toString().length > 10)
       setLocationSettings(
         _locs[
-        _locs.findIndex((loc: any) => {         
+        _locs.findIndex((loc: any) => {
           return loc.location_id == shopId;
         })
         ]
@@ -679,12 +679,133 @@ export default function SalesList(props: any) {
           components={{ Toolbar: CustomToolbar }}
         />
       </div>
+      {/*  */}
+      
+      <Dialog open={showViewPopUp} fullWidth={true} className="poslix-modal" onClose={handleClose}>
+        <DialogTitle className="poslix-modal text-primary">
+          Quotaion Details
+        </DialogTitle>
+        <DialogContent className="poslix-modal-content">
+          <div className="poslix-modal">
+            <div className="top-section-details">
+              <img src={invoiceDetails?.en?.logo} style={{ width: '80px', marginBottom: '10px' }} />
+              <div className="item-sections">
+                <div className="top-detials-invoice">
+                  <div className="top-detials-item">
+                    <p>Quotaion  No :</p>
+                    <p>{selectRow.id}</p>
+                  </div>
+                  <div className="top-detials-item pe-2">
+                    <p>Quotaion  Date :</p>
+                    {edit ? (
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={selectRow?.created_at && new Date(selectRow?.created_at).toLocaleString()}
+                      />
+                    ) : (
+                      <p>{selectRow?.created_at && new Date(selectRow?.created_at).toLocaleString()}</p>
+                    )}
+                  </div>
+                  <div className="top-detials-item pe-2">
+                    <p>Added By :</p>
+
+                    <p>{selectRow.employ_id}</p>
+
+                  </div>
+                </div>
+                <div className="top-detials-invoice">
+                  <div className="top-detials-item">
+                    <p>Final Total :</p>
+
+                    <p>
+                      {Number(selectRow.total_price).toFixed(
+                        locationSettings?.location_decimal_places
+                      )}
+                    </p>
+
+                  </div>
+                  <div className="top-detials-item">
+                    <p>Customer Name :</p>
+                    <p>
+                      {selectRow?.customer?.first_name}{' '}
+                      {selectRow?.customer?.last_name}
+                    </p>
+                  </div>
+                  {/* <div className="top-detials-item" style={{ fontSize: '13px' }}>
+                    <p>Order Note</p>
+                  
+                  </div> */}
+                </div>
+              </div>
+
+              <div>
+                <Button
+                  className="mr-right"
+                  onClick={() => {
+                    handlePrint();
+                  }}>
+                  Print Recipt
+                </Button>
+                <Button
+                  onClick={() => {
+                    handlePrint2();
+                  }}>
+                  Print Invoice
+                </Button>
+              </div>
+            </div>
+            {lines.length > 0 ? (
+        <div className="row">
+          <div className="invoice-items-container">
+            <div className="header-titles">
+              <div>Name</div>
+              <div>Qty</div>
+              <div>Amount</div>
+              {edit && <div></div>}
+            </div>
+            {
+              lines?.map((line: any, index: number) => {
+                return (
+                  <div className="header-items under_items" key={index}>
+                    <div>{line.name}</div>
+                    <div>
+                      {
+                        Number(+line?.qty).toFixed(0)}
+
+                    </div>
+                    <div>
+
+                      {Number(+line?.quotation_line_product?.sell_price).toFixed(
+                        locationSettings?.location_decimal_places
+                      )}
+                    </div>
+
+                  </div>
+                );
+              })}
+            <div className="header-titles under_items" style={{ marginTop: '20px' }}>
+              <div>Total</div>
+              <div>
+                {(+selectRow.total_price).toFixed(
+                  locationSettings?.location_decimal_places
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div>loading...</div>
+      )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/*  */}
      
       {/* FOR VIEW ELEMENT */}
-      <Dialog open={showViewPopUp} fullWidth={true} maxWidth={'md'} onClose={handleClose}>
-        {/* <DialogTitle className="poslix-modal text-primary">
-          {edit ? 'Edit Sale' : 'Sale Details'}
-        </DialogTitle> */}
+      {/* <Dialog open={showViewPopUp} fullWidth={true} maxWidth={'md'} onClose={handleClose}>
+        
         <DialogContent className="poslix-modal-content">
           <Box
             component={'div'}
@@ -799,131 +920,7 @@ export default function SalesList(props: any) {
               </Box>
             </Box>
           </Box>
-          {/* <div className="poslix-modal">
-            <div className="top-section-details">
-              <img src={invoiceDetails.logo} style={{ width: '80px', marginBottom: '10px' }} />
-              <div className="item-sections">
-                <div className="top-detials-invoice">
-                  <div className="top-detials-item">
-                    <p>Invoice No :</p>
-                    <p>{selectRow.id}</p>
-                  </div>
-                  <div className="top-detials-item pe-2">
-                    <p>Invoice Date :</p>
-                    {edit ? (
-                      <input type="text" className="form-control" value={selectRow.sale_date} />
-                    ) : (
-                      <p>{selectRow.sale_date}</p>
-                    )}
-                  </div>
-                  <div className="top-detials-item pe-2">
-                    <p>Added By :</p>
-                    {edit ? (
-                      <input type="text" className="form-control" value={selectRow.added_by} />
-                    ) : (
-                      <p>{selectRow.added_by}</p>
-                    )}
-                  </div>
-                </div>
-                <div className="top-detials-invoice">
-                  <div className="top-detials-item">
-                    <p>Final Total :</p>
-                    {edit ? (
-                      <input type="text" className="form-control" value={selectRow.total_price} />
-                    ) : (
-                      <p>{selectRow.total_price}</p>
-                    )}
-                  </div>
-                  <div className="top-detials-item">
-                    <p>Customer Name :</p>
-                    {edit ? (
-                      <input type="text" className="form-control" value={selectRow.customer_name} />
-                    ) : (
-                      <p>{selectRow.customer_name}</p>
-                    )}
-                  </div>
-                  <div className="top-detials-item" style={{ fontSize: '13px' }}>
-                    <p>Order Note</p>
-                    {edit ? (
-                      <input type="text" className="form-control" value={selectRow.notes} />
-                    ) : (
-                      <p>{selectRow.notes}</p>
-                    )}
-                  </div>
-                  <div className="top-detials-item" style={{ fontSize: '13px' }}>
-                    <p>Status</p>
-                    {edit ? (
-                      <input type="text" className="form-control" value={selectRow.status} />
-                    ) : (
-                      <p>{selectRow.status}</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-              {!edit && (
-                <div>
-                  <Button
-                    className="mr-right"
-                    onClick={() => {
-                      handlePrint();
-                    }}>
-                    Print Recipt
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      handlePrint2();
-                    }}>
-                    Print Invoice
-                  </Button>
-                </div>
-              )}
-            </div>
-            {lines && !isLoadItems ? (
-              <div className="row">
-                <div className="invoice-items-container">
-                  <div className="header-titles">
-                    <div>Name</div>
-                    <div>Qty</div>
-                    <div>Amount</div>
-                    {edit && <div></div>}
-                  </div>
-                  {lines.map((line: any, index: number) => {
-                    return (
-                      <div className="header-items under_items" key={index}>
-                        <div>{line.name}</div>
-                        <div>
-                          {edit ? (
-                            <input type="text" className="form-control" value={Number(line.qty)} />
-                          ) : (
-                            Number(line.qty)
-                          )}
-                        </div>
-                        <div>{line.price}</div>
-                        {edit && (
-                          <div>
-                            <b>x</b>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                  <div className="header-titles under_items" style={{ marginTop: '20px' }}>
-                    <div></div>
-                    <div>Total</div>
-                    <div>
-                      {edit ? (
-                        <input type="text" className="form-control" value={selectRow.total_price} />
-                      ) : (
-                        selectRow.total_price
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div>laoding...</div>
-            )}
-          </div> */}
+         
         </DialogContent>
         <DialogActions>
           {edit && (
@@ -960,7 +957,7 @@ export default function SalesList(props: any) {
             Cancel
           </Button>
         </DialogActions>
-      </Dialog>
+      </Dialog> */}
     </AdminLayout>
   );
 }

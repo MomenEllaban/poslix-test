@@ -15,7 +15,31 @@ import { Toastify } from 'src/libs/allToasts';
 import { generateUniqueString } from 'src/libs/toolsUtils';
 import { createNewData, findAllData } from 'src/services/crud.api';
 import withAuth from 'src/HOCs/withAuth';
+// 
+function findFalsyKeys(obj):any {
+  console.log(obj);
+  
+  const falsyKeys = [];
 
+  function exploreObject(obj, currentPath = '') {
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        const value = obj[key];
+        const path = currentPath ? `${currentPath}.${key}` : key;
+
+        if (typeof value === 'object'  ) {
+          exploreObject(value, path);
+        } else if (!value &&key!=='is_multi_language') {
+          falsyKeys.push(path);
+        }
+      }
+    }
+  }
+
+  exploreObject(obj);
+  return falsyKeys;
+}
+// 
 const Appearance: NextPage = (props: any) => {
   const { shopId, id } = props;
   const router = useRouter();
@@ -50,12 +74,17 @@ const Appearance: NextPage = (props: any) => {
     setIsLoading(false);
   }
   async function editInvoice(url = '0') {
+   if(!formObj.en.logo) delete formObj.en.logo
+   if(!formObj.ar.logo) delete formObj.ar.logo
+   formObj.location_id= router.query.id
+ 
+   if( findFalsyKeys(formObj)?.length>0){
+    Toastify('error',`${findFalsyKeys(formObj)?.join(', ').replace(/en\.|ar\./g, "")} required`);
+    return
+   }
     if (isLoading) return;
     setIsLoading(true);
-    const res = await createNewData(`appearance`, {
-      ...formObj,
-      location_id: router.query.id,
-    });
+    const res = await createNewData(`appearance`,formObj);
     if (res.data.success) {
       Toastify('success', 'successfully updated');
       setPreviewUrl('');
@@ -1442,7 +1471,31 @@ const Appearance: NextPage = (props: any) => {
                         ) : (
                           <div className="appear-body">
                             <div className="appear-body-item">
-
+                              {previewUrl.length == 0 ? (
+                                <div>
+                                  <label>
+                                    Your Logo: <span className="text-danger">*</span>
+                                  </label>
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    className="form-control"
+                                    id="product-image"
+                                    name="product-image"
+                                    onChange={imageChange}
+                                  />
+                                </div>
+                              ) : (
+                                <div className="invoice-accept-btns">
+                                  <button
+                                    type="button"
+                                    className="btn btn-danger p-2"
+                                    onClick={() => setPreviewUrl('')}
+                                    style={{ width: '100%', maxWidth: '100%' }}>
+                                    <FontAwesomeIcon icon={faCancel} /> Cancel
+                                  </button>
+                                </div>
+                              )}
                               <div className="form-group2">
                                 <label>
                                   Whatsapp: <span className="text-danger">*</span>
@@ -1529,7 +1582,7 @@ const Appearance: NextPage = (props: any) => {
                                   </div>
                                 </div> */}
                               </div>
-                              {formObj.is_multi_language && (
+                              {/* {formObj.is_multi_language && (
                                 <>
                                   <div className="form-group2">
                                     <label>
@@ -1705,7 +1758,7 @@ const Appearance: NextPage = (props: any) => {
                                     />
                                   </div>
                                 </>
-                              )}
+                              )} */}
                               <button
                                 type="button"
                                 className="btn btn-primary p-2"
@@ -1726,48 +1779,8 @@ const Appearance: NextPage = (props: any) => {
                                   <img src={formObj.en.logo} />
                                 )}
                                 <div className="top-content">
-                                  <h6 className="text-primary">{formObj.en.name}</h6>
-                                  <h6 className="text-primary">{formObj.en.tell}</h6>
                                 </div>
-                                <div className="order-details-top">
-                                  <div className="order-details-top-item">
-                                    <div>
-                                      {formObj.en.txtCustomer}{' '}
-                                      {formObj.is_multi_language && formObj.ar.txtCustomer}
-                                    </div>
-                                    <div>Walk-in-customer</div>
-                                  </div>
-                                  <div className="order-details-top-item">
-                                    <div>
-                                      {formObj.en.orderNo}{' '}
-                                      {formObj.is_multi_language && formObj.ar.orderNo}
-                                    </div>
-                                    <div>1518</div>
-                                  </div>
-                                  <div className="order-details-top-item">
-                                    <div>
-                                      {formObj.en.txtDate}{' '}
-                                      {formObj.is_multi_language && formObj.ar.txtDate}
-                                    </div>
-                                    <div>2023-03-31</div>
-                                  </div>
-                                </div>
-                                <div className="order-details-top" style={{ marginTop: '5px' }}>
-                                  <div className="order-details-top-item">
-                                    <div>
-                                      {formObj.en.txtQty}{' '}
-                                      {formObj.is_multi_language && formObj.ar.txtQty}
-                                    </div>
-                                    <div>
-                                      {formObj.en.txtItem}{' '}
-                                      {formObj.is_multi_language && formObj.ar.txtItem}
-                                    </div>
-                                    <div>
-                                      {formObj.en.txtAmount}{' '}
-                                      {formObj.is_multi_language && formObj.ar.txtAmount}
-                                    </div>
-                                  </div>
-                                </div>
+
                                 <div
                                   className="order-details-top"
                                   style={{
@@ -1775,21 +1788,9 @@ const Appearance: NextPage = (props: any) => {
                                     borderBottom: '1px solid #eaeaea',
                                   }}>
                                   <div className="order-details-top-item">
-                                    <div>1</div>
-                                    <div>Product Name 1</div>
-                                    <div>5.000</div>
-                                  </div>
-                                </div>
-                                <div
-                                  className="order-details-top"
-                                  style={{
-                                    marginTop: '5px',
-                                    borderBottom: '1px solid #eaeaea',
-                                  }}>
-                                  <div className="order-details-top-item">
-                                    <div>1</div>
-                                    <div>Product Name 2</div>
-                                    <div>4.000</div>
+                                    <div>Whatsapp</div>
+                                    <div></div>
+                                    <div>{formObj.en.whatsapp}</div>
                                   </div>
                                 </div>
                                 <div
@@ -1799,12 +1800,9 @@ const Appearance: NextPage = (props: any) => {
                                     borderBottom: '1px solid #696969',
                                   }}>
                                   <div className="order-details-top-item">
+                                    <div>Instagram</div>
                                     <div></div>
-                                    <div>
-                                      {formObj.en.txtTax}{' '}
-                                      {formObj.is_multi_language && formObj.ar.txtTax}
-                                    </div>
-                                    <div>0.540</div>
+                                    <div>{formObj.en.instagram}</div>
                                   </div>
                                 </div>
                                 <div
@@ -1814,12 +1812,9 @@ const Appearance: NextPage = (props: any) => {
                                     borderBottom: '1px solid #696969',
                                   }}>
                                   <div className="order-details-top-item">
+                                    <div>Website</div>
                                     <div></div>
-                                    <div>
-                                      {formObj.en.txtTotal}{' '}
-                                      {formObj.is_multi_language && formObj.ar.txtTotal}
-                                    </div>
-                                    <div>9.540</div>
+                                    <div>{formObj.en.website}</div>
                                   </div>
                                 </div>
                                 <div

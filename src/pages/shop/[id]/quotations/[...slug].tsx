@@ -389,7 +389,7 @@ console.log(selectProducts);
       setFormObj({ ...formObj, ...currentQuot })
       setSelectProducts([...currentQuot?.quotation_list_lines.map(li => {
         return {
-          ...li.quotation_line_product, price: li.quotation_line_product.sell_price,
+          ...li.quotation_line_product, price: li?.quotation_line_product?.sell_price,
           cost: li.quotation_line_product.cost_price, quantity: 1
         }
       })])
