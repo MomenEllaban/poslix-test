@@ -675,7 +675,7 @@ export default function SalesListTable({
       Toolbar: CustomToolbar,
     };
     if (isValidElement(<CustomPagination />)) {
-      components.Pagination = CustomPagination;
+      components?.Pagination = CustomPagination;
     }
 
     return components;
