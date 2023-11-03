@@ -263,7 +263,6 @@ const posService = {
         }
       )
       .then((data) => data.data)
-      .catch((err) => console.log(err))
       .finally(() => setLoadingChangePage(false));
   },
 
