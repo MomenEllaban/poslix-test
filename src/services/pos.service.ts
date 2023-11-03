@@ -247,17 +247,22 @@ const posService = {
   deleteExpense: async (id: string) => api.delete(`/expenses/${id}`).then((data) => data.data),
 
   //*******************Sales Report***********************/
-  getSalesReport: async (location_id: string | number, order_id?: string | number) =>
-    api
+  getSalesReport: async (
+    location_id: string | number,
+    order_id?: string | number,
+    page?: number
+  ) => {
+    let param = {} as { page: number; all_data: number };
+    typeof +page === 'number' ? (param.page = page) : (param.all_data = 1);
+    return api
       .get<any, TServiceResponse<ISalesReport>, any>(
         `/reports/sales/${location_id}` + (order_id ? `/${order_id}` : ''),
         {
-          params: {
-            all_data: 1,
-          },
+          params: param,
         }
       )
-      .then((data) => data.data),
+      .then((data) => data.data);
+  },
 
   getItemsSalesReport: async (location_id: string | number, order_id?: string | number) =>
     api
@@ -453,7 +458,7 @@ export const useGetBrand = (id: string, config?: SWRConfiguration) => {
 };
 
 export const useTaxesList = (location_id: string | number, config?: SWRConfiguration) => {
-  const { data, error, isLoading, mutate, } = useSWR(
+  const { data, error, isLoading, mutate } = useSWR(
     config?.suspense ? null : `/taxes/${location_id}`,
     () => posService.getTaxes(location_id),
     { ...config }
@@ -614,11 +619,12 @@ export const useGetExpense = (id: string, config?: SWRConfiguration) => {
 export const useGetSalesReport = (
   location_id: string | number,
   order_id?: string | number,
-  config?: SWRConfiguration
+  config?: SWRConfiguration,
+  page?: number
 ) => {
   const { data, error, isLoading, mutate } = useSWR(
     `/reports/sales/${location_id}` + (order_id ? `/${order_id}` : ''),
-    () => posService.getSalesReport(location_id, order_id),
+    () => posService.getSalesReport(location_id, order_id, page),
     {
       ...config,
     }
