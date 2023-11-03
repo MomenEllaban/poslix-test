@@ -670,8 +670,13 @@ export default function SalesListTable({
     setHandleSearchTxt(e.target.value);
   };
 
+  type _C = {
+    Toolbar: () => React.JSX.Element;
+    Pagination?: () => React.JSX.Element;
+  };
+
   const handleComponentsDataGrid = () => {
-    let components: any = {
+    let components: _C = {
       Toolbar: CustomToolbar,
     };
 
