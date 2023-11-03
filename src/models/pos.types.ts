@@ -120,7 +120,7 @@ export interface ICustomer {
   deleted_at?: string;
   created_at: string;
   updated_at?: string;
-  pricing_group:IGroup
+  pricing_group: IGroup;
 }
 
 export interface IPackageType {
@@ -139,7 +139,8 @@ export interface IUnit {
   name: string;
   unit: string;
   created_at?: any;
-}export interface IGroup {
+}
+export interface IGroup {
   id: number;
   type: string;
   name: string;
@@ -347,6 +348,7 @@ export interface IItemReportData {
   products: IProduct[];
 }
 export interface IReport<T> {
+  pagination: any;
   data: T[];
 
   tax: number;
