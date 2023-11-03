@@ -53,7 +53,7 @@ export default function SalesList(props: any) {
 
   const NUMBER_PAGE_DEFAULT = 1;
 
-  const pageNumRef = useRef(NUMBER_PAGE_DEFAULT) as React.RefObject<number>;
+  const pageNumRef = useRef(NUMBER_PAGE_DEFAULT) as React.MutableRefObject<number>;
 
   const componentRef = React.useRef(null);
   class ComponentToPrint extends React.PureComponent {
