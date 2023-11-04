@@ -51,6 +51,7 @@ import { useRecoilState } from 'recoil';
 import { ToastContainer } from 'react-toastify';
 import { Toastify } from 'src/libs/allToasts';
 import { createNewData, findAllData, updateData } from 'src/services/crud.api';
+import { useTaxesList } from 'src/services/pos.service';
 const AddQuotations: NextPage = (props: any) => {
   const { id, slug } = props;
 
@@ -64,8 +65,7 @@ const AddQuotations: NextPage = (props: any) => {
     currency_rate: 1,
     currency_symbol: '',
   });
-  console.log(locationSettings);
-  
+
   const [formObj, setFormObj] = useState<any>({
     id: 0,
     customer_id: 0,
@@ -91,8 +91,7 @@ const AddQuotations: NextPage = (props: any) => {
     paymentDate: new Date(),
     payment_id: 0,
   });
-  console.log(formObj);
-  
+
   const [errorForm, setErrorForm] = useState({
     morePaid: false,
     paid: false,
@@ -131,10 +130,8 @@ const AddQuotations: NextPage = (props: any) => {
   const [quotationStatus, setQuotationStatus] = useState<{ value: string; label: string }[]>();
   const [purchaseStatus, setPurchaseStatus] =
     useState<{ value: string; label: string }[]>(quotationStatusDataAdd);
-    console.log(purchaseStatus);
-    
   const [paymentTypes, setPaymentTypes] =
-    useState<{ value: string; label: string }[]>(paymentTypeData);
+    useState<{ value: number; label: string }[]>(paymentTypeData);
   const [paymentStatus, setPaymentStatus] =
     useState<{ value: string; label: string }[]>(paymentStatusData);
   const [products, setProducts] = useState<{ value: number; label: string }[]>([]);
@@ -150,7 +147,30 @@ const AddQuotations: NextPage = (props: any) => {
   const [selecetdId, setSelecetdId] = useState({ product_id: 0, variation_id: 0 });
   const [jobType] = useRecoilState(cartJobType);
   const [openRemoveDialog, setOpenRemoveDialog] = useState(false);
+  const router = useRouter();
+  const shopId = router.query.id as string;
+  // const [taxList, setTaxList] = useState<any>();
+  const [tax, setTax] = useState<any>();
+  const { taxesList } = useTaxesList(shopId);
+  console.log(taxesList);
 
+  useEffect(() => {
+    if (taxesList?.taxes?.length > 0) {
+      // setTaxList(taxesList?.taxes);
+      const _tax: any = taxesList?.taxes?.filter((tax: any) => tax?.is_primary);
+      const _taxGroup: any = taxesList?.taxes?.filter(
+        (tax: any) => tax?.is_tax_group && tax?.is_primary
+      );
+      let finalTax;
+      if (_taxGroup.length > 0) {
+        finalTax = _taxGroup[0].tax_group.reduce((total, tax) => total + (tax.amount || 0), 0);
+      } else {
+        finalTax = _tax[0]?.amount ?? 0;
+      }
+      console.log(finalTax);
+      setTax({ tax: finalTax, type: 'percentage' });
+    }
+  }, [taxesList]);
   const onCostClick = (type: string, id: number, vr: number) => {
     const found = selectProducts.findIndex((el) => el.product_id === id && el.variation_id == vr);
     if (found > -1) {
@@ -227,8 +247,8 @@ const AddQuotations: NextPage = (props: any) => {
             {locationSettings?.currency_id == formObj.currency_id
               ? Number(row.price * row.quantity).toFixed(locationSettings?.location_decimal_places)
               : (formObj.currency_rate * row.price).toFixed(
-                locationSettings?.location_decimal_places
-              )}
+                  locationSettings?.location_decimal_places
+                )}
           </div>
         </>
       ),
@@ -244,8 +264,6 @@ const AddQuotations: NextPage = (props: any) => {
           <Button
             variant="outlined"
             onClick={() => {
-              console.log(row);
-
               setSelecetdId({ product_id: row.product_id, variation_id: row.variation_id });
               setOpenRemoveDialog(true);
             }}>
@@ -257,7 +275,6 @@ const AddQuotations: NextPage = (props: any) => {
   ];
 
   const colourStyles = { control: (style: any) => ({ ...style, borderRadius: '10px' }) };
-  const router = useRouter();
   var formObjRef = useRef<any>();
   formObjRef.current = formObj;
 
@@ -273,21 +290,31 @@ const AddQuotations: NextPage = (props: any) => {
   async function initDataPage(id = '0') {
     if (id != '0') setIsEdit(true);
     if (router.isReady) {
-      const res = await findAllData(`products/${router.query.id}?all_data=1`)
-      const resPurchases = await findAllData(`purchase/${router.query.id}`)
-      const resExpenses = await findAllData(`expenses/${router.query.id}`)
-      const resCustomers = await findAllData(`customers/${router.query.id}`)
-      const resCurrencies = await findAllData(`currencies`)
+      const res = await findAllData(`products/${router.query.id}?all_data=1`);
+      const resPurchases = await findAllData(`purchase/${router.query.id}`);
+      const resExpenses = await findAllData(`expenses/${router.query.id}`);
+      const resCustomers = await findAllData(`customers/${router.query.id}`);
+      const resCurrencies = await findAllData(`currencies`);
       if (res.data.success) {
-        setProducts(res.data.result.map(prod => {
-          return { ...prod, label: prod.name, value: prod.id }
-        }));
-        setSuppliers(resCustomers.data.result.map(customer => {
-          return { ...customer, label: customer.first_name + ' ' + customer.last_name, value: customer.id }
-        }));
-        setCurrencies(resCurrencies.data.result.map(curr => {
-          return { ...curr, label: curr.currency, value: curr.id }
-        }));
+        setProducts(
+          res.data.result.map((prod) => {
+            return { ...prod, label: prod.name, value: prod.id };
+          })
+        );
+        setSuppliers(
+          resCustomers.data.result.map((customer) => {
+            return {
+              ...customer,
+              label: customer.first_name + ' ' + customer.last_name,
+              value: customer.id,
+            };
+          })
+        );
+        setCurrencies(
+          resCurrencies.data.result.map((curr) => {
+            return { ...curr, label: curr.currency, value: curr.id };
+          })
+        );
         setExpenses(resExpenses.data.result);
         setAllVariations(res.data.result.allVariations);
         if (res.data.result.length > 0) {
@@ -380,21 +407,25 @@ const AddQuotations: NextPage = (props: any) => {
       }
     }
   }
-console.log(selectProducts);
 
   useEffect(() => {
-    const currentQuot = localStorage.getItem('currentQuotation') ?
-      JSON.parse(localStorage.getItem('currentQuotation') || '[]') : null;
+    const currentQuot = localStorage.getItem('currentQuotation')
+      ? JSON.parse(localStorage.getItem('currentQuotation') || '[]')
+      : null;
     if (currentQuot && slug[0] === 'edit') {
-      setFormObj({ ...formObj, ...currentQuot })
-      setSelectProducts([...currentQuot?.quotation_list_lines.map(li => {
-        return {
-          ...li.quotation_line_product, price: li?.quotation_line_product?.sell_price,
-          cost: li.quotation_line_product.cost_price, quantity: 1
-        }
-      })])
+      setFormObj({ ...formObj, ...currentQuot });
+      setSelectProducts([
+        ...currentQuot?.quotation_list_lines.map((li) => {
+          return {
+            ...li.quotation_line_product,
+            price: li?.quotation_line_product?.sell_price,
+            cost: li.quotation_line_product.cost_price,
+            quantity: 1,
+          };
+        }),
+      ]);
     }
-  }, [suppliers])
+  }, [suppliers]);
 
   async function insertPurchase() {
     const quotationData = {
@@ -404,11 +435,11 @@ console.log(selectProducts);
       paymentDate: formObj.paymentDate,
       paymentType: formObj.paymentType,
       location_id: router.query.id,
-      quotationsLines: selectProducts.map(prod => {
-        return { product_id: prod.id, qty: prod.quantity }
-      })
-    }
-    const res = await createNewData('quotations-list', quotationData)
+      cart: selectProducts.map((prod) => {
+        return { product_id: prod.id, qty: prod.quantity, note: "" };
+      }),
+    };
+    const res = await createNewData('quotations-list', quotationData);
     if (!res.data.success) {
       alert('Has Error ,try Again');
       return;
@@ -425,10 +456,14 @@ console.log(selectProducts);
       paymentType: formObj.paymentType,
       location_id: router.query.id,
       quotationsLines: selectProducts.map((prod, i) => {
-        return { id: formObj?.quotation_list_lines[0]?.id, product_id: prod.id, qty: prod.quantity }
-      })
-    }
-    const res = await updateData('quotations-list', formObj.id, quotationData)
+        return {
+          id: formObj?.quotation_list_lines[0]?.id,
+          product_id: prod.id,
+          qty: prod.quantity,
+        };
+      }),
+    };
+    const res = await updateData('quotations-list', formObj.id, quotationData);
     if (!res.data.success) {
       alert('Has Error ,try Again');
       return;
@@ -439,24 +474,16 @@ console.log(selectProducts);
   var errors = [];
   useEffect(() => {
     var _locs = JSON.parse(localStorage.getItem('locations'));
-    console.log(11111111111111111);
-    console.log(_locs);
-    
-    if (_locs.toString().length > 10)
-    console.log(555555555555555);
-    
-      setLocationSettings(
-        _locs[
+    setLocationSettings(
+      _locs[
         _locs.findIndex((loc: any) => {
           return loc.location_id == id;
         })
-        ]
-      );
+      ]
+    );
 
-
-    initDataPage(slug[0] === 'edit' ? "1" : "0");
+    initDataPage(slug[0] === 'edit' ? '1' : '0');
   }, [router.asPath]);
-
 
   function getPriority(type: string, subTotal: number): number {
     switch (type) {
@@ -474,7 +501,6 @@ console.log(selectProducts);
     let _total = subTotal;
     if (_total <= 0) return;
     purchaseDetails.map((dp) => (_total = getPriority(dp.value, _total)));
-    console.log('subTotal_price ', subTotal);
 
     setFormObj({
       ...formObj,
@@ -493,8 +519,7 @@ console.log(selectProducts);
       _qty += Number(p.quantity);
       _prices += Number(p.lineTotal);
     });
-    console.log(_qty, _prices);
-    
+
     setTotal_qty(_qty);
     setFormObj({ ...formObj, subTotal_price: _prices });
     finalCalculation(_prices);
@@ -519,7 +544,7 @@ console.log(selectProducts);
 
   //expenses
   useEffect(() => {
-    var _sum = 0; 
+    var _sum = 0;
     selectedExpends.map((ep) => (_sum += Number(ep.enterd_value * ep.currency_rate)));
     selectedExpendsEdit.map((ep) => (_sum += Number(ep.enterd_value * ep.currency_rate)));
     setTotalExpends(_sum);
@@ -555,8 +580,6 @@ console.log(selectProducts);
   }, [formObj.currency_rate]);
 
   const calculationLineTotal = (item: IpurchaseProductItem): number => {
-    console.log('inja', item);
-
     switch (item.costType) {
       case 0:
         return item.cost;
@@ -590,8 +613,6 @@ console.log(selectProducts);
       else alert('Erorr , maximum 5 fileds');
     } else {
       //add taxes
-      console.log(rowType);
-
       setSelectedTaxes([
         ...selectedTaxes,
         {
@@ -610,7 +631,6 @@ console.log(selectProducts);
   const deleteTableRows = (index: any) => {
     const _rows = [...selectedExpends];
     _rows.splice(index, 1);
-    console.log(_rows);
     setSelectedExpends(_rows);
 
     setExpenseCounter(expenseCounter - 1);
@@ -652,8 +672,6 @@ console.log(selectProducts);
   };
   const handlerRowTaxes = (index: any, evnt: any) => {
     const _rows: IPurchaseExpndes[] | any = [...selectedTaxes];
-    console.log(evnt);
-
     if ('label' in evnt) {
       _rows[index].currency_rate = evnt.exchange_rate;
       _rows[index].currency_id = evnt.value;
@@ -737,11 +755,11 @@ console.log(selectProducts);
         _datas[found].lineTotal =
           locationSettings?.currency_id == formObj.currency_id
             ? Number(_datas[found].price * _datas[found].quantity).toFixed(
-              locationSettings?.location_decimal_places
-            )
+                locationSettings?.location_decimal_places
+              )
             : Number(_datas[found].price * formObj.currency_rate * _datas[found].quantity).toFixed(
-              locationSettings?.location_decimal_places
-            );
+                locationSettings?.location_decimal_places
+              );
 
       setSelectProducts([..._datas]);
       calculationLabels(formObj.total_expense, formObj.total_tax);
@@ -777,16 +795,16 @@ console.log(selectProducts);
       _rows[i].notifyExpensePrice =
         _ExpVal > 0
           ? +Number(_ExpVal + parseFloat(getCost(sp.cost).toString())).toFixed(
-            locationSettings?.location_decimal_places
-          )
+              locationSettings?.location_decimal_places
+            )
           : 0;
       if (_ExpVal == 0 && _rows[i].costType == 1) _rows[i].costType = 0;
 
       _rows[i].notifyTaxPrice =
         _TaxVal > 0
           ? +Number(_TaxVal + parseFloat(getCost(sp.cost).toString())).toFixed(
-            locationSettings?.location_decimal_places
-          )
+              locationSettings?.location_decimal_places
+            )
           : 0;
       if (_TaxVal == 0 && _rows[i].costType == 2) _rows[i].costType = 0;
 
@@ -797,7 +815,6 @@ console.log(selectProducts);
     });
     setSelectProducts(_rows);
   }
-console.log(formObj.subTotal_price);
 
   return (
     <>
@@ -873,8 +890,11 @@ console.log(formObj.subTotal_price);
                         <Select
                           styles={selectStyle}
                           options={suppliers}
-                          value={formObj ?
-                            suppliers.filter((sp) => sp.value == formObj.customer_id) : null}
+                          value={
+                            formObj
+                              ? suppliers.filter((sp) => sp.value == formObj.customer_id)
+                              : null
+                          }
                           onChange={(itm) => {
                             setFormObj({ ...formObj, customer_id: itm!.value });
                           }}
@@ -931,100 +951,10 @@ console.log(formObj.subTotal_price);
                             setFormObj({ ...formObj, status: itm!.value });
                           }}
                         />
-                        {errorForm.status && (
-                          <p className="p-1 h6 text-danger ">Select One Item</p>
-                        )}
+                        {errorForm.status && <p className="p-1 h6 text-danger ">Select One Item</p>}
                       </div>
                     </div>
                   </div>
-
-                  {formObj.status != 'draft' && formObj.status != '' && (
-                    <div className="row">
-                      <div className="col-md-3">
-                        <div className="form-group">
-                          <label>
-                            Payment Status: <span className="text-danger">*</span>
-                          </label>
-                          <Select
-                            styles={colourStyles}
-                            options={paymentStatus}
-                            value={paymentStatus.filter((f: any) => {
-                              return f.value == formObj.paymentStatus;
-                            })}
-                            onChange={(itm) => {
-                              setFormObj({
-                                ...formObj,
-                                paymentStatus: itm!.value,
-                                paid_amount:
-                                  itm!.value == 'paid' || itm!.value == 'credit'
-                                    ? formObj.total_price
-                                    : 0,
-                              });
-                            }}
-                          />
-                          {errorForm.paymentStatus && (
-                            <p className="p-1 h6 text-danger ">Select One Item</p>
-                          )}
-                        </div>
-                      </div>
-                      {formObj.paymentStatus == 'partially_paid' && (
-                        <div className="col-md-3">
-                          <div className="form-group2">
-                            <label>Paid Amount :</label>
-                            <input
-                              type="text"
-                              className="form-control p-2"
-                              placeholder="Paid Amount"
-                              value={formObj.paid_amount}
-                              onChange={(e) => {
-                                setFormObj({ ...formObj, paid_amount: +e.target.value });
-                              }}
-                            />
-                            {errorForm.paid && (
-                              <p className="p-1 h6 text-danger ">Enter A Amount</p>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                      {formObj.paymentStatus != 'due' && (
-                        <div className="col-md-3">
-                          <div className="form-group2">
-                            <label>Payment Date :</label>
-                            <DatePicker
-                              className="form-control p-2"
-                              selected={formObj.paymentDate}
-                              onChange={(date: Date) =>
-                                setFormObj({ ...formObj, paymentDate: date })
-                              }
-                            />
-                            {errorForm.paymentDate && (
-                              <p className="p-1 h6 text-danger ">
-                                Enter Payment Date From Calander
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                      <div className="col-md-3">
-                        <div className="form-group2">
-                          <label>Payment Type :</label>
-                          <Select
-                            styles={colourStyles}
-                            options={paymentTypes}
-                            value={paymentTypes.filter((f: any) => {
-                              return f.value == formObj.paymentType;
-                            })}
-                            onChange={(itm) => {
-                              setFormObj({ ...formObj, paymentType: itm!.value });
-                            }}
-                          />
-                          {errorForm.paymentType && (
-                            <p className="p-1 h6 text-danger ">Select One Item</p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </Card.Body>
             </Card>
@@ -1035,11 +965,9 @@ console.log(formObj.subTotal_price);
                     styles={selectStyle}
                     options={currencies}
                     value={currencies.filter((f: any) => {
-                      return f.value ==  (formObj.currency_id || locationSettings.currency_id);
+                      return f.value == (formObj.currency_id || locationSettings.currency_id);
                     })}
                     onChange={(itm) => {
-                      console.log(itm);
-
                       setFormObj({
                         ...formObj,
                         currency_code: itm!.code,
@@ -1089,6 +1017,43 @@ console.log(formObj.subTotal_price);
                     }}
                   />
                 </div>
+                <div className='row'>
+                <div className="col-md-3">
+                  <div className="form-group2">
+                    <label>Paid Amount :</label>
+                    <input
+                      type="text"
+                      className="form-control p-2"
+                      placeholder="Paid Amount"
+                      value={formObj.paid_amount}
+                      onChange={(e) => {
+                        setFormObj({ ...formObj, paid_amount: +e.target.value });
+                      }}
+                    />
+                    {errorForm.paid && <p className="p-1 h6 text-danger ">Enter A Amount</p>}
+                  </div>
+                </div>
+                <div className="col-md-3">
+                  <div className="form-group2">
+                    <label>Payment Type :</label>
+                    <Select
+                      styles={colourStyles}
+                      options={paymentTypes}
+                      value={paymentTypes.filter((f: any) => {
+                        return f.value == formObj.paymentType;
+                      })}
+                      onChange={(itm) => {
+                        console.log(itm.value);
+                        
+                        setFormObj({ ...formObj, paymentType: itm!.value });
+                      }}
+                    />
+                    {errorForm.paymentType && (
+                      <p className="p-1 h6 text-danger ">Select One Item</p>
+                    )}
+                  </div>
+                </div>
+                </div>
                 <Grid container spacing={2} className="mt-3 d-flex justify-content-end">
                   <Grid item xs={6} textAlign="left">
                     <table className="m-table-expends">
@@ -1135,16 +1100,6 @@ console.log(formObj.subTotal_price);
                               }}>
                               <EditIcon />
                             </Button>
-                          </p>
-                        </div>
-                      </div>
-                      <div className="purchase-item">
-                        {isEditSort && <p className="puchase-arrow" style={{ width: '100px' }}></p>}
-                        <div className="purchase-text">
-                          <p>items</p>
-                          <p>
-                            {selectProducts.length}{' '}
-                            <span style={{ opacity: '0.5' }}> [{total_qty}]</span>{' '}
                           </p>
                         </div>
                       </div>
@@ -1316,26 +1271,25 @@ console.log(formObj.subTotal_price);
                     if (formObj.customer_id == 0) errors.push('error');
                     if (selectProducts.length == 0) errors.push('error');
                     if (formObj.status.length <= 2) errors.push('error');
-                    if (formObj.status != 'draft') {
-                      if (formObj.paymentStatus.length <= 2) errors.push('error');
-                      if ((formObj.paymentDate + '').length <= 2) errors.push('error2');
-                      if (formObj.paymentType.length <= 2) errors.push('error');
-                    }
-                    if (formObj.paymentStatus == 'partially_paid' && formObj.paid_amount < 0.5)
-                      errors.push('error');
+                    // if (formObj.status != 'draft') {
+                    //   // if (formObj.paymentStatus.length <= 2) errors.push('error');
+                    //   // if ((formObj.paymentDate + '').length <= 2) errors.push('error2');
+                    //   // if (formObj.paymentType.length <= 2) errors.push('error');
+                    // }
+                    // if (formObj.paymentStatus == 'partially_paid' && formObj.paid_amount < 0.5)
+                      // errors.push('error');
 
                     setErrorForm({
                       ...errorForm,
                       customer_id: formObj.customer_id == 0,
                       status: formObj.status.length <= 2,
-                      paymentDate: (formObj.paymentDate + '').length <= 2,
-                      paymentStatus: formObj.paymentStatus.length <= 2,
+                      // paymentDate: (formObj.paymentDate + '').length <= 2,
+                      // paymentStatus: formObj.paymentStatus.length <= 2,
                       paymentType: formObj.paymentType.length <= 2,
                       products: selectProducts.length == 0,
-                      paid: formObj.paymentStatus == 'partially_paid' && formObj.paid_amount < 0.5,
-                      morePaid: formObj.paid_amount > formObj.total_price,
+                      // paid: formObj.paymentStatus == 'partially_paid' && formObj.paid_amount < 0.5,
+                      // morePaid: formObj.paid_amount > formObj.total_price,
                     });
-                    console.log(errors);
 
                     if (errors.length == 0) {
                       if (isEdit) editPurchase();
@@ -1354,8 +1308,8 @@ console.log(formObj.subTotal_price);
 };
 export default AddQuotations;
 export async function getServerSideProps({ params }) {
-  const { id, slug } = params
+  const { id, slug } = params;
   return {
     props: { id, slug },
-  }
+  };
 }
