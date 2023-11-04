@@ -6,7 +6,7 @@ import CartItem from './CartItem';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import { useDigitalContext } from 'src/modules/digital/_context/DigitalContext';
 
-const Checkout = ({ cartItems, removeFromCart, addItemTocart, setRenderedScreen ,totalPrice,location}) => {
+const Checkout = ({ cartItems, removeFromCart, addItemTocart, setRenderedScreen , addByQuantity,totalPrice,location}) => {
     const {lang} = useDigitalContext();
 
     return (<>
@@ -66,6 +66,7 @@ const Checkout = ({ cartItems, removeFromCart, addItemTocart, setRenderedScreen 
                                 addItemTocart={addItemTocart}
                                 item={item}
                                 removeFromCart={removeFromCart}
+                                addByQuantity={addByQuantity}
                             />
                         )) : <p className="empty text-dark">{lang.digital.cart_empty}</p>
 

@@ -331,6 +331,7 @@ export default function DigitalProducts({ shopId }) {
                   setOpen={setOpen}
                   open={open}
                   setShowCart={setShowCart}
+                  addByQuantity={addByQuantity}
                 />
               ) : null}
             </div>
@@ -344,6 +345,7 @@ export default function DigitalProducts({ shopId }) {
             setRenderedScreen={setRenderedScreen}
             addItemTocart={addItemTocart}
             removeFromCart={removeFromCart}
+            addByQuantity={addByQuantity}
             cartItems={cartItems}
           />
         )
