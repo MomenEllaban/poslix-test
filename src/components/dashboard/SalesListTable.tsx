@@ -12,7 +12,7 @@ import {
   GridToolbarQuickFilter,
 } from '@mui/x-data-grid';
 import { useRouter } from 'next/router';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, isValidElement } from 'react';
 import { Button, ButtonGroup } from 'react-bootstrap';
 import { useReactToPrint } from 'react-to-print';
 import { ToastContainer } from 'react-toastify';
@@ -27,7 +27,14 @@ import { findAllData } from 'src/services/crud.api';
 import { convertDateStringToDateAndTime } from '../../models/data';
 import SalesPaymentModal from '../pos/modals/SalesPaymentModal';
 
-export default function SalesListTable({ id, shopId, rules, salesList, loading }: any) {
+export default function SalesListTable({
+  id,
+  shopId,
+  rules,
+  salesList,
+  loading,
+  CustomPagination,
+}: any) {
   const dispatch = useAppDispatch();
   const componentRef = useRef(null);
 
@@ -102,19 +109,20 @@ export default function SalesListTable({ id, shopId, rules, salesList, loading }
       flex: 1,
       field: 'due',
       headerName: 'Total Due',
-      renderCell: ({ row }: Partial<GridRowParams>) =>{
+      renderCell: ({ row }: Partial<GridRowParams>) => {
         let renderdDue = Number(+row.due);
-        if(renderdDue < 0){
+        if (renderdDue < 0) {
           renderdDue = 0;
         }
-        return <>{renderdDue.toFixed(locationSettings?.location_decimal_places)}</>
-    }},
+        return <>{renderdDue.toFixed(locationSettings?.location_decimal_places)}</>;
+      },
+    },
     {
       flex: 1,
       field: 'status',
       headerName: 'Status',
       renderCell: ({ row }: Partial<GridRowParams>) => {
-        if ((row.due === 0) || (row.due < 0)) {
+        if (row.due === 0 || row.due < 0) {
           return <div className="sty_Paid">Paid</div>;
         }
         if (row.due === row.sub_total) {
@@ -229,8 +237,11 @@ export default function SalesListTable({ id, shopId, rules, salesList, loading }
                 {invoiceDetails?.en?.txtDate}{' '}
                 {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtDate}
               </div>
-              <div>{salesRep?.created_at ? new Date(salesRep?.created_at).toISOString().slice(0, 10) : 
-              new Date().toISOString().slice(0, 10)}</div>
+              <div>
+                {salesRep?.created_at
+                  ? new Date(salesRep?.created_at).toISOString().slice(0, 10)
+                  : new Date().toISOString().slice(0, 10)}
+              </div>
             </div>
           </div>
           <table className="table">
@@ -367,8 +378,11 @@ export default function SalesListTable({ id, shopId, rules, salesList, loading }
                         <br />
                         {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtDate}
                       </td>
-                      <td>{salesRep?.created_at ? new Date(salesRep?.created_at).toISOString().slice(0, 10) : 
-                      new Date().toISOString().slice(0, 10)}</td>
+                      <td>
+                        {salesRep?.created_at
+                          ? new Date(salesRep?.created_at).toISOString().slice(0, 10)
+                          : new Date().toISOString().slice(0, 10)}
+                      </td>
                     </tr>
                   </tbody>
                 </table>
@@ -655,6 +669,24 @@ export default function SalesListTable({ id, shopId, rules, salesList, loading }
   const handleSearch = (e: any) => {
     setHandleSearchTxt(e.target.value);
   };
+
+  type _C = {
+    Toolbar: () => React.JSX.Element;
+    Pagination?: () => React.JSX.Element;
+  };
+
+  const handleComponentsDataGrid = () => {
+    let components: _C = {
+      Toolbar: CustomToolbar,
+    };
+
+    if (isValidElement(<CustomPagination />)) {
+      components.Pagination = CustomPagination;
+    }
+
+    return components;
+  };
+
   return (
     <>
       <ToastContainer />
@@ -675,27 +707,27 @@ export default function SalesListTable({ id, shopId, rules, salesList, loading }
       <div className="page-content-style card">
         <h5>Invoices List</h5>
         {/* {salesList.data && ( */}
-          <DataGrid
-            className="datagrid-style"
-            sx={{
-              '.MuiDataGrid-columnSeparator': {
-                display: 'none',
-              },
-              '&.MuiDataGrid-root': {
-                border: 'none',
-              },
-            }}
-            loading={loading}
-            rows={salesList.data || []}
-            columns={columns}
-            initialState={{
-              columns: { columnVisibilityModel: { mobile: false } },
-            }}
-            pageSize={10}
-            rowsPerPageOptions={[10]}
-            components={{ Toolbar: CustomToolbar }}
-          />
-         {/* )} */}
+        <DataGrid
+          className="datagrid-style"
+          sx={{
+            '.MuiDataGrid-columnSeparator': {
+              display: 'none',
+            },
+            '&.MuiDataGrid-root': {
+              border: 'none',
+            },
+          }}
+          loading={loading}
+          rows={salesList.data || []}
+          columns={columns}
+          initialState={{
+            columns: { columnVisibilityModel: { mobile: false } },
+          }}
+          // pageSize={10}
+          // rowsPerPageOptions={[0]}
+          components={handleComponentsDataGrid()}
+        />
+        {/* )} */}
       </div>
       {/* FOR VIEW ELEMENT */}
       <Dialog open={showViewPopUp} fullWidth={true} className="poslix-modal" onClose={handleClose}>

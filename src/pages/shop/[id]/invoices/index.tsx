@@ -12,7 +12,7 @@ import {
 } from '@mui/x-data-grid';
 import * as cookie from 'cookie';
 import { useRouter } from 'next/router';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useRef, RefObject } from 'react';
 import { Button, ButtonGroup } from 'react-bootstrap';
 import { useReactToPrint } from 'react-to-print';
 import SalesListTable from 'src/components/dashboard/SalesListTable';
@@ -21,6 +21,7 @@ import { Toastify } from 'src/libs/allToasts';
 import { apiFetch, apiFetchCtr } from 'src/libs/dbUtils';
 import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/checkUtils';
 import { findAllData } from 'src/services/crud.api';
+import Pagination from '@mui/material/Pagination';
 
 export default function SalesList(props: any) {
   const { shopId, id } = props;
@@ -49,6 +50,10 @@ export default function SalesList(props: any) {
   const [showViewPopUp, setShowViewPopUp] = useState(false);
   const [handleSearchTxt, setHandleSearchTxt] = useState('');
   const { setInvoicDetails, invoicDetails } = useContext(UserContext);
+
+  const NUMBER_PAGE_DEFAULT = 1;
+
+  const pageNumRef = useRef(NUMBER_PAGE_DEFAULT) as React.MutableRefObject<number>;
 
   const componentRef = React.useRef(null);
   class ComponentToPrint extends React.PureComponent {
@@ -327,15 +332,14 @@ export default function SalesList(props: any) {
     }
   }
   // init sales data
-  async function initDataPage() {
+  async function initDataPage(numPage = NUMBER_PAGE_DEFAULT) {
     if (router.isReady) {
+      pageNumRef.current = numPage;
       setIsLoadItems(true);
-      const res = await findAllData(`reports/sales/${router.query.id}?all_data=1`);
+      const res = await findAllData(`reports/sales/${router.query.id}?page=${numPage}`); // 1256
       if (res.data.success) {
         setSales(res.data.result);
         setIsLoadItems(false);
-        //   if (newdata.invoiceDetails != null && newdata.invoiceDetails?.length > 10)
-        //     setInvoicDetails(JSON.parse(newdata.invoiceDetails));
       }
     }
   }
@@ -370,8 +374,21 @@ export default function SalesList(props: any) {
         ]
       );
 
-    initDataPage();
+    initDataPage(NUMBER_PAGE_DEFAULT);
   }, [router.asPath]);
+
+  function CustomPagination(): React.JSX.Element {
+    return (
+      <Pagination
+        color="primary"
+        variant="outlined"
+        shape="rounded"
+        page={pageNumRef.current}
+        count={sales?.pagination?.last_page}
+        onChange={(event, value) => initDataPage(value)}
+      />
+    );
+  }
 
   const handleDeleteFuc = (result: boolean, msg: string, section: string) => {
     if (result) {
@@ -412,7 +429,13 @@ export default function SalesList(props: any) {
   };
   return (
     <AdminLayout shopId={id}>
-      <SalesListTable shopId={id} rules={permissions} salesList={sales} loading={isLoadItems} />
+      <SalesListTable
+        shopId={id}
+        rules={permissions}
+        salesList={sales}
+        loading={isLoadItems}
+        CustomPagination={CustomPagination}
+      />
     </AdminLayout>
   );
 }
