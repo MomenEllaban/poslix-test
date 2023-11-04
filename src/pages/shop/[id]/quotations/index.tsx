@@ -113,7 +113,7 @@ export default function SalesList(props: any) {
       setLines(res.data.result.quotationsList.quotation_list_lines);
 
     } catch (e) {
-      Toastify('error', 'Something went wrong')
+      Toastify('error', 'Something went wrong') 
     }
     // if (res.data.success) {
     //   setSalesRep(res.data.result);
