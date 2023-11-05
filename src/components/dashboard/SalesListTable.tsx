@@ -70,10 +70,10 @@ export default function SalesListTable({
     });
   };
 
-  const handleCompletePrint = (id) => {
-    setSelectRow(salesList.data.filter((row) => row.id == id)[0]);
-    handlePrint();
-  };
+  // const handleCompletePrint = (id) => {
+  //   setSelectRow(salesList.data.filter((row) => row.id == id)[0]);
+  //   handlePrint();
+  // };
 
   useEffect(() => {
     checkPrintType();
