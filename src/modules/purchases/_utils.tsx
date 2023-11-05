@@ -126,8 +126,10 @@ export const purchasesColumns: ({
     type: 'number',
     renderCell: ({ row }: Partial<GridRowParams>) => (
       <div>
+        {/* {console.log(row)
+        } */}
         {row.price
-          ? row?.price?.toFixed(locationSettings?.location_decimal_places)
+          ? Number(row.price).toFixed(locationSettings?.location_decimal_places) 
           : Number(row.sell_price).toFixed(locationSettings?.location_decimal_places)}
       </div>
     ),

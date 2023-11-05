@@ -128,7 +128,6 @@ function MobDrawer({toggleDrawer,setOpen,open,setShowCart,removeFromCart,addItem
           price={item.price} 
           quantity={item.quantity}
           addByQuantity={addByQuantity}
-          
            />
 
 

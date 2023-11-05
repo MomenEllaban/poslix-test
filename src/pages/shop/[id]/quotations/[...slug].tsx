@@ -689,20 +689,20 @@ const AddQuotations: NextPage = (props: any) => {
   useEffect(() => {
     if (jobType.req == 4) {
       allVariations.map((varItm: any, index: number) => {
-        if (varItm.variation_id == jobType.val) {
+        if (varItm.id == jobType.val) {
           const found = selectProducts.some((el) => el.variation_id == varItm.variation_id);
           if (!found) {
             setSelectProducts([
               ...selectProducts,
               {
-                id: +Number(varItm.product_id) + Math.floor(Math.random() * 1200),
-                product_id: varItm.product_id,
-                variation_id: varItm.variation_id,
+                id: varItm.id,
+                product_id: varItm.parent_id,
+                variation_id: varItm.id,
                 name: selectedProductForVariation.product_name + ' ' + varItm.name,
                 quantity: 1,
-                price: varItm.variation_price,
-                cost: varItm.variation_cost,
-                lineTotal: parseFloat(varItm.variation_cost),
+                price: varItm.price,
+                cost: varItm.cost,
+                lineTotal: parseFloat(varItm.cost),
                 taxAmount: 0,
                 costType: 0,
                 isNew: true,
@@ -718,10 +718,12 @@ const AddQuotations: NextPage = (props: any) => {
   const addToProductQuotations = (e: any) => {
     if (e.type == 'variable') {
       setSelectedProductForVariation({
+        ...e,
         product_id: e.product_id,
         is_service: 0,
         product_name: e.name,
       });
+      setAllVariations(e.variations)
       setIsOpenVariationDialog(true);
       return;
     }

@@ -32,7 +32,7 @@ export const OrderCalcs = ({
   const [taxList, setTaxList] = useState<any>();
   const { taxesList } = useTaxesList(shopId);
   useEffect(() => {
-    if (taxList.length > 0) {
+    if (taxesList.length > 0) {
       setTaxList(taxesList?.taxes);
       const _tax: any = taxesList?.taxes?.filter((tax: any) => tax?.is_primary);
       const _taxGroup: any = taxesList?.taxes?.filter(
