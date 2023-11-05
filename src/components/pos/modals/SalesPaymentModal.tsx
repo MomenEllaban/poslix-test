@@ -251,7 +251,7 @@ const SalesPaymentModal = (props: any) => {
                           
                         }}
                         value={paymentMethods.find((f) => {
-                          return f.value == paymentRow.method;
+                          return f.value == +paymentRow.method;
                         })}
                       />
                     </div>
