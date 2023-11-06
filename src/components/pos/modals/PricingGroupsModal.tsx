@@ -47,7 +47,6 @@ const PricingModal = (props: any) => {
     }
     let res;
     if (showType === 'edit') {
-      console.log({ ...pricingGroup });
       const body = {
         "location_id": selectGroup.location_id,
         "business_id": selectGroup.business_id,

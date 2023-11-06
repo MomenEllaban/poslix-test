@@ -89,7 +89,7 @@ const cartSlice = createSlice({
 
       if (existingItem) {
         const newQty = existingItem.quantity + 1
-        if((existingItem.stock < newQty) && (+existingItem.sell_over_stock === 0)){
+        if((existingItem.stock < newQty) && (+existingItem.sell_over_stock === 0 ) && ( +existingItem.is_service === 0)){
           return
         }
         existingItem.quantity += 1;
@@ -153,8 +153,6 @@ const cartSlice = createSlice({
     },
     changeWithSpesificAmount: (state, { payload }) => {
       const { product, newQty } = payload;
-      console.log(product);
-      
       const { id, location_id, sell_price, cost_price } = product;
       const cart = findOrCreateCart(state, location_id);
       const existingItem = cart.cartItems.find((item) => item.id === id);

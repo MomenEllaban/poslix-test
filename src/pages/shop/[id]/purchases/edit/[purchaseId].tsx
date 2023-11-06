@@ -100,7 +100,12 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
   const [purchaseStatus, setPurchaseStatus] =
     useState<{ value: string; label: string }[]>(purchaseStatusDataAdd);
   const [paymentTypes, setPaymentTypes] =
-    useState<{ value: string; label: string }[]>(paymentTypeData);
+    useState<{ value: string; label: string }[]>([
+      { label: 'Cash', value: "cash" },
+      { label: 'Card', value: 'card' },
+      { label: 'Bank', value: 'bank' },
+      { label: 'Cheque', value: 'cheque' },
+    ]);
   const [paymentStatus, setPaymentStatus] =
     useState<{ value: string; label: string }[]>(paymentStatusData);
   const [products, setProducts] = useState<{ value: number; label: string }[]>([]);

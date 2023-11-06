@@ -55,6 +55,8 @@ const DigitalCart = ({ products, cartItems, addItemTocart, removeFromCart, setRe
 
 
                         <CartItem
+                        addByQuantity={()=>{}}
+
                             location={location}
                             key={item.id}
                             id={item.id}

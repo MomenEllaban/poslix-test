@@ -13,38 +13,54 @@ import { useEffect, useState } from 'react';
 import { Spinner } from 'react-bootstrap';
 
 const Digital: NextPage = ({ shopId }: any) => {
-  const router = useRouter()
-  const [appearance, setAppearance] = useState<any>()
-  const [loading, setLoading] = useState<any>(false)
- 
-    // ----------------------------------------------------------------------------------------------
-    const fetchApperance = async () => {
-      setLoading(true)
-      try {
-        const res = await findAllData(`appearance/${router.query.id}`); 
-        setAppearance(res.data.result);
-      } catch (err) {
-        Toastify('error', 'Something went wrong with getting Apperance, please try again later!');
-      }
-      setLoading(false)
+  const router = useRouter();
+  const [appearance, setAppearance] = useState<any>();
+  const [loading, setLoading] = useState<any>(false);
 
+
+  const fetchAppDigital = async () => {
+    setLoading(true);
+    try {
+      const res = await findAllData(`appearance/${router.query.id}`);
+      setAppearance(res.data.result);
+    } catch (err) {
+      Toastify('error', 'Something went wrong with getting Apperance, please try again later!');
+    } finally {
+      setLoading(false);
     }
-  console.log(appearance);
-  
-    // ----------------------------------------------------------------------------------------------
-  useEffect(()=>{
-    fetchApperance()
-  },[])
+  };
+
+  useEffect(() => {
+    fetchAppDigital();
+  }, []);
   return (
-    <div >
+    <div>
       <div className="page-content-style justfy-center">
-      {loading?<Spinner/>:appearance?.en?.logo ?
-       <Image src={appearance?.en?.logo} alt={'logo'} style={{maxHeight:'33vh'}} width={300} height={200}/>:
-        <Image src={img1} alt={'logo'} />}
+        {
+          loading ? (
+            <Spinner />
+          ) : (
+            // appearance?.en?.logo ?
+            <Image
+              src={appearance?.en?.logo}
+              alt={'logo'}
+              style={{ maxHeight: '33vh' }}
+              width={300}
+              height={200}
+            />
+          )
+          // <Image src={img1} alt={'logo'} />
+        }
         <h2>Poslix @poslix.com</h2>
-        {/* <p>@poslix</p> */}  
-        <a style={{color:'#000',textDecoration:'none'}} target="_blank"  href={appearance?.en?.website} rel="noopener noreferrer">{appearance?.en?.website}</a>
-        
+        {/* <p>@poslix</p> */}
+        <a
+          style={{ color: '#000', textDecoration: 'none' }}
+          target="_blank"
+          href={appearance?.en?.website}
+          rel="noopener noreferrer">
+          {appearance?.en?.website}
+        </a>
+
         {/* <p><a href={`mailto:${appearance?.en?.website}`}>{appearance?.en?.website}</a></p> */}
         <p>Pos, ecommirce, and more</p>
         <div className="digital-big-btn">
@@ -53,10 +69,20 @@ const Digital: NextPage = ({ shopId }: any) => {
           </Link>
         </div>
         <div className="digital-socials">
-        <a style={{color:'#000',textDecoration:'none'}} target="_blank" href={appearance?.en?.whatsapp} rel="noopener noreferrer"><FontAwesomeIcon 
-                  className="icon-clicable" icon={faWhatsapp} /></a>
-        <a style={{color:'#000',textDecoration:'none'}} target="_blank"  href={appearance?.en?.instagram} rel="noopener noreferrer"><FontAwesomeIcon className="icon-clicable" icon={faInstagram} /></a>
-          
+          <a
+            style={{ color: '#000', textDecoration: 'none' }}
+            target="_blank"
+            href={appearance?.en?.whatsapp}
+            rel="noopener noreferrer">
+            <FontAwesomeIcon className="icon-clicable" icon={faWhatsapp} />
+          </a>
+          <a
+            style={{ color: '#000', textDecoration: 'none' }}
+            target="_blank"
+            href={appearance?.en?.instagram}
+            rel="noopener noreferrer">
+            <FontAwesomeIcon className="icon-clicable" icon={faInstagram} />
+          </a>
         </div>
       </div>
     </div>

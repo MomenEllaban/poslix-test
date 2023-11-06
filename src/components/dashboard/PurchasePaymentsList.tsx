@@ -25,8 +25,6 @@ const PurchasePaymentsList = (props: any) => {
   async function intPageData() {
     const res = await findAllData(`purchase/${purchaseId}/show`)
     if (res.data.success) {
-      console.log(res.data.result);
-      
       setOrderDetails(res.data.result);
       setOrderPayments(res.data.result.payment);
       setIsLoading(false);

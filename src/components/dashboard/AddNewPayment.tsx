@@ -19,7 +19,12 @@ const AddNewPayment = (props: any) => {
   const [business, setBusiness] = useState<{ id: number; name: string }[]>([]);
   const colourStyles = { control: (style: any) => ({ ...style, borderRadius: '10px' }) };
   const [paymentTypes, setPaymentTypes] =
-    useState<{ value: string; label: string }[]>(paymentTypeData);
+    useState<{ value: string; label: string }[]>([
+      { label: 'Cash', value: "cash" },
+      { label: 'Card', value: 'card' },
+      { label: 'Bank', value: 'bank' },
+      { label: 'Cheque', value: 'cheque' },
+    ]);
 
   async function insertPayment() {
     const {data} = await updateData(

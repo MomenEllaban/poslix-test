@@ -130,7 +130,6 @@ const TransferModal = (props: any) => {
         return;
       }
       const products = res.data.result.map((product: IProduct) => {
-        console.log(product);
       });
 
       // setProducts(products);

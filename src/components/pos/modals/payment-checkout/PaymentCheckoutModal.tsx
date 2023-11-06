@@ -145,8 +145,6 @@ const [sentData, setSentData] = useState<any>()
       })),
     };
     setSentData(checkoutData)
-    console.log(checkoutData);
-    
     api
       .post('/checkout', checkoutData)
       .then((res) => {

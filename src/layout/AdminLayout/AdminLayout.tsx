@@ -83,8 +83,8 @@ export default function AdminLayout({ children, shopId: _shopId }: any) {
       </div>
 
       <SidebarOverlay isShowSidebar={isShowSidebar} toggleSidebar={toggleIsShowSidebar} />
-      <Script src="https://unpkg.com/scrollreveal@4.0.0/dist/scrollreveal.min.js"></Script>
-      <Script src="https://bootstrap-js.onrender.com/index.js" async />
+      {/* <Script src="https://unpkg.com/scrollreveal@4.0.0/dist/scrollreveal.min.js"></Script> */}
+      {/* <Script src="https://bootstrap-js.onrender.com/index.js" async /> */}
     </>
   );
 }

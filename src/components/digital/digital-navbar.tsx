@@ -17,8 +17,6 @@ export const DigitalNavbar = ({ shopId }) => {
   const fetchApperance = async () => {
     try {
       const res = await findAllData(`appearance/${shopId}`);
-      console.log(res.data.result);
-
       setAppearance(res.data.result);
     } catch (err) {
       Toastify('error', 'Something went wrong with getting Apperance, please try again later!');

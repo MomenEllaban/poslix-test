@@ -31,7 +31,7 @@ const Puller = styled(Box)(({ theme }) => ({
   left: 'calc(50% - 15px)',
 }));
 
-function MobDrawer({toggleDrawer,setOpen,open,setShowCart,removeFromCart,addItemTocart,location}) {
+function MobDrawer({toggleDrawer,setOpen,open,setShowCart,removeFromCart,addItemTocart,addByQuantity,location}) {
 
   const handleDrawer = (open) => {
     setShowCart((s)=>!s)
@@ -43,7 +43,6 @@ function MobDrawer({toggleDrawer,setOpen,open,setShowCart,removeFromCart,addItem
   const getTotal = () => {
       let totalQuantity = 0
       let totalPrice = 0
-      console.log(digitalCart);
       digitalCart?.forEach(item => {
         totalQuantity += item.quantity
         totalPrice += item.price * item.quantity
@@ -127,7 +126,7 @@ function MobDrawer({toggleDrawer,setOpen,open,setShowCart,removeFromCart,addItem
           name={item.name}
           price={item.price} 
           quantity={item.quantity}
-          
+          addByQuantity={addByQuantity}
            />
 
 
