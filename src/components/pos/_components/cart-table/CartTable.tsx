@@ -115,7 +115,7 @@ export default function CartTable({ customer, shopId }) {
     
       setCartWithPricing(cartWithPricingData)
     }else{
-      setCartWithPricing();
+      setCartWithPricing(undefined);
     }
   }, [cart?.cartItems, customerPricingGroup])
   // ------------------------------------------------------------------------------------------------
