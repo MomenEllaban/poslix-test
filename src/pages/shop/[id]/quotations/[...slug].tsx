@@ -132,8 +132,8 @@ const AddQuotations: NextPage = (props: any) => {
     useState<{ value: string; label: string }[]>(quotationStatusDataAdd);
   const [paymentTypes, setPaymentTypes] =
     useState<{ value: number; label: string }[]>(paymentTypeData);
-  const [paymentStatus, setPaymentStatus] =
-    useState<{ value: string; label: string }[]>(paymentStatusData);
+  // const [paymentStatus, setPaymentStatus] =
+  //   useState<{ value: string; label: string }[]>(paymentStatusData);
   const [products, setProducts] = useState<{ value: number; label: string }[]>([]);
   const [selectProducts, setSelectProducts] = useState<IpurchaseProductItem[]>([]);
   const [allVariations, setAllVariations] = useState([]);
@@ -149,10 +149,9 @@ const AddQuotations: NextPage = (props: any) => {
   const [openRemoveDialog, setOpenRemoveDialog] = useState(false);
   const router = useRouter();
   const shopId = router.query.id as string;
-  // const [taxList, setTaxList] = useState<any>();
-  const [tax, setTax] = useState<any>();
+  const [tax, setTax] = useState<{tax:number, type:string}>({tax: 0, type: ""});
   const { taxesList } = useTaxesList(shopId);
-  console.log(taxesList);
+  console.log(tax);
 
   useEffect(() => {
     if (taxesList?.taxes?.length > 0) {
@@ -492,7 +491,7 @@ const AddQuotations: NextPage = (props: any) => {
       case 'expense':
         return subTotal + formObj.total_expense;
       case 'taxes':
-        return (formObj.total_tax / 100) * subTotal + subTotal;
+        return (tax.tax / 100) * subTotal + subTotal;
     }
     return 0;
   }
@@ -553,21 +552,12 @@ const AddQuotations: NextPage = (props: any) => {
       ...formObj,
       total_expense: +_sum.toFixed(locationSettings?.location_decimal_places),
     });
-    calculationLabels(_sum, formObj.total_tax);
+    calculationLabels(_sum, tax.tax);
   }, [selectedExpends, selectedExpendsEdit]);
 
   useEffect(() => {
     finalCalculation();
-  }, [purchaseDetails]);
-  useEffect(() => {
-    finalCalculation();
-  }, [formObj.total_discount]);
-  useEffect(() => {
-    finalCalculation();
-  }, [formObj.total_expense]);
-  useEffect(() => {
-    finalCalculation();
-  }, [formObj.total_tax]);
+  }, [purchaseDetails, tax, formObj.total_expense, formObj.total_discount]);
   useEffect(() => {
     setFormObj({
       ...formObj,
@@ -576,23 +566,8 @@ const AddQuotations: NextPage = (props: any) => {
     });
   }, [locationSettings]);
   useEffect(() => {
-    calculationLabels(formObj.total_expense, formObj.total_tax);
+    calculationLabels(formObj.total_expense, tax.tax);
   }, [formObj.currency_rate]);
-
-  const calculationLineTotal = (item: IpurchaseProductItem): number => {
-    switch (item.costType) {
-      case 0:
-        return item.cost;
-      case 1:
-        return item.notifyExpensePrice || 0;
-      case 2:
-        return item.notifyTaxPrice || 0;
-      case 3:
-        return item.notifyTotalPrice || 0;
-      default:
-        return item.cost;
-    }
-  };
   const addTableRows = (rowType = 'expense') => {
     if (rowType == 'expense') {
       //expense
@@ -764,7 +739,7 @@ const AddQuotations: NextPage = (props: any) => {
               );
 
       setSelectProducts([..._datas]);
-      calculationLabels(formObj.total_expense, formObj.total_tax);
+      calculationLabels(formObj.total_expense, tax.tax);
     }
   };
   const sortHandler = (i: number, type: string) => {
@@ -1207,8 +1182,8 @@ const AddQuotations: NextPage = (props: any) => {
                                       </tbody>
                                     </table>
                                     <p className="fixed-width">
-                                      {formObj.total_tax}%(
-                                      {((formObj.total_tax / 100) * formObj.subTotal_price).toFixed(
+                                      {tax.tax}%(
+                                      {((tax.tax / 100) * formObj.subTotal_price).toFixed(
                                         locationSettings?.location_decimal_places
                                       )}
                                       )

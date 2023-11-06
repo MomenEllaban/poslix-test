@@ -144,28 +144,26 @@ const [sentData, setSentData] = useState<any>()
         note: data?.notes,
       })),
     };
-    // setSentData(checkoutData)
-    console.log(checkoutData);
-    
-    // api
-    //   .post('/checkout', checkoutData)
-    //   .then((res) => {
-    //     console.log(res.data.result);
+    setSentData(checkoutData)
+    api
+      .post('/checkout', checkoutData)
+      .then((res) => {
+        console.log(res.data.result);
         
-    //     setPrintReceipt({
-    //       ...res.data.result.data,
-    //       due: res.data.result.sales.due,
-    //       paid: res.data.result.sales.payed,
-    //       tax: res.data.result.sales.tax,
-    //       customerName: res.data.result.sales.data[0].contact_name
-    //     });
-    //     setPrint(true);
-    //     setShow(false);
-    //     setPaidAmount({ '0': 0 })
-    //   })
-    //   .then(() => {
-    //     dispatch(clearCart({ location_id: shopId }));
-    //   });
+        setPrintReceipt({
+          ...res.data.result.data,
+          due: res.data.result.sales.due,
+          paid: res.data.result.sales.payed,
+          tax: res.data.result.sales.tax,
+          customerName: res.data.result.sales.data[0].contact_name
+        });
+        setPrint(true);
+        setShow(false);
+        setPaidAmount({ '0': 0 })
+      })
+      .then(() => {
+        dispatch(clearCart({ location_id: shopId }));
+      });
   };
 
   const paidSum = useMemo(() => {
