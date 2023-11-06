@@ -37,7 +37,7 @@ export const OrderCalcs = ({
     const _taxGroup: any = taxesList?.taxes?.filter((tax: any) => tax?.is_tax_group && tax?.is_primary)
     let finalTax;
     let finalTaxType;
-    if(_taxGroup.length > 0) {
+    if(_taxGroup?.length > 0) {
       finalTax = _taxGroup[0].tax_group.reduce((total, tax) => total + (tax.amount || 0), 0);
     }
     else {

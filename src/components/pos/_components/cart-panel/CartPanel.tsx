@@ -66,7 +66,7 @@ export default function CartPanel({ shopId }) {
       <ProductSearch shopId={shopId} />
 
       <hr />
-      <CartTable shopId={shopId} />
+      <CartTable  customer={customer} shopId={shopId} />
       <hr />
 
       <OrderCalcs
