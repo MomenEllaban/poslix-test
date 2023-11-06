@@ -36,6 +36,8 @@ import storage from '../../../../../firebaseConfig';
 import NotifiModal from '../../../../components/utils/NotifiModal';
 import { apiDeleteCtr } from '../../../../libs/dbUtils';
 
+import { getSession } from 'next-auth/react';
+
 const colourStyles = productDetailsColourStyles;
 
 const initialFormObject: TFormObject = {
@@ -76,21 +78,26 @@ const initFormError = {
   skuExist: false,
 };
 
-const Product: NextPage = ({ editId, iType }: any) => {
+const Product: NextPage = ({
+  editId,
+  iType,
+  resCategories,
+  resTaxes,
+  resUnits,
+  resBrands,
+  dataProduct,
+}: any) => {
   const { locationSettings, setLocationSettings } = useUser();
   const [locations, setLocations] = useState();
   const [img, setImg] = useState<any>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
   const [errorForm, setErrorForm] = useState(initFormError);
   const [formObj, setFormObj] = useState<any>(initialFormObject);
-  const [units, setUnits] = useState<{ value: number; label: string }[]>([]);
-  const [brands, setBrands] = useState<{ value: number; label: string }[]>([]);
-  const [cats, setCats] = useState<{ value: number; label: string }[]>([]);
+
   const [tailoring, seTtailoring] = useState<{ value: number; label: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
-  const [taxGroup, setTaxGroup] = useState<{ value: number; label: string }[]>([]);
   const [products, setProducts] = useState<{ value: number; label: string }[]>([]);
   const [allFabrics, setAllFabrics] = useState<{ value: number; label: string }[]>([]);
   const [producTypes, setProducTypes] =
@@ -119,6 +126,7 @@ const Product: NextPage = ({ editId, iType }: any) => {
   const [percent, setPercent] = useState(0);
   const router = useRouter();
   const shopId = router.query.id;
+
   const [show, setShow] = useState(false);
   const [open, setOpen] = useState(false);
   const [open2, setOpen2] = useState(false);
@@ -190,94 +198,18 @@ const Product: NextPage = ({ editId, iType }: any) => {
 
   var prevUrlRef = useRef<any>();
   prevUrlRef.current = previewUrl;
-
-  async function initDataPage(url, locationSettings) {
-    setLoading(true);
-    try {
-      if (url?.length == 2) setIsEdit(true);
-      if (url?.length == 2) {
-        const res = await findAllData(`products/${url[1]}/show`);
-        setSelectedProducts(res.data.result);
-        // setSelectedFabrics(newdata.selectedFabrics);
-        const itm = res.data.result;
-        setPreviewUrl(itm?.image);
-        setFormObj({
-          ...formObj,
-          id: itm.id,
-          img: itm?.image,
-          type: itm.type,
-          name: itm.name,
-          productName2: itm.subproductname,
-          location_id: itm.location_id,
-          unit_id: itm.unit_id,
-          brand: itm.brand_id,
-          sku: itm.sku,
-          sell_over_stock: !!itm.sell_over_stock,
-          isSellOverStock: !!itm.sell_over_stock,
-          barcode_type: itm.barcode_type,
-          category_id: itm.category_id,
-          cost_price: Number(itm.cost_price).toFixed(locationSettings?.location_decimal_places),
-          sell_price: Number(itm.sell_price).toFixed(locationSettings?.location_decimal_places),
-          alertQuantity: Number(itm.alert_quantity),
-          tax_id: itm.never_tax == 1 ? -1 : itm.tax,
-          is_service: itm.is_service == 1,
-          is_fabric: itm.is_fabric == 1,
-          isMultiPrice: itm.is_selling_multi_price == 1,
-          isFifo: itm.is_fifo == 1,
-          never_tax: itm.never_tax,
-          variations: [
-            ...res.data.result.variations.map((item: IVariation) => ({
-              ...item,
-              cost: (+item.cost).toFixed(locationSettings?.location_decimal_places),
-              price: (+item.price).toFixed(locationSettings?.location_decimal_places),
-            })),
-            { name: '', name2: '', sku: '', cost: 0, price: 0, isNew: true },
-          ],
-          isTailoring:
-            itm.type == 'tailoring_package' ? itm.tailoring_type_id : itm.is_tailoring == 1,
-          tailoringPrices:
-            itm.prices_json != undefined && (itm.prices_json + '').length > 8
-              ? [...JSON.parse(itm.prices_json), { name: '', from: 0, to: 0, price: 0 }]
-              : [{ name: '', from: 0, to: 0, price: 0 }],
-        });
-      } else {
-        // setAllFabrics(newdata.allFabrics);
-        // seTtailoring([{ value: null, label: 'Defualt' }, ...newdata.tailorings]);
-      }
-      const resCategories = await findAllData(`categories/${router.query.id}`);
-      const resBrands = await findAllData(`brands/${router.query.id}`);
-      const resUnits = await findAllData(`units`);
-      const resTaxes = await findAllData(`taxes/${router.query.id}`);
-      // setProducts(newdata.products);
-      setUnits(
-        resUnits.data.result.units.map((unit) => {
-          return { ...unit, label: unit.name, value: unit.id };
-        })
-      );
-      setBrands(
-        resBrands.data.result.map((brand) => {
-          return { ...brand, label: brand.name, value: brand.id };
-        })
-      );
-      setCats(
-        resCategories.data.result.map((cat) => {
-          return { ...cat, label: cat.name, value: cat.id };
-        })
-      );
-      setTaxGroup(
-        resTaxes.data.result.taxes.map((tax) => {
-          return { ...tax, label: tax.name, value: tax.id };
-        })
-      );
-      // if (iType != 'Kianvqyqndr')
-      //   setProducTypes(producTypes.filter((p) => p.value != 'tailoring_package'));
-    } catch (e) {
-      Toastify('error', 'Something went wrong, please try again later!');
-    } finally {
-      setLoading(false);
-    }
-  }
-
+  const units = resUnits?.units.map((unit) => {
+    return { ...unit, label: unit.name, value: unit.id };
+  });
+  const brands = resBrands?.map((brand) => {
+    return { ...brand, label: brand.name, value: brand.id };
+  });
+  const cats = resCategories?.map((cat) => {
+    return { ...cat, label: cat.name, value: cat.id };
+  });
+  const taxGroup = resTaxes?.taxes.map((tax) => {
+    return { ...tax, label: tax.name, value: tax.id };
+  });
   async function handleUpload() {
     if (prevUrlRef.current.length < 2) {
     } else {
@@ -300,9 +232,6 @@ const Product: NextPage = ({ editId, iType }: any) => {
   }
 
   async function insertProduct(url: string = null) {
-    console.log(333333333333333);
-
-    // if (!url) return Toastify('error', 'Please add image to the product!');
     const res = await createNewData('products', {
       name: formObjRef.current.name,
       category_id: formObjRef.current.category_id,
@@ -445,8 +374,59 @@ const Product: NextPage = ({ editId, iType }: any) => {
     }
   }, [router.query]);
   useEffect(() => {
-    if (router.isReady) initDataPage(router.query.slug, locationSettings);
-  }, [router.asPath, locationSettings]);
+    if (router.isReady) {
+      if (dataProduct.hasOwnProperty('id') && !dataProduct.hasOwnProperty('error')) {
+        setIsEdit(true);
+        setSelectedProducts(dataProduct);
+        const itm = dataProduct;
+        setPreviewUrl(itm?.image);
+        setFormObj({
+          ...formObj,
+          id: itm.id,
+          img: itm?.image,
+          type: itm.type,
+          name: itm.name,
+          productName2: itm.subproductname,
+          location_id: itm.location_id,
+          unit_id: itm.unit_id,
+          brand: itm.brand_id,
+          sku: itm.sku,
+          sell_over_stock: !!itm.sell_over_stock,
+          isSellOverStock: !!itm.sell_over_stock,
+          barcode_type: itm.barcode_type,
+          category_id: itm.category_id,
+          cost_price: Number(itm.cost_price).toFixed(locationSettings?.location_decimal_places),
+          sell_price: Number(itm.sell_price).toFixed(locationSettings?.location_decimal_places),
+          alertQuantity: Number(itm.alert_quantity),
+          tax_id: itm.never_tax == 1 ? -1 : itm.tax,
+          is_service: itm.is_service == 1,
+          is_fabric: itm.is_fabric == 1,
+          isMultiPrice: itm.is_selling_multi_price == 1,
+          isFifo: itm.is_fifo == 1,
+          never_tax: itm.never_tax,
+          variations: [
+            ...dataProduct.variations.map((item: IVariation) => ({
+              ...item,
+              cost: (+item.cost).toFixed(locationSettings?.location_decimal_places),
+              price: (+item.price).toFixed(locationSettings?.location_decimal_places),
+            })),
+            { name: '', name2: '', sku: '', cost: 0, price: 0, isNew: true },
+          ],
+          isTailoring:
+            itm.type == 'tailoring_package' ? itm.tailoring_type_id : itm.is_tailoring == 1,
+          tailoringPrices:
+            itm.prices_json != undefined && (itm.prices_json + '').length > 8
+              ? [...JSON.parse(itm.prices_json), { name: '', from: 0, to: 0, price: 0 }]
+              : [{ name: '', from: 0, to: 0, price: 0 }],
+        });
+      } else {
+        setIsEdit(false);
+      }
+      if (dataProduct?.error) {
+        Toastify('error', 'Something went wrong, please try again later!');
+      }
+    }
+  }, [router.asPath, dataProduct, locationSettings]);
 
   const imageChange = (e: any) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -969,7 +949,7 @@ const Product: NextPage = ({ editId, iType }: any) => {
                       </div>
                       <div className="field-section">
                         <Select
-                          isDisabled={isEdit}
+                          // isDisabled={isEdit}
                           styles={colourStyles}
                           options={producTypes}
                           value={producTypes.find((f: any) => {
@@ -1523,3 +1503,61 @@ type TFormObject = {
     price: number;
   }[];
 };
+
+async function getData(endPoint: string, API_BASE: string, _token: string) {
+  try {
+    const res = await fetch(`${API_BASE}${endPoint}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${_token}`,
+      },
+    });
+    const data = await res.json();
+
+    if (data.status === 200) {
+      return data?.result;
+    }
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+export async function getServerSideProps(context) {
+  const { query, req } = context;
+
+  if (Number.isNaN(+query?.id)) {
+    return {
+      redirect: {
+        permanent: false,
+        destination: '/',
+      },
+      props: {},
+    };
+  }
+  const session = await getSession({ req: req });
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
+  const _token = session?.user?.token;
+
+  let dataProduct = {};
+
+  if (query?.slug.length === 2 && !Number.isNaN(+query?.slug[1])) {
+    dataProduct = (await getData(`products/${query.slug[1]}/show`, API_BASE, _token)) ?? {
+      error: true,
+    };
+  }
+
+  const resCategories = (await getData(`categories/${query.id}`, API_BASE, _token)) ?? [];
+  const resBrands = (await getData(`brands/${query.id}`, API_BASE, _token)) ?? [];
+  const resUnits = (await getData(`units`, API_BASE, _token)) ?? [];
+  const resTaxes = (await getData(`taxes/${query.id}`, API_BASE, _token)) ?? [];
+
+  return {
+    props: {
+      resCategories,
+      resTaxes,
+      resUnits,
+      resBrands,
+      dataProduct,
+    },
+  };
+}

@@ -247,7 +247,6 @@ const SupplierModal = ({ openDialog, statusDialog, supplierId, showType, shopId 
     if (!statusDialog) return;
 
     setOpen(statusDialog);
-    console.log(supplierId)
     if (supplierId !== undefined && (showType === 'edit' || showType === 'show') && statusDialog)
       getCustomerInfo(supplierId);
     initData();

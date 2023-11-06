@@ -18,7 +18,7 @@ export function quotationStatusDataAdd(): {
   return [
     { label: 'Accepted', value: 'accepted' },
     { label: 'Waiting', value: 'waiting' },
-    { label: 'Cancelled', value: 'cancelled' },
+    { label: 'Cancelled', value: 'canceled' },
   ];
 }
 export function purchaseStatusData(): {
@@ -36,13 +36,13 @@ export function purchaseStatusData(): {
 }
 export function paymentTypeData(): {
   readonly label: string;
-  readonly value: string;
+  readonly value: number;
 }[] {
   return [
-    { label: 'Cash', value: 'cash' },
-    { label: 'Card', value: 'card' },
-    { label: 'Bank', value: 'bank' },
-    { label: 'Cheque', value: 'cheque' },
+    { label: 'Cash', value: 1 },
+    { label: 'Card', value: 2 },
+    { label: 'Bank', value: 3 },
+    { label: 'Cheque', value: 4 },
   ];
 }
 export function paymentStatusData(): {

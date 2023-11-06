@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   DataGrid,
   GridColDef,
@@ -6,29 +6,16 @@ import {
   GridToolbarContainer,
   GridToolbarExport,
   GridToolbarColumnsButton,
-  GridToolbar,
-  GridToolbarFilterButton,
   GridToolbarQuickFilter,
 } from '@mui/x-data-grid';
 import { AdminLayout } from '@layout';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faTrash,
-  faPenToSquare,
-  faPlus,
-  faEye,
-  faCheck,
-  faXmark,
-} from '@fortawesome/free-solid-svg-icons';
+import { faTrash, faPlus, faEye, faCheck, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { Button, ButtonGroup } from 'react-bootstrap';
 import { useRouter } from 'next/router';
 import AlertDialog from 'src/components/utils/AlertDialog';
-import { apiFetch, apiFetchCtr } from 'src/libs/dbUtils';
-import { Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
-import { ILocationSettings, ITokenVerfy } from '@models/common-model';
-import * as cookie from 'cookie';
-import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/checkUtils';
-import { UserContext } from 'src/context/UserContext';
+import { Dialog, DialogContent, DialogTitle } from '@mui/material';
+import { ILocationSettings } from '@models/common-model';
 import { useReactToPrint } from 'react-to-print';
 import { Toastify } from 'src/libs/allToasts';
 import { ToastContainer } from 'react-toastify';
@@ -36,7 +23,6 @@ import { findAllData, updateData } from 'src/services/crud.api';
 
 export default function SalesList(props: any) {
   const { id } = props;
-  console.log(props);
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
     // @ts-ignore
     value: 0,
@@ -47,9 +33,18 @@ export default function SalesList(props: any) {
     currency_rate: 1,
     currency_symbol: '',
   });
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
   const handleClose = () => {
-    setAnchorEl(null);
+    setShowViewPopUp(false);
+    setShowQuotation({
+      transferID: null,
+      from: '',
+      status: '',
+      total: 0,
+      products: [],
+      createdBy: '',
+      ceartedAt: '',
+    });
   };
   const [sales, setsales] = useState<any>([]);
   const [customersNames, setCustomersNames] = useState<any>([]);
@@ -58,13 +53,35 @@ export default function SalesList(props: any) {
   const [selectId, setSelectId] = useState(0);
   const [selectRow, setSelectRow] = useState<any>({});
   const [lines, setLines] = useState<any>([]);
+  console.log(lines);
+
   const [show, setShow] = useState(false);
   const [edit, setEdit] = useState(false);
   const [isLoadItems, setIsLoadItems] = useState(false);
   const [showViewPopUp, setShowViewPopUp] = useState(false);
   const [handleSearchTxt, setHandleSearchTxt] = useState('');
-  const { setInvoicDetails, invoicDetails } = useContext(UserContext);
-  const [accept, setAccept] = useState(false);
+  const [isloading, setIsloading] = useState<any>(false);
+  const [invoiceDetails, setInvoiceDetails] = useState<any>();
+  const [selectedQuotationProducts, setSelectedQuotationProducts] = useState([]);
+  // const { setInvoiceDetails, invoiceDetails } = useContext(UserContext);
+  const [tax, setTax] = useState(0);
+  const [showingQuotation, setShowQuotation] = useState<{
+    transferID: number | null;
+    from: string;
+    status: string;
+    total: number;
+    products: { name: string; qty: number }[];
+    createdBy: string;
+    ceartedAt: string;
+  }>({
+    transferID: null,
+    from: '',
+    status: '',
+    total: 0,
+    products: [],
+    createdBy: '',
+    ceartedAt: '',
+  });
 
   const updateStatus = async (id: number, status: string) => {
     const res = await updateData('quotations-list', id, { status });
@@ -72,6 +89,70 @@ export default function SalesList(props: any) {
     else Toastify('error', 'Error');
     initDataPage();
   };
+  const checkPrintType = async () => {
+    const res = await findAllData(`appearance/${router.query.id}`);
+    setInvoiceDetails({
+      ...res.data.result,
+      en: { ...res.data.result.en, is_multi_language: !!res.data.result.en.is_multi_language },
+    });
+  };
+  const getItems = async (id: number) => {
+    setIsLoadItems(true);
+    try {
+      const res = await findAllData(`quotations-list/${id}`);
+      setLines(res.data.result.quotationsList.quotation_list_lines);
+    } catch (e) {
+      Toastify('error', 'Something went wrong');
+    }
+    // if (res.data.success) {
+    //   setSalesRep(res.data.result);
+    setIsLoadItems(false);
+    // }
+  };
+  const formatQuotation = (quotation: any) => {
+    console.log('fffffffffff', quotation);
+    setTax(quotation.tax_amount);
+    const total = quotation.total_price;
+    const products: { name: string; qty: number }[] = [];
+    const status = quotation.status;
+    const transferID = quotation.id;
+    const _locs = JSON.parse(localStorage.getItem('locations') || '[]');
+    const from = _locs.find((el) => el.location_id == quotation.location_id).location_name;
+    const ceartedAt = quotation.created_at;
+    const qotProducts = quotation.products;
+    setSelectedQuotationProducts(qotProducts);
+    quotation.quotation_list_lines.forEach((el) => {
+      products.push({
+        name: qotProducts.filter((ele) => ele.id == el.product_id)[0].name,
+        qty: el.qty,
+      });
+    });
+
+    setShowQuotation({
+      total,
+      from,
+      transferID,
+      products,
+      status,
+      ceartedAt,
+      createdBy: from,
+    });
+    getItems(transferID);
+    // calc total price
+    // let total_price: number = 0;
+    // quotation?.quotation_list_lines.forEach(el => {
+
+    //   total_price = total_price + ((+el.qty) * (+el?.quotation_line_product?.sell_price))
+    // });
+
+    setSelectRow({ ...quotation });
+  };
+  // ------------------------------------------------------------------------------------------------
+  useEffect(() => {
+    checkPrintType();
+  }, []);
+
+  // ------------------------------------------------------------------------------------------------
   //table columns
   const columns: GridColDef[] = [
     { field: 'id', headerName: '#', minWidth: 50 },
@@ -130,13 +211,13 @@ export default function SalesList(props: any) {
       renderCell: ({ row }: Partial<GridRowParams>) => (
         <>
           <ButtonGroup className="mb-2 m-buttons-style">
-            <Button
+            {/* <Button
               onClick={() => {
                 localStorage.setItem('currentQuotation', JSON.stringify(row));
                 router.push('/shop/' + shopId + '/quotations/edit');
               }}>
               <FontAwesomeIcon icon={faPenToSquare} />
-            </Button>
+            </Button> */}
             <Button
               onClick={() => {
                 setSelectId(row.id);
@@ -144,13 +225,22 @@ export default function SalesList(props: any) {
               }}>
               <FontAwesomeIcon icon={faTrash} />
             </Button>
-            <Button onClick={() => {}}>
+            <Button
+              onClick={() => {
+                // localStorage.setItem('showingQuotation', JSON.stringify(row));
+                formatQuotation(row);
+                setShowViewPopUp(true);
+              }}>
               <FontAwesomeIcon icon={faEye} />
             </Button>
-            <Button onClick={() => updateStatus(row.id, 'accepted')}>
+            <Button
+              disabled={!(row.status === 'waiting')}
+              onClick={() => updateStatus(row.id, 'accepted')}>
               <FontAwesomeIcon icon={faCheck} />
             </Button>
-            <Button onClick={() => updateStatus(row.id, 'canceled')}>
+            <Button
+              disabled={!(row.status === 'waiting')}
+              onClick={() => updateStatus(row.id, 'canceled')}>
               <FontAwesomeIcon icon={faXmark} />
             </Button>
           </ButtonGroup>
@@ -166,86 +256,179 @@ export default function SalesList(props: any) {
       return (
         <div className="bill">
           <div className="brand-logo">
-            <img src={invoicDetails.logo} />
+            <img src={invoiceDetails?.en?.logo} />
           </div>
           <br />
-          <div className="brand-name">{invoicDetails.name}</div>
-          <div className="shop-details">{invoicDetails.tell}</div>
+          <div className="brand-name">{invoiceDetails?.en?.name}</div>
+          <div className="shop-details">{invoiceDetails?.en?.tell}</div>
           <br />
           <div className="bill-details">
             <div className="flex justify-between">
               <div>
-                {invoicDetails.txtCustomer}{' '}
-                {invoicDetails.isMultiLang && invoicDetails.txtCustomer2}
+                {invoiceDetails?.en?.txtCustomer}{' '}
+                {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtCustomer}
               </div>
-              <div>{selectRow.customer_name}</div>
+              <div>
+                {selectRow?.customer?.first_name} {selectRow?.customer?.last_name}
+              </div>
             </div>
             <div className="flex justify-between">
               <div>
-                {invoicDetails.orderNo} {invoicDetails.isMultiLang && invoicDetails.orderNo2}
+                {invoiceDetails?.en?.orderNo}{' '}
+                {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.orderNo}
               </div>
               <div>{selectRow.id}</div>
             </div>
             <div className="flex justify-between">
               <div>
-                {invoicDetails.txtDate} {invoicDetails.isMultiLang && invoicDetails.txtDate2}
+                {invoiceDetails?.en?.txtDate}{' '}
+                {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtDate}
               </div>
-              <div>{new Date().toISOString().slice(0, 10)}</div>
+              <div>
+                {selectRow?.created_at
+                  ? new Date(selectRow?.created_at).toISOString().slice(0, 10)
+                  : ''}
+              </div>
             </div>
           </div>
+          {/*  */}
           <table className="table">
             <thead>
               <tr className="header">
                 <th>
-                  {invoicDetails.txtQty}
+                  {invoiceDetails?.en?.txtQty}
                   <br />
-                  {invoicDetails.isMultiLang && invoicDetails.txtQty2}
+                  {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtQty}
                 </th>
                 <th>
-                  {invoicDetails.txtItem}
+                  {invoiceDetails?.en?.txtItem}
                   <br />
-                  {invoicDetails.isMultiLang && invoicDetails.txtItem2}
+                  {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtItem}
                 </th>
                 <th></th>
                 <th>
-                  {invoicDetails.txtAmount}
+                  {invoiceDetails?.en?.txtAmount}
                   <br />
-                  {invoicDetails.isMultiLang && invoicDetails.txtAmount2}
+                  {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtAmount}
                 </th>
               </tr>
-              {lines &&
+              {lines.length > 0 &&
                 lines.map((line: any, index: number) => {
+                  // lines?.map((line: any, index: number) => {
+                  //   return (
+                  //     <div className="header-items under_items" key={index}>
+                  //       <div>{selectedQuotationProducts.filter(ele => ele.id == line.product_id)[0].name}</div>
+                  //       <div>
+                  //         {
+                  //           Number(+line?.qty).toFixed(0)}
+
+                  //       </div>
+                  //       <div>
+                  //         {Number((+line?.qty * +selectedQuotationProducts.filter(ele => ele.id == line.product_id)[0].sell_price) * (selectRow.tax_amount / 100) + (+line?.qty * +selectedQuotationProducts.filter(ele => ele.id == line.product_id)[0].sell_price)).toFixed(
+                  //           locationSettings?.location_decimal_places
+                  //         )}
+                  //       </div>
+
+                  //     </div>
+                  //   );
+                  // })}
                   return (
                     <tr key={index}>
-                      <td>{Number(line.qty)}</td>
-                      <td>{line.name}</td>
+                      <td>{Number(line.qty).toFixed(0)}</td>
+                      <td>
+                        {
+                          selectedQuotationProducts.filter((ele) => ele.id == line.product_id)[0]
+                            .name
+                        }
+                      </td>
                       <td></td>
-                      <td>{line.price}</td>
+                      <td>
+                        {Number(
+                          +line?.qty *
+                            +selectedQuotationProducts.filter((ele) => ele.id == line.product_id)[0]
+                              .sell_price *
+                            (selectRow.tax_amount / 100) +
+                            +line?.qty *
+                              +selectedQuotationProducts.filter(
+                                (ele) => ele.id == line.product_id
+                              )[0].sell_price
+                        ).toFixed(locationSettings?.location_decimal_places)}
+                      </td>
                     </tr>
                   );
                 })}
+              <tr style={{ borderTop: '2px', height: '2px' }}></tr>
               <tr className="net-amount">
                 <td></td>
                 <td>
-                  {invoicDetails.txtTax} {invoicDetails.isMultiLang && invoicDetails.txtTax2}
+                  {invoiceDetails?.en?.txtTax}{' '}
+                  {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtTax}
                 </td>
                 <td></td>
+                <td>
+                  {(((+selectRow?.total_price / (1 + tax / 100)) * tax) / 100).toFixed(
+                    locationSettings?.location_decimal_places
+                  )}
+                </td>
+              </tr>
+              <tr className="net-amount">
+                <td></td>
+                <td>
+                  {invoiceDetails?.en?.txtDiscount}
+                  {'Discount'} {invoiceDetails?.en?.is_multi_language && 'التخفيضات'}
+                  {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtDiscount}
+                </td>
+                <td></td>
+                <td>
+                  {(+selectRow?.discount_amount).toFixed(locationSettings?.location_decimal_places)}
+                </td>
               </tr>
               <tr className="net-amount">
                 <td></td>
                 <td className="txt-bold">
-                  {invoicDetails.txtTotal} {invoicDetails.isMultiLang && invoicDetails.txtTotal2}
+                  {invoiceDetails?.en?.txtTotal}{' '}
+                  {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtTotal}
                 </td>
                 <td></td>
                 <td className="txt-bold">
-                  {Number(selectRow.total_price).toFixed(locationSettings?.location_decimal_places)}
+                  {Number(selectRow?.total_price).toFixed(
+                    locationSettings?.location_decimal_places || 4
+                  )}
+                </td>
+              </tr>
+              <tr className="net-amount">
+                <td></td>
+                <td className="txt-bold">
+                  Total Paid {invoiceDetails?.en?.is_multi_language && 'إجمالى المدفوعات'}
+                </td>
+                <td></td>
+                <td className="txt-bold">
+                  {Number(selectRow?.payment[0]?.amount).toFixed(
+                    locationSettings?.location_decimal_places
+                  )}
+                </td>
+              </tr>
+              <tr className="net-amount">
+                <td></td>
+                <td className="txt-bold">
+                  Total Due {invoiceDetails?.en?.is_multi_language && 'المتبقى'}
+                </td>
+                <td></td>
+                <td className="txt-bold">
+                  {selectRow?.total_price - +selectRow?.payment[0]?.amount > 0
+                    ? Number(selectRow?.total_price - +selectRow?.payment[0]?.amount).toFixed(
+                        locationSettings?.location_decimal_places || 4
+                      )
+                    : 0}
                 </td>
               </tr>
             </thead>
           </table>
+          {/*  */}
           <p className="recipt-footer">
-            {invoicDetails.footer}
-            {invoicDetails.isMultiLang && invoicDetails.footer2}
+            {invoiceDetails?.en?.footer}
+            <br />
+            {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.footer}
           </p>
           <p className="recipt-footer">{selectRow.notes}</p>
           <br />
@@ -261,19 +444,31 @@ export default function SalesList(props: any) {
       return (
         <div className="bill2">
           <div className="brand-logo">
-            <img src={invoicDetails.logo} />
+            <img src={invoiceDetails?.en?.logo} />
             <div className="invoice-print">
               INVOICE
               <div>
                 <table className="GeneratedTable">
                   <tbody>
                     <tr>
-                      <td className="td_bg">INVOICE NUMBER </td>
-                      <td>{selectRow.id}</td>
+                      <td className="td_bg">
+                        {invoiceDetails?.en?.orderNo}
+                        <br />
+                        {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.orderNo}
+                      </td>
+                      <td>{selectRow?.id}</td>
                     </tr>
                     <tr>
-                      <td className="td_bg">INVOICE DATE </td>
-                      <td>{new Date().toISOString().slice(0, 10)}</td>
+                      <td className="td_bg">
+                        {invoiceDetails?.en?.txtDate}
+                        <br />
+                        {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtDate}
+                      </td>
+                      <td>
+                        {selectRow?.created_at
+                          ? new Date(selectRow?.created_at).toISOString().slice(0, 10)
+                          : ''}
+                      </td>
                     </tr>
                   </tbody>
                 </table>
@@ -285,15 +480,21 @@ export default function SalesList(props: any) {
           <div className="up_of_table flex justify-between">
             <div className="left_up_of_table">
               <div>Billed From</div>
-              <div>Global Tech Projects</div>
-              <div>info@poslix.com</div>
-              <div>+986 2428 8077</div>
-              <div>Office 21-22, Building 532, Mazoon St. Muscat, Oman</div>
-              <div>VAT Number: OM1100270001</div>
+              <div>{invoiceDetails?.en?.name}</div>
+              <div>{invoiceDetails?.en?.email}</div>
+              <div>{invoiceDetails?.en?.tell}</div>
+              <div>{invoiceDetails?.en?.address}</div>
+              <div>VAT Number: {invoiceDetails?.en?.vatNumber}</div>
             </div>
             <div className="right_up_of_table">
               <div>Billed To</div>
-              <div>{selectRow.customer_name}</div>
+              <div>
+                {invoiceDetails?.en?.txtCustomer}{' '}
+                {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtCustomer}
+              </div>
+              <div>
+                {selectRow?.customer?.first_name} {selectRow?.customer?.last_name}
+              </div>
             </div>
           </div>
           <br />
@@ -301,62 +502,110 @@ export default function SalesList(props: any) {
           <table className="GeneratedTable2">
             <thead>
               <tr>
-                <th>Description</th>
+                <th>
+                  {invoiceDetails?.en?.txtItem} <br />
+                  {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtItem}
+                </th>
                 <th>
                   {' '}
-                  {invoicDetails.txtQty}
+                  {invoiceDetails?.en?.txtQty}
                   <br />
-                  {invoicDetails.isMultiLang && invoicDetails.txtQty2}
+                  {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtQty}
                 </th>
                 <th>Unit Price</th>
-
-                <th>Tax</th>
+                <th>
+                  {invoiceDetails?.en?.txtTax}
+                  <br />
+                  {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtTax}
+                </th>
                 <th>
                   {' '}
-                  {invoicDetails.txtAmount}
+                  {invoiceDetails?.en?.txtAmount}
                   <br />
-                  {invoicDetails.isMultiLang && invoicDetails.txtAmount2}
+                  {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtAmount}
                 </th>
               </tr>
             </thead>
-            {lines &&
+            {lines.length > 0 &&
               lines.map((line: any, index: number) => {
                 return (
                   <tr key={index}>
-                    <td>{line.name}</td>
-                    <td>{Number(line.qty)}</td>
-                    <td>{line.price}</td>
-                    <td></td>
-                    <td>{line.price * Number(line.qty)}</td>
+                    <td>
+                      {selectedQuotationProducts.filter((ele) => ele.id == line.product_id)[0].name}
+                    </td>
+                    <td>{Number(line?.qty).toFixed(0)}</td>
+                    <td>
+                      {Number(
+                        selectedQuotationProducts.filter((ele) => ele.id == line.product_id)[0]
+                          .sell_price
+                      ).toFixed(locationSettings?.location_decimal_places || 4)}
+                    </td>
+                    <td>
+                      {Number(
+                        (tax / 100) *
+                          +selectedQuotationProducts.filter((ele) => ele.id == line.product_id)[0]
+                            .sell_price
+                      ).toFixed(locationSettings?.location_decimal_places)}
+                    </td>
+
+                    <td>
+                      {Number(
+                        +line?.qty *
+                          +selectedQuotationProducts.filter((ele) => ele.id == line.product_id)[0]
+                            .sell_price *
+                          (selectRow.tax_amount / 100) +
+                          +line?.qty *
+                            +selectedQuotationProducts.filter((ele) => ele.id == line.product_id)[0]
+                              .sell_price
+                      ).toFixed(locationSettings?.location_decimal_places)}
+                    </td>
                   </tr>
                 );
               })}
 
             <tbody>
               <tr>
-                {/* <td>{invoicDetails.txtTax} {invoicDetails.isMultiLang && invoicDetails.txtTax2}</td> */}
                 <td colSpan={4} className="txt_bold_invoice">
-                  Sub Total
+                  {invoiceDetails?.en?.txtTotal}{' '}
+                  {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtTotal}
                 </td>
-                <td></td>
+                <td className="txt_bold_invoice">
+                  {Number(selectRow.total_price).toFixed(
+                    locationSettings?.location_decimal_places || 4
+                  )}
+                </td>
               </tr>
               <tr>
                 <td colSpan={4} className="txt_bold_invoice">
-                  {invoicDetails.txtTotal} {invoicDetails.isMultiLang && invoicDetails.txtTotal2}
+                  Total Paid
                 </td>
                 <td className="txt_bold_invoice">
-                  {Number(selectRow.total_price).toFixed(locationSettings?.location_decimal_places)}
+                  {Number(selectRow?.payment[0]?.amount).toFixed(
+                    locationSettings?.location_decimal_places || 4
+                  )}
+                </td>
+              </tr>
+              <tr>
+                <td colSpan={4} className="txt_bold_invoice">
+                  Total Due
+                </td>
+                <td className="txt_bold_invoice">
+                  {selectRow?.total_price - +selectRow?.payment[0]?.amount > 0
+                    ? Number(selectRow?.total_price - +selectRow?.payment[0]?.amount).toFixed(
+                        locationSettings?.location_decimal_places || 4
+                      )
+                    : 0}
                 </td>
               </tr>
             </tbody>
           </table>
+
           <p className="recipt-footer">
-            {invoicDetails.footer}
+            {invoiceDetails?.en?.footer}
             <br />
-            {invoicDetails.footersecond}
-            {invoicDetails.isMultiLang && invoicDetails.footer2}
+            {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.footer}
           </p>
-          <p className="recipt-footer">{selectRow.notes}</p>
+          {/* <p className="recipt-footer">{selectRow.notes}</p> */}
           <br />
         </div>
       );
@@ -365,29 +614,20 @@ export default function SalesList(props: any) {
 
   // init sales data
   async function initDataPage() {
-    const res = await findAllData(`quotations-list?location_id=${shopId}`);
-    const customers_names = await findAllData(`customers/${shopId}`);
-    setCustomersNames(customers_names.data.result);
-    console.log(customers_names.data.result, 'customers_names');
-    if (res.data.success) {
+    setIsloading(true);
+    try {
+      const res = await findAllData(`quotations-list?location_id=${shopId}`);
+      const customers_names = await findAllData(`customers/${shopId}`);
+      setCustomersNames(customers_names.data.result);
       setsales(res.data.result.quotationsList);
-      // if (res.data.result.invoiceDetails != null && res.data.result.invoiceDetails.length > 10)
-      //   setInvoicDetails(JSON.parse(res.data.result.invoiceDetails));
-    }
-  }
 
-  async function getItems(id: number) {
-    setIsLoadItems(true);
-    const { success, newdata } = await apiFetchCtr({
-      fetch: 'transactions',
-      subType: 'getSaleItems',
-      shopId,
-      id,
-    });
-    if (success) {
-      setLines(newdata);
-      setIsLoadItems(false);
+      //       if (res.data.result.invoiceDetails != null && res.data.result.invoiceDetails.length > 10){
+      //         setInvoiceDetails(JSON.parse(res.data.result.invoiceDetails));
+      // }
+    } catch (e) {
+      Toastify('error', 'Something went wrong');
     }
+    setIsloading(false);
   }
 
   const [permissions, setPermissions] = useState<any>();
@@ -418,7 +658,7 @@ export default function SalesList(props: any) {
       setLocationSettings(
         _locs[
           _locs.findIndex((loc: any) => {
-            return loc.value == shopId;
+            return loc.location_id == shopId;
           })
         ]
       );
@@ -429,7 +669,6 @@ export default function SalesList(props: any) {
   const handleDeleteFuc = (result: boolean, msg: string, section: string) => {
     if (result) {
       const _data = [...sales];
-      console.log(selectId);
       const idx = _data.findIndex((itm: any) => itm.id == selectId);
 
       if (idx != -1) {
@@ -456,12 +695,6 @@ export default function SalesList(props: any) {
   const handlePrint2 = useReactToPrint({
     content: () => componentRef2.current,
   });
-  const onRowsSelectionHandler = (selectedRowsData: any) => {
-    setSelectRow(selectedRowsData);
-    setSelectId(selectedRowsData.id);
-    getItems(selectedRowsData.id);
-    setShowViewPopUp(true);
-  };
   const handleSearch = (e: any) => {
     setHandleSearchTxt(e.target.value);
   };
@@ -496,8 +729,10 @@ export default function SalesList(props: any) {
             <FontAwesomeIcon icon={faPlus} /> Add Quotation{' '}
           </button>
         </div>
+
         <h5>Quotations List</h5>
         <DataGrid
+          loading={isloading}
           className="datagrid-style"
           sx={{
             '.MuiDataGrid-columnSeparator': {
@@ -517,92 +752,77 @@ export default function SalesList(props: any) {
           components={{ Toolbar: CustomToolbar }}
         />
       </div>
-      {/* FOR VIEW ELEMENT */}
+      {/*  */}
+
       <Dialog open={showViewPopUp} fullWidth={true} className="poslix-modal" onClose={handleClose}>
-        <DialogTitle className="poslix-modal text-primary">
-          {edit ? 'Edit Sale' : 'Sale Details'}
-        </DialogTitle>
+        <DialogTitle className="poslix-modal text-primary">Quotaion Details</DialogTitle>
         <DialogContent className="poslix-modal-content">
           <div className="poslix-modal">
             <div className="top-section-details">
-              <img src={invoicDetails.logo} style={{ width: '80px', marginBottom: '10px' }} />
+              <img src={invoiceDetails?.en?.logo} style={{ width: '80px', marginBottom: '10px' }} />
               <div className="item-sections">
                 <div className="top-detials-invoice">
                   <div className="top-detials-item">
-                    <p>Invoice No :</p>
+                    <p>Quotaion No :</p>
                     <p>{selectRow.id}</p>
                   </div>
                   <div className="top-detials-item pe-2">
-                    <p>Invoice Date :</p>
+                    <p>Quotaion Date :</p>
                     {edit ? (
-                      <input type="text" className="form-control" value={selectRow.sale_date} />
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={
+                          selectRow?.created_at && new Date(selectRow?.created_at).toLocaleString()
+                        }
+                      />
                     ) : (
-                      <p>{selectRow.sale_date}</p>
+                      <p>
+                        {selectRow?.created_at && new Date(selectRow?.created_at).toLocaleString()}
+                      </p>
                     )}
                   </div>
                   <div className="top-detials-item pe-2">
                     <p>Added By :</p>
-                    {edit ? (
-                      <input type="text" className="form-control" value={selectRow.added_by} />
-                    ) : (
-                      <p>{selectRow.added_by}</p>
-                    )}
+
+                    <p>{selectRow?.employee?.first_name}</p>
                   </div>
                 </div>
                 <div className="top-detials-invoice">
                   <div className="top-detials-item">
                     <p>Final Total :</p>
-                    {edit ? (
-                      <input type="text" className="form-control" value={selectRow.total_price} />
-                    ) : (
-                      <p>{selectRow.total_price}</p>
-                    )}
+                    <p>
+                      {Number(selectRow.total_price).toFixed(
+                        locationSettings?.location_decimal_places
+                      )}
+                    </p>
                   </div>
                   <div className="top-detials-item">
                     <p>Customer Name :</p>
-                    {edit ? (
-                      <input type="text" className="form-control" value={selectRow.customer_name} />
-                    ) : (
-                      <p>{selectRow.customer_name}</p>
-                    )}
-                  </div>
-                  <div className="top-detials-item" style={{ fontSize: '13px' }}>
-                    <p>Order Note</p>
-                    {edit ? (
-                      <input type="text" className="form-control" value={selectRow.notes} />
-                    ) : (
-                      <p>{selectRow.notes}</p>
-                    )}
-                  </div>
-                  <div className="top-detials-item" style={{ fontSize: '13px' }}>
-                    <p>Status</p>
-                    {edit ? (
-                      <input type="text" className="form-control" value={selectRow.status} />
-                    ) : (
-                      <p>{selectRow.status}</p>
-                    )}
+                    <p>
+                      {selectRow?.customer?.first_name} {selectRow?.customer?.last_name}
+                    </p>
                   </div>
                 </div>
               </div>
-              {!edit && (
-                <div>
-                  <Button
-                    className="mr-right"
-                    onClick={() => {
-                      handlePrint();
-                    }}>
-                    Print Recipt
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      handlePrint2();
-                    }}>
-                    Print Invoice
-                  </Button>
-                </div>
-              )}
+
+              <div>
+                <Button
+                  className="mr-right"
+                  onClick={() => {
+                    handlePrint();
+                  }}>
+                  Print Recipt
+                </Button>
+                <Button
+                  onClick={() => {
+                    handlePrint2();
+                  }}>
+                  Print Invoice
+                </Button>
+              </div>
             </div>
-            {lines && !isLoadItems ? (
+            {lines.length > 0 ? (
               <div className="row">
                 <div className="invoice-items-container">
                   <div className="header-titles">
@@ -611,43 +831,167 @@ export default function SalesList(props: any) {
                     <div>Amount</div>
                     {edit && <div></div>}
                   </div>
-                  {lines.map((line: any, index: number) => {
+                  {lines?.map((line: any, index: number) => {
                     return (
                       <div className="header-items under_items" key={index}>
-                        <div>{line.name}</div>
                         <div>
-                          {edit ? (
-                            <input type="text" className="form-control" value={Number(line.qty)} />
-                          ) : (
-                            Number(line.qty)
-                          )}
+                          {
+                            selectedQuotationProducts.filter((ele) => ele.id == line.product_id)[0]
+                              .name
+                          }
                         </div>
-                        <div>{line.price}</div>
-                        {edit && (
-                          <div>
-                            <b>x</b>
-                          </div>
-                        )}
+                        <div>{Number(+line?.qty).toFixed(0)}</div>
+                        <div>
+                          {Number(
+                            +line?.qty *
+                              +selectedQuotationProducts.filter(
+                                (ele) => ele.id == line.product_id
+                              )[0].sell_price *
+                              (selectRow.tax_amount / 100) +
+                              +line?.qty *
+                                +selectedQuotationProducts.filter(
+                                  (ele) => ele.id == line.product_id
+                                )[0].sell_price
+                          ).toFixed(locationSettings?.location_decimal_places)}
+                        </div>
                       </div>
                     );
                   })}
                   <div className="header-titles under_items" style={{ marginTop: '20px' }}>
-                    <div></div>
                     <div>Total</div>
                     <div>
-                      {edit ? (
-                        <input type="text" className="form-control" value={selectRow.total_price} />
-                      ) : (
-                        selectRow.total_price
-                      )}
+                      {(+selectRow.total_price).toFixed(locationSettings?.location_decimal_places)}
                     </div>
                   </div>
                 </div>
               </div>
             ) : (
-              <div>laoding...</div>
+              <div>loading...</div>
             )}
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/*  */}
+
+      {/* FOR VIEW ELEMENT */}
+      {/* <Dialog open={showViewPopUp} fullWidth={true} maxWidth={'md'} onClose={handleClose}>
+        
+        <DialogContent className="poslix-modal-content">
+          <Box
+            component={'div'}
+            sx={{
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}>
+            <Box
+              component={'div'}
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                width: '50%',
+                gap: '10px',
+                padding: '20px',
+              }}>
+              <Typography
+                variant="h4"
+                sx={{
+                  borderBottom: '1px solid gray',
+                }}>
+                Quotaion Details
+              </Typography>
+              <Box
+                component={'div'}
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}>
+                <Typography variant="h5">Qutation ID:</Typography>
+                <Typography>{showingQuotation.transferID}</Typography>
+              </Box>
+              <Box
+                component={'div'}
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}>
+                <Typography variant="h5">Status:</Typography>
+                <Typography>{showingQuotation.status}</Typography>
+              </Box>
+              <Box
+                component={'div'}
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}>
+                <Typography variant="h5">Total Price:</Typography>
+                <Typography>{showingQuotation.total}</Typography>
+              </Box>
+            </Box>
+            <Box
+              component={'div'}
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                borderLeft: '1px solid gray',
+                width: '50%',
+                padding: '20px',
+                gap: '10px',
+              }}>
+              <Typography
+                variant="h5"
+                sx={{
+                  borderBottom: '1px solid gray',
+                }}>
+                Products:
+              </Typography>
+              {showingQuotation.products.map((ele, index) => (
+                <Box
+                  key={index}
+                  component={'div'}
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}>
+                  <Typography variant="h6">{ele.name}</Typography>
+                  <Typography>{ele.qty} Qty</Typography>
+                </Box>
+              ))}
+              <Box
+                component={'div'}
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}>
+                <Typography variant="h5">Created By:</Typography>
+                <Typography>{showingQuotation.createdBy}</Typography>
+              </Box>
+              <Box
+                component={'div'}
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}>
+                <Typography variant="h5">Created At:</Typography>
+                <Typography>{showingQuotation.ceartedAt}</Typography>
+              </Box>
+            </Box>
+          </Box>
+         
         </DialogContent>
         <DialogActions>
           {edit && (
@@ -659,6 +1003,23 @@ export default function SalesList(props: any) {
               Save
             </Button>
           )}
+          {!edit && (
+            <div className='mx-3'>
+              <Button
+                className="mr-right"
+                onClick={() => {
+                  handlePrint();
+                }}>
+                Print Recipt
+              </Button>
+              <Button
+                onClick={() => {
+                  handlePrint2();
+                }}>
+                Print Invoice
+              </Button>
+            </div>
+          )}
           <Button
             onClick={() => {
               setEdit(false);
@@ -667,7 +1028,7 @@ export default function SalesList(props: any) {
             Cancel
           </Button>
         </DialogActions>
-      </Dialog>
+      </Dialog> */}
     </AdminLayout>
   );
 }

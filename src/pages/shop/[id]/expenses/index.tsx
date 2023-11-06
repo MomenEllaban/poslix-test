@@ -193,6 +193,7 @@ useEffect(()=>{
                 )}
                 {!isAddExpense ? (
                   <DataGrid
+                  loading={isLoading}
                     className="datagrid-style"
                     sx={{
                       '.MuiDataGrid-columnSeparator': {

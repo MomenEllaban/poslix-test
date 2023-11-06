@@ -15,7 +15,31 @@ import { Toastify } from 'src/libs/allToasts';
 import { generateUniqueString } from 'src/libs/toolsUtils';
 import { createNewData, findAllData } from 'src/services/crud.api';
 import withAuth from 'src/HOCs/withAuth';
+// 
+function findFalsyKeys(obj):any {
+  console.log(obj);
+  
+  const falsyKeys = [];
 
+  function exploreObject(obj, currentPath = '') {
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        const value = obj[key];
+        const path = currentPath ? `${currentPath}.${key}` : key;
+
+        if (typeof value === 'object'  ) {
+          exploreObject(value, path);
+        } else if (!value &&key!=='is_multi_language') {
+          falsyKeys.push(path);
+        }
+      }
+    }
+  }
+
+  exploreObject(obj);
+  return falsyKeys;
+}
+// 
 const Appearance: NextPage = (props: any) => {
   const { shopId, id } = props;
   const router = useRouter();
@@ -25,9 +49,16 @@ const Appearance: NextPage = (props: any) => {
   const [isOpenPriceDialog, setIsOpenPriceDialog] = useState(false);
   const [img, setImg] = useState<any>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
+  // const [digitalMenuFormValues, setDigitalMenuFormValues] = useState<any>({
+  //   whatapp:'',
+  //   instagram:'',
+  //   website:''
+  // });
 
   async function initDataPage() {
     const res = await findAllData(`appearance/${router.query.id}`);
+    console.log(localStorage.getItem('lang'));
+
     if (!res.data.success) {
       Toastify('error', 'Somthing wrong!!, try agian');
       return;
@@ -43,12 +74,17 @@ const Appearance: NextPage = (props: any) => {
     setIsLoading(false);
   }
   async function editInvoice(url = '0') {
+   if(!formObj.en.logo) delete formObj.en.logo
+   if(!formObj.ar.logo) delete formObj.ar.logo
+   formObj.location_id= router.query.id
+ 
+   if( findFalsyKeys(formObj)?.length>0){
+    Toastify('error',`${findFalsyKeys(formObj)?.join(', ').replace(/en\.|ar\./g, "")} required`);
+    return
+   }
     if (isLoading) return;
     setIsLoading(true);
-    const res = await createNewData(`appearance`, {
-      ...formObj,
-      location_id: router.query.id,
-    });
+    const res = await createNewData(`appearance`,formObj);
     if (res.data.success) {
       Toastify('success', 'successfully updated');
       setPreviewUrl('');
@@ -114,6 +150,7 @@ const Appearance: NextPage = (props: any) => {
       );
     }
   }
+
   return (
     <>
       <AdminLayout shopId={id}>
@@ -1415,6 +1452,393 @@ const Appearance: NextPage = (props: any) => {
                   </div>
                 </div>
               </Tab>
+              {/*  */}
+              <Tab eventKey="Digital Menu" title="Digital Menu">
+                <div className="row">
+                  <div className="col-md-12">
+                    <Card>
+                      <Card.Header className="p-3 bg-white">
+                        <h5>Digital</h5>
+                        <div className="appear-toolbar">
+                          <div className="toolitem"></div>
+                          <div className="toolitem"></div>
+                          <div className="toolitem"></div>
+                        </div>
+                      </Card.Header>
+                      <Card.Body>
+                        {isLoading ? (
+                          'loading...'
+                        ) : (
+                          <div className="appear-body">
+                            <div className="appear-body-item">
+                              {previewUrl.length == 0 ? (
+                                <div>
+                                  <label>
+                                    Your Logo: <span className="text-danger">*</span>
+                                  </label>
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    className="form-control"
+                                    id="product-image"
+                                    name="product-image"
+                                    onChange={imageChange}
+                                  />
+                                </div>
+                              ) : (
+                                <div className="invoice-accept-btns">
+                                  <button
+                                    type="button"
+                                    className="btn btn-danger p-2"
+                                    onClick={() => setPreviewUrl('')}
+                                    style={{ width: '100%', maxWidth: '100%' }}>
+                                    <FontAwesomeIcon icon={faCancel} /> Cancel
+                                  </button>
+                                </div>
+                              )}
+                              <div className="form-group2">
+                                <label>
+                                  Whatsapp: <span className="text-danger">*</span>
+                                </label>
+                                <input
+                                  type="text"
+                                  className="form-control"
+
+                                  value={formObj?.en?.whatsapp}
+
+                                  onChange={(e) => {
+                                    setFormObj({
+                                      ...formObj,
+                                      en: { ...formObj?.en, whatsapp: e.target.value },
+                                      whatsapp: e.target.value,
+
+                                    });
+                                  }}
+                                />
+                              </div>
+
+                              <div className="form-group2">
+                                <label>
+                                  Instagram: <span className="text-danger">*</span>
+                                </label>
+                                <input
+                                  type="text"
+                                  className="form-control"
+
+                                  value={formObj?.en?.instagram}
+
+                                  onChange={(e) => {
+                                    setFormObj({
+                                      ...formObj,
+
+                                      en: { ...formObj?.en, instagram: e.target.value },
+                                      instagram: e.target.value,
+
+
+                                    });
+
+                                  }}
+                                />
+                              </div>
+
+                              <div className="form-group2">
+                                <label>
+                                  Website: <span className="text-danger">*</span>
+                                </label>
+                                <input
+                                  type="text"
+                                  className="form-control"
+                                  value={formObj?.en?.website}
+                                  onChange={(e) => {
+                                    setFormObj({
+                                      ...formObj,
+
+                                      en: { ...formObj?.en, website: e.target.value },
+                                      website: e.target.value,
+
+                                    });
+                                  }}
+                                />
+                              </div>
+
+
+
+
+                              <div className="invoice-settings-body">
+                                {/* <div className="invoice-settings-item">
+                                  <div>Enable Multi Language</div>
+                                  <div>
+                                    <Form.Check
+                                      type="switch"
+                                      className="custom-switch"
+                                      checked={formObj.is_multi_language}
+                                      onChange={(e) => {
+                                        setFormObj({
+                                          ...formObj,
+                                          is_multi_language: !formObj.is_multi_language,
+                                        });
+                                      }}
+                                    />
+                                  </div>
+                                </div> */}
+                              </div>
+                              {/* {formObj.is_multi_language && (
+                                <>
+                                  <div className="form-group2">
+                                    <label>
+                                      Customer: <span className="text-danger">*</span>
+                                    </label>
+                                    <input
+                                      type="text"
+                                      className="form-control"
+                                      value={formObj?.ar?.txtCustomer}
+                                      onChange={(e) => {
+                                        setFormObj({
+                                          ...formObj,
+                                          ar: {
+                                            ...formObj.ar,
+                                            txtCustomer: e.target.value,
+                                          },
+                                        });
+                                      }}
+                                    />
+                                  </div>
+                                  <div className="form-group2">
+                                    <label>
+                                      Order No: <span className="text-danger">*</span>
+                                    </label>
+                                    <input
+                                      type="text"
+                                      className="form-control"
+                                      placeholder=""
+                                      value={formObj?.ar?.orderNo}
+                                      onChange={(e) => {
+                                        setFormObj({
+                                          ...formObj,
+                                          ar: {
+                                            ...formObj.ar,
+                                            orderNo: e.target.value,
+                                          },
+                                        });
+                                      }}
+                                    />
+                                  </div>
+                                  <div className="form-group2">
+                                    <label>
+                                      Order Date: <span className="text-danger">*</span>
+                                    </label>
+                                    <input
+                                      type="text"
+                                      className="form-control"
+                                      placeholder=""
+                                      value={formObj?.ar?.txtDate}
+                                      onChange={(e) => {
+                                        setFormObj({
+                                          ...formObj,
+                                          ar: {
+                                            ...formObj.ar,
+                                            txtDate: e.target.value,
+                                          },
+                                        });
+                                      }}
+                                    />
+                                  </div>
+                                  <div className="form-group2">
+                                    <label>
+                                      Qty: <span className="text-danger">*</span>
+                                    </label>
+                                    <input
+                                      type="text"
+                                      className="form-control"
+                                      value={formObj?.ar?.txtQty}
+                                      onChange={(e) => {
+                                        setFormObj({
+                                          ...formObj,
+                                          ar: {
+                                            ...formObj.ar,
+                                            txtQty: e.target.value,
+                                          },
+                                        });
+                                      }}
+                                    />
+                                  </div>
+                                  <div className="form-group2">
+                                    <label>
+                                      Item: <span className="text-danger">*</span>
+                                    </label>
+                                    <input
+                                      type="text"
+                                      className="form-control"
+                                      value={formObj?.ar?.txtItem}
+                                      onChange={(e) => {
+                                        setFormObj({
+                                          ...formObj,
+                                          ar: {
+                                            ...formObj.ar,
+                                            txtItem: e.target.value,
+                                          },
+                                        });
+                                      }}
+                                    />
+                                  </div>
+                                  <div className="form-group2">
+                                    <label>
+                                      Amount: <span className="text-danger">*</span>
+                                    </label>
+                                    <input
+                                      type="text"
+                                      className="form-control"
+                                      value={formObj?.ar?.txtAmount}
+                                      onChange={(e) => {
+                                        setFormObj({
+                                          ...formObj,
+                                          ar: {
+                                            ...formObj.ar,
+                                            txtAmount: e.target.value,
+                                          },
+                                        });
+                                      }}
+                                    />
+                                  </div>
+                                  <div className="form-group2">
+                                    <label>
+                                      Tax: <span className="text-danger">*</span>
+                                    </label>
+                                    <input
+                                      type="text"
+                                      className="form-control"
+                                      value={formObj.ar?.txtTax}
+                                      onChange={(e) => {
+                                        setFormObj({
+                                          ...formObj,
+                                          ar: {
+                                            ...formObj.ar,
+                                            txtTax: e.target.value,
+                                          },
+                                        });
+                                      }}
+                                    />
+                                  </div>
+                                  <div className="form-group2">
+                                    <label>
+                                      Total: <span className="text-danger">*</span>
+                                    </label>
+                                    <input
+                                      type="text"
+                                      className="form-control"
+                                      value={formObj?.ar.txtTotal}
+                                      onChange={(e) => {
+                                        setFormObj({
+                                          ...formObj,
+                                          ar: {
+                                            ...formObj.ar,
+                                            txtTotal: e.target.value,
+                                          },
+                                        });
+                                      }}
+                                    />
+                                  </div>
+                                  <div className="form-group2">
+                                    <label>
+                                      Footer: <span className="text-danger">*</span>
+                                    </label>
+                                    <input
+                                      type="text"
+                                      className="form-control"
+                                      value={formObj?.ar?.footer}
+                                      onChange={(e) => {
+                                        setFormObj({
+                                          ...formObj,
+                                          ar: {
+                                            ...formObj.ar,
+                                            footer: e.target.value,
+                                          },
+                                        });
+                                      }}
+                                    />
+                                  </div>
+                                </>
+                              )} */}
+                              <button
+                                type="button"
+                                className="btn btn-primary p-2"
+                                onClick={() => handleSave()}
+                                style={{
+                                  width: '100%',
+                                  maxWidth: '100%',
+                                  marginTop: '10px',
+                                }}>
+                                Save
+                              </button>
+                            </div>
+                            <div className="appear-body-item">
+                              <div className="preview-invoice-box">
+                                {previewUrl.length > 0 ? (
+                                  <img src={previewUrl} />
+                                ) : (
+                                  <img src={formObj.en.logo} />
+                                )}
+                                <div className="top-content">
+                                </div>
+
+                                <div
+                                  className="order-details-top"
+                                  style={{
+                                    marginTop: '5px',
+                                    borderBottom: '1px solid #eaeaea',
+                                  }}>
+                                  <div className="order-details-top-item">
+                                    <div>Whatsapp</div>
+                                    <div></div>
+                                    <div>{formObj.en.whatsapp}</div>
+                                  </div>
+                                </div>
+                                <div
+                                  className="order-details-top"
+                                  style={{
+                                    marginTop: '5px',
+                                    borderBottom: '1px solid #696969',
+                                  }}>
+                                  <div className="order-details-top-item">
+                                    <div>Instagram</div>
+                                    <div></div>
+                                    <div>{formObj.en.instagram}</div>
+                                  </div>
+                                </div>
+                                <div
+                                  className="order-details-top"
+                                  style={{
+                                    marginTop: '5px',
+                                    borderBottom: '1px solid #696969',
+                                  }}>
+                                  <div className="order-details-top-item">
+                                    <div>Website</div>
+                                    <div></div>
+                                    <div>{formObj.en.website}</div>
+                                  </div>
+                                </div>
+                                <div
+                                  className="top-content"
+                                  style={{
+                                    marginTop: '20px',
+                                    marginBottom: '20px',
+                                  }}>
+                                  <h6 className="text-primary">
+                                    {formObj.en.footer}
+                                    <br />
+                                    {formObj.is_multi_language && formObj.ar.footer}
+                                  </h6>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </Card.Body>
+                    </Card>
+                  </div>
+                </div>
+              </Tab>
+              {/*  */}
             </Tabs>
           </>
         ) : (

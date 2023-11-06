@@ -119,7 +119,7 @@ const Product: NextPage = (props: any) => {
           loader={myLoader}
           width={50}
           height={50}
-          src={row.image && row.image.length > 1 ? row.image : '/images/pos/placeholder.png'}
+          src={row.image && (row.image.length > 1) && (row.image !== 'url') ? row.image : '/images/pos/placeholder.png'}
         />
       ),
     },
@@ -227,6 +227,7 @@ const Product: NextPage = (props: any) => {
   };
   const importFileHandler = async (e: ChangeEvent<HTMLInputElement>) => {
     const formData = new FormData();
+    console.log(e.target.files[0]);
     formData.append('file', e.target.files[0]);
     const res = await createNewData(`products/${router.query.id}/import`, formData);
     if (res.data.success) initDataPage();
@@ -462,11 +463,12 @@ const Product: NextPage = (props: any) => {
         </div>
       )}
 
-      {!isLoading ? (
+  
         <>
           <div className="page-content-style card">
             <h5>Product List</h5>
             <DataGrid
+            loading={isLoading}
               ref={dataGridRef}
               checkboxSelection
               className="datagrid-style"
@@ -488,11 +490,7 @@ const Product: NextPage = (props: any) => {
             />
           </div>
         </>
-      ) : (
-        <div className="d-flex justify-content-around">
-          <Spinner animation="grow" />
-        </div>
-      )}
+      
     </AdminLayout>
   );
 };

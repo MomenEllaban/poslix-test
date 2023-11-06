@@ -148,6 +148,8 @@ const [sentData, setSentData] = useState<any>()
     api
       .post('/checkout', checkoutData)
       .then((res) => {
+        console.log(res.data.result);
+        
         setPrintReceipt({
           ...res.data.result.data,
           due: res.data.result.sales.due,
@@ -245,15 +247,7 @@ const [sentData, setSentData] = useState<any>()
                     {lang.paymentCheckoutModal.total}:{' '}
                   </span>
                   <span>
-                    {cart?.orderId
-                      ? (
-                        totalNoTax +
-                        totalTax -
-                        totalDiscount -
-                        +cart.lastTotal +
-                        +cart.lastDue
-                      )?.toFixed(locationSettings?.location_decimal_places) ?? ''
-                      : totalAmount}{' '}
+                    {totalAmount.toFixed(locationSettings?.location_decimal_places) ?? ''}{' '}
                   </span>
                   <span>{locationSettings?.currency_code ?? ''}</span>
                 </h6>

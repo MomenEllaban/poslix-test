@@ -34,6 +34,8 @@ const dataBar = {
 };
 
 export default function CustomerProfileView({ customer }: IProps) {
+  console.log(customer);
+  
   return (
     <Container fluid>
       <Row>
@@ -92,6 +94,10 @@ export default function CustomerProfileView({ customer }: IProps) {
                       <Col xs={12}>
                         <h6 className="d-inline-block">shipping_address:</h6>{' '}
                         {customer.shipping_address}
+                      </Col>
+                      <Col xs={12}>
+                        <h6 className="d-inline-block">Group:</h6>{' '}
+                        {customer?.pricing_group?.name}
                       </Col>
                     </Row>
                   </Container>

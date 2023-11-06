@@ -3,8 +3,10 @@ import  CartItem  from "./CartItem"
 
 import { useDispatch,useSelector } from 'react-redux';
 import {addTodigitalCart ,incrementQuantity, decrementQuantity, removeItem} from '../../redux/slices/digitalCartSlice';
-const DigitalCart = ({cartItems,addItemTocart,removeFromCart,setRenderedScreen,totalPrice,location}) => {
+import { useDigitalContext } from "src/modules/digital/_context/DigitalContext";
+const DigitalCart = ({cartItems,addItemTocart,removeFromCart,addByQuantity,setRenderedScreen,totalPrice,location}) => {
     const {digitalCart} = useSelector((state:any) => state.digitalCart)
+    const { lang, setLang } = useDigitalContext();
     // const dispatch = useDispatch()
     // const getTotal = () => {
     //     let totalQuantity = 0
@@ -20,7 +22,7 @@ const DigitalCart = ({cartItems,addItemTocart,removeFromCart,setRenderedScreen,t
     return (
         <div className="digital-cart">
             <div className="digital-cart-items-container">
-                <h4>YOUR ORDER</h4>
+                <h4>{lang.digital.your_orders}</h4>
                 <div className="digital-cart-items-list">
                         {cartItems.length>=1?cartItems.map((item) => (
                         
@@ -34,12 +36,13 @@ const DigitalCart = ({cartItems,addItemTocart,removeFromCart,setRenderedScreen,t
                 price={item.itemTotalPrice} 
                 quantity={item.quantity}
                 addItemTocart={addItemTocart}
+                addByQuantity={addByQuantity}
                 item={item}
                 removeFromCart={removeFromCart}
                 />
 
 
-                 )):<p className="empty text-dark">Cart is empty</p>
+                 )):<p className="empty text-dark">{lang.digital.cart_empty}</p>
                  
                  }
 
@@ -47,8 +50,8 @@ const DigitalCart = ({cartItems,addItemTocart,removeFromCart,setRenderedScreen,t
                 </div>
             </div>
             <div className="digital-cart-checkout">
-                <Button disabled={!cartItems.length} className="checkout_btn" variant="contained" color="error" onClick={()=>setRenderedScreen('checkout')}>Checkout {totalPrice.toFixed(location?.location_decimal_places||2)} {location?.currency_code}</Button>
-                <Button >APPLY COUPON</Button>
+                <Button disabled={!cartItems.length} className="checkout_btn" variant="contained" color="error" onClick={()=>setRenderedScreen('checkout')}>{lang.pos.cartComponent.checkout} {totalPrice.toFixed(location?.location_decimal_places||2)} {location?.currency_code}</Button>
+                <Button >{lang.digital.apply_coupon}</Button>
             </div>
         </div>
     )

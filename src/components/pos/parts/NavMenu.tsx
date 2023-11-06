@@ -69,7 +69,7 @@ const NavMenu: any = ({ shopId }: any) => {
         </div>
 
         <div id="scrollbar">
-          <Link className="nav-link menu-link" href={'/shop/' + shopId + '/products'}>
+          <Link className="nav-link menu-link" href={'/shop/' + shopId }>
             <i className="ri-dashboard-2-line"></i>
             <span data-key="t-dashboards">{lang.pos.navmenu.dashboard}</span>
           </Link>

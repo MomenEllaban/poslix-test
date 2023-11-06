@@ -46,7 +46,7 @@ export default function LocationRow({ location, locations, businessId }) {
               localStorage.setItem('businessId', businessId);
               localStorage.setItem('locations', JSON.stringify(locations));
               localStorage.setItem(ELocalStorageKeys.CUSTOEMR_LOCATIONS, JSON.stringify(locations));
-              router.push(`/shop/${location.location_id}/products`);
+              router.push(`/shop/${location.location_id}`);
             }}>
             <FontAwesomeIcon icon={faFolderOpen} />
           </Button>
