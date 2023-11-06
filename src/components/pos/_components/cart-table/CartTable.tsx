@@ -101,7 +101,7 @@ export default function CartTable({ shopId }) {
                     }}
                     onInput={(e: ChangeEvent<HTMLInputElement>) => {
                       const newQty = +e.target.value === 0 ? 1 : +e.target.value;
-                      if((product.stock < newQty) && (+product.sell_over_stock === 0)){
+                      if((product.stock < newQty) && (+product.sell_over_stock === 0) && (+product.is_service === 0)){
                         Toastify('error', 'Out of stock!')
                         return
                       }
@@ -122,7 +122,7 @@ export default function CartTable({ shopId }) {
                     // className={styles['cart-quantity-btn']}
                     onClick={() => {
                       const newQty = product.quantity + 1
-                      if((product.stock < newQty) && (+product.sell_over_stock === 0)){
+                      if((product.stock < newQty) && (+product.sell_over_stock === 0 ) && (+product.is_service === 0)){
                         Toastify('error', 'Out of stock!')
                         return
                       }

@@ -1,11 +1,4 @@
 import { AdminLayout } from '@layout';
-import {
-  GridColDef,
-  GridToolbarContainer,
-  GridToolbarExport,
-  GridToolbarColumnsButton,
-  GridToolbarFilterButton,
-} from '@mui/x-data-grid';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowDown, faArrowUp } from '@fortawesome/free-solid-svg-icons';
 import moment from 'moment';
@@ -27,7 +20,6 @@ import {
   ChartOptions,
 } from 'chart.js';
 import { useState, useEffect, useRef } from 'react';
-import { apiFetchCtr } from 'src/libs/dbUtils';
 import { Bar } from 'react-chartjs-2';
 import { Toastify } from 'src/libs/allToasts';
 import { ILocationSettings } from '@models/common-model';
@@ -74,24 +66,12 @@ const Home = (props: any) => {
   const { shopId } = props;
   const [period, setPeriod] = useState('weakly');
   const [dashboardData, setDashboardData] = useState<any>();
-  const [facrtors, setFacrtors] = useState([]);
   const [upDown, setUpDown] = useState(false);
-  const [topProdcuts, setTopProdcuts] = useState({ labels: [], values: [] });
-  const [topProdcutsDown, setTopProdcutsDown] = useState({
-    labels: [],
-    values: [],
-  });
   const [isLoading, setIsLoading] = useState(false);
   const [txtP1, setTxtP1] = useState({ name: '', index: 1 });
   const [txtP2, setTxtP2] = useState({ name: '', index: 1 });
   const [txtP3, setTxtP3] = useState({ name: '', index: 1 });
   const [txtP4, setTxtP4] = useState({ name: '', index: 1 });
-  const [profitMonthLabels, setProfitMonthLabels] = useState([]);
-  const [profitMonthValues, setProfitMonthValues] = useState([]);
-  const [box1Price, setBox1Price] = useState([1, 2, 3, 4]);
-  const [box2Price, setBox2Price] = useState([1, 2, 3, 4]);
-  const [box3Price, setBox3Price] = useState([1, 2, 3, 4]);
-  const [box4Price, setBox4Price] = useState([1, 2, 3, 4]);
   const title1 = useRef(null);
   const title2 = useRef(null);
   const title3 = useRef(null);
@@ -464,7 +444,7 @@ setIsLoading(true)
                     <div className="m-fileds" style={{ width: '25%' }}>
                       {/* {_locs.find(l => l.location_id == itm.created_by
                       )?.location_name} */}
-                      {itm.created_by}</div>
+                      {itm.user.last_name !== null ? itm.user.first_name + " " + itm.user.last_name : itm.user.first_name}</div>
                   </div>
                 );
               })}

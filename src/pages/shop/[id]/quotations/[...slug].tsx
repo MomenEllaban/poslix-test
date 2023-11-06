@@ -111,7 +111,7 @@ const AddQuotations: NextPage = (props: any) => {
     { label: string; value: string; priority: number }[]
   >([
     { label: 'Discount :', value: 'discount', priority: 1 },
-    { label: 'Total Expenses :', value: 'expense', priority: 2 },
+    // { label: 'Total Expenses :', value: 'expense', priority: 2 },
     { label: 'Taxes :', value: 'taxes', priority: 3 },
   ]);
   const [currencies, setCurrencies] = useState<
@@ -149,7 +149,7 @@ const AddQuotations: NextPage = (props: any) => {
   const [openRemoveDialog, setOpenRemoveDialog] = useState(false);
   const router = useRouter();
   const shopId = router.query.id as string;
-  const [tax, setTax] = useState<{tax:number, type:string}>({tax: 0, type: ""});
+  const [tax, setTax] = useState<{ tax: number; type: string }>({ tax: 0, type: '' });
   const { taxesList } = useTaxesList(shopId);
   console.log(tax);
 
@@ -343,61 +343,7 @@ const AddQuotations: NextPage = (props: any) => {
               });
             });
             setSelectProducts([..._rows]);
-          } else {
-            //error!
           }
-          // setSelectedExpendsEdit(res.data.result?.selected_expnses);
-          // let _sumTotalExp = 0;
-          //   res.data.result?.selected_expnses?.map(
-          //     (mp: any) => (_sumTotalExp += parseFloat((mp.enterd_value * mp.currency_rate).toString()))
-          //   );
-          //   const itm = res.data.result.purchase[0];
-          //   let paymentType = '',
-          //     amount = 0,
-          //     pay_id = 0;
-          //   if (res.data.result.selected_payment.length > 0) {
-          //     paymentType = res.data.result.selected_payment[0].payment_type;
-          //     amount = res.data.result.selected_payment[0].amount;
-          //     pay_id = res.data.result.selected_payment[0].id;
-          //   }
-          //   let _taxes = JSON.parse(itm.taxes);
-          //   setSelectedTaxes(_taxes);
-          //   // itm.currency_id
-          //   const pidex = res.data.result.currencies.findIndex((ps: any) => ps.value == itm.currency_id);
-          //   console.log('currcny ', pidex);
-
-          //   let crate = 0,
-          //     cCode = '';
-          //   if (pidex > -1) {
-          //     crate = res.data.result.currencies[pidex].exchange_rate;
-          //     cCode = res.data.result.currencies[pidex].code;
-          //   }
-
-          //   setFormObj({
-          //     ...formObj,
-          //     id: Number(id),
-          //     customer_id: itm.contact_id,
-          //     currency_id: itm.currency_id,
-          //     currency_rate: crate,
-          //     currency_symbol: '',
-          //     currency_code: cCode,
-          //     total_price: itm.total_price,
-          //     ref_no: itm.invoice_no,
-          //     date: new Date(),
-          //     taxs: 0,
-          //     subTotal_price: 0,
-          //     total_tax: itm.total_taxes,
-          //     total_expense: _sumTotalExp,
-          //     discount_type: 'fixed',
-          //     discount_amount: 0,
-          //     purchaseStatus: itm.status,
-          //     paymentStatus: itm.payment_status,
-          //     paid_amount: Number(amount),
-          //     total_discount: 0,
-          //     paymentType: paymentType,
-          //     paymentDate: new Date(),
-          //     payment_id: pay_id,
-          //   });
         }
         setLoading(false);
       } else {
@@ -428,15 +374,27 @@ const AddQuotations: NextPage = (props: any) => {
 
   async function insertPurchase() {
     const quotationData = {
-      customer_id: formObj.customer_id,
+      location_id: +router.query.id,
       status: formObj.status,
-      paymentStatus: formObj.paymentStatus,
-      paymentDate: formObj.paymentDate,
-      paymentType: formObj.paymentType,
-      location_id: router.query.id,
+      customer_id: formObj.customer_id,
+      discount_type: formObj.discount_type,
+      discount_amount: formObj.discount_amount,
+      notes:"",
       cart: selectProducts.map((prod) => {
-        return { product_id: prod.id, qty: prod.quantity, note: "" };
+        if(prod.variation_id !== 0){
+          return {product_id: prod.product_id, variation_id: prod.id, qty: prod.quantity, note: '' };
+        }
+        return { product_id: prod.id, qty: prod.quantity, note: '' };
       }),
+      tax_type: tax.type,
+      tax_amount: tax.tax,
+      payment:[
+        {
+          payment_id: formObj.paymentType,
+          amount: formObj.paid_amount,
+          note: ""
+        }
+      ]
     };
     const res = await createNewData('quotations-list', quotationData);
     if (!res.data.success) {
@@ -640,27 +598,6 @@ const AddQuotations: NextPage = (props: any) => {
     setFormObj({ ...formObj, total_tax: +_tx.toFixed(locationSettings?.location_decimal_places) });
     calculationLabels(formObj.total_expense, _tx);
   }, [selectedTaxes]);
-  const deleteRowTaxes = (index: any) => {
-    const _rows = [...selectedTaxes];
-    _rows.splice(index, 1);
-    setSelectedTaxes(_rows);
-  };
-  const handlerRowTaxes = (index: any, evnt: any) => {
-    const _rows: IPurchaseExpndes[] | any = [...selectedTaxes];
-    if ('label' in evnt) {
-      _rows[index].currency_rate = evnt.exchange_rate;
-      _rows[index].currency_id = evnt.value;
-    } else {
-      const { name, value } = evnt.target;
-      _rows[index][name] = value;
-    }
-    _rows[index].converted_value = +Number(
-      _rows[index].currency_id == locationSettings?.currency_id
-        ? _rows[index].value
-        : _rows[index].value * _rows[index].currency_rate
-    ).toFixed(locationSettings?.location_decimal_places);
-    setSelectedTaxes(_rows);
-  };
   useEffect(() => {
     if (jobType.req == 4) {
       allVariations.map((varItm: any, index: number) => {
@@ -689,6 +626,8 @@ const AddQuotations: NextPage = (props: any) => {
       });
     }
   }, [jobType]);
+  console.log(selectProducts);
+  
   //product add / update
   const addToProductQuotations = (e: any) => {
     if (e.type == 'variable') {
@@ -698,7 +637,7 @@ const AddQuotations: NextPage = (props: any) => {
         is_service: 0,
         product_name: e.name,
       });
-      setAllVariations(e.variations)
+      setAllVariations(e.variations);
       setIsOpenVariationDialog(true);
       return;
     }
@@ -994,45 +933,43 @@ const AddQuotations: NextPage = (props: any) => {
                     }}
                   />
                 </div>
-                <div className='row'>
-                <div className="col-md-3">
-                  <div className="form-group2">
-                    <label>Paid Amount :</label>
-                    <input
-                      type="text"
-                      className="form-control p-2"
-                      placeholder="Paid Amount"
-                      value={formObj.paid_amount}
-                      onChange={(e) => {
-                        setFormObj({ ...formObj, paid_amount: +e.target.value });
-                      }}
-                    />
-                    {errorForm.paid && <p className="p-1 h6 text-danger ">Enter A Amount</p>}
+                <div className="row">
+                  <div className="col-md-3">
+                    <div className="form-group2">
+                      <label>Paid Amount :</label>
+                      <input
+                        type="number"
+                        className="form-control p-2"
+                        placeholder="Paid Amount"
+                        value={formObj.paid_amount}
+                        onChange={(e) => {
+                          setFormObj({ ...formObj, paid_amount: +e.target.value });
+                        }}
+                      />
+                      {errorForm.paid && <p className="p-1 h6 text-danger ">Enter A Amount</p>}
+                    </div>
+                  </div>
+                  <div className="col-md-3">
+                    <div className="form-group2">
+                      <label>Payment Type :</label>
+                      <Select
+                        styles={colourStyles}
+                        options={paymentTypes}
+                        value={paymentTypes.filter((f: any) => {
+                          return f.value == formObj.paymentType;
+                        })}
+                        onChange={(itm) => {
+                          setFormObj({ ...formObj, paymentType: itm!.value });
+                        }}
+                      />
+                      {errorForm.paymentType && (
+                        <p className="p-1 h6 text-danger ">Select One Item</p>
+                      )}
+                    </div>
                   </div>
                 </div>
-                <div className="col-md-3">
-                  <div className="form-group2">
-                    <label>Payment Type :</label>
-                    <Select
-                      styles={colourStyles}
-                      options={paymentTypes}
-                      value={paymentTypes.filter((f: any) => {
-                        return f.value == formObj.paymentType;
-                      })}
-                      onChange={(itm) => {
-                        console.log(itm.value);
-                        
-                        setFormObj({ ...formObj, paymentType: itm!.value });
-                      }}
-                    />
-                    {errorForm.paymentType && (
-                      <p className="p-1 h6 text-danger ">Select One Item</p>
-                    )}
-                  </div>
-                </div>
-                </div>
-                <Grid container spacing={2} className="mt-3 d-flex justify-content-end">
-                  <Grid item xs={6} textAlign="left">
+                <Grid container spacing={2} className="mt-3 d-flex justify-content-start">
+                  {/* <Grid item xs={6} textAlign="left">
                     <table className="m-table-expends">
                       <tbody>
                         <TableExpeseRows
@@ -1062,10 +999,10 @@ const AddQuotations: NextPage = (props: any) => {
                         </tr>
                       </tbody>
                     </table>
-                  </Grid>
+                  </Grid> */}
                   <Grid item xs={6}>
                     <div className="purchase-items">
-                      <div className="purchase-item">
+                      {/* <div className="purchase-item">
                         <p className="puchase-arrow" style={{ width: '100px' }}></p>
                         <div className="purchase-text">
                           <p></p>
@@ -1080,28 +1017,14 @@ const AddQuotations: NextPage = (props: any) => {
                           </p>
                         </div>
                       </div>
-                      <Divider flexItem></Divider>
-                      <div className="purchase-item">
-                        {isEditSort && <p className="puchase-arrow" style={{ width: '100px' }}></p>}
-                        <div className="purchase-text">
-                          <p>Sub Total</p>
-                          <p>
-                            {Number(formObj.subTotal_price).toFixed(
-                              locationSettings?.location_decimal_places
-                            )}{' '}
-                            <span style={{ opacity: '0.5' }}>
-                              {' '}
-                              {locationSettings?.currency_code}
-                            </span>{' '}
-                          </p>
-                        </div>
-                      </div>
+                      <Divider flexItem></Divider> */}
+
                       <Divider flexItem></Divider>
                       {purchaseDetails.map((pd: any, i: number) => {
                         return (
                           <>
                             <div key={i} className="purchase-item">
-                              {isEditSort && (
+                              {/* {isEditSort && (
                                 <p className="puchase-arrow" style={{ width: '100px' }}>
                                   {isEditSort && i != 0 && (
                                     <Button variant="outlined" onClick={() => sortHandler(i, 'u')}>
@@ -1114,7 +1037,7 @@ const AddQuotations: NextPage = (props: any) => {
                                     </Button>
                                   )}
                                 </p>
-                              )}
+                              )} */}
                               <div className="purchase-text">
                                 <p>{pd.label}</p>
                                 {pd.value == 'discount' && (
@@ -1151,36 +1074,15 @@ const AddQuotations: NextPage = (props: any) => {
                                     </p>
                                   </div>
                                 )}
-                                {pd.value == 'expense' && (
+                                {/* {pd.value == 'expense' && (
                                   <p>
                                     {formObj.total_expense.toFixed(
                                       locationSettings?.location_decimal_places
                                     )}
                                   </p>
-                                )}
+                                )} */}
                                 {pd.value == 'taxes' && !vatInColumn && (
                                   <div>
-                                    <table className="m-table-expends">
-                                      <tbody>
-                                        <TableTaxRows
-                                          rowsData={selectedTaxes}
-                                          curencise={currencies}
-                                          deleteTableRows={deleteRowTaxes}
-                                          handleChange={handlerRowTaxes}
-                                        />
-                                        <tr>
-                                          <td colSpan={3}>
-                                            <button
-                                              onClick={() => addTableRows('taxes')}
-                                              className="btn m-btn btn-primary p-2"
-                                              style={{ borderRadius: '0px' }}>
-                                              {' '}
-                                              + Add Taxe(s)
-                                            </button>
-                                          </td>
-                                        </tr>
-                                      </tbody>
-                                    </table>
                                     <p className="fixed-width">
                                       {tax.tax}%(
                                       {((tax.tax / 100) * formObj.subTotal_price).toFixed(
@@ -1197,7 +1099,7 @@ const AddQuotations: NextPage = (props: any) => {
                         );
                       })}
                       <div className="purchase-item">
-                        {isEditSort && <p className="puchase-arrow" style={{ width: '100px' }}></p>}
+                        {/* {isEditSort && <p className="puchase-arrow" style={{ width: '100px' }}></p>} */}
                         <div className="purchase-text">
                           <p>Total</p>
                           <p>
@@ -1254,7 +1156,7 @@ const AddQuotations: NextPage = (props: any) => {
                     //   // if (formObj.paymentType.length <= 2) errors.push('error');
                     // }
                     // if (formObj.paymentStatus == 'partially_paid' && formObj.paid_amount < 0.5)
-                      // errors.push('error');
+                    // errors.push('error');
 
                     setErrorForm({
                       ...errorForm,

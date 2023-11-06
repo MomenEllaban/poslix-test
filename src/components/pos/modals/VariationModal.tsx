@@ -13,7 +13,6 @@ const VariationModal = (props: any) => {
     setIsOpenVariationDialog,
     variations,
   } = props;
-  console.log(variations);
 
   const [, setJobType] = useRecoilState(cartJobType);
   const style = {

@@ -89,7 +89,7 @@ const cartSlice = createSlice({
 
       if (existingItem) {
         const newQty = existingItem.quantity + 1
-        if((existingItem.stock < newQty) && (+existingItem.sell_over_stock === 0)){
+        if((existingItem.stock < newQty) && (+existingItem.sell_over_stock === 0 ) && ( +existingItem.is_service === 0)){
           return
         }
         existingItem.quantity += 1;

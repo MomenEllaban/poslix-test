@@ -680,9 +680,6 @@ export const MenuOrderComponent = (props: any) => {
     setTaxRate(_primary + _none + _excises + _servies_percetage);
     setReadyTaxGroup(taxGroups);
     if (invoicDetails != null) {
-      console.log(invoicDetails);
-    } else {
-      console.log('is null def invoice ', invoicDetails);
     }
   }, [taxes]);
   function checkPackageItemsHasStock(orderQty: number) {
@@ -703,9 +700,6 @@ export const MenuOrderComponent = (props: any) => {
           if (or.product_id == pp.product_id) {
             var _item: any = products[quantity[index].productIndex];
             if (quantity[index].quantity + orderQty > _item.total_qty) hasStock = false;
-            else {
-              console.log('hast ', quantity[index]);
-            }
           }
         });
       }
@@ -791,7 +785,6 @@ export const MenuOrderComponent = (props: any) => {
       setIsOpenTailoringDialog(true);
       return;
     }
-    console.log('foundt ', products[index1][index2]);
     addToCard(false, index1, index2);
   }, [product]);
   //calculate tax..
@@ -802,7 +795,6 @@ export const MenuOrderComponent = (props: any) => {
   }, [orders]);
   //choose customer
   useEffect(() => {
-    console.log(customer);
     if (customer?.isNew) setCustomerIsModal(true);
   }, [customer]);
 
@@ -817,7 +809,6 @@ export const MenuOrderComponent = (props: any) => {
       taxPerItem = 0;
     let hasTailFabs = 0;
     orders.map((pro, idx) => {
-      console.log(pro.isEdit, pro.quantity2);
       subItemTotal = 0;
       if (pro.isEdit && quantity[idx].freezeQuantity <= 0) return null;
       if (pro.is_fabric == 1 || pro.is_tailoring! > 0) hasTailFabs++;
@@ -843,13 +834,6 @@ export const MenuOrderComponent = (props: any) => {
         } else _taxAmount = subItemTotal;
       } else {
         _taxAmount = taxPerItem * quantity[idx].quantity + subItemTotal;
-        console.log(
-          'new tax ',
-          taxPerItem,
-          quantity[idx].quantity,
-          ' result ',
-          taxPerItem * quantity[idx].quantity
-        );
       }
 
       totalWithoutTax += subItemTotal;
@@ -890,8 +874,6 @@ export const MenuOrderComponent = (props: any) => {
         _orders[index].variation_id! > 0
           ? variations.variations[_quantity[index].productIndex]
           : products[_quantity[index].productIndex];
-      console.log('_pro', _pro);
-
       //get packages only for quantity check
       if (!checkProductQtyinPackagesItems(qt, _orders[index].product_id!, _pro.total_qty)) {
         Toastify('error', 'Out of stock!');
@@ -900,8 +882,6 @@ export const MenuOrderComponent = (props: any) => {
 
       //Check Package Items If Has Stock
       if (_pro.type == 'package') {
-        console.log('injaaaa', qt, _pro);
-
         if (checkPackageItemsHasStock(qt)) {
           _quantity[index].quantity = qt;
           _quantity[index].prices[0].qty = qt;
@@ -926,19 +906,13 @@ export const MenuOrderComponent = (props: any) => {
         //if has quantity already
         let thePrices: any[];
         const isVar = _orders[index].variation_id! > 0;
-        console.log('isVar ', isVar);
-
         if (isVar)
           thePrices = JSON.parse(
             JSON.stringify(variations.variations_multi[_quantity[index].productIndex])
           );
         else thePrices = JSON.parse(JSON.stringify(products[_quantity[index].productIndex]));
-
         let qtyToAllocate = qt;
-        console.log('start for ', qtyToAllocate);
-
         _quantity[index].prices = [];
-
         for (let i = 0; i < thePrices.length && qtyToAllocate > 0; i++) {
           const stockItem = thePrices[i];
           if (stockItem.qty >= qtyToAllocate) {
@@ -952,11 +926,8 @@ export const MenuOrderComponent = (props: any) => {
                 price: stockItem.price,
                 cost: stockItem.cost,
               });
-
             qtyToAllocate = 0;
-            console.log('from here');
           } else {
-            console.log('from here 2');
             // Allocate partial quantity from this stock item
             qtyToAllocate -= stockItem.qty;
             if (_quantity[index].prices.length > i) _quantity[index].prices[i].qty = stockItem.qty;
@@ -972,11 +943,9 @@ export const MenuOrderComponent = (props: any) => {
           }
         }
         _quantity[index].quantity = qt;
-        console.log('end ', qtyToAllocate);
         //is over selling
         if (qtyToAllocate > 0.5 && _orders[index].sell_over_stock!) {
           if (_quantity[index].prices[_quantity[index].prices.length - 1].stock_id != 0) {
-            console.log(_quantity[index].itemIndex);
             _quantity[index].prices.push({
               stock_id: 0,
               qty: qtyToAllocate,
@@ -996,7 +965,6 @@ export const MenuOrderComponent = (props: any) => {
       return;
     } else {
       if (quantity[index].freezeQuantity >= quantity[index].quantity) {
-        console.log('when is edit');
         if (quantity[index].quantity == 0) {
           Toastify('warning', 'this item its Full Returned!!');
           return;
@@ -1010,11 +978,9 @@ export const MenuOrderComponent = (props: any) => {
         _quantity[index].quantity > 1 ||
         (orders[index].isEdit && _quantity[index].quantity > 0)
       ) {
-        console.log('when is nott edit');
         _quantity[index].quantity = _quantity[index].quantity! - 1;
         // if (orders[index].isEdit) _orders[index].quantity2 = _quantity[index].quantity - orders[index].quantity!
         var _quans = _quantity[index].prices.reverse();
-        console.log(_quans[0]);
         if (_quans[0].qty == 1) {
           _quans.splice(0, 1);
           _quantity[index].itemIndex--;
@@ -1088,7 +1054,6 @@ export const MenuOrderComponent = (props: any) => {
     let _quantity = [...quantity];
     let _num = _quantity[index].selectionColor;
     _num = colors[_num!] == undefined ? 1 : _num! + 1;
-    console.log('set ', _num, colors[_num!]);
 
     _quantity[index].selectionColor = _num != 6 ? _num : 0;
     setQuantity(_quantity);
@@ -1099,10 +1064,8 @@ export const MenuOrderComponent = (props: any) => {
     quantityChange(index, 'plus', _q, true);
   };
   const handleLinkColor = () => {
-    console.log('isLinking ', isLinking);
     if (isLinking) {
       //applay rulls
-      console.log(colors);
     }
     setIsLinking(!isLinking);
   };
@@ -1110,7 +1073,6 @@ export const MenuOrderComponent = (props: any) => {
     _id += e;
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => {
-      console.log('sku', _id);
       setSearchProduct(e);
       e = _id;
       if (e.length > 0) {
@@ -1124,7 +1086,6 @@ export const MenuOrderComponent = (props: any) => {
           timeoutId = setTimeout(() => {
             setSearchProduct('');
             SetProductsItems([]);
-            console.log('inja timeout');
             _id = '';
             setProducInfo(mfil[0]);
           }, 200);
@@ -1191,8 +1152,6 @@ export const MenuOrderComponent = (props: any) => {
                   scope="col"
                   style={{ width: 30 }}
                   onClick={() => {
-                    console.log(orders);
-                    console.log(quantity);
                   }}>
                   #
                 </th>
