@@ -57,9 +57,7 @@ export default function LoginView() {
         if (res.error) throw new Error(res.error);
         const session = await getSession();
         const again = await createNewData('login', data);
-        // console.log(again);
         handleSetDataLocalStorage(session.user);
-
         localStorage.setItem('permissions', JSON.stringify(again.data.result.user?.locations));
         Toastify('success', 'Login Success');
         if (session.user.user_type === 'owner') {

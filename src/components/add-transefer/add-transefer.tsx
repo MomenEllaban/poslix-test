@@ -104,8 +104,6 @@ const AddTranseferComponent = () => {
             geToProducts()
 
         }
-
-
     }, [to])
     // ------------------------------------------------------------------------------------------------
     const addItemTocart = (item: any) => {

@@ -198,8 +198,6 @@ const Product: NextPage = ({
 
   var prevUrlRef = useRef<any>();
   prevUrlRef.current = previewUrl;
-
-  //
   const units = resUnits?.units.map((unit) => {
     return { ...unit, label: unit.name, value: unit.id };
   });
@@ -212,7 +210,6 @@ const Product: NextPage = ({
   const taxGroup = resTaxes?.taxes.map((tax) => {
     return { ...tax, label: tax.name, value: tax.id };
   });
-
   async function handleUpload() {
     if (prevUrlRef.current.length < 2) {
     } else {
@@ -235,7 +232,6 @@ const Product: NextPage = ({
   }
 
   async function insertProduct(url: string = null) {
-    // if (!url) return Toastify('error', 'Please add image to the product!');
     const res = await createNewData('products', {
       name: formObjRef.current.name,
       category_id: formObjRef.current.category_id,
@@ -260,7 +256,7 @@ const Product: NextPage = ({
               .filter((va) => !!+va.cost && !!+va.price)
               .map((va) => {
                 return {
-                  name: va.name,
+                  name: va.name, 
                   sku: va.sku,
                   cost: va.cost,
                   price: va.price,
@@ -377,7 +373,6 @@ const Product: NextPage = ({
       );
     }
   }, [router.query]);
-
   useEffect(() => {
     if (router.isReady) {
       if (dataProduct.hasOwnProperty('id') && !dataProduct.hasOwnProperty('error')) {
