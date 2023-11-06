@@ -17,22 +17,21 @@ const Digital: NextPage = ({ shopId }: any) => {
   const [appearance, setAppearance] = useState<any>();
   const [loading, setLoading] = useState<any>(false);
 
-  // ----------------------------------------------------------------------------------------------
-  const fetchApperance = async () => {
+
+  const fetchAppDigital = async () => {
     setLoading(true);
     try {
       const res = await findAllData(`appearance/${router.query.id}`);
       setAppearance(res.data.result);
     } catch (err) {
       Toastify('error', 'Something went wrong with getting Apperance, please try again later!');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
-  console.log(appearance);
 
-  // ----------------------------------------------------------------------------------------------
   useEffect(() => {
-    fetchApperance();
+    fetchAppDigital();
   }, []);
   return (
     <div>
