@@ -36,15 +36,14 @@ const [customerPricingGroup, setCustomerPricingGroup] = useState<any>()
   // ------------------------------------------------------------------------------------------------
   // ------------------------------------------------------------------------------------------------
   useEffect(() => {
-if(!customer?.id)return
+if(!customer?.id){setCustomerPricingGroup(undefined)}else{
     setCustomerPricingGroup(groups?.find(el => el.id === customer?.price_groups_id))
-    console.log(groups?.find(el => el.id === customer?.price_groups_id));
-    
+  }
   }, [customer])
   // ------------------------------------------------------------------------------------------------
   // useEffect(() => {
 
-  //   if (cart?.cartItems && customerPricingGroup?.products) {
+  //   if ( customerPricingGroup?.products) {
 
   //     let cartWithPricingData = cart?.cartItems.map(itm => {
 
@@ -71,12 +70,51 @@ if(!customer?.id)return
   // ------------------------------------------------------------------------------------------------
 
 const handleAddToCart = () => {
+  let groupPrice
+  let cartProduct={ ...product, product_id: product.id }
+  
+  if ( customerPricingGroup?.products) {
+    
+     groupPrice =  customerPricingGroup?.products?.find(el=>product.id === el.id)
+     
+    if (groupPrice&&customer?.id) {
+      // console.log(product,'variantWithPricingGroup');
+
+      if (product.type?.includes('variable') ) {
+        // console.log(groupPrice,'variantWithPricingGroup');
+
+        cartProduct={
+          ...product,variations:product?.variations?.map(v=>{
+           let variantWithPricingGroup= groupPrice.variants?.find(el=>el.id===v.id)
+           
+            return{...v, old_price: variantWithPricingGroup.old_price,
+              price: variantWithPricingGroup.price,}
+          })
+        }
+      }else{
+
+      cartProduct= {
+        ...product,
+        old_price: groupPrice.old_price,
+        sell_price: groupPrice.price,
+        product_id: product.id
+      }
+    }
+    
+  }
+
+
+  }
+
+
+
     let test = product.stock > 0 || product.sell_over_stock    
     if (product.type?.includes('variable') && test) {
-      setProductVariations(product.variations);
+     
+      setProductVariations(cartProduct.variations);
       setIsOpenDialog(true);
     } else {
-      dispatch(addToCart({ ...product, product_id: product.id }));
+      dispatch(addToCart(cartProduct));
     }
   };
 

@@ -27,7 +27,6 @@ export default function CartTable({ customer, shopId }) {
   const lang = _lang?.pos;
   const [groups, setGroups] = useState<any>([])
   const [customerPricingGroup, setCustomerPricingGroup] = useState<any>()
-  const [cartWithPricing, setCartWithPricing] = useState<any>()
 
   const [selectedCustomer, setSelectedCustomer] = useState<any>()
   const router = useRouter()
@@ -136,7 +135,7 @@ export default function CartTable({ customer, shopId }) {
               </td>
             </tr>
           )}
-          {(cartWithPricing || cart?.cartItems)?.map((product, idx) => (
+          {( cart?.cartItems)?.map((product:any, idx) => (
             <tr key={product.id}>
               <td>{idx + 1}</td>
               <td>{product.name}</td>
