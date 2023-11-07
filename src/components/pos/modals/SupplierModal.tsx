@@ -113,7 +113,7 @@ const SupplierModal = ({ openDialog, statusDialog, supplierId, showType, shopId 
       field: 'payment',
       headerName: 'Method',
       flex: 0.5,
-      renderCell: ({ row }: Partial<GridRowParams>) => (row.payment[0]?.payment_type || "-"),
+      renderCell: ({ row }: Partial<GridRowParams>) => row.payment[0]?.payment_type || '-',
     },
     {
       field: 'total_price',
@@ -126,8 +126,11 @@ const SupplierModal = ({ openDialog, statusDialog, supplierId, showType, shopId 
       field: 'products',
       headerName: 'Products',
       flex: 1,
-      renderCell: ({ row }) =>
-        <span title={row.products.map(prod => prod.name).join(', ')}>{row.products.map(prod => prod.name).join(', ')}</span>
+      renderCell: ({ row }) => (
+        <span title={row.products.map((prod) => prod.name).join(', ')}>
+          {row.products.map((prod) => prod.name).join(', ')}
+        </span>
+      ),
     },
   ];
   // assumption of one order at a time / one cart
@@ -150,14 +153,13 @@ const SupplierModal = ({ openDialog, statusDialog, supplierId, showType, shopId 
     openDialog(false);
     reset();
   };
-  
+
   const onSubmit = async (data) => {
     setIsLoading(true);
 
-    if (showType === 'add')
-    {  try {
+    if (showType === 'add') {
+      try {
         try {
-          
           await api.post(
             `suppliers/${shopId}`,
             {},
@@ -167,7 +169,7 @@ const SupplierModal = ({ openDialog, statusDialog, supplierId, showType, shopId 
           );
           Toastify('success', 'Successfully Created');
           const currentPath = router.pathname;
-        
+
           if (!currentPath.includes('suppliers')) {
             router.push(`/shop/${shopId}/suppliers`);
           }
@@ -181,7 +183,9 @@ const SupplierModal = ({ openDialog, statusDialog, supplierId, showType, shopId 
         }
       } finally {
         setIsLoading(false);
-      } return}
+      }
+      return;
+    }
     const { id, email: _email, ...rest } = data;
     const _updated = { ...rest };
     if (_email !== email) _updated.email = _email;
@@ -279,17 +283,19 @@ const SupplierModal = ({ openDialog, statusDialog, supplierId, showType, shopId 
                 {showType === 'show' ? 'Supplier' : showType + ' Supplier'}
               </Modal.Header>
               <Modal.Body>
-                <div className="scroll-form">
+                <div className="d-flex flex-row flex-wrap justify-content-between">
                   {supplierFields.map((field) => {
                     return (
-                      <FormField
-                        key={`supplier-form-${field.name}`}
-                        {...field}
-                        disabled={showType === 'show'}
-                        errors={errors}
-                        required={showType === 'show' ? false : field.required}
-                        register={register}
-                      />
+                      <div style={{ width: '49%' }}>
+                        <FormField
+                          key={`supplier-form-${field.name}`}
+                          {...field}
+                          disabled={showType === 'show'}
+                          errors={errors}
+                          required={showType === 'show' ? false : field.required}
+                          register={register}
+                        />
+                      </div>
                     );
                   })}
                 </div>
@@ -306,35 +312,42 @@ const SupplierModal = ({ openDialog, statusDialog, supplierId, showType, shopId 
               </Modal.Footer>
             </Form>
           </Tab>
-          <Tab eventKey="orders" title="Orders">
-            <div className="page-content-style card">
-              <DataGrid
-                className="datagrid-style"
-                sx={{
-                  '.MuiDataGrid-columnSeparator': {
-                    display: 'none',
-                  },
-                  '&.MuiDataGrid-root': {
-                    border: 'none',
-                  },
-                }}
-                rows={purchases}
-                columns={columns}
-                initialState={{
-                  columns: { columnVisibilityModel: { mobile: false } },
-                }}
-                pageSize={10}
-                rowsPerPageOptions={[10]}
-              />
-            </div>
-          </Tab>
+          {showType === 'show' && (
+            <Tab eventKey="orders" title="Orders" style={{
+              minHeight: '600px'
+            }}>
+              <div className="page-content-style card" style={{minHeight: '600px'}}>
+                <DataGrid
+                  className="datagrid-style"
+                  sx={{
+                    '.MuiDataGrid-columnSeparator': {
+                      display: 'none',
+                    },
+                    '&.MuiDataGrid-root': {
+                      border: 'none',
+                    },
+                    ' .MuiDataGrid-virtualScroller':{
+                      minHeight: '600px'
+                    }
+                  }}
+                  rows={purchases}
+                  columns={columns}
+                  initialState={{
+                    columns: { columnVisibilityModel: { mobile: false } },
+                  }}
+                  pageSize={10}
+                  rowsPerPageOptions={[10]}
+                />
+              </div>
+            </Tab>
+          )}
         </Tabs>
       </Modal.Body>
-      <Modal.Footer>
+      {/* <Modal.Footer>
         <a className="btn btn-link link-success fw-medium" onClick={handleClose}>
           <i className="ri-close-line me-1 align-middle" /> Close
         </a>
-      </Modal.Footer>
+      </Modal.Footer> */}
     </Modal>
   );
 };

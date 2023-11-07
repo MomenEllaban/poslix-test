@@ -70,38 +70,37 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
   const [permiss, setPermiss] = useState(initialPermissions);
   // ----------------------------------transefere modal----------------------------------------------
   const [isAddTranseferModalOpen, setIsAddTranseferModalOpen] = useState(false);
-  
+
   const handleTranseferModalCLose = () => {
     setIsAddTranseferModalOpen(false);
-    };
-    async function initDataPageTransefer() {
-      if (router.isReady) {
-        const res = await findAllData(`transfer/${router.query.id}`);
-        if (!res.data.success || res.data.status === 201) {
-          Toastify('error', 'Somthing wrong!!, try agian');
-          return;
-        }
-        router.push('/shop/' + shopId + '/transfers');
-
+  };
+  async function initDataPageTransefer() {
+    if (router.isReady) {
+      const res = await findAllData(`transfer/${router.query.id}`);
+      if (!res.data.success || res.data.status === 201) {
+        Toastify('error', 'Somthing wrong!!, try agian');
+        return;
       }
+      router.push('/shop/' + shopId + '/transfers');
     }
-    // ----------------------------------------------------------------------------------------------
+  }
+  // ----------------------------------------------------------------------------------------------
   // ----------------------------------Supplier modal----------------------------------------------
   const [isAddSupplierModalOpen, setIsAddSupplierModalOpen] = useState(false);
-  
+
   const handleSupplierModalClose = () => {
     setIsAddSupplierModalOpen(false);
-    };
-  
-    // ----------------------------------------------------------------------------------------------
+  };
+
+  // ----------------------------------------------------------------------------------------------
   // ----------------------------------customer modal----------------------------------------------
   const [isAddCustomerModalOpen, setIsAddCustomerModalOpen] = useState(false);
 
   const handleCustomerModalClose = () => {
     setIsAddCustomerModalOpen(false);
-    };
-  
-    // ----------------------------------------------------------------------------------------------
+  };
+
+  // ----------------------------------------------------------------------------------------------
 
   const router = useRouter();
   const [permissions, setPermissions] = useState<any>();
@@ -139,6 +138,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
       hasSalesReport: false,
       hasItemsReport: false,
       hasStockReport: false,
+      hasPurchaseReport: false,
       hasAppStore: true,
     };
 
@@ -146,44 +146,46 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
       perm.name === 'products/view'
         ? (getPermissions.hasProducts = true)
         : perm.name === 'purchases/view'
-          ? (getPermissions.hasPurchases = true)
-          : perm.name === 'transfers/view'
-            ? (getPermissions.hasTransfers = true)
-            : perm.name === 'expenses/view'
-              ? (getPermissions.hasExpenses = true)
-              : perm.name === 'customers/view'
-                ? (getPermissions.hasCustomers = true)
-                : perm.name === 'suppliers/view'
-                  ? (getPermissions.hasSuppliers = true)
-                  : perm.name === 'open/register'
-                    ? (getPermissions.hasPos = true)
-                    : perm.name === 'categories/view'
-                      ? (getPermissions.hasCategories = true)
-                      : perm.name === 'brands/view'
-                        ? (getPermissions.hasBrands = true)
-                        : perm.name === 'taxes/view'
-                          ? (getPermissions.hasTaxes = true)
-                          : perm.name === 'appearance/view'
-                            ? (getPermissions.hasAppearance = true)
-                            : perm.name === 'payment/view'
-                              ? (getPermissions.hasPayment = true)
-                              : perm.name === 'appearance/viewall'
-                                ? (getPermissions.hasPrint = true)
-                                : perm.name === 'pricinggroup/view'
-                                  ? (getPermissions.hasPricingGroups = true)
-                                  : perm.name === 'sales-list/view'
-                                    ? (getPermissions.hasSalesList = true)
-                                    : perm.name === 'quotations-list/view'
-                                      ? (getPermissions.hasQuotations = true)
-                                      : perm.name === 'open-close'
-                                        ? (getPermissions.hasRegisterReport = true)
-                                        : perm.name === 'sales'
-                                          ? (getPermissions.hasSalesReport = true)
-                                          : perm.name === 'item-sales'
-                                            ? (getPermissions.hasItemsReport = true)
-                                            : perm.name === 'stock'
-                                              ? (getPermissions.hasStockReport = true)
-                                              : null
+        ? (getPermissions.hasPurchases = true)
+        : perm.name === 'transfers/view'
+        ? (getPermissions.hasTransfers = true)
+        : perm.name === 'expenses/view'
+        ? (getPermissions.hasExpenses = true)
+        : perm.name === 'customers/view'
+        ? (getPermissions.hasCustomers = true)
+        : perm.name === 'suppliers/view'
+        ? (getPermissions.hasSuppliers = true)
+        : perm.name === 'open/register'
+        ? (getPermissions.hasPos = true)
+        : perm.name === 'categories/view'
+        ? (getPermissions.hasCategories = true)
+        : perm.name === 'brands/view'
+        ? (getPermissions.hasBrands = true)
+        : perm.name === 'taxes/view'
+        ? (getPermissions.hasTaxes = true)
+        : perm.name === 'appearance/view'
+        ? (getPermissions.hasAppearance = true)
+        : perm.name === 'payment/view'
+        ? (getPermissions.hasPayment = true)
+        : perm.name === 'appearance/viewall'
+        ? (getPermissions.hasPrint = true)
+        : perm.name === 'pricinggroup/view'
+        ? (getPermissions.hasPricingGroups = true)
+        : perm.name === 'sales-list/view'
+        ? (getPermissions.hasSalesList = true)
+        : perm.name === 'quotations-list/view'
+        ? (getPermissions.hasQuotations = true)
+        : perm.name === 'open-close'
+        ? (getPermissions.hasRegisterReport = true)
+        : perm.name === 'sales'
+        ? (getPermissions.hasSalesReport = true)
+        : perm.name === 'item-sales'
+        ? (getPermissions.hasItemsReport = true)
+        : perm.name === 'stock'
+        ? (getPermissions.hasStockReport = true)
+        : perm.name === 'purchase'
+        ? (getPermissions.hasPurchaseReport = true)
+        : null
     );
 
     setPermissions(getPermissions);
@@ -198,7 +200,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
     );
   return (
     <ul className="list-unstyled">
-         {/* <TransferModal
+      {/* <TransferModal
         shopId={shopId}
         showType={'add'}
         userdata={{}}
@@ -207,7 +209,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
         openDialog={handleTranseferModalCLose}
         initData={initDataPageTransefer}
       /> */}
-       <SupplierModal
+      <SupplierModal
         shopId={shopId}
         showType={'add'}
         supplierId={undefined}
@@ -215,15 +217,14 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
         statusDialog={isAddSupplierModalOpen}
         openDialog={handleSupplierModalClose}
       />
-         <PosProvider>
-
+      <PosProvider>
         <CustomerModal
-        shopId={shopId}
-        showType={'add'}
-        userdata={{}}
-        statusDialog={isAddCustomerModalOpen}
-        openDialog={handleCustomerModalClose}
-      />
+          shopId={shopId}
+          showType={'add'}
+          userdata={{}}
+          statusDialog={isAddCustomerModalOpen}
+          openDialog={handleCustomerModalClose}
+        />
       </PosProvider>
       <SidebarNavItem href={'/shop/' + shopId} isShown={!!router.query.id}>
         <FiHome className="nav-icon ms-n3" />
@@ -236,83 +237,106 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
         permissions.hasTransfers ||
         permissions.hasSuppliers ||
         permissions.hasExpenses) && (
-          <SidebarNavGroup toggleIcon="MdOutlineLocalGroceryStore" toggleText="Inventory">
-            {permissions.hasProducts && (
-              <SidebarNavItem
-                href={'/shop/' + shopId + '/products'}
-                sub={true}
-                isShown={!!router.query.id}>
-                Products
-                <div className={styles.drawer_plus_icon_wrapper}><AddBoxTwoToneIcon onClick={(e) => {
-                  e.preventDefault();
-                  
-                  router.push('/shop/' + shopId + '/products/add')
-                }} sx={{ color: '#25a0e2' }} /></div>
-              </SidebarNavItem>
-            )}
-            {permissions.hasPurchases && (
-              <SidebarNavItem
-                href={'/shop/' + shopId + '/purchases'}
-                sub={true}
-                isShown={!!router.query.id}>
-                Purchases
-                <div className={styles.drawer_plus_icon_wrapper}><AddBoxTwoToneIcon onClick={(e) => {
-                  e.preventDefault();
-                  router.push('/shop/' + shopId + '/purchases/add');
-                }} sx={{ color: '#25a0e2' }} /></div>
-              </SidebarNavItem>
-            )}
-            {permissions.hasTransfers && (
-              <SidebarNavItem
-                href={'/shop/' + shopId + '/transfers'}
-                sub={true}
-                isShown={!!router.query.id}>
-                Transfers <Soon />
-                <div className={styles.drawer_plus_icon_wrapper}><AddBoxTwoToneIcon onClick={(e) => {
-                  e.preventDefault();                  
-                  router.push(`/shop/${router.query.id}/transfers/add`);
-                }} sx={{ color: '#25a0e2' }} /></div>
-              
-              </SidebarNavItem>
-            )}
-            {permissions.hasSuppliers && (
-              <SidebarNavItem
-                href={'/shop/' + shopId + '/suppliers'}
-                sub={true}
-                isShown={!!router.query.id}>
-                Suppliers
-                <div className={styles.drawer_plus_icon_wrapper}><AddBoxTwoToneIcon onClick={(e) => {
-                  e.preventDefault();                 
-                 setIsAddSupplierModalOpen(true)
-                }} sx={{ color: '#25a0e2' }} /></div>
-                
-              </SidebarNavItem>
-            )}
-            {permissions.hasExpenses && (
-              <SidebarNavItem
-                href={'/shop/' + shopId + '/expenses'}
-                sub={true}
-                isShown={!!router.query.id}>
-                Expenses
-                <div className={styles.drawer_plus_icon_wrapper}><AddBoxTwoToneIcon onClick={(e) => {
-                  e.preventDefault();
-                  router.push({
-                    pathname: '/shop/' + shopId + '/expenses',
-                    query: { add: 'true' },
-                  });
-                }} sx={{ color: '#25a0e2' }} /></div>
-              </SidebarNavItem>
-            )}
-            {permissions.hasTailoring && btype == 'Kianvqyqndr' && (
-              <SidebarNavItem
-                href={'/shop/' + shopId + '/tailoring'}
-                sub={true}
-                isShown={!!router.query.id}>
-                Tailoring
-              </SidebarNavItem>
-            )}
-          </SidebarNavGroup>
-        )}
+        <SidebarNavGroup toggleIcon="MdOutlineLocalGroceryStore" toggleText="Inventory">
+          {permissions.hasProducts && (
+            <SidebarNavItem
+              href={'/shop/' + shopId + '/products'}
+              sub={true}
+              isShown={!!router.query.id}>
+              Products
+              <div className={styles.drawer_plus_icon_wrapper}>
+                <AddBoxTwoToneIcon
+                  onClick={(e) => {
+                    e.preventDefault();
+
+                    router.push('/shop/' + shopId + '/products/add');
+                  }}
+                  sx={{ color: '#25a0e2' }}
+                />
+              </div>
+            </SidebarNavItem>
+          )}
+          {permissions.hasPurchases && (
+            <SidebarNavItem
+              href={'/shop/' + shopId + '/purchases'}
+              sub={true}
+              isShown={!!router.query.id}>
+              Purchases
+              <div className={styles.drawer_plus_icon_wrapper}>
+                <AddBoxTwoToneIcon
+                  onClick={(e) => {
+                    e.preventDefault();
+                    router.push('/shop/' + shopId + '/purchases/add');
+                  }}
+                  sx={{ color: '#25a0e2' }}
+                />
+              </div>
+            </SidebarNavItem>
+          )}
+          {permissions.hasTransfers && (
+            <SidebarNavItem
+              href={'/shop/' + shopId + '/transfers'}
+              sub={true}
+              isShown={!!router.query.id}>
+              Transfers <Soon />
+              <div className={styles.drawer_plus_icon_wrapper}>
+                <AddBoxTwoToneIcon
+                  onClick={(e) => {
+                    e.preventDefault();
+                    router.push(`/shop/${router.query.id}/transfers/add`);
+                  }}
+                  sx={{ color: '#25a0e2' }}
+                />
+              </div>
+            </SidebarNavItem>
+          )}
+          {permissions.hasSuppliers && (
+            <SidebarNavItem
+              href={'/shop/' + shopId + '/suppliers'}
+              sub={true}
+              isShown={!!router.query.id}>
+              Suppliers
+              <div className={styles.drawer_plus_icon_wrapper}>
+                <AddBoxTwoToneIcon
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setIsAddSupplierModalOpen(true);
+                  }}
+                  sx={{ color: '#25a0e2' }}
+                />
+              </div>
+            </SidebarNavItem>
+          )}
+          {permissions.hasExpenses && (
+            <SidebarNavItem
+              href={'/shop/' + shopId + '/expenses'}
+              sub={true}
+              isShown={!!router.query.id}>
+              Expenses
+              <div className={styles.drawer_plus_icon_wrapper}>
+                <AddBoxTwoToneIcon
+                  onClick={(e) => {
+                    e.preventDefault();
+                    router.push({
+                      pathname: '/shop/' + shopId + '/expenses',
+                      query: { add: 'true' },
+                    });
+                  }}
+                  sx={{ color: '#25a0e2' }}
+                />
+              </div>
+            </SidebarNavItem>
+          )}
+          {permissions.hasTailoring && btype == 'Kianvqyqndr' && (
+            <SidebarNavItem
+              href={'/shop/' + shopId + '/tailoring'}
+              sub={true}
+              isShown={!!router.query.id}>
+              Tailoring
+            </SidebarNavItem>
+          )}
+        </SidebarNavGroup>
+      )}
 
       {permissions.hasCustomers && (
         <SidebarNavItem
@@ -369,10 +393,15 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
           <BsPeopleFill className="nav-icon ms-n3" />
           Customers
           {/* <small className="ms-auto"></small> */}
-          <div className={styles.drawer_plus_icon_wrapper}><AddBoxTwoToneIcon onClick={(e) => {
-                  e.preventDefault();                 
-                 setIsAddCustomerModalOpen(true)
-                }} sx={{ color: '#25a0e2' }} /></div>
+          <div className={styles.drawer_plus_icon_wrapper}>
+            <AddBoxTwoToneIcon
+              onClick={(e) => {
+                e.preventDefault();
+                setIsAddCustomerModalOpen(true);
+              }}
+              sx={{ color: '#25a0e2' }}
+            />
+          </div>
         </SidebarNavItem>
       )}
 
@@ -380,52 +409,60 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
         permissions.hasSalesReport ||
         permissions.hasItemsReport ||
         permissions.hasStockReport) && (
-          <SidebarNavGroup toggleIcon="TbReportSearch" toggleText="Report">
-            {permissions.hasRegisterReport && (
-              <SidebarNavItem
-                href={'/shop/' + shopId + '/reports/register'}
-                sub={true}
-                isShown={!!router.query.id}>
-                Open Close Register
-              </SidebarNavItem>
-            )}
+        <SidebarNavGroup toggleIcon="TbReportSearch" toggleText="Report">
+          {permissions.hasRegisterReport && (
+            <SidebarNavItem
+              href={'/shop/' + shopId + '/reports/register'}
+              sub={true}
+              isShown={!!router.query.id}>
+              Open Close Register
+            </SidebarNavItem>
+          )}
 
-            {permissions.hasSalesReport && (
-              <SidebarNavItem
-                href={'/shop/' + shopId + '/reports/SalesReport'}
-                sub={true}
-                isShown={!!router.query.id}>
-                Sales Report
-              </SidebarNavItem>
-            )}
-            {/* Eslam 20  */}
-            {permissions.hasItemsReport && (
-              <SidebarNavItem
-                href={'/shop/' + shopId + '/reports/ItemsReport'}
-                sub={true}
-                isShown={!!router.query.id}>
-                Items Report{' '}
-              </SidebarNavItem>
-            )}
-            {permissions.hasStockReport && (
-              <SidebarNavItem
-                href={'/shop/' + shopId + '/reports/StockReport'}
-                sub={true}
-                isShown={!!router.query.id}>
-                Stock Report{' '}
-              </SidebarNavItem>
-            )}
-            {/* {permissions.hasCategorySales && (
+          {permissions.hasSalesReport && (
+            <SidebarNavItem
+              href={'/shop/' + shopId + '/reports/SalesReport'}
+              sub={true}
+              isShown={!!router.query.id}>
+              Sales Report
+            </SidebarNavItem>
+          )}
+          {/* Eslam 20  */}
+          {permissions.hasItemsReport && (
+            <SidebarNavItem
+              href={'/shop/' + shopId + '/reports/ItemsReport'}
+              sub={true}
+              isShown={!!router.query.id}>
+              Items Report{' '}
+            </SidebarNavItem>
+          )}
+          {permissions.hasStockReport && (
+            <SidebarNavItem
+              href={'/shop/' + shopId + '/reports/StockReport'}
+              sub={true}
+              isShown={!!router.query.id}>
+              Stock Report{' '}
+            </SidebarNavItem>
+          )}
+          {permissions.hasStockReport && (
+            <SidebarNavItem
+              href={'/shop/' + shopId + '/reports/PurchaseReport'}
+              sub={true}
+              isShown={!!router.query.id}>
+              Purchase Report{' '}
+            </SidebarNavItem>
+          )}
+          {/* {permissions.hasCategorySales && (
             <SidebarNavItem href={'/shop/' + shopId + '/cates'} sub={true} isShown={!!router.query.id}>
               Category Sales
             </SidebarNavItem>
           )} */}
-            {/* {permissions.hasSupplierSales && (
+          {/* {permissions.hasSupplierSales && (
             <SidebarNavItem href={'/shop/' + shopId + '/supplier'} sub={true} isShown={!!router.query.id}>
               Supplier Sales
             </SidebarNavItem>
           )} */}
-            {/* {permissions.hasCurrentStock && (
+          {/* {permissions.hasCurrentStock && (
             <SidebarNavItem
               href={'/shop/' + shopId + '/currentstock'}
               sub={true}
@@ -433,8 +470,8 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
               Current Stock
             </SidebarNavItem>
           )} */}
-          </SidebarNavGroup>
-        )}
+        </SidebarNavGroup>
+      )}
 
       {permissions.hasAppStore && (
         <SidebarNavItem
@@ -452,49 +489,49 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
         permissions.Categories ||
         permissions.hasPayment ||
         permissions.hasPrint) && (
-          <SidebarNavGroup toggleIcon="IoSettingsSharp" toggleText="Settings">
-            {permissions.hasTaxes && (
-              <SidebarNavItem
-                href={'/shop/' + shopId + '/taxes'}
-                sub={true}
-                isShown={!!router.query.id}>
-                Taxes
-              </SidebarNavItem>
-            )}
-            {permissions.hasAppearance && (
-              <SidebarNavItem
-                href={'/shop/' + shopId + '/appearance'}
-                sub={true}
-                isShown={!!router.query.id}>
-                Appearance
-              </SidebarNavItem>
-            )}
-            {permissions.hasCategories && (
-              <SidebarNavItem
-                href={'/shop/' + shopId + '/category'}
-                sub={true}
-                isShown={!!router.query.id}>
-                Category & Brands
-              </SidebarNavItem>
-            )}
-            {permissions.hasPayment && (
-              <SidebarNavItem
-                href={'/shop/' + shopId + '/payment'}
-                sub={true}
-                isShown={!!router.query.id}>
-                Payment Methods
-              </SidebarNavItem>
-            )}
-            {permissions.hasPrint && (
-              <SidebarNavItem
-                href={'/shop/' + shopId + '/Printsetting'}
-                sub={true}
-                isShown={!!router.query.id}>
-                Print setting
-              </SidebarNavItem>
-            )}
-          </SidebarNavGroup>
-        )}
+        <SidebarNavGroup toggleIcon="IoSettingsSharp" toggleText="Settings">
+          {permissions.hasTaxes && (
+            <SidebarNavItem
+              href={'/shop/' + shopId + '/taxes'}
+              sub={true}
+              isShown={!!router.query.id}>
+              Taxes
+            </SidebarNavItem>
+          )}
+          {permissions.hasAppearance && (
+            <SidebarNavItem
+              href={'/shop/' + shopId + '/appearance'}
+              sub={true}
+              isShown={!!router.query.id}>
+              Appearance
+            </SidebarNavItem>
+          )}
+          {permissions.hasCategories && (
+            <SidebarNavItem
+              href={'/shop/' + shopId + '/category'}
+              sub={true}
+              isShown={!!router.query.id}>
+              Category & Brands
+            </SidebarNavItem>
+          )}
+          {permissions.hasPayment && (
+            <SidebarNavItem
+              href={'/shop/' + shopId + '/payment'}
+              sub={true}
+              isShown={!!router.query.id}>
+              Payment Methods
+            </SidebarNavItem>
+          )}
+          {permissions.hasPrint && (
+            <SidebarNavItem
+              href={'/shop/' + shopId + '/Printsetting'}
+              sub={true}
+              isShown={!!router.query.id}>
+              Print setting
+            </SidebarNavItem>
+          )}
+        </SidebarNavGroup>
+      )}
       {permissions.hasPos && (
         <SidebarNavItem icon={faDesktop} href={'/pos/' + shopId} isShown={!!router.query.id}>
           <MdOutlinePointOfSale className="nav-icon ms-n3" />

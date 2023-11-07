@@ -110,7 +110,6 @@ export default function SalesList(props: any) {
     // }
   };
   const formatQuotation = (quotation: any) => {
-    console.log('fffffffffff', quotation);
     setTax(quotation.tax_amount);
     const total = quotation.total_price;
     const products: { name: string; qty: number }[] = [];
@@ -314,24 +313,6 @@ export default function SalesList(props: any) {
               </tr>
               {lines.length > 0 &&
                 lines.map((line: any, index: number) => {
-                  // lines?.map((line: any, index: number) => {
-                  //   return (
-                  //     <div className="header-items under_items" key={index}>
-                  //       <div>{selectedQuotationProducts.filter(ele => ele.id == line.product_id)[0].name}</div>
-                  //       <div>
-                  //         {
-                  //           Number(+line?.qty).toFixed(0)}
-
-                  //       </div>
-                  //       <div>
-                  //         {Number((+line?.qty * +selectedQuotationProducts.filter(ele => ele.id == line.product_id)[0].sell_price) * (selectRow.tax_amount / 100) + (+line?.qty * +selectedQuotationProducts.filter(ele => ele.id == line.product_id)[0].sell_price)).toFixed(
-                  //           locationSettings?.location_decimal_places
-                  //         )}
-                  //       </div>
-
-                  //     </div>
-                  //   );
-                  // })}
                   return (
                     <tr key={index}>
                       <td>{Number(line.qty).toFixed(0)}</td>
@@ -344,14 +325,8 @@ export default function SalesList(props: any) {
                       <td></td>
                       <td>
                         {Number(
-                          +line?.qty *
                             +selectedQuotationProducts.filter((ele) => ele.id == line.product_id)[0]
-                              .sell_price *
-                            (selectRow.tax_amount / 100) +
-                            +line?.qty *
-                              +selectedQuotationProducts.filter(
-                                (ele) => ele.id == line.product_id
-                              )[0].sell_price
+                              .sell_price 
                         ).toFixed(locationSettings?.location_decimal_places)}
                       </td>
                     </tr>
@@ -835,6 +810,9 @@ export default function SalesList(props: any) {
                     return (
                       <div className="header-items under_items" key={index}>
                         <div>
+                          {console.log(selectedQuotationProducts)}
+                          {console.log(selectedQuotationProducts[0].id)}
+                          {console.log(line.product_id)}
                           {
                             selectedQuotationProducts.filter((ele) => ele.id == line.product_id)[0]
                               .name

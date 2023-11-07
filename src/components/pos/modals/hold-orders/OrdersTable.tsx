@@ -16,6 +16,7 @@ import { findAllData } from 'src/services/crud.api';
 import { DataGrid, GridColDef, GridRowParams } from '@mui/x-data-grid';
 import { ButtonGroup } from '@mui/material';
 import Pagination from '@mui/material/Pagination';
+import { ILocationSettings } from '@models/common-model';
 
 export default function OrdersTable({ lang, shopId, searchQuery = '', closeModal }) {
   const dispatch = useAppDispatch();
@@ -26,6 +27,19 @@ export default function OrdersTable({ lang, shopId, searchQuery = '', closeModal
   const [orderId, setOrderId] = useState<string | number>('');
 
   const [renderdItems, setRenderdItems] = useState<IReportData[]>([]);
+
+  const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
+    // @ts-ignore
+    value: 0,
+    label: '',
+    currency_decimal_places: 0,
+    currency_code: '',
+    currency_id: 0,
+    currency_rate: 1,
+    currency_symbol: '',
+  });
+
+  console.log(renderdItems);
 
   const NUMBER_PAGE_DEFAULT = 1;
 
@@ -46,20 +60,6 @@ export default function OrdersTable({ lang, shopId, searchQuery = '', closeModal
     setOrderId(order_id);
     setIsOrderDetails(true);
   };
-
-  // const renderItems = () => {
-  //   if (!salesReport?.data?.length) return [];
-
-  //   let orderlistPaginated = salesReport?.data;
-  //   const fuse = new Fuse(orderlistPaginated, {
-  //     threshold: 0.0,
-  //     ignoreLocation: true,
-  //     keys: ['id', 'contact_name'],
-  //   });
-  //   const result = fuse.search(searchQuery);
-  //   if (searchQuery) orderlistPaginated = result.map((r) => r.item);
-  //   return orderlistPaginated?.slice(0, visibleItems);
-  // };
 
   const columns: GridColDef[] = [
     {
@@ -83,12 +83,18 @@ export default function OrdersTable({ lang, shopId, searchQuery = '', closeModal
       headerName: `${lang.cartComponent.orderModal.mobile}`,
       flex: 1,
       disableColumnMenu: true,
+      renderCell({ row }) {
+        return row.contact_mobile;
+      },
     },
     {
       field: 'sub_total',
       headerName: `${lang.cartComponent.orderModal.price}`,
       flex: 1,
       disableColumnMenu: true,
+      renderCell({ row }) {
+        return row.sub_total.toFixed(locationSettings?.location_decimal_places);
+      },
     },
     {
       flex: 1,
@@ -164,6 +170,17 @@ export default function OrdersTable({ lang, shopId, searchQuery = '', closeModal
     );
   }
 
+  useEffect(() => {
+    let _locs = JSON.parse(localStorage.getItem('locations') || '[]');
+    if (_locs.toString().length > 10)
+      setLocationSettings(
+        _locs[
+          _locs.findIndex((loc: any) => {
+            return loc.location_id == shopId;
+          })
+        ]
+      );
+  }, []);
   return (
     <>
       {/* <div className="page-content-style card"> */}

@@ -272,7 +272,7 @@ export default function SalesListTable({
                       <td>{line.name}</td>
                       <td></td>
                       <td>
-                        {Number(+line.pivot.qty * +line.pivot.price).toFixed(
+                        {Number(+line.pivot.price).toFixed(
                           locationSettings?.location_decimal_places
                         )}
                       </td>

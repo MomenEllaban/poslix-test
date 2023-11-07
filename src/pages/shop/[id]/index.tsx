@@ -88,38 +88,9 @@ const Home = (props: any) => {
   });
 
   async function initData() {
-    // setProfitMonthLabels(data.months_name);
-    // setProfitMonthValues(data.profit_months);
-    // setFacrtors(data.factors_lsit);
-    // setBox1Price(data.profit_sales);
-    // setBox2Price(data.profit_expense);
-    // setBox3Price(data.purchases);
-    // setBox4Price(data.count_contacts);
-    // if (data.upPro != null && data.upPro.length > 0)
-    //   setTopProdcuts({
-    //     labels: data.upPro.map((item: any) => item.name),
-    //     values: data.upPro.map((item: any) => item.total_qty_sold),
-    //   });
-    // else
-    //   setTopProdcuts({
-    //     labels: [0, 0, 0, 0, 0, 0, 0],
-    //     values: [0, 0, 0, 0, 0, 0, 0],
-    //   });
-    // if (data.downPro != null && data.downPro.length > 0)
-    //   setTopProdcutsDown({
-    //     labels: data.downPro.map((item: any) => item.name),
-    //     values: data.downPro.map((item: any) => item.total_qty_sold),
-    //   });
-    // else
-    //   setTopProdcutsDown({
-    //     labels: [0, 0, 0, 0, 0, 0, 0],
-    //     values: [0, 0, 0, 0, 0, 0, 0],
-    //   });
   }
   // ----------------------------------------------------------------------------------------------
   const getDashbordData = async () => {
-    // setIsProductsLoadingloading(true)
-// console.log(`location-report?location_id=${router.query.id}&salesPeriod=${periods[txtP1?.index-1]}&purchasePeriod=${periods[txtP2?.index-1]}&expensesPeriod=${periods[txtP3?.index-1]}&CustomerPeriod=${periods[txtP4?.index-1]}`);
 setIsLoading(true)
     try {
       const res = await findAllData(`location-report?location_id=${router.query.id}&salesPeriod=${periods[txtP1?.index-1]}&purchasePeriod=${periods[txtP2?.index-1]}&expensesPeriod=${periods[txtP3?.index-1]}&CustomerPeriod=${periods[txtP4?.index-1]}`);
