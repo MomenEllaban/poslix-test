@@ -16,11 +16,21 @@ import { usePosContext } from 'src/modules/pos/_context/PosContext';
 import { ILocationSettings } from '@models/common-model';
 import { TextField } from '@mui/material';
 import { Toastify } from 'src/libs/allToasts';
+import { findAllData } from 'src/services/crud.api';
+import { useRouter } from 'next/router';
+import { useProducts } from 'src/context/ProductContext';
+import { custom } from 'joi';
 
-export default function CartTable({ shopId }) {
+export default function CartTable({ customer, shopId }) {
   const { lang: _lang } = usePosContext();
+  const { customers } = useProducts();
   const lang = _lang?.pos;
+  const [groups, setGroups] = useState<any>([])
+  const [customerPricingGroup, setCustomerPricingGroup] = useState<any>()
+  const [cartWithPricing, setCartWithPricing] = useState<any>()
 
+  const [selectedCustomer, setSelectedCustomer] = useState<any>()
+  const router = useRouter()
   const selectCartForLocation = selectCartByLocation(shopId);
   const cart = useAppSelector(selectCartForLocation);
 
@@ -44,12 +54,71 @@ export default function CartTable({ shopId }) {
     if (_locs.toString().length > 10)
       setLocationSettings(
         _locs[
-          _locs.findIndex((loc: any) => {
-            return loc.location_id == shopId;
-          })
+        _locs.findIndex((loc: any) => {
+          return loc.location_id == shopId;
+        })
         ]
       );
   }, []);
+  // ------------------------------------------------------------------------------------------------
+  const getpricingGroups = async () => {
+    try {
+
+      const res = await findAllData(`pricing-group/${router.query.id}&all_data=1`);
+      setGroups(res.data?.result?.data);
+
+    } catch (e) {
+      Toastify('error', 'Something went wrong')
+    }
+  }
+  // ------------------------------------------------------------------------------------------------
+  useEffect(() => {
+    getpricingGroups()
+  }, [])
+  // ------------------------------------------------------------------------------------------------
+  useEffect(() => {
+    setSelectedCustomer(customers?.find(el => customer?.label?.includes(el?.mobile)))
+
+
+  }, [customer])
+  // ------------------------------------------------------------------------------------------------
+  useEffect(() => {
+
+    setCustomerPricingGroup(groups?.find(el => el.id === selectedCustomer?.price_groups_id))
+  }, [selectedCustomer])
+  // ------------------------------------------------------------------------------------------------
+  useEffect(() => {
+    
+    if (cart?.cartItems && customerPricingGroup?.products) {
+
+      let cartWithPricingData = cart?.cartItems.map(itm => {
+
+
+        const groupPrice = customerPricingGroup?.products?.find((el: any) => el.id === itm.id)
+
+        if (groupPrice) {
+
+          // return {
+          //   ...itm,
+          //   group_price: groupPrice.price,
+          //   sell_price: groupPrice.old_price
+          // }
+           return {
+        ...itm,
+        old_price: groupPrice.old_price,
+        sell_price: groupPrice.price
+      }
+        }
+        return itm
+
+      })
+    
+      setCartWithPricing(cartWithPricingData)
+    }else{
+      setCartWithPricing(undefined);
+    }
+  }, [cart?.cartItems, customerPricingGroup])
+  // ------------------------------------------------------------------------------------------------
 
   return (
     <div className={styles['table__container']}>
@@ -72,7 +141,7 @@ export default function CartTable({ shopId }) {
               </td>
             </tr>
           )}
-          {cart?.cartItems?.map((product, idx) => (
+          {(cartWithPricing || cart?.cartItems)?.map((product, idx) => (
             <tr key={product.id}>
               <td>{idx + 1}</td>
               <td>{product.name}</td>
@@ -94,7 +163,7 @@ export default function CartTable({ shopId }) {
                       pattern: '[0-9]*',
                       min: 1,
                       value: product.quantity,
-                      style:{
+                      style: {
                         textAlign: 'center',
                         height: '0'
                       }
@@ -133,9 +202,27 @@ export default function CartTable({ shopId }) {
                 </span>
               </td>
               <td>
-                {(product.quantity * +product.sell_price).toFixed(
-                  locationSettings?.location_decimal_places
-                )}
+                {product?.old_price ?
+                  <> 
+                     <span style={{textDecoration:'line-through'}} className='text-danger me-2'>{
+                      (+product?.old_price)?.toFixed(
+                        locationSettings?.location_decimal_places
+                      )
+                    } </span>
+                 <span > {(+product?.sell_price)?.toFixed(
+                    locationSettings?.location_decimal_places
+                  )}</span> 
+                 
+                  </>
+                  :  <span>{
+                   
+                    
+                    (+product?.sell_price)?.toFixed(
+                      locationSettings?.location_decimal_places
+                    )
+                  } </span>
+                 }
+
               </td>
               <td className={styles['delete-col']}>
                 <Button

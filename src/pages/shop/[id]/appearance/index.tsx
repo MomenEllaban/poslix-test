@@ -17,7 +17,6 @@ import { createNewData, findAllData } from 'src/services/crud.api';
 import withAuth from 'src/HOCs/withAuth';
 // 
 function findFalsyKeys(obj):any {
-  console.log(obj);
   
   const falsyKeys = [];
 

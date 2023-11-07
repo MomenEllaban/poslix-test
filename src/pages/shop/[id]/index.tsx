@@ -124,7 +124,6 @@ setIsLoading(true)
     try {
       const res = await findAllData(`location-report?location_id=${router.query.id}&salesPeriod=${periods[txtP1?.index-1]}&purchasePeriod=${periods[txtP2?.index-1]}&expensesPeriod=${periods[txtP3?.index-1]}&CustomerPeriod=${periods[txtP4?.index-1]}`);
       setDashboardData(res?.data?.result);
-      console.log(res?.data?.result);
 
     }
     catch (e) {
@@ -433,6 +432,8 @@ setIsLoading(true)
                 <div className="m-fileds text-start" style={{ width: '25%' }}>Created By</div>
               </div>
               {dashboardData?.lastInvoices?.map((itm, i: number) => {
+                console.log(itm);
+                
                 return (
                   <div key={i} className="me-tr-table">
                     <div className="m-fileds" style={{ width: '20%' }}>{itm.id}</div>
