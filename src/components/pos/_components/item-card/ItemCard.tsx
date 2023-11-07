@@ -8,17 +8,69 @@ import { addToCart, selectCartByLocation } from 'src/redux/slices/cart.slice';
 import PackageItemsModal from '../../modals/package-item/PackageItemsModal';
 import styles from './ItemCard.module.scss';
 import { Toastify } from 'src/libs/allToasts';
+import { useRouter } from 'next/router';
+import { findAllData } from 'src/services/crud.api';
+import { useProducts } from 'src/context/ProductContext';
 
-export const ItemCard = ({ product }: { product: IProduct }) => {
+export const ItemCard = ({groups, customer,product }) => {
   const dispatch = useAppDispatch();
   const { locationSettings } = useUser();
   // const selectCartForLocation = selectCartByLocation(shopId);
   // const cart = useAppSelector(selectCartForLocation);
+  const [selectedCustomer, setSelectedCustomer] = useState<any>()
 
   const [isOpenDialog, setIsOpenDialog] = useState<boolean>(false);
   const [productVariations, setProductVariations] = useState<IProduct['variations']>([]);
+// =-----------------------------------------------------------------------------------------------
+const { customers } = useProducts();
+const [customerPricingGroup, setCustomerPricingGroup] = useState<any>()
 
-  const handleAddToCart = () => {
+  // ------------------------------------------------------------------------------------------------
+//   useEffect(() => {
+//     setSelectedCustomer(customers?.find(el => customer?.label?.includes(el?.mobile)))
+
+// console.log(customer);
+// console.log(customers?.find(el => customer?.label?.includes(el?.mobile)));
+
+//   }, [customer])
+  // ------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------------------------------------
+  useEffect(() => {
+if(!customer?.id)return
+    setCustomerPricingGroup(groups?.find(el => el.id === customer?.price_groups_id))
+    console.log(groups?.find(el => el.id === customer?.price_groups_id));
+    
+  }, [customer])
+  // ------------------------------------------------------------------------------------------------
+  // useEffect(() => {
+
+  //   if (cart?.cartItems && customerPricingGroup?.products) {
+
+  //     let cartWithPricingData = cart?.cartItems.map(itm => {
+
+
+  //       const groupPrice = customerPricingGroup?.products?.find((el: any) => el.id === itm.id)
+
+  //       if (groupPrice) {
+
+  //         return {
+  //           ...itm,
+  //           old_price: groupPrice.old_price,
+  //           sell_price: groupPrice.price
+  //         }
+  //       }
+  //       return itm
+
+  //     })
+
+  //     setCartWithPricing(cartWithPricingData)
+  //   } else {
+  //     setCartWithPricing(undefined);
+  //   }
+  // }, [cart?.cartItems, customerPricingGroup])
+  // ------------------------------------------------------------------------------------------------
+
+const handleAddToCart = () => {
     let test = product.stock > 0 || product.sell_over_stock    
     if (product.type?.includes('variable') && test) {
       setProductVariations(product.variations);

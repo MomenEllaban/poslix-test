@@ -11,6 +11,9 @@ import { TabPanel } from '../tab-panel/TabPanel';
 import styles from './ItemList.module.scss';
 import { useBrandsList, useCategoriesList } from 'src/services/pos.service';
 import { usePosContext } from 'src/modules/pos/_context/PosContext';
+import { findAllData } from 'src/services/crud.api';
+import { Toastify } from 'src/libs/allToasts';
+import { useRouter } from 'next/router';
 
 const override: CSSProperties = {
   display: 'block',
@@ -18,7 +21,7 @@ const override: CSSProperties = {
   borderColor: '48b7b9',
 };
 
-export const ItemList = ({ shopId }: any) => {
+export const ItemList = ({ customer,shopId }: any) => {
   const { lang: _lang } = usePosContext();
   const lang = _lang?.pos.itemList;
 
@@ -33,7 +36,27 @@ export const ItemList = ({ shopId }: any) => {
 
   const { categoriesList, isLoading: isCategoriesLoading } = useCategoriesList(shopId);
   const { brandsList, isLoading: isBrandsLoading } = useBrandsList(shopId);
+  const [groups, setGroups] = useState<any>([])
+  const router = useRouter()
 
+    // =-----------------------------------------------------------------------------------------------
+
+  const getpricingGroups = async () => {
+    try {
+  
+      const res = await findAllData(`pricing-group/${router.query.id}&all_data=1`);
+      setGroups(res.data?.result?.data);
+  
+    } catch (e) {
+      Toastify('error', 'Something went wrong')
+    }
+  }
+    // ------------------------------------------------------------------------------------------------
+    useEffect(() => {
+      // getpricingGroups()
+    }, [])
+    // ------------------------------------------------------------------------------------------------
+  
   const handleTabChange = (value: any) => {
     setSelectedTab(value);
     setIsLoading(false);
@@ -41,7 +64,7 @@ export const ItemList = ({ shopId }: any) => {
 
   const renderProductsFn = (product: IProduct, idx) => (
     <div className="items-list-pos" key={product.id}>
-      <ItemCard product={product} />
+      <ItemCard groups={groups} customer={customer} product={product} />
     </div>
   );
 
