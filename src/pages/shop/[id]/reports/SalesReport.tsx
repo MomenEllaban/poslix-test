@@ -21,6 +21,7 @@ import SalesReportToPrint from 'src/modules/reports/_components/SalesReportToPri
 import { findAllData } from 'src/services/crud.api';
 import api from 'src/utils/app-api';
 import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
+import Pagination from '@mui/material/Pagination';
 
 const pageSizeOptions = [10, 20, 50, 100];
 
@@ -29,6 +30,7 @@ function SalesReport() {
   const shopId = router.query.id ?? '';
 
   const componentRef = useRef(null);
+  const NUMBER_PAGE_DEFAULT = 1;
 
   const { locationSettings, setLocationSettings, invoicDetails } = useUser();
 
@@ -50,6 +52,11 @@ function SalesReport() {
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(pageSizeOptions[0]);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+  const [paginationTotal, setPaginationTotal] = useState(NUMBER_PAGE_DEFAULT);
+
+  const pageNumRef = useRef(NUMBER_PAGE_DEFAULT) as React.MutableRefObject<number>;
+
   const handleClose = () => {
     setAnchorEl(null);
   };
@@ -92,27 +99,37 @@ function SalesReport() {
     [locationSettings]
   );
 
-  async function initDataPage() {
+  async function initDataPage(numPage = NUMBER_PAGE_DEFAULT) {
     setIsLoading(true);
-    api.get(`reports/sales/${shopId}`, { params: { all_data: 1 } }).then(({ data }) => {
-      setSales(data.result.data);
-      setFilteredSales(data.result.data);
-      setDetails({
-        subTotal: data.result.sub_total,
-        total: data.result.total,
-        tax: data.result.tax,
+    pageNumRef.current = numPage;
+    api
+      .get(`reports/sales/${shopId}?page=${numPage}`)
+      .then(({ data }) => {
+        setSales(data.result.data);
+        setFilteredSales(data.result.data);
+        setPaginationTotal(data.result?.pagination?.last_page);
+        setDetails({
+          subTotal: data.result.sub_total,
+          total: data.result.total,
+          tax: data.result.tax,
+        });
+      })
+      .catch((error) => {
+        console.log(error);
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
-    });
+  }
 
+  const getSelectedData = async () => {
     const customerRes = await findAllData(`customers/${shopId}`);
     setCustomersOptions(customerRes.data.result);
-
-    setIsLoading(false);
-  }
+  };
 
   useEffect(() => {
     if (!shopId) return;
-
+    getSelectedData();
     const locations: ILocation[] = getLocalStorage(ELocalStorageKeys.LOCATIONS);
     const currentLocation = locations.find((location) => +location.location_id === +shopId);
     setLocationSettings(currentLocation ?? locationSettings);
@@ -129,9 +146,10 @@ function SalesReport() {
   //   getItems(selectedRowsData.id);
   //   setShowViewPopUp(true);
   // };
-  const handleSearch = (e: any) => {
-    setHandleSearchTxt(e.target.value);
-  };
+
+  // const handleSearch = (e: any) => {
+  //   setHandleSearchTxt(e.target.value);
+  // };
 
   useEffect(() => {
     let localFilteredSales = [];
@@ -177,8 +195,10 @@ function SalesReport() {
     const totalPriceAndTax = totalPrice + taxAmount;
     setDetails({ subTotal: totalPrice, tax: taxAmount, total: totalPriceAndTax });
 
-    if(selectedCustomer?.length > 0)
-      localFilteredSales = localFilteredSales.filter((el) => el.contact_name.includes(selectedCustomer))
+    if (selectedCustomer?.length > 0)
+      localFilteredSales = localFilteredSales.filter((el) =>
+        el.contact_name.includes(selectedCustomer)
+      );
 
     setFilteredSales(localFilteredSales);
   }, [strSelectedDate, selectedCustomer]);
@@ -201,8 +221,21 @@ function SalesReport() {
   };
 
   const handlePageChange = (params) => setPage(params.page);
-  const handlePrevPageButtonClick = () => setPage((prevPage) => prevPage - 1);
-  const handleNextPageButtonClick = () => setPage((prevPage) => prevPage + 1);
+  // const handlePrevPageButtonClick = () => setPage((prevPage) => prevPage - 1);
+  // const handleNextPageButtonClick = () => setPage((prevPage) => prevPage + 1);
+
+  function CustomPagination(): React.JSX.Element {
+    return (
+      <Pagination
+        color="primary"
+        variant="outlined"
+        shape="rounded"
+        page={pageNumRef.current}
+        count={paginationTotal}
+        onChange={(event, value) => initDataPage(value)}
+      />
+    );
+  }
 
   return (
     <AdminLayout shopId={shopId}>
@@ -285,71 +318,72 @@ function SalesReport() {
           columns={columns}
           components={{
             Toolbar: CustomToolbar,
-            Footer: () => {
-              const startingPage = page * pageSize + 1;
-              const endPage =
-                page * pageSize + pageSize > filteredSales.length
-                  ? filteredSales.length
-                  : page * pageSize + pageSize;
-              let total = 0;
-              filteredSales
-                .slice(startingPage - 1, endPage)
-                .forEach((filteredSale) => (total += Number(filteredSale.total_price)));
-              return (
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                  }}>
-                  {/* <p style={{ margin: 0 }}>
-                    <span style={{ fontWeight: 'bold' }}>Page Total: </span>
-                    {total.toFixed(3)} {locationSettings?.currency_code}
-                  </p> */}
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                    }}>
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'flex-end',
-                        marginRight: '16px',
-                      }}>
-                      <span style={{ marginRight: '16px' }}>Rows per page:</span>
-                      <Select value={pageSize} onChange={handlePageSizeChange}>
-                        {pageSizeOptions.map((option) => (
-                          <MenuItem key={option} value={option}>
-                            {option}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </div>
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'flex-end',
-                        marginRight: '16px',
-                      }}>
-                      <IconButton disabled={page === 0} onClick={handlePrevPageButtonClick}>
-                        <KeyboardArrowLeft />
-                      </IconButton>
-                      <div style={{ marginLeft: '16px', marginRight: '16px' }}>
-                        {startingPage} - {endPage} of {filteredSales.length}
-                      </div>
-                      <IconButton
-                        disabled={page >= Math.ceil(filteredSales.length / pageSize) - 1}
-                        onClick={handleNextPageButtonClick}>
-                        <KeyboardArrowRight />
-                      </IconButton>
-                    </div>
-                  </div>
-                </div>
-              );
-            },
+            Pagination: CustomPagination,
+            // Footer: () => {
+            //   const startingPage = page * pageSize + 1;
+            //   const endPage =
+            //     page * pageSize + pageSize > filteredSales.length
+            //       ? filteredSales.length
+            //       : page * pageSize + pageSize;
+            //   let total = 0;
+            //   filteredSales
+            //     .slice(startingPage - 1, endPage)
+            //     .forEach((filteredSale) => (total += Number(filteredSale.total_price)));
+            //   return (
+            //     <div
+            //       style={{
+            //         display: 'flex',
+            //         alignItems: 'center',
+            //         justifyContent: 'space-between',
+            //       }}>
+            //       {/* <p style={{ margin: 0 }}>
+            //         <span style={{ fontWeight: 'bold' }}>Page Total: </span>
+            //         {total.toFixed(3)} {locationSettings?.currency_code}
+            //       </p> */}
+            //       <div
+            //         style={{
+            //           display: 'flex',
+            //           alignItems: 'center',
+            //         }}>
+            //         <div
+            //           style={{
+            //             display: 'flex',
+            //             alignItems: 'center',
+            //             justifyContent: 'flex-end',
+            //             marginRight: '16px',
+            //           }}>
+            //           <span style={{ marginRight: '16px' }}>Rows per page:</span>
+            //           <Select value={pageSize} onChange={handlePageSizeChange}>
+            //             {pageSizeOptions.map((option) => (
+            //               <MenuItem key={option} value={option}>
+            //                 {option}
+            //               </MenuItem>
+            //             ))}
+            //           </Select>
+            //         </div>
+            //         <div
+            //           style={{
+            //             display: 'flex',
+            //             alignItems: 'center',
+            //             justifyContent: 'flex-end',
+            //             marginRight: '16px',
+            //           }}>
+            //           <IconButton disabled={page === 0} onClick={handlePrevPageButtonClick}>
+            //             <KeyboardArrowLeft />
+            //           </IconButton>
+            //           <div style={{ marginLeft: '16px', marginRight: '16px' }}>
+            //             {startingPage} - {endPage} of {filteredSales.length}
+            //           </div>
+            //           <IconButton
+            //             disabled={page >= Math.ceil(filteredSales.length / pageSize) - 1}
+            //             onClick={handleNextPageButtonClick}>
+            //             <KeyboardArrowRight />
+            //           </IconButton>
+            //         </div>
+            //       </div>
+            //     </div>
+            //   );
+            // },
           }}
           pagination
           page={page}
