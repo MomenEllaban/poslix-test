@@ -2,6 +2,7 @@ import * as React from 'react';
 import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
 import ProductItem from './product-item';
+import CloseIcon from '@mui/icons-material/Close';
 
 const style = {
   position: 'absolute' as 'absolute',
@@ -16,10 +17,11 @@ const style = {
   border:'none',
   borderRadius:'8px',
   display:'flex',
-  justifyContent: 'space-between',
+  justifyContent: 'start',
   flexWrap:'wrap',
   maxHeight:'70vh',
-  overflowY:'auto !important'
+  overflowY:'auto !important',
+  gap:'.5rem'
 };
 
 export default function ProductVariablesModal({open, setOpen,product,addItemTocart,location}) {
@@ -36,9 +38,10 @@ export default function ProductVariablesModal({open, setOpen,product,addItemToca
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
-        
         <Box sx={style}>
-        {product.variations?.map((product,i)=> <ProductItem location={location} addItemTocart={addItemTocart} product={{...product,sell_price:product.price}} key={i} />)}
+        <div className='w-100 d-flex justify-content-end'><CloseIcon sx={{cursor:'pointer'}}  onClick={handleClose}/></div>
+
+        {product?.variations?.map((product,i)=> <ProductItem location={location} addItemTocart={addItemTocart} product={{...product,sell_price:product.price}} key={i} />)}
         </Box>
       </Modal>
     </div>

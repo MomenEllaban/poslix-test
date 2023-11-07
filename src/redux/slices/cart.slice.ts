@@ -141,7 +141,7 @@ const cartSlice = createSlice({
         }
         cart.cartSellTotal -= +action.payload.sell_price;
         cart.cartCostTotal -= +action.payload.cost_price;
-        localStorage.setItem('cart', JSON.stringify(state));
+        localStorage.setItem('cart', JSON.stringify(state)); 
       }
 
       if (!cart.cartItems.length) {

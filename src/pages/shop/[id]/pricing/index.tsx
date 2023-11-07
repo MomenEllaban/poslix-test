@@ -38,6 +38,7 @@ const PricingGroups = (props) => {
   const [selectGroup, setSelectGroup] = useState();
   
   const [isLoading, setIsLoading] = useState(true);
+  console.log(isLoading)
 
   const [showType, setShowType] = useState(String);
   const [currentPricingGroup, setCurrentPricingGroup] = useState<{
@@ -190,8 +191,7 @@ const PricingGroups = (props) => {
               <FontAwesomeIcon icon={faPlus} /> Add New Pricing Group{' '}
             </button>
           </div>
-        )}
-       
+        )}    
           <div className="page-content-style card">
             <h5>Pricing Group List</h5>
             <DataGrid
@@ -212,8 +212,6 @@ const PricingGroups = (props) => {
               onSelectionModelChange={(ids: any) => onRowsSelectionHandler(ids)}
             />
           </div>
-        
-     
       </AdminLayout>
       <PricingModal
       selectGroup={selectGroup}

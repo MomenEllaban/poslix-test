@@ -144,7 +144,6 @@ export default function OrdersTable({ lang, shopId, searchQuery = '', closeModal
       setRenderdItems(orderlistPaginated);
     }
   }, [salesReport, searchQuery]);
-
   useEffect(() => {
     refetch();
   }, [pageNumRef.current]);

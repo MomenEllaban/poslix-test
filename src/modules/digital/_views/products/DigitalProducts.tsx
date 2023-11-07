@@ -38,7 +38,12 @@ export default function DigitalProducts({ shopId }) {
   };
   // ------------------------------------------------------------------------------------------------
   const addItemTocart = (item: any) => {
-    if (cartItems.find((p) => p.id === item.id)) {
+    const updatedItem = cartItems.find((p) => p.id === item.id)
+    if (updatedItem) {
+      if (item?.is_service != 1 && item?.sell_over_stock != 1 && item.stock > 0 && item.stock <= updatedItem.quantity) {
+        Toastify('error', 'You have selected the maximum available quantity for this product.')
+        return
+      }
       const updatedItems = cartItems.map((cart_item) => {
         if (item.id === cart_item.id) {
           return {
@@ -192,9 +197,8 @@ export default function DigitalProducts({ shopId }) {
                         setRenderedTabs('categories');
                       }}
                       style={{ borderRadius: '8px', cursor: 'pointer' }}
-                      className={`w-50 p-2 text-center  ${
-                        renderedTabs === 'categories' ? 'bg-success' : 'bg-light'
-                      } ${renderedTabs === 'categories' ? 'text-light' : 'text-success'}`}>
+                      className={`w-50 p-2 text-center  ${renderedTabs === 'categories' ? 'bg-success' : 'bg-light'
+                        } ${renderedTabs === 'categories' ? 'text-light' : 'text-success'}`}>
                       {lang.pos.itemList.category}
                     </div>
                     <div
@@ -202,9 +206,8 @@ export default function DigitalProducts({ shopId }) {
                         setRenderedTabs('brands');
                       }}
                       style={{ borderRadius: '8px', cursor: 'pointer' }}
-                      className={`w-50 p-2 text-center  ${
-                        renderedTabs === 'brands' ? 'bg-success' : 'bg-light'
-                      } ${renderedTabs === 'brands' ? 'text-light' : 'text-success'}`}>
+                      className={`w-50 p-2 text-center  ${renderedTabs === 'brands' ? 'bg-success' : 'bg-light'
+                        } ${renderedTabs === 'brands' ? 'text-light' : 'text-success'}`}>
                       {lang.pos.itemList.brand}
                     </div>
                   </div>
@@ -247,55 +250,56 @@ export default function DigitalProducts({ shopId }) {
                   {/* categories */}
                   {type === 'all' && renderedTabs === 'categories'
                     ? products.map((product, ind) => (
-                        <ProductItem
-                          location={location}
-                          addItemTocart={addItemTocart}
-                          product={product}
-                          key={ind}
-                        />
-                      ))
+                      <ProductItem
+                        location={location}
+                        addItemTocart={addItemTocart}
+                        product={product}
+                        key={ind}
+                      />
+                    ))
                     : (products.filter((product) => product.category?.name === type) || []).map(
-                        (product) => (
-                          <ProductItem
-                            location={location}
-                            addItemTocart={addItemTocart}
-                            product={product}
-                            key={product.id}
-                          />
-                        )
-                      )}
-                  {/* brands */}
-                  {type === 'all' && renderedTabs === 'brands'
-                    ? brands?.map((brand, index) => (
-                        <div className="w-100" key={index}>
-                          {brand.products.map((product, productIndex) => (
-                            <div key={productIndex}>
-                              {' '}
-                              <ProductItem
-                                location={location}
-                                addItemTocart={addItemTocart}
-                                product={product}
-                                key={product.id}
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      ))
-                    : (
-                        brands.find((brand) => {
-                          return brand.name?.trim() === type?.trim();
-                        })?.products || []
-                      ).map((product) => (
+                      (product) => (
                         <ProductItem
                           location={location}
                           addItemTocart={addItemTocart}
                           product={product}
                           key={product.id}
                         />
-                      ))}
+                      )
+                    )}
+                  {/* brands */}
+                  {type === 'all' && renderedTabs === 'brands'
+                    ? brands?.map((brand, index) => (
+                      <div className="w-100" key={index}>
+                        {brand.products.map((product, productIndex) => (
+                          <div key={productIndex}>
+                            {' '}
+                            <ProductItem
+                              location={location}
+                              addItemTocart={addItemTocart}
+                              product={product}
+                              key={product.id}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    ))
+                    : (
+                      brands.find((brand) => {
+                        return brand.name?.trim() === type?.trim();
+                      })?.products || []
+                    ).map((product) => (
+                      <ProductItem
+                        location={location}
+                        addItemTocart={addItemTocart}
+                        product={product}
+                        key={product.id}
+                      />
+                    ))}
                 </div>
               </div>
               <DigitalCart
+              products={products}
                 location={location}
                 totalPrice={getTotalPrice()}
                 setRenderedScreen={setRenderedScreen}
