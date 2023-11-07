@@ -51,7 +51,7 @@ export default function SalesList(props: any) {
   const router = useRouter();
   const shopId = router.query.id;
   const [selectId, setSelectId] = useState(0);
-  const [selectRow, setSelectRow] = useState<any>({});
+  const [selectRow, setSelectRow] = useState<any>({payment:[]});
   const [lines, setLines] = useState<any>([]);
   console.log(lines);
 
