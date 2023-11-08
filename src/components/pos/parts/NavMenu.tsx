@@ -10,8 +10,12 @@ import { selectPos, setPosRegister } from 'src/redux/slices/pos.slice';
 import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
 import CloseRegister from '../modals/CloseRegister';
 import styles from './NavMenu.module.scss';
+import classNames from 'classnames';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCoffee, faCompress, faExpand } from '@fortawesome/free-solid-svg-icons';
 
 const NavMenu: any = ({ shopId }: any) => {
+  const [isFullScreen, setIsFullScreen] = useState(false);
   const router = useRouter();
   const dispatch = useAppDispatch();
 
@@ -56,6 +60,17 @@ const NavMenu: any = ({ shopId }: any) => {
     }
   }, []);
 
+  const toggleFullScreen = () => {
+    console.log('ssss');
+
+    if (!isFullScreen) {
+      document.documentElement.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
+    setIsFullScreen(!isFullScreen);
+  };
+
   return (
     <>
       <CloseRegister
@@ -69,10 +84,16 @@ const NavMenu: any = ({ shopId }: any) => {
         </div>
 
         <div id="scrollbar">
-          <Link className="nav-link menu-link" href={'/shop/' + shopId }>
+          <Link className="nav-link menu-link" href={'/shop/' + shopId}>
             <i className="ri-dashboard-2-line"></i>
             <span data-key="t-dashboards">{lang.pos.navmenu.dashboard}</span>
           </Link>
+          <button className="nav-link menu-link d-flex" onClick={toggleFullScreen}>
+          <FontAwesomeIcon icon={isFullScreen ? faCompress: faExpand} />
+            <span data-key="t-dashboards">
+              {!isFullScreen ? lang.pos.navmenu.fullscreen : lang.pos.navmenu.minimize}
+            </span>
+          </button>
           <button className="nav-link menu-link d-flex" onClick={handleSwitchRegister}>
             <i className="ri-stack-line"></i>
             <span data-key="t-dashboards">

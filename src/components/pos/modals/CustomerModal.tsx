@@ -39,6 +39,8 @@ const CustomerModal = (props: any) => {
 
   const { lang: _lang } = usePosContext();
   const lang = _lang?.pos;
+  const addHeader = _lang.add_customer;
+  const editHeader = _lang.edit_customer;
 
   const [customerInfo, setCustomerInfo] = useState(customerTemplate);
   const { customers, setCustomers } = useProducts();
@@ -94,10 +96,10 @@ const CustomerModal = (props: any) => {
         setCustomers([...customers, res]);
         Toastify('success', 'Successfully Created');
         const currentPath = router.pathname;
-        
-          if (!currentPath.includes('customers')) {
-            router.push(`/shop/${shopId}/customers`);
-          }
+
+        if (!currentPath.includes('customers')) {
+          router.push(`/shop/${shopId}/customers`);
+        }
         handleClose();
       })
       .catch(() => {
@@ -181,7 +183,7 @@ const CustomerModal = (props: any) => {
     return (
       <Modal show={open} onHide={handleClose}>
         <Modal.Header className="poslix-modal-title text-primary text-capitalize" closeButton>
-          {showType + ' customer'}
+          {showType == 'edit' ? editHeader : addHeader}
         </Modal.Header>
         <Modal.Body>
           <Box sx={{ display: 'flex', justifyContent: 'center', margin: '20px' }}>
@@ -194,7 +196,7 @@ const CustomerModal = (props: any) => {
   return (
     <Modal show={open} onHide={handleClose}>
       <Modal.Header className="poslix-modal-title text-primary text-capitalize" closeButton>
-        {showType + ' customer'}
+        {showType == 'edit' ? editHeader : addHeader}
       </Modal.Header>
       <Modal.Body>
         <Form noValidate onSubmit={handleSubmit(onSubmit, onError)}>
@@ -344,7 +346,7 @@ const CustomerModal = (props: any) => {
             </a>{' '}
             {showType != 'show' && (
               <Button type="submit" className="text-capitalize" onClick={() => {}}>
-                {showType} Customer
+                {showType == 'edit' ? editHeader : addHeader}
               </Button>
             )}
           </Modal.Footer>

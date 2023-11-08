@@ -121,5 +121,7 @@
     "your_order": "طلبك",
     "add_more_items" : "اضافة المزيد من العناصر",
     "order_summary" : "ملخص الطلب"
-  }
+  },
+  "add_customer": "اضافة عميل",
+  "edit_customer": "تعدل بيانات عميل"
 }

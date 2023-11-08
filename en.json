@@ -1,4 +1,5 @@
-{"digital":{
+{
+  "digital":{
  "View_Products":"View Products",
  "Categories":"Categories",
  "Brands":"Brands",
@@ -126,5 +127,7 @@
     "your_order": "Your Order",
     "add_more_items" : "Add More Items",
     "order_summary" : "Order Summary"
-  }
+  },
+  "add_customer": "Add Customer",
+  "edit_customer": "Edit Customer"
 }
