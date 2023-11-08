@@ -53,7 +53,6 @@ export default function SalesList(props: any) {
   const [selectId, setSelectId] = useState(0);
   const [selectRow, setSelectRow] = useState<any>({payment:[]});
   const [lines, setLines] = useState<any>([]);
-  console.log(lines);
 
   const [show, setShow] = useState(false);
   const [edit, setEdit] = useState(false);
@@ -100,7 +99,8 @@ export default function SalesList(props: any) {
     setIsLoadItems(true);
     try {
       const res = await findAllData(`quotations-list/${id}`);
-      setLines(res.data.result.quotationsList.quotation_list_lines);
+      
+      setLines(res.data.result.quotationsList?.products);
     } catch (e) {
       Toastify('error', 'Something went wrong');
     }
@@ -119,10 +119,12 @@ export default function SalesList(props: any) {
     const from = _locs.find((el) => el.location_id == quotation.location_id).location_name;
     const ceartedAt = quotation.created_at;
     const qotProducts = quotation.products;
+    
     setSelectedQuotationProducts(qotProducts);
-    quotation.quotation_list_lines.forEach((el) => {
+    
+    quotation?.quotation_list_lines?.forEach((el) => {
       products.push({
-        name: qotProducts.filter((ele) => ele.id == el.product_id)[0].name,
+        name: qotProducts.filter((ele) => ele.id == el.product_id)[0]?.name,
         qty: el.qty,
       });
     });
@@ -311,22 +313,22 @@ export default function SalesList(props: any) {
                   {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtAmount}
                 </th>
               </tr>
-              {lines.length > 0 &&
-                lines.map((line: any, index: number) => {
+              {lines?.length > 0 &&
+                lines?.map((line: any, index: number) => {
                   return (
                     <tr key={index}>
-                      <td>{Number(line.qty).toFixed(0)}</td>
+                      <td>{Number(line?.product_qty).toFixed(0)}</td>
                       <td>
                         {
-                          selectedQuotationProducts.filter((ele) => ele.id == line.product_id)[0]
-                            .name
+                          selectedQuotationProducts.filter((ele) => ele.product_id == line?.product_id)[0]
+                            ?.product_name
                         }
                       </td>
                       <td></td>
                       <td>
                         {Number(
-                            +selectedQuotationProducts.filter((ele) => ele.id == line.product_id)[0]
-                              .sell_price 
+                            +selectedQuotationProducts.filter((ele) => ele.product_id == line?.product_id)[0]
+                              ?.product_price 
                         ).toFixed(locationSettings?.location_decimal_places)}
                       </td>
                     </tr>
@@ -501,37 +503,37 @@ export default function SalesList(props: any) {
                 </th>
               </tr>
             </thead>
-            {lines.length > 0 &&
-              lines.map((line: any, index: number) => {
+            {lines?.length > 0 &&
+              lines?.map((line: any, index: number) => {
                 return (
                   <tr key={index}>
                     <td>
-                      {selectedQuotationProducts.filter((ele) => ele.id == line.product_id)[0].name}
+                      {selectedQuotationProducts.filter((ele) => ele.product_id == line?.product_id)[0]?.product_name}
                     </td>
-                    <td>{Number(line?.qty).toFixed(0)}</td>
+                    <td>{Number(line?.product_qty).toFixed(0)}</td>
                     <td>
                       {Number(
-                        selectedQuotationProducts.filter((ele) => ele.id == line.product_id)[0]
-                          .sell_price
+                        selectedQuotationProducts.filter((ele) => ele.product_id == line?.product_id)[0]
+                          ?.product_price
                       ).toFixed(locationSettings?.location_decimal_places || 4)}
                     </td>
                     <td>
                       {Number(
                         (tax / 100) *
-                          +selectedQuotationProducts.filter((ele) => ele.id == line.product_id)[0]
-                            .sell_price
+                          +selectedQuotationProducts.filter((ele) => ele.product_id == line?.product_id)[0]
+                            ?.product_price
                       ).toFixed(locationSettings?.location_decimal_places)}
                     </td>
 
                     <td>
                       {Number(
-                        +line?.qty *
-                          +selectedQuotationProducts.filter((ele) => ele.id == line.product_id)[0]
-                            .sell_price *
+                        +line?.product_qty *
+                          +selectedQuotationProducts.filter((ele) => ele.product_id == line?.product_id)[0]
+                            ?.product_price *
                           (selectRow.tax_amount / 100) +
-                          +line?.qty *
-                            +selectedQuotationProducts.filter((ele) => ele.id == line.product_id)[0]
-                              .sell_price
+                          +line?.product_qty *
+                            +selectedQuotationProducts.filter((ele) => ele.product_id == line?.product_id)[0]
+                              ?.product_price
                       ).toFixed(locationSettings?.location_decimal_places)}
                     </td>
                   </tr>
@@ -594,7 +596,7 @@ export default function SalesList(props: any) {
       const res = await findAllData(`quotations-list?location_id=${shopId}`);
       const customers_names = await findAllData(`customers/${shopId}`);
       setCustomersNames(customers_names.data.result);
-      setsales(res.data.result.quotationsList);
+// console.log(res.data.result.quotationsList);
 
       //       if (res.data.result.invoiceDetails != null && res.data.result.invoiceDetails.length > 10){
       //         setInvoiceDetails(JSON.parse(res.data.result.invoiceDetails));
@@ -797,7 +799,7 @@ export default function SalesList(props: any) {
                 </Button>
               </div>
             </div>
-            {lines.length > 0 ? (
+            {lines?.products?.length > 0||true ? (
               <div className="row">
                 <div className="invoice-items-container">
                   <div className="header-titles">
@@ -807,29 +809,28 @@ export default function SalesList(props: any) {
                     {edit && <div></div>}
                   </div>
                   {lines?.map((line: any, index: number) => {
+                    
                     return (
                       <div className="header-items under_items" key={index}>
                         <div>
-                          {console.log(selectedQuotationProducts)}
-                          {console.log(selectedQuotationProducts[0].id)}
-                          {console.log(line.product_id)}
+                      
                           {
-                            selectedQuotationProducts.filter((ele) => ele.id == line.product_id)[0]
-                              .name
+                            selectedQuotationProducts.filter((ele) => ele.product_id == line?.product_id)[0]
+                              ?.product_name
                           }
                         </div>
-                        <div>{Number(+line?.qty).toFixed(0)}</div>
+                        <div>{Number(+line?.product_qty).toFixed(0)}</div>
                         <div>
                           {Number(
-                            +line?.qty *
+                            +line?.product_qty *
                               +selectedQuotationProducts.filter(
-                                (ele) => ele.id == line.product_id
-                              )[0].sell_price *
+                                (ele) => ele.product_id == line?.product_id
+                              )[0]?.product_price *
                               (selectRow.tax_amount / 100) +
-                              +line?.qty *
+                              +line?.product_qty *
                                 +selectedQuotationProducts.filter(
-                                  (ele) => ele.id == line.product_id
-                                )[0].sell_price
+                                  (ele) => ele.product_id == line?.product_id
+                                )[0]?.product_price
                           ).toFixed(locationSettings?.location_decimal_places)}
                         </div>
                       </div>
