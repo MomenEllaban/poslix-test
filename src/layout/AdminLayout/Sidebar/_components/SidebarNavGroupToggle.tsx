@@ -29,6 +29,7 @@ export default function SidebarNavGroupToggle(props: SidebarNavGroupToggleProps)
   };
 
   // const { activeEventKey } = useContext(AccordionContext);
+
   const { eventKey, icon, children, setActiveEventKey, activeEventKey } = props;
 
   const decoratedOnClick = useAccordionButton(eventKey, (e) => handleEvent(e));
@@ -36,13 +37,11 @@ export default function SidebarNavGroupToggle(props: SidebarNavGroupToggleProps)
   const handleEvent = (e) => {
     const button = e.currentTarget;
     const sidebars = document.querySelectorAll('.sidebar-nav-group');
-    const attr = button.getAttribute('data-index');
+    const attr__data_index = button.getAttribute('data-index');
     const SHOW = 'show';
     const COLLAPSED = 'collapsed';
     const SELECTED = 'selected';
     const SELECTED_NAV = 'sideBarNav_selected__amlDX';
-
-    setActiveEventKey(attr);
 
     sidebars.forEach((ele) => {
       const element_btn = ele.children[0];
@@ -50,7 +49,7 @@ export default function SidebarNavGroupToggle(props: SidebarNavGroupToggleProps)
 
       const element_btn_attr_index = element_btn.getAttribute('data-index');
 
-      if (element_btn_attr_index !== attr) {
+      if (element_btn_attr_index !== attr__data_index) {
         element_li.classList.remove(SHOW);
         ele.classList.remove(SHOW);
         element_btn.classList.remove(SELECTED_NAV);
@@ -58,6 +57,8 @@ export default function SidebarNavGroupToggle(props: SidebarNavGroupToggleProps)
         element_btn.classList.remove(SELECTED);
       }
     });
+
+    setActiveEventKey(attr__data_index);
   };
 
   const isCurrentEventKey = activeEventKey === eventKey;
