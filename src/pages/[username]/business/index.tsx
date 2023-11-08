@@ -1,31 +1,31 @@
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { OwnerAdminLayout } from '@layout';
+import { getSession } from 'next-auth/react';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
-import { useContext, useEffect } from 'react';
+// import { useRouter } from 'next/router';
+import { useContext } from 'react';
 import { Card, Spinner, Table } from 'react-bootstrap';
 import withAuth from 'src/HOCs/withAuth';
 import { darkModeContext } from 'src/context/DarkModeContext';
 import { useUser } from 'src/context/UserContext';
 import BusinessRow from 'src/modules/business/business-list/business-row';
-import { useBusinessList } from 'src/services';
+// import { useBusinessList } from 'src/services';
 
-const MyBusinessesPage = () => {
-  const router = useRouter();
+const MyBusinessesPage = ({ businessList }) => {
+  // const router = useRouter();
   const { user } = useUser();
   const { darkMode } = useContext(darkModeContext);
 
-  const { businessList, isLoading, error, refetch } = useBusinessList({
-    suspense: !user.id,
-  });
+  // const { businessList, isLoading, error, refetch } = useBusinessList({
+  //   suspense: !user.id,
+  // });
 
   const userId = user?.id;
 
-  useEffect(() => {
-    refetch();
-  }, [router.asPath]);
-
+  // useEffect(() => {
+  //   refetch();
+  // }, [router.asPath]);
 
   return (
     <OwnerAdminLayout>
@@ -69,4 +69,38 @@ const MyBusinessesPage = () => {
   );
 };
 
-export default withAuth(MyBusinessesPage);
+export default MyBusinessesPage;
+
+async function getData(endPoint: string, API_BASE: string, _token: string) {
+  try {
+    const res = await fetch(`${API_BASE}${endPoint}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${_token}`,
+      },
+    });
+    const data = await res.json();
+
+    if (data.status === 200) {
+      return data?.result;
+    }
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+export async function getServerSideProps(context) {
+  const { req } = context;
+
+  const session = await getSession({ req: req });
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
+  const _token = session?.user?.token;
+
+  const businessList = (await getData(`business`, API_BASE, _token)) ?? [];
+
+  return {
+    props: {
+      businessList,
+    },
+  };
+}
