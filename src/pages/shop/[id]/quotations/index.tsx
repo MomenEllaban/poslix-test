@@ -45,13 +45,14 @@ export default function SalesList(props: any) {
       createdBy: '',
       ceartedAt: '',
     });
+    setLines([]);
   };
   const [sales, setsales] = useState<any>([]);
   const [customersNames, setCustomersNames] = useState<any>([]);
   const router = useRouter();
   const shopId = router.query.id;
   const [selectId, setSelectId] = useState(0);
-  const [selectRow, setSelectRow] = useState<any>({payment:[]});
+  const [selectRow, setSelectRow] = useState<any>({ payment: [] });
   const [lines, setLines] = useState<any>([]);
 
   const [show, setShow] = useState(false);
@@ -99,7 +100,7 @@ export default function SalesList(props: any) {
     setIsLoadItems(true);
     try {
       const res = await findAllData(`quotations-list/${id}`);
-      
+
       setLines(res.data.result.quotationsList?.products);
     } catch (e) {
       Toastify('error', 'Something went wrong');
@@ -119,9 +120,9 @@ export default function SalesList(props: any) {
     const from = _locs.find((el) => el.location_id == quotation.location_id).location_name;
     const ceartedAt = quotation.created_at;
     const qotProducts = quotation.products;
-    
+
     setSelectedQuotationProducts(qotProducts);
-    
+
     quotation?.quotation_list_lines?.forEach((el) => {
       products.push({
         name: qotProducts.filter((ele) => ele.id == el.product_id)[0]?.name,
@@ -320,15 +321,23 @@ export default function SalesList(props: any) {
                       <td>{Number(line?.product_qty).toFixed(0)}</td>
                       <td>
                         {
-                          selectedQuotationProducts.filter((ele) => ele.product_id == line?.product_id)[0]
-                            ?.product_name
+                          selectedQuotationProducts.filter((ele) => {
+                            if (ele.variant_id) {
+                              return ele.variant_id == line?.variant_id;
+                            }
+                            return ele.product_id == line?.product_id;
+                          })[0]?.product_name
                         }
                       </td>
                       <td></td>
                       <td>
                         {Number(
-                            +selectedQuotationProducts.filter((ele) => ele.product_id == line?.product_id)[0]
-                              ?.product_price 
+                          +selectedQuotationProducts.filter((ele) => {
+                            if (ele.variant_id) {
+                              return ele.variant_id == line?.variant_id;
+                            }
+                            return ele.product_id == line?.product_id;
+                          })[0]?.product_price
                         ).toFixed(locationSettings?.location_decimal_places)}
                       </td>
                     </tr>
@@ -508,32 +517,46 @@ export default function SalesList(props: any) {
                 return (
                   <tr key={index}>
                     <td>
-                      {selectedQuotationProducts.filter((ele) => ele.product_id == line?.product_id)[0]?.product_name}
+                      {
+                        selectedQuotationProducts.filter((ele) => {
+                          if (ele.variant_id) {
+                            return ele.variant_id == line?.variant_id;
+                          }
+                          return ele.product_id == line?.product_id;
+                        })[0]?.product_name
+                      }
                     </td>
                     <td>{Number(line?.product_qty).toFixed(0)}</td>
                     <td>
                       {Number(
-                        selectedQuotationProducts.filter((ele) => ele.product_id == line?.product_id)[0]
-                          ?.product_price
+                        selectedQuotationProducts.filter((ele) => {
+                          if (ele.variant_id) {
+                            return ele.variant_id == line?.variant_id;
+                          }
+                          return ele.product_id == line?.product_id;
+                        })[0]?.product_price
                       ).toFixed(locationSettings?.location_decimal_places || 4)}
                     </td>
                     <td>
                       {Number(
                         (tax / 100) *
-                          +selectedQuotationProducts.filter((ele) => ele.product_id == line?.product_id)[0]
-                            ?.product_price
+                          +selectedQuotationProducts.filter((ele) => {
+                            if (ele.variant_id) {
+                              return ele.variant_id == line?.variant_id;
+                            }
+                            return ele.product_id == line?.product_id;
+                          })[0]?.product_price
                       ).toFixed(locationSettings?.location_decimal_places)}
                     </td>
 
                     <td>
                       {Number(
-                        +line?.product_qty *
-                          +selectedQuotationProducts.filter((ele) => ele.product_id == line?.product_id)[0]
-                            ?.product_price *
-                          (selectRow.tax_amount / 100) +
-                          +line?.product_qty *
-                            +selectedQuotationProducts.filter((ele) => ele.product_id == line?.product_id)[0]
-                              ?.product_price
+                            +selectedQuotationProducts.filter((ele) => {
+                              if (ele.variant_id) {
+                                return ele.variant_id == line?.variant_id;
+                              }
+                              return ele.product_id == line?.product_id;
+                            })[0]?.product_price
                       ).toFixed(locationSettings?.location_decimal_places)}
                     </td>
                   </tr>
@@ -596,8 +619,7 @@ export default function SalesList(props: any) {
       const res = await findAllData(`quotations-list?location_id=${shopId}`);
       const customers_names = await findAllData(`customers/${shopId}`);
       setCustomersNames(customers_names.data.result);
-// console.log(res.data.result.quotationsList);
-
+      setsales(res.data.result.quotationsList.reverse());
       //       if (res.data.result.invoiceDetails != null && res.data.result.invoiceDetails.length > 10){
       //         setInvoiceDetails(JSON.parse(res.data.result.invoiceDetails));
       // }
@@ -799,7 +821,7 @@ export default function SalesList(props: any) {
                 </Button>
               </div>
             </div>
-            {lines?.products?.length > 0||true ? (
+            {lines?.products?.length > 0 || true ? (
               <div className="row">
                 <div className="invoice-items-container">
                   <div className="header-titles">
@@ -809,28 +831,36 @@ export default function SalesList(props: any) {
                     {edit && <div></div>}
                   </div>
                   {lines?.map((line: any, index: number) => {
-                    
                     return (
                       <div className="header-items under_items" key={index}>
                         <div>
-                      
                           {
-                            selectedQuotationProducts.filter((ele) => ele.product_id == line?.product_id)[0]
-                              ?.product_name
+                            selectedQuotationProducts.filter((ele) => {
+                              if (ele.variant_id) {
+                                return ele.variant_id == line?.variant_id;
+                              }
+                              return ele.product_id == line?.product_id;
+                            })[0]?.product_name
                           }
                         </div>
                         <div>{Number(+line?.product_qty).toFixed(0)}</div>
                         <div>
                           {Number(
-                            +line?.product_qty *
-                              +selectedQuotationProducts.filter(
-                                (ele) => ele.product_id == line?.product_id
-                              )[0]?.product_price *
-                              (selectRow.tax_amount / 100) +
-                              +line?.product_qty *
-                                +selectedQuotationProducts.filter(
-                                  (ele) => ele.product_id == line?.product_id
-                                )[0]?.product_price
+                            // +line?.product_qty *
+                            //   +selectedQuotationProducts.filter((ele) => {
+                            //     if (ele.variant_id) {
+                            //       return ele.variant_id == line?.variant_id;
+                            //     }
+                            //     return ele.product_id == line?.product_id;
+                            //   })[0]?.product_price *
+                            // (selectRow.tax_amount / 100) +
+                            // +line?.product_qty *
+                            +selectedQuotationProducts.filter((ele) => {
+                              if (ele.variant_id) {
+                                return ele.variant_id == line?.variant_id;
+                              }
+                              return ele.product_id == line?.product_id;
+                            })[0]?.product_price
                           ).toFixed(locationSettings?.location_decimal_places)}
                         </div>
                       </div>
