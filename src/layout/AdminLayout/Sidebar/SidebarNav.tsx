@@ -1,4 +1,4 @@
-import { faCalendarDay, faDesktop, faUser } from '@fortawesome/free-solid-svg-icons';
+import { faCalendarDay, faDesktop, faListSquares, faUser } from '@fortawesome/free-solid-svg-icons';
 import Money from '@mui/icons-material/Money';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
@@ -11,8 +11,8 @@ import SidebarNavItem from './_components/SidebarNavItem';
 import styles from './sideBarNav.module.css';
 import AddBoxTwoToneIcon from '@mui/icons-material/AddBoxTwoTone';
 // import TransferModal from 'src/components/pos/modals/TransferModal';
-import { findAllData } from 'src/services/crud.api';
-import { Toastify } from 'src/libs/allToasts';
+// import { findAllData } from 'src/services/crud.api';
+// import { Toastify } from 'src/libs/allToasts';
 import SupplierModal from 'src/components/pos/modals/SupplierModal';
 import CustomerModal from 'src/components/pos/modals/CustomerModal';
 import { PosProvider } from 'src/modules/pos/_context/PosContext';
@@ -35,55 +35,58 @@ const Soon = () => (
   </span>
 );
 
-const initialPermissions = {
-  hasProducts: false,
-  hasTailoring: false,
-  hasCats: false,
-  hasTaxes: false,
-  hasPurchases: false,
-  hasSalesList: false,
-  hasPOS: false,
-  hasDiscount: false,
-  hasExpenses: false,
-  hasOrders: false,
-  hasTransfer: false,
-  hasSupplier: false,
-  hasCustomers: false,
-  hasAppearance: false,
-  hasAppStore: false,
-  hasItemSales: false,
-  hasCategorySales: false,
-  hasCurrentStock: false,
-  hasSupplierSales: false,
-  hasRegister: false,
-  hasQuotations: false,
-};
+// const initialPermissions = {
+//   hasProducts: false,
+//   hasTailoring: false,
+//   hasCats: false,
+//   hasTaxes: false,
+//   hasPurchases: false,
+//   hasSalesList: false,
+//   hasPOS: false,
+//   hasDiscount: false,
+//   hasExpenses: false,
+//   hasOrders: false,
+//   hasTransfer: false,
+//   hasSupplier: false,
+//   hasCustomers: false,
+//   hasAppearance: false,
+//   hasAppStore: false,
+//   hasItemSales: false,
+//   hasCategorySales: false,
+//   hasCurrentStock: false,
+//   hasSupplierSales: false,
+//   hasRegister: false,
+//   hasQuotations: false,
+// };
 
-const initialTruePermissions = Object.keys(initialPermissions).reduce((acc, key) => {
-  acc[key] = true;
-  return acc;
-}, {} as any);
+// const initialTruePermissions = Object.keys(initialPermissions).reduce((acc, key) => {
+//   acc[key] = true;
+//   return acc;
+// }, {} as any);
 
 export function SidebarNav({ shopId }: any): React.JSX.Element {
   const [btype, setBType] = useState('');
   const [loading, setLoading] = useState(true);
-  const [permiss, setPermiss] = useState(initialPermissions);
-  // ----------------------------------transefere modal----------------------------------------------
-  const [isAddTranseferModalOpen, setIsAddTranseferModalOpen] = useState(false);
 
-  const handleTranseferModalCLose = () => {
-    setIsAddTranseferModalOpen(false);
-  };
-  async function initDataPageTransefer() {
-    if (router.isReady) {
-      const res = await findAllData(`transfer/${router.query.id}`);
-      if (!res.data.success || res.data.status === 201) {
-        Toastify('error', 'Somthing wrong!!, try agian');
-        return;
-      }
-      router.push('/shop/' + shopId + '/transfers');
-    }
-  }
+  const [activeEventKey, setActiveEventKey] = useState('');
+
+  // const [permiss, setPermiss] = useState(initialPermissions);
+  // ----------------------------------transefere modal----------------------------------------------
+  // const [isAddTranseferModalOpen, setIsAddTranseferModalOpen] = useState(false);
+
+  // const handleTranseferModalCLose = () => {
+  //   setIsAddTranseferModalOpen(false);
+  // };
+  // async function initDataPageTransefer() {
+  //   if (router.isReady) {
+  //     const res = await findAllData(`transfer/${router.query.id}`);
+  //     if (!res.data.success || res.data.status === 201) {
+  //       Toastify('error', 'Somthing wrong!!, try agian');
+  //       return;
+  //     }
+  //     router.push('/shop/' + shopId + '/transfers');
+  //   }
+  // }
   // ----------------------------------------------------------------------------------------------
   // ----------------------------------Supplier modal----------------------------------------------
   const [isAddSupplierModalOpen, setIsAddSupplierModalOpen] = useState(false);
@@ -237,7 +240,12 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
         permissions.hasTransfers ||
         permissions.hasSuppliers ||
         permissions.hasExpenses) && (
-        <SidebarNavGroup toggleIcon="MdOutlineLocalGroceryStore" toggleText="Inventory">
+        <SidebarNavGroup
+          eventKey={'0'}
+          toggleIcon="MdOutlineLocalGroceryStore"
+          setActiveEventKey={setActiveEventKey}
+          activeEventKey={activeEventKey}
+          toggleText="Inventory">
           {permissions.hasProducts && (
             <SidebarNavItem
               href={'/shop/' + shopId + '/products'}
@@ -351,7 +359,12 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
       )}
 
       {(permissions.hasSalesList || permissions.hasQuotations) && (
-        <SidebarNavGroup toggleIcon="MdOutlineCrisisAlert" toggleText="Sales">
+        <SidebarNavGroup
+          toggleIcon="MdOutlineCrisisAlert"
+          eventKey={'1'}
+          setActiveEventKey={setActiveEventKey}
+          activeEventKey={activeEventKey}
+          toggleText="Sales">
           {permissions.hasQuotations && (
             <SidebarNavItem
               href={'/shop/' + shopId + '/quotations'}
@@ -409,7 +422,12 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
         permissions.hasSalesReport ||
         permissions.hasItemsReport ||
         permissions.hasStockReport) && (
-        <SidebarNavGroup toggleIcon="TbReportSearch" toggleText="Report">
+        <SidebarNavGroup
+          toggleIcon="TbReportSearch"
+          eventKey={'2'}
+          setActiveEventKey={setActiveEventKey}
+          activeEventKey={activeEventKey}
+          toggleText="Report">
           {permissions.hasRegisterReport && (
             <SidebarNavItem
               href={'/shop/' + shopId + '/reports/register'}
@@ -489,7 +507,12 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
         permissions.Categories ||
         permissions.hasPayment ||
         permissions.hasPrint) && (
-        <SidebarNavGroup toggleIcon="IoSettingsSharp" toggleText="Settings">
+        <SidebarNavGroup
+          eventKey={'3'}
+          toggleIcon="IoSettingsSharp"
+          setActiveEventKey={setActiveEventKey}
+          activeEventKey={activeEventKey}
+          toggleText="Settings">
           {permissions.hasTaxes && (
             <SidebarNavItem
               href={'/shop/' + shopId + '/taxes'}
