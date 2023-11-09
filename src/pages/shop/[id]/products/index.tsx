@@ -2,10 +2,10 @@ import { faBarcode, faPenToSquare, faPlus, faTrash } from '@fortawesome/free-sol
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { AdminLayout } from '@layout';
 import { Button as MButton } from '@mui/material';
-import TextField from '@mui/material/TextField';
+// import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
-import useMediaQuery from '@mui/material/useMediaQuery';
-import { debounce } from '@mui/material/utils';
+// import useMediaQuery from '@mui/material/useMediaQuery';
+// import { debounce } from '@mui/material/utils';
 import {
   DataGrid,
   GridColDef,
@@ -18,9 +18,9 @@ import {
 import type { NextPage } from 'next';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
-import { ChangeEvent, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { ChangeEvent, useContext, useEffect, useRef, useState } from 'react';
 import { Button, ButtonGroup } from 'react-bootstrap';
-import Spinner from 'react-bootstrap/Spinner';
+// import Spinner from 'react-bootstrap/Spinner';
 import { ToastContainer } from 'react-toastify';
 import withAuth from 'src/HOCs/withAuth';
 import ShowPriceListModal from 'src/components/dashboard/modal/ShowPriceListModal';
@@ -31,8 +31,8 @@ import { Toastify } from 'src/libs/allToasts';
 import { createNewData, findAllData } from 'src/services/crud.api';
 import api from 'src/utils/app-api';
 import { darkModeContext } from '../../../../context/DarkModeContext';
-import styles from './table.module.css';
-import { grey } from '@mui/material/colors';
+// import styles from './table.module.css';
+// import { grey } from '@mui/material/colors';
 
 // const CustomToolbar = ({
 //   importFileClickHandler,
@@ -72,7 +72,7 @@ import { grey } from '@mui/material/colors';
 
 const Product: NextPage = (props: any) => {
   const { id } = props;
-  const {locationSettings: mySit, setLocationSettings: setmySit} = useUser();  
+  const { locationSettings: mySit, setLocationSettings: setmySit } = useUser();
   const [shopId, setShopId] = useState('');
   const myLoader = (img: any) => img.src;
   const [locationSettings, setLocationSettings] = useState<any>();
@@ -82,7 +82,7 @@ const Product: NextPage = (props: any) => {
     { id: number; name: string; sku: string; type: string; qty: number }[]
   >([]);
   const [show, setShow] = useState(false);
-  const [showDeleteAll, setShowDeleteAll] = useState(false);
+  // const [showDeleteAll, setShowDeleteAll] = useState(false);
   const [selectId, setSelectId] = useState(0);
   const [type, setType] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -92,9 +92,9 @@ const Product: NextPage = (props: any) => {
   const [selectedItems, setSelectedItems] = useState<Array<string>>([]);
   const [locationModal, setLocationModal] = useState<boolean>(false);
   const [locations, setLocations] = useState<{ value: number; label: string }[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [lastPage, setLastPage] = useState();
-  const [totalRows, setTotalRows] = useState();
+  // const [currentPage, setCurrentPage] = useState(1);
+  // const [lastPage, setLastPage] = useState();
+  // const [totalRows, setTotalRows] = useState();
   const { darkMode } = useContext(darkModeContext);
   const [permissions, setPermissions] = useState<any>();
 
@@ -119,7 +119,11 @@ const Product: NextPage = (props: any) => {
           loader={myLoader}
           width={50}
           height={50}
-          src={row.image && (row.image.length > 1) && (row.image !== 'url') ? row.image : '/images/pos/placeholder.png'}
+          src={
+            row.image && row.image.length > 1 && row.image !== 'url'
+              ? row.image
+              : '/images/pos/placeholder.png'
+          }
         />
       ),
     },
@@ -235,24 +239,33 @@ const Product: NextPage = (props: any) => {
   };
 
   function CustomToolbar() {
-    const [isHovered, setIsHovered] = useState(false);
+    // const [isHovered, setIsHovered] = useState(false);
 
-    const divStyle = {
-      background: isHovered ? '#99CC66' : '#779933',
-      padding: '4px',
-      display: 'flex',
-      alignItems: 'center',
-      borderRadius: '12px',
-      marginRight: '0.5rem',
-      transition: 'background-color 0.3s',
-    };
+    // const divStyle = {
+    //   background: isHovered ? '#99CC66' : '#779933',
+    //   padding: '4px',
+    //   display: 'flex',
+    //   alignItems: 'center',
+    //   borderRadius: '12px',
+    //   marginRight: '0.5rem',
+    //   transition: 'background-color 0.3s',
+    // };
     return (
       <GridToolbarContainer className="d-flex align-items-center">
-        <GridToolbarExport />
-        {/* mohamed elsayed */}
+        <GridToolbarExport
+          csvOptions={{
+            fileName: 'poxLix-products',
+            allColumns: true,
+          }}
+          printOptions={{
+            hideFooter: true,
+            hideToolbar: true,
+            allColumns: true,
+          }}
+        />
+
         <MButton onClick={importFileClickHandler}>Import</MButton>
         <input style={{ display: 'none' }} ref={fileRef} type="file" onChange={importFileHandler} />
-        {/* /////////// */}
 
         <GridToolbarColumnsButton />
         <MButton onClick={() => setShowDeleteSelected(true)}>Delete Selected</MButton>
@@ -313,20 +326,22 @@ const Product: NextPage = (props: any) => {
             return loc.location_id == +id;
           })
         ]
-        );
-        setmySit(_locs[
-          _locs.findIndex((loc: any) => {
-            return loc.location_id == +id;
-          })
-        ])
+      );
+    setmySit(
+      _locs[
+        _locs.findIndex((loc: any) => {
+          return loc.location_id == +id;
+        })
+      ]
+    );
   }, [router.asPath]);
 
-  const handleDeleteFuc = (result: boolean, msg: string, section: string) => {
-    initDataPage();
-    if (msg.length > 0) Toastify(result ? 'success' : 'error', msg);
-    setShow(false);
-    setShowDeleteAll(false);
-  };
+  // const handleDeleteFuc = (result: boolean, msg: string, section: string) => {
+  //   initDataPage();
+  //   if (msg.length > 0) Toastify(result ? 'success' : 'error', msg);
+  //   setShow(false);
+  //   setShowDeleteAll(false);
+  // };
   const onRowsSelectionHandler = (ids: any) => {
     setSelectedItems(ids);
   };
@@ -341,13 +356,13 @@ const Product: NextPage = (props: any) => {
       }
     }
   };
-  const handleSearch = (event) => {
-    debounceSearchTerm(event.target.value);
-  };
+  // const handleSearch = (event) => {
+  //   debounceSearchTerm(event.target.value);
+  // };
   // Debounce user input with lodash debounce function
-  const debounceSearchTerm = debounce((value) => {
-    setSearchTerm(value);
-  }, 500);
+  // const debounceSearchTerm = debounce((value) => {
+  //   setSearchTerm(value);
+  // }, 500);
 
   // Filter products based on search term
   useEffect(() => {
@@ -372,9 +387,9 @@ const Product: NextPage = (props: any) => {
   }, [shopId]);
 
   const theme = useTheme();
-  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
-  const isMediumScreen = useMediaQuery(theme.breakpoints.between('md', 'lg'));
-  const getRowClassName = () => styles.rowStyling;
+  // const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  // const isMediumScreen = useMediaQuery(theme.breakpoints.between('md', 'lg'));
+  // const getRowClassName = () => styles.rowStyling;
 
   const handleDeleteMultiProducts = () => {
     setIsLoading(true);
@@ -463,34 +478,32 @@ const Product: NextPage = (props: any) => {
         </div>
       )}
 
-  
-        <>
-          <div className="page-content-style card">
-            <h5>Product List</h5>
-            <DataGrid
+      <>
+        <div className="page-content-style card">
+          <h5>Product List</h5>
+          <DataGrid
             loading={isLoading}
-              ref={dataGridRef}
-              checkboxSelection
-              className="datagrid-style"
-              sx={{
-                '.MuiDataGrid-columnSeparator': {
-                  display: 'none',
-                },
-                '&.MuiDataGrid-root': {
-                  border: 'none',
-                },
-              }}
-              rows={filteredProducts}
-              columns={columns}
-              pageSize={10}
-              rowsPerPageOptions={[10]}
-              onSelectionModelChange={(ids: any) => onRowsSelectionHandler(ids)}
-              onCellClick={handleCellClick}
-              components={{ Toolbar: CustomToolbar }}
-            />
-          </div>
-        </>
-      
+            ref={dataGridRef}
+            checkboxSelection
+            className="datagrid-style"
+            sx={{
+              '.MuiDataGrid-columnSeparator': {
+                display: 'none',
+              },
+              '&.MuiDataGrid-root': {
+                border: 'none',
+              },
+            }}
+            rows={filteredProducts}
+            columns={columns}
+            pageSize={10}
+            rowsPerPageOptions={[10]}
+            onSelectionModelChange={(ids: any) => onRowsSelectionHandler(ids)}
+            onCellClick={handleCellClick}
+            components={{ Toolbar: CustomToolbar }}
+          />
+        </div>
+      </>
     </AdminLayout>
   );
 };
