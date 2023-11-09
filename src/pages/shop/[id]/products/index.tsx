@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { AdminLayout } from '@layout';
 import { Button as MButton } from '@mui/material';
 // import TextField from '@mui/material/TextField';
-import { useTheme } from '@mui/material/styles';
+// import { useTheme } from '@mui/material/styles';
 // import useMediaQuery from '@mui/material/useMediaQuery';
 // import { debounce } from '@mui/material/utils';
 import {
@@ -34,42 +34,6 @@ import { darkModeContext } from '../../../../context/DarkModeContext';
 // import styles from './table.module.css';
 // import { grey } from '@mui/material/colors';
 
-// const CustomToolbar = ({
-//   importFileClickHandler,
-//   importFileHandler,
-//   fileRef,
-//   setShowDeleteSelected,
-//   isLoading
-// }) => {
-//   const [isHovered, setIsHovered] = useState(false);
-
-//   const divStyle = {
-//     background: isHovered ? '#99CC66' : '#779933',
-//     padding: '4px',
-//     display: 'flex',
-//     alignItems: 'center',
-//     borderRadius: '12px',
-//     marginRight: '0.5rem',
-//     transition: 'background-color 0.3s',
-//   };
-//   return (
-//     <GridToolbarContainer className="d-flex align-items-center">
-//       <GridToolbarExport />
-//       {/* mohamed elsayed */}
-//       <MButton onClick={importFileClickHandler}>Import</MButton>
-//       <input style={{ display: 'none' }} ref={fileRef} type="file" onChange={importFileHandler} />
-//       {/* /////////// */}
-
-//       <GridToolbarColumnsButton />
-//       <MButton onClick={() => setShowDeleteSelected(true)}>Delete Selected</MButton>
-
-//       {!isLoading && permissions.hasInsert && (
-//         <TextField label="search name/sku" variant="filled" onChange={handleSearch} />
-//       )}
-//     </GridToolbarContainer>
-//   );
-// };
-
 const Product: NextPage = (props: any) => {
   const { id } = props;
   const { locationSettings: mySit, setLocationSettings: setmySit } = useUser();
@@ -99,6 +63,12 @@ const Product: NextPage = (props: any) => {
   const [permissions, setPermissions] = useState<any>();
 
   const [showDeleteSelected, setShowDeleteSelected] = useState(false);
+
+  const handleDataVariations = (variations: unknown[], type: string) => {
+    const data = variations?.map((value) => value?.[type]);
+    return JSON.stringify(data);
+  };
+
   const columns: GridColDef[] = [
     {
       field: 'id',
@@ -107,26 +77,7 @@ const Product: NextPage = (props: any) => {
       headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
     },
-    {
-      field: 'image',
-      headerName: 'Image',
-      flex: 1,
-      headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
-      cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
-      renderCell: ({ row }: Partial<GridRowParams>) => (
-        <Image
-          alt=""
-          loader={myLoader}
-          width={50}
-          height={50}
-          src={
-            row.image && row.image.length > 1 && row.image !== 'url'
-              ? row.image
-              : '/images/pos/placeholder.png'
-          }
-        />
-      ),
-    },
+
     {
       field: 'type',
       headerName: 'Type',
@@ -136,14 +87,14 @@ const Product: NextPage = (props: any) => {
     },
     {
       field: 'sku',
-      headerName: 'sku ',
+      headerName: 'Sku ',
       flex: 0.5,
       headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
     },
     {
       field: 'name',
-      headerName: 'name ',
+      headerName: 'Name ',
       flex: 1,
       headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
@@ -170,12 +121,30 @@ const Product: NextPage = (props: any) => {
     },
 
     {
+      field: 'cost_price',
+      headerName: 'Cost',
+      hide: true,
+    },
+    {
       field: 'category',
       headerName: 'Category',
       flex: 1,
       headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       renderCell: ({ row }) => <p>{row.category?.name}</p>,
+      valueFormatter: ({ value }) => value?.name,
+    },
+
+    {
+      field: 'brand_id',
+      headerName: 'Brand',
+      hide: true,
+    },
+
+    {
+      field: 'unit_id',
+      headerName: 'Unit',
+      hide: true,
     },
     {
       field: 'stock',
@@ -190,6 +159,59 @@ const Product: NextPage = (props: any) => {
         </p>
       ),
     },
+
+    {
+      field: 'sell_over_stock',
+      headerName: 'Sell Over Stock',
+      hide: true,
+    },
+    {
+      field: 'image',
+      headerName: 'Image',
+      flex: 1,
+      headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
+      cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
+
+      renderCell: ({ row }: Partial<GridRowParams>) => (
+        <Image
+          alt=""
+          loader={myLoader}
+          width={50}
+          height={50}
+          src={
+            row.image && row.image.length > 1 && row.image !== 'url'
+              ? row.image
+              : '/images/pos/placeholder.png'
+          }
+        />
+      ),
+    },
+
+    {
+      field: `Variations Name`,
+      headerName: 'Variations Name',
+      hide: true,
+      valueGetter: ({ row }) => handleDataVariations(row?.variations, 'name'),
+    },
+    {
+      field: `Variations Sku`,
+      headerName: 'Variations Sku',
+      hide: true,
+      valueGetter: ({ row }) => handleDataVariations(row?.variations, 'sku'),
+    },
+    {
+      field: `Variations Cost`,
+      headerName: 'Variations Cost',
+      hide: true,
+      valueGetter: ({ row }) => handleDataVariations(row?.variations, 'cost'),
+    },
+    {
+      field: `Variations Price`,
+      headerName: 'Variations Price',
+      hide: true,
+      valueGetter: ({ row }) => handleDataVariations(row?.variations, 'price'),
+    },
+
     {
       field: 'action',
       headerName: 'Action ',
@@ -386,7 +408,7 @@ const Product: NextPage = (props: any) => {
     initDataPage();
   }, [shopId]);
 
-  const theme = useTheme();
+  // const theme = useTheme();
   // const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
   // const isMediumScreen = useMediaQuery(theme.breakpoints.between('md', 'lg'));
   // const getRowClassName = () => styles.rowStyling;
