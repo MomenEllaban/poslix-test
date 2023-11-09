@@ -45,6 +45,8 @@ export interface IOpenCloseReport {
   date: Date;
   note?: string;
   status: EStatus;
+  last_page?: number;
+
 }
 
 /*********************************/
