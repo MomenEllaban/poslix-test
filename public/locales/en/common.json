@@ -1,0 +1,13 @@
+{
+  "g": {
+    "my_business": "My Business",
+    "add_new_business": "Add New Business",
+    "name": "Name",
+    "type": "Type",
+    "action": "Action",
+    "roles": "Roles",
+    "users": "Users",
+    "add_new_location": "Add New Location",
+    "back_to_list": "Back to list"
+  }
+}
