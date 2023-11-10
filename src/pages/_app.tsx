@@ -11,6 +11,10 @@ import { DarkModeProvider } from 'src/context/DarkModeContext';
 import { store } from 'src/redux/store';
 import { SWRConfig } from 'swr';
 
+//
+import { appWithTranslation } from 'next-i18next';
+import nextI18NextConfig from '../../next-i18next.config.js';
+
 // CSS
 import '@fortawesome/fontawesome-svg-core/styles.css';
 import '@styles/_pos_custom.css';
@@ -26,7 +30,7 @@ const swrConfigObject = {
   revalidateOnReconnect: true,
 };
 
-export default function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
+const MyApp = ({ Component, pageProps: { session, ...pageProps } }: AppProps) => {
   return (
     <SessionProvider session={session}>
       <Head>
@@ -51,4 +55,6 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
       </Provider>
     </SessionProvider>
   );
-}
+};
+
+export default appWithTranslation(MyApp, nextI18NextConfig);
