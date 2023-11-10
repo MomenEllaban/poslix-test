@@ -1,17 +1,18 @@
-import { faBars, faLanguage } from '@fortawesome/free-solid-svg-icons';
+import { faBars } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import HeaderFeaturedNav from '@layout/AdminLayout/Header/HeaderFeaturedNav';
 import HeaderProfileNav from '@layout/AdminLayout/Header/HeaderProfileNav';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Button, Container, Dropdown } from 'react-bootstrap';
-import { GiArabicDoor } from 'react-icons/gi';
-import { RiEnglishInput } from 'react-icons/ri';
+import { setCookie } from 'cookies-next';
+
+import { GrLanguage } from 'react-icons/gr';
 
 /*MOHAMMED MAHER */
 import classNames from 'classnames';
 import { useDarkMode } from '../../../context/DarkModeContext';
-import DarkModeToggle from '../DarkModeToggle';
 
 type HeaderProps = {
   toggleSidebar: () => void;
@@ -22,7 +23,14 @@ export default function Header(props: HeaderProps) {
   const { toggleSidebar, toggleSidebarMd } = props;
   const [fullname, setFullname] = useState('');
 
-  const { toggleDarkMode, darkMode, setDarkMode } = useDarkMode();
+  const { darkMode } = useDarkMode();
+
+  const pathname = usePathname();
+
+  const handleSetLangToCookie = (name: string) => {
+    const KEY_LANG = 'lang';
+    setCookie(KEY_LANG, name);
+  };
 
   useEffect(() => {
     setFullname(localStorage.getItem('userfullname') || '');
@@ -55,24 +63,41 @@ export default function Header(props: HeaderProps) {
         <div className="header-nav d-none d-md-flex">
           <HeaderFeaturedNav />
         </div>
-        {/* <Dropdown className="header-nav ms-auto">
-          <Dropdown.Toggle variant="success" id="dropdown-basic">
-            <FontAwesomeIcon icon={faLanguage} />
+        <Dropdown className="header-nav ms-auto">
+          <Dropdown.Toggle
+            variant="success"
+            className="d-flex justify-content-center align-items-center header-language"
+            id="dropdown-basic">
+            <GrLanguage size={19} color="#4f5d73" />
           </Dropdown.Toggle>
 
           <Dropdown.Menu>
-            <Dropdown.Item className="d-flex align-items-center">
-              <GiArabicDoor className="me-2" />
-              Arabic
-            </Dropdown.Item>
-            {
-              <Dropdown.Item className="d-flex align-items-center">
-                <RiEnglishInput className="me-2" />
-                English
-              </Dropdown.Item>
-            }
+            <div className="d-flex flex-column">
+              <Dropdown.ItemText>
+                <Link
+                  href={`/ar${pathname}`}
+                  onClick={() => handleSetLangToCookie('ar')}
+                  role="button"
+                  tabIndex={0}
+                  locale="ar"
+                  className="link-language">
+                  Arabic
+                </Link>
+              </Dropdown.ItemText>
+              <Dropdown.ItemText>
+                <Link
+                  href={`/en${pathname}`}
+                  onClick={() => handleSetLangToCookie('en')}
+                  role="button"
+                  tabIndex={0}
+                  locale="en"
+                  className="link-language">
+                  English
+                </Link>
+              </Dropdown.ItemText>
+            </div>
           </Dropdown.Menu>
-        </Dropdown> */}
+        </Dropdown>
         {/* <div className="ms-2">
           <DarkModeToggle />
         </div> */}
@@ -86,28 +111,3 @@ export default function Header(props: HeaderProps) {
     </header>
   );
 }
-const ToggleLanguage = () => (
-  <>
-    <Dropdown className="header-nav ms-auto">
-      <Dropdown.Toggle variant="success" id="dropdown-basic">
-        <FontAwesomeIcon icon={faLanguage} />
-      </Dropdown.Toggle>
-
-      <Dropdown.Menu>
-        <Dropdown.Item className="d-flex align-items-center" /*href="/action-1"*/>
-          <GiArabicDoor className="me-2" />
-          Arabic
-        </Dropdown.Item>
-
-        <Dropdown.Item className="d-flex align-items-center" /*href="/action-2"*/>
-          <RiEnglishInput className="me-2" />
-          English
-        </Dropdown.Item>
-      </Dropdown.Menu>
-    </Dropdown>
-    <div className="ms-2">
-      {/* <FontAwesomeIcon icon={faMoon} /> */}
-      <DarkModeToggle />
-    </div>
-  </>
-);
