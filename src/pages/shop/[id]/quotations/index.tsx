@@ -22,12 +22,12 @@ import { ToastContainer } from 'react-toastify';
 import { findAllData, updateData } from 'src/services/crud.api';
 import { useTranslation } from 'react-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { NextPage } from 'next';
+import withAuth from 'src/HOCs/withAuth';
 
-export default function SalesList(props: any) {
+const SalesList: NextPage = (props: any) => {
   const { id } = props;
   const { t } = useTranslation();
-  console.log(t('quotation.action'));
-  
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
     // @ts-ignore
     value: 0,
@@ -714,10 +714,10 @@ export default function SalesList(props: any) {
         <div className="mb-4">
           <button
             className="btn m-btn btn-primary p-3"
-            onClick={() => {
+            onClick={() => { 
               router.push('/shop/' + shopId + '/quotations/add');
             }}>
-            <FontAwesomeIcon icon={faPlus} /> {t('quotation.add_quotation')}{' '}
+            <FontAwesomeIcon icon={faPlus} /> {t('quotation.add_quotation')}
           </button>
         </div>
 
@@ -866,9 +866,8 @@ export default function SalesList(props: any) {
     </AdminLayout>
   );
 }
+export default withAuth(SalesList);
 export async function getServerSideProps({ params, locale }) {
-  console.log(locale);
-  
   const { id } = params;
   return {
     props: { id, 

@@ -11,7 +11,7 @@ import { ProductContext } from 'src/context/ProductContext';
 import { Dialog } from '@mui/material';
 
 const PaymentModal = (props: any) => {
-  const { openDialog, statusDialog, showType, fetchData } = props;
+  const { openDialog, statusDialog, showType, fetchData, t } = props;
 
   const methodTemplate = { id: 0, name: '' };
   const [methodsName, setMethodName] = useState(methodTemplate);
@@ -50,7 +50,7 @@ const PaymentModal = (props: any) => {
     <>
       <Dialog open={open} className="poslix-modal" onClose={handleClose} maxWidth={'xl'}>
         <DialogTitle className="poslix-modal-title text-primary">
-          {showType + ' Add methods'}
+        {t('payment.add_method')}
         </DialogTitle>
         <DialogContent>
           {isLoading ? (
@@ -64,12 +64,12 @@ const PaymentModal = (props: any) => {
                   <fieldset disabled={showType == 'show' ? true : false}>
                     <div className="">
                       <div className="col-lg-4 mb-3" style={{ minWidth: '400px' }}>
-                        <label>Name:</label>
+                        <label>{t('payment.name')}:</label>
                         <input
                           type="text"
                           name="cname"
                           className="form-control"
-                          placeholder="Enter Name"
+                          placeholder={t('payment.enter_name')}
                           value={paymentMethods.name}
                           onChange={(e) =>
                             setPaymentMethods({ ...paymentMethods, name: e.target.value })
@@ -81,11 +81,11 @@ const PaymentModal = (props: any) => {
                 </div>
                 <div className="modal-footer">
                   <a className="btn btn-link link-success fw-medium" onClick={() => handleClose()}>
-                    <i className="ri-close-line me-1 align-middle" /> Close
+                    <i className="ri-close-line me-1 align-middle" /> {t('payment.close')}
                   </a>
                   {showType != 'show' && (
                     <button type="button" className="btn btn-primary" onClick={handleSubmit}>
-                      {showType} Methods Group
+                      {t('payment.add_method_group')}
                     </button>
                   )}
                 </div>

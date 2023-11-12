@@ -820,7 +820,7 @@ const AddQuotations: NextPage = (props: any) => {
                           }}
                         />
                         {errorForm.customer_id && (
-                          <p className="p-1 h6 text-danger ">Select a Customer</p>
+                          <p className="p-1 h6 text-danger ">{t('quotation.select_customer')}</p>
                         )}
                       </div>
                     </div>
@@ -871,7 +871,7 @@ const AddQuotations: NextPage = (props: any) => {
                             setFormObj({ ...formObj, status: itm!.value });
                           }}
                         />
-                        {errorForm.status && <p className="p-1 h6 text-danger ">Select One Item</p>}
+                        {errorForm.status && <p className="p-1 h6 text-danger ">{t('quotation.select_one_item')}</p>}
                       </div>
                     </div>
                   </div>
@@ -921,7 +921,7 @@ const AddQuotations: NextPage = (props: any) => {
                   onChange={(e) => addToProductQuotations(e)}
                 />
                 {errorForm.products && (
-                  <p className="p-1 h6 text-danger ">Select One Product at Least</p>
+                  <p className="p-1 h6 text-danger ">{t('quotation.select_product')}</p>
                 )}
               </Card.Header>
               <Card.Body>
@@ -967,7 +967,7 @@ const AddQuotations: NextPage = (props: any) => {
                         }}
                       />
                       {errorForm.paymentType && (
-                        <p className="p-1 h6 text-danger ">Select One Item</p>
+                        <p className="p-1 h6 text-danger ">{t('quotation.select_one_item')}</p>
                       )}
                     </div>
                   </div>
