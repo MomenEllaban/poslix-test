@@ -5,6 +5,7 @@ import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import ReactDatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import { useTranslation } from 'next-i18next';
 
 const today = new Date();
 const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
@@ -61,6 +62,7 @@ export default function DatePicker({
   const [startDatepicker, setStartDatepicker] = useState<Date | null>();
   const [endDatepicker, setEndDatepicker] = useState<Date | null>();
   const [label, setLabel] = useState(null);
+  const { t } = useTranslation();
 
   const handleOptionClick = (range) => {
     setStartDatepicker(null);
@@ -75,7 +77,7 @@ export default function DatePicker({
         value={option.label}
         key={index}
         onClick={() => handleOptionClick(option.range)}>
-        {option.label}
+        {t(`g.${option.label}`)}
       </MenuItem>
     ));
   };
@@ -121,7 +123,7 @@ export default function DatePicker({
       </div>
       {!hiden && (
         <FormControl sx={{ m: 1, width: 220 }}>
-          <InputLabel id="date-picker-label">Date</InputLabel>
+          <InputLabel id="date-picker-label">{t('g.Date')}</InputLabel>
           <Select labelId="date-picker-label" id="date-picker" label="Date" value={label || 'Date'}>
             {renderOptions()}
           </Select>

@@ -22,6 +22,9 @@ import { findAllData } from 'src/services/crud.api';
 import api from 'src/utils/app-api';
 import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
 
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { useTranslation } from 'next-i18next';
+
 const pageSizeOptions = [10, 20, 50, 100];
 
 function SalesReport() {
@@ -29,6 +32,8 @@ function SalesReport() {
   const shopId = router.query.id ?? '';
 
   const componentRef = useRef(null);
+
+  const { t } = useTranslation();
 
   const { locationSettings, setLocationSettings, invoicDetails } = useUser();
 
@@ -59,20 +64,20 @@ function SalesReport() {
       { field: 'id', headerName: '#', maxWidth: 72 },
       {
         field: 'date',
-        headerName: 'Date',
+        headerName: t('g.Date'),
         width: 180,
         renderCell: ({ row }) => new Date(row.date).toLocaleDateString(),
       },
-      { field: 'user_name', headerName: 'Sold By', flex: 1 },
+      { field: 'user_name', headerName: t('g.SoldBy'), flex: 1 },
       {
         field: 'contact_name',
-        headerName: 'Sold To',
+        headerName: t('g.SoldTo'),
         flex: 1,
         renderCell: ({ row }) => row.contact_name.trim() || 'walk-in-customer',
       },
       {
         field: 'tax',
-        headerName: 'Tax',
+        headerName: t('g.Tax'),
         flex: 1,
         disableColumnMenu: true,
         renderCell: ({ row }: Partial<GridRowParams>) =>
@@ -80,14 +85,14 @@ function SalesReport() {
       },
       {
         field: 'total_price',
-        headerName: 'Total',
+        headerName: t('g.Total'),
         maxWidth: 72,
         renderCell: ({ row }: Partial<GridRowParams>) =>
           `${(+row.sub_total + +row.tax).toFixed(
             locationSettings?.location_decimal_places
           )} ${locationSettings?.currency_code}`,
       },
-      { field: 'notes', headerName: 'Note', flex: 1, disableColumnMenu: true },
+      { field: 'notes', headerName: t('g.Note'), flex: 1, disableColumnMenu: true },
     ],
     [locationSettings]
   );
@@ -177,8 +182,10 @@ function SalesReport() {
     const totalPriceAndTax = totalPrice + taxAmount;
     setDetails({ subTotal: totalPrice, tax: taxAmount, total: totalPriceAndTax });
 
-    if(selectedCustomer?.length > 0)
-      localFilteredSales = localFilteredSales.filter((el) => el.contact_name.includes(selectedCustomer))
+    if (selectedCustomer?.length > 0)
+      localFilteredSales = localFilteredSales.filter((el) =>
+        el.contact_name.includes(selectedCustomer)
+      );
 
     setFilteredSales(localFilteredSales);
   }, [strSelectedDate, selectedCustomer]);
@@ -213,12 +220,12 @@ function SalesReport() {
           setSelectedRange={setSelectedRange}
         />
         <FormControl sx={{ m: 1, width: 220 }}>
-          <InputLabel id="customer-select-label">Customer</InputLabel>
+          <InputLabel id="customer-select-label">{t('g.Customer')}</InputLabel>
           <Select
             labelId="customer-select-label"
             id="customer-select"
             value={selectedCustomer}
-            label="Customer"
+            label={t('g.Customer')}
             onChange={handleChangeCustomer}>
             {customersOptions.map((customer) => (
               <MenuItem key={customer.id} value={customer.first_name}>
@@ -228,16 +235,16 @@ function SalesReport() {
           </Select>
         </FormControl>
         <Button onClick={resetFilters} style={{ height: '56px', marginLeft: 'auto' }}>
-          CLEAR
+          {t('g.CLEAR')}
         </Button>
       </div>
       <AlertDialog
         alertShow={show}
         alertFun={(e: boolean) => setShow(e)}
         id={selectId}
-        type="deleteSale"
+        type={t('g.deleteSale')}
         products={filteredSales}>
-        Are you Sure You Want Delete This Item ?
+        {t('g.Are_you_Sure_You_Want_Delete_This_Item')}
       </AlertDialog>
       {
         <div style={{ display: 'none' }}>
@@ -251,20 +258,20 @@ function SalesReport() {
         </div>
       }
       <div className="page-content-style card">
-        <h5> Report Sales</h5>
+        <h5> {t('g.ReportSales')}</h5>
         <div className="deatils_box">
           <div>
-            <span>SubTotal: </span>
+            <span>{t('g.SubTotal')}: </span>
             {details.subTotal.toFixed(locationSettings?.location_decimal_places)}{' '}
             {locationSettings?.currency_code}
           </div>
           <div>
-            <span>Tax: </span>
+            <span>{t('g.Tax')}: </span>
             {details.tax.toFixed(locationSettings?.location_decimal_places)}{' '}
             {locationSettings?.currency_code}
           </div>
           <div>
-            <span>Total: </span>
+            <span>{t('g.Total')}: </span>
             {details.total.toFixed(locationSettings?.location_decimal_places)}{' '}
             {locationSettings?.currency_code}
           </div>
@@ -373,29 +380,29 @@ function SalesReport() {
               <div className="item-sections">
                 <div className="top-detials-invoice">
                   <div className="top-detials-item">
-                    <p>Invoice No :</p>
+                    <p>{t('g.InvoiceNo')} :</p>
                     <p>{selectRow.id}</p>
                   </div>
                   <div className="top-detials-item">
-                    <p>Invoice Date :</p>
+                    <p>{t('g.InvoiceDate')} :</p>
                     <p>{selectRow.sale_date}</p>
                   </div>
                   <div className="top-detials-item">
-                    <p>Added By :</p>
+                    <p>{t('g.AddedBy')} :</p>
                     <p>{selectRow.added_by}</p>
                   </div>
                 </div>
                 <div className="top-detials-invoice">
                   <div className="top-detials-item">
-                    <p>Final Total :</p>
+                    <p>{t('g.FinalTotal')} :</p>
                     <p>{selectRow.total_price}</p>
                   </div>
                   <div className="top-detials-item">
-                    <p>Customer Name :</p>
+                    <p>{t('g.CustomerName')} :</p>
                     <p>{selectRow.customer_name}</p>
                   </div>
                   <div className="top-detials-item" style={{ fontSize: '13px' }}>
-                    <p>Order Note</p>
+                    <p>{t('g.OrderNote')}</p>
                     <p>{selectRow.notes}</p>
                   </div>
                 </div>
@@ -405,18 +412,18 @@ function SalesReport() {
                   onClick={() => {
                     handlePrint();
                   }}>
-                  Print Recipt
+                  {t('g.PrintRecipt')}
                 </Button>{' '}
-                <Button>Print Invoice</Button>
+                <Button>{t('g.PrintInvoice')}</Button>
               </div>
             </div>
             {lines && !isLoading ? (
               <div className="row">
                 <div className="invoice-items-container">
                   <div className="header-titles">
-                    <div>Name</div>
-                    <div>Qty</div>
-                    <div>Amount</div>
+                    <div>{t('g.name')}</div>
+                    <div>{t('g.Qty')}</div>
+                    <div>{t('g.Amount')}</div>
                   </div>
                   {lines.map((line: any, index: number) => {
                     return (
@@ -429,7 +436,7 @@ function SalesReport() {
                   })}
                   <div className="header-titles under_items" style={{ marginTop: '20px' }}>
                     <div></div>
-                    <div>Total</div>
+                    <div>{t('g.Total')}</div>
                     <div>{selectRow.total_price}</div>
                   </div>
                 </div>
@@ -444,7 +451,7 @@ function SalesReport() {
             onClick={() => {
               setShowViewPopUp(false);
             }}>
-            Cancel
+            {t('g.Cancel')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -453,3 +460,13 @@ function SalesReport() {
 }
 
 export default withAuth(SalesReport);
+
+export async function getServerSideProps(context) {
+  const { locale } = context;
+
+  return {
+    props: {
+      ...(await serverSideTranslations(locale)),
+    },
+  };
+}

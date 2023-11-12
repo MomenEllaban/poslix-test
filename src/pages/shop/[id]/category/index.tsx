@@ -16,8 +16,12 @@ import { ITokenVerfy } from '@models/common-model';
 import { Toastify } from 'src/libs/allToasts';
 import withAuth from 'src/HOCs/withAuth';
 import { findAllData } from 'src/services/crud.api';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { useTranslation } from 'next-i18next';
+import { NextPage } from 'next';
 
-const Category = ({ id }: any) => {
+const Category: NextPage = ({ id }: any) => {
+  const { t } = useTranslation();
   const [cats, setCats] = useState<{ id: number; name: string }[]>([]);
   const [brands, setBrands] = useState<{ id: number; name: string }[]>([]);
   const router = useRouter();
@@ -101,7 +105,7 @@ const Category = ({ id }: any) => {
           id={selectId}
           expenses={cats}
           url={type}>
-          Are you Sure You Want Delete This Item ?
+          {t('alert_dialog.delete_msg')}
         </AlertDialog>
         <div className="row">
           {!isloading && (categoryPermissions.hasInsert || brandPermissions.hasInsert) && (
@@ -121,7 +125,8 @@ const Category = ({ id }: any) => {
                     });
                   else Toastify('error', 'Error On Add New');
                 }}>
-                <FontAwesomeIcon icon={faPlus} /> Add New {key}{' '}
+                <FontAwesomeIcon icon={faPlus} />
+                {key === 'categories' ? t('category.add_category') : t('category.add_brand')}{' '}
               </button>
             </div>
           )}
@@ -130,10 +135,10 @@ const Category = ({ id }: any) => {
             activeKey={key}
             onSelect={(k: any) => setKey(k)}
             className="mb-3 p-3">
-            <Tab eventKey="categories" title="Categories">
+            <Tab eventKey="categories" title={t('category.categories')}>
               <Card>
                 <Card.Header className="p-3 bg-white">
-                  <h5></h5>
+                  <h5>{t('category.categories_list')}</h5>
                 </Card.Header>
                 <Card.Body className="table-responsive text-nowrap">
                   {!isloading ? (
@@ -141,9 +146,9 @@ const Category = ({ id }: any) => {
                       <thead className="thead-dark">
                         <tr>
                           <th style={{ width: '6%' }}>#</th>
-                          <th>Name</th>
-                          <th>Tax</th>
-                          <th>Action</th>
+                          <th>{t('category.name')}</th>
+                          <th>{t('category.tax')}</th>
+                          <th>{t('category.action')}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -192,10 +197,10 @@ const Category = ({ id }: any) => {
               </Card>
             </Tab>
 
-            <Tab eventKey="brands" title="Brands">
+            <Tab eventKey="brands" title={t('category.brands')}>
               <Card>
                 <Card.Header className="p-3 bg-white">
-                  <h5>Brands List</h5>
+                  <h5>{t('category.brands_list')}</h5>
                 </Card.Header>
                 <Card.Body className="table-responsive text-nowrap">
                   {!isloading ? (
@@ -203,9 +208,9 @@ const Category = ({ id }: any) => {
                       <thead className="thead-dark">
                         <tr>
                           <th style={{ width: '6%' }}>#</th>
-                          <th>Name</th>
-                          <th>Tax</th>
-                          <th>Action</th>
+                          <th>{t('category.name')}</th>
+                          <th>{t('category.tax')}</th>
+                          <th>{t('category.action')}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -265,9 +270,11 @@ const Category = ({ id }: any) => {
   );
 };
 export default withAuth(Category);
-export async function getServerSideProps({ params }) {
+export async function getServerSideProps({ params, locale }) {
+  console.log(locale);
+
   const { id } = params;
   return {
-    props: { id },
+    props: { id, ...(await serverSideTranslations(locale)) },
   };
 }

@@ -15,9 +15,10 @@ import { Toastify } from 'src/libs/allToasts';
 import { generateUniqueString } from 'src/libs/toolsUtils';
 import { createNewData, findAllData } from 'src/services/crud.api';
 import withAuth from 'src/HOCs/withAuth';
-// 
-function findFalsyKeys(obj):any {
-  
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { useTranslation } from 'next-i18next';
+//
+function findFalsyKeys(obj): any {
   const falsyKeys = [];
 
   function exploreObject(obj, currentPath = '') {
@@ -26,9 +27,9 @@ function findFalsyKeys(obj):any {
         const value = obj[key];
         const path = currentPath ? `${currentPath}.${key}` : key;
 
-        if (typeof value === 'object'  ) {
+        if (typeof value === 'object') {
           exploreObject(value, path);
-        } else if (!value &&key!=='is_multi_language') {
+        } else if (!value && key !== 'is_multi_language') {
           falsyKeys.push(path);
         }
       }
@@ -38,9 +39,10 @@ function findFalsyKeys(obj):any {
   exploreObject(obj);
   return falsyKeys;
 }
-// 
+//
 const Appearance: NextPage = (props: any) => {
   const { shopId, id } = props;
+  const { t } = useTranslation();
   const router = useRouter();
   const [key, setKey] = useState('Recipt');
   const [formObj, setFormObj] = useState<any>(defaultDetails);
@@ -73,17 +75,22 @@ const Appearance: NextPage = (props: any) => {
     setIsLoading(false);
   }
   async function editInvoice(url = '0') {
-   if(!formObj.en.logo) delete formObj.en.logo
-   if(!formObj.ar.logo) delete formObj.ar.logo
-   formObj.location_id= router.query.id
- 
-   if( findFalsyKeys(formObj)?.length>0){
-    Toastify('error',`${findFalsyKeys(formObj)?.join(', ').replace(/en\.|ar\./g, "")} required`);
-    return
-   }
+    if (!formObj.en.logo) delete formObj.en.logo;
+    if (!formObj.ar.logo) delete formObj.ar.logo;
+    formObj.location_id = router.query.id;
+
+    if (findFalsyKeys(formObj)?.length > 0) {
+      Toastify(
+        'error',
+        `${findFalsyKeys(formObj)
+          ?.join(', ')
+          .replace(/en\.|ar\./g, '')} required`
+      );
+      return;
+    }
     if (isLoading) return;
     setIsLoading(true);
-    const res = await createNewData(`appearance`,formObj);
+    const res = await createNewData(`appearance`, formObj);
     if (res.data.success) {
       Toastify('success', 'successfully updated');
       setPreviewUrl('');
@@ -161,12 +168,12 @@ const Appearance: NextPage = (props: any) => {
               activeKey={key}
               onSelect={(k) => setKey(k)}
               className="mb-3">
-              <Tab eventKey="Recipt" title="Receipt">
+              <Tab eventKey="Recipt" title={t('apperance.receipt')}>
                 <div className="row">
                   <div className="col-md-12">
                     <Card>
                       <Card.Header className="p-3 bg-white">
-                        <h5>Print Receipt</h5>
+                        <h5>{t('apperance.print_recipt')}</h5>
                         <div className="appear-toolbar">
                           <div className="toolitem"></div>
                           <div className="toolitem"></div>
@@ -175,14 +182,14 @@ const Appearance: NextPage = (props: any) => {
                       </Card.Header>
                       <Card.Body>
                         {isLoading ? (
-                          'loading...'
+                          t('apperance.loading')
                         ) : (
                           <div className="appear-body">
                             <div className="appear-body-item">
                               {previewUrl.length == 0 ? (
                                 <div>
                                   <label>
-                                    Your Logo: <span className="text-danger">*</span>
+                                    {t('apperance.logo')}: <span className="text-danger">*</span>
                                   </label>
                                   <input
                                     type="file"
@@ -200,13 +207,14 @@ const Appearance: NextPage = (props: any) => {
                                     className="btn btn-danger p-2"
                                     onClick={() => setPreviewUrl('')}
                                     style={{ width: '100%', maxWidth: '100%' }}>
-                                    <FontAwesomeIcon icon={faCancel} /> Cancel
+                                    <FontAwesomeIcon icon={faCancel} /> {t('apperance.cancel')}
                                   </button>
                                 </div>
                               )}
                               <div className="form-group2">
                                 <label>
-                                  Business Name: <span className="text-danger">*</span>
+                                  {t('apperance.business_name')}:{' '}
+                                  <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -228,7 +236,7 @@ const Appearance: NextPage = (props: any) => {
 
                               <div className="form-group2">
                                 <label>
-                                  Phone: <span className="text-danger">*</span>
+                                  {t('apperance.phone')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -250,7 +258,7 @@ const Appearance: NextPage = (props: any) => {
 
                               <div className="form-group2">
                                 <label>
-                                  Customer: <span className="text-danger">*</span>
+                                  {t('apperance.customer')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -269,7 +277,7 @@ const Appearance: NextPage = (props: any) => {
                               </div>
                               <div className="form-group2">
                                 <label>
-                                  Order No: <span className="text-danger">*</span>
+                                  {t('apperance.order_no')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -288,7 +296,8 @@ const Appearance: NextPage = (props: any) => {
                               </div>
                               <div className="form-group2">
                                 <label>
-                                  Order Date: <span className="text-danger">*</span>
+                                  {t('apperance.order_date')}:{' '}
+                                  <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -307,7 +316,7 @@ const Appearance: NextPage = (props: any) => {
                               </div>
                               <div className="form-group2">
                                 <label>
-                                  Qty: <span className="text-danger">*</span>
+                                  {t('apperance.qty')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -326,7 +335,7 @@ const Appearance: NextPage = (props: any) => {
                               </div>
                               <div className="form-group2">
                                 <label>
-                                  Item: <span className="text-danger">*</span>
+                                  {t('apperance.item')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -345,7 +354,7 @@ const Appearance: NextPage = (props: any) => {
                               </div>
                               <div className="form-group2">
                                 <label>
-                                  Amount: <span className="text-danger">*</span>
+                                  {t('apperance.amount')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -364,7 +373,7 @@ const Appearance: NextPage = (props: any) => {
                               </div>
                               <div className="form-group2">
                                 <label>
-                                  Tax: <span className="text-danger">*</span>
+                                  {t('apperance.tax')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -383,7 +392,7 @@ const Appearance: NextPage = (props: any) => {
                               </div>
                               <div className="form-group2">
                                 <label>
-                                  Total: <span className="text-danger">*</span>
+                                  {t('apperance.total')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -402,7 +411,7 @@ const Appearance: NextPage = (props: any) => {
                               </div>
                               <div className="form-group2">
                                 <label>
-                                  Footer: <span className="text-danger">*</span>
+                                  {t('apperance.footer')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -421,7 +430,7 @@ const Appearance: NextPage = (props: any) => {
                               </div>
                               <div className="invoice-settings-body">
                                 <div className="invoice-settings-item">
-                                  <div>Enable Multi Language</div>
+                                  <div>{t('apperance.multi_language')}</div>
                                   <div>
                                     <Form.Check
                                       type="switch"
@@ -441,7 +450,8 @@ const Appearance: NextPage = (props: any) => {
                                 <>
                                   <div className="form-group2">
                                     <label>
-                                      Customer: <span className="text-danger">*</span>
+                                      {t('apperance.customer')}:{' '}
+                                      <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -460,7 +470,8 @@ const Appearance: NextPage = (props: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                      Order No: <span className="text-danger">*</span>
+                                      {t('apperance.order_no')}:{' '}
+                                      <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -480,7 +491,8 @@ const Appearance: NextPage = (props: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                      Order Date: <span className="text-danger">*</span>
+                                      {t('apperance.order_date')}:{' '}
+                                      <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -500,7 +512,7 @@ const Appearance: NextPage = (props: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                      Qty: <span className="text-danger">*</span>
+                                      {t('apperance.qty')}: <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -519,7 +531,7 @@ const Appearance: NextPage = (props: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                      Item: <span className="text-danger">*</span>
+                                      {t('apperance.item')}: <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -538,7 +550,8 @@ const Appearance: NextPage = (props: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                      Amount: <span className="text-danger">*</span>
+                                      {t('apperance.amount')}:{' '}
+                                      <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -557,7 +570,7 @@ const Appearance: NextPage = (props: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                      Tax: <span className="text-danger">*</span>
+                                      {t('apperance.tax')}: <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -576,7 +589,7 @@ const Appearance: NextPage = (props: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                      Total: <span className="text-danger">*</span>
+                                      {t('apperance.total')}: <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -595,7 +608,8 @@ const Appearance: NextPage = (props: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                      Footer: <span className="text-danger">*</span>
+                                      {t('apperance.footer')}:{' '}
+                                      <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -623,7 +637,7 @@ const Appearance: NextPage = (props: any) => {
                                   maxWidth: '100%',
                                   marginTop: '10px',
                                 }}>
-                                Save
+                                {t('apperance.save')}
                               </button>
                             </div>
                             <div className="appear-body-item">
@@ -751,12 +765,12 @@ const Appearance: NextPage = (props: any) => {
                   </div>
                 </div>
               </Tab>
-              <Tab eventKey="Invoice" title="Invoice A4">
+              <Tab eventKey="Invoice" title={t('apperance.invoice') + ' A4'}>
                 <div className="row">
                   <div className="col-md-12">
                     <Card>
                       <Card.Header className="p-3 bg-white">
-                        <h5>Print Invoice</h5>
+                        <h5>{t('apperance.print_invoice')}</h5>
                         <div className="appear-toolbar">
                           <div className="toolitem"></div>
                           <div className="toolitem"></div>
@@ -765,14 +779,14 @@ const Appearance: NextPage = (props: any) => {
                       </Card.Header>
                       <Card.Body>
                         {isLoading ? (
-                          'loading...'
+                          t('apperance.loading')
                         ) : (
                           <div className="appear-body">
                             <div className="appear-body-item">
                               {previewUrl.length == 0 ? (
                                 <div>
                                   <label>
-                                    Your Logo: <span className="text-danger">*</span>
+                                    {t('apperance.logo')}: <span className="text-danger">*</span>
                                   </label>
                                   <input
                                     type="file"
@@ -796,7 +810,8 @@ const Appearance: NextPage = (props: any) => {
                               )}
                               <div className="form-group2">
                                 <label>
-                                  Business Name: <span className="text-danger">*</span>
+                                  {t('apperance.business_name')}:{' '}
+                                  <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -818,7 +833,7 @@ const Appearance: NextPage = (props: any) => {
 
                               <div className="form-group2">
                                 <label>
-                                  Email: <span className="text-danger">*</span>
+                                  {t('apperance.email')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -840,7 +855,7 @@ const Appearance: NextPage = (props: any) => {
 
                               <div className="form-group2">
                                 <label>
-                                  Phone: <span className="text-danger">*</span>
+                                  {t('apperance.phone')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -862,7 +877,7 @@ const Appearance: NextPage = (props: any) => {
 
                               <div className="form-group2">
                                 <label>
-                                  Address: <span className="text-danger">*</span>
+                                  {t('apperance.address')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -884,7 +899,8 @@ const Appearance: NextPage = (props: any) => {
 
                               <div className="form-group2">
                                 <label>
-                                  VAT Number: <span className="text-danger">*</span>
+                                  {t('apperance.vat_number')}:{' '}
+                                  <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -906,7 +922,7 @@ const Appearance: NextPage = (props: any) => {
 
                               <div className="form-group2">
                                 <label>
-                                  Customer: <span className="text-danger">*</span>
+                                  {t('apperance.customer')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -925,7 +941,7 @@ const Appearance: NextPage = (props: any) => {
                               </div>
                               <div className="form-group2">
                                 <label>
-                                  Order No: <span className="text-danger">*</span>
+                                  {t('apperance.order_no')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -944,7 +960,8 @@ const Appearance: NextPage = (props: any) => {
                               </div>
                               <div className="form-group2">
                                 <label>
-                                  Order Date: <span className="text-danger">*</span>
+                                  {t('apperance.order_date')}:{' '}
+                                  <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -963,7 +980,7 @@ const Appearance: NextPage = (props: any) => {
                               </div>
                               <div className="form-group2">
                                 <label>
-                                  Qty: <span className="text-danger">*</span>
+                                  {t('apperance.qty')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -982,7 +999,7 @@ const Appearance: NextPage = (props: any) => {
                               </div>
                               <div className="form-group2">
                                 <label>
-                                  Item: <span className="text-danger">*</span>
+                                  {t('apperance.item')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -1001,7 +1018,7 @@ const Appearance: NextPage = (props: any) => {
                               </div>
                               <div className="form-group2">
                                 <label>
-                                  Amount: <span className="text-danger">*</span>
+                                  {t('apperance.amount')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -1020,7 +1037,7 @@ const Appearance: NextPage = (props: any) => {
                               </div>
                               <div className="form-group2">
                                 <label>
-                                  Tax: <span className="text-danger">*</span>
+                                  {t('apperance.tax')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -1039,7 +1056,7 @@ const Appearance: NextPage = (props: any) => {
                               </div>
                               <div className="form-group2">
                                 <label>
-                                  Total: <span className="text-danger">*</span>
+                                  {t('apperance.total')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -1058,7 +1075,7 @@ const Appearance: NextPage = (props: any) => {
                               </div>
                               <div className="form-group2">
                                 <label>
-                                  Footer: <span className="text-danger">*</span>
+                                  {t('apperance.footer')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -1077,7 +1094,7 @@ const Appearance: NextPage = (props: any) => {
                               </div>
                               <div className="invoice-settings-body">
                                 <div className="invoice-settings-item">
-                                  <div>Enable Multi Language</div>
+                                  <div>{t('apperance.multi_language')}</div>
                                   <div>
                                     <Form.Check
                                       type="switch"
@@ -1097,7 +1114,8 @@ const Appearance: NextPage = (props: any) => {
                                 <>
                                   <div className="form-group2">
                                     <label>
-                                      Customer: <span className="text-danger">*</span>
+                                      {t('apperance.customer')}:{' '}
+                                      <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -1116,7 +1134,8 @@ const Appearance: NextPage = (props: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                      Order No: <span className="text-danger">*</span>
+                                      {t('apperance.order_no')}:{' '}
+                                      <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -1136,7 +1155,8 @@ const Appearance: NextPage = (props: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                      Order Date: <span className="text-danger">*</span>
+                                      {t('apperance.order_date')}:{' '}
+                                      <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -1156,7 +1176,7 @@ const Appearance: NextPage = (props: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                      Qty: <span className="text-danger">*</span>
+                                      {t('apperance.qty')}: <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -1175,7 +1195,7 @@ const Appearance: NextPage = (props: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                      Item: <span className="text-danger">*</span>
+                                      {t('apperance.item')}: <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -1194,7 +1214,8 @@ const Appearance: NextPage = (props: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                      Amount: <span className="text-danger">*</span>
+                                      {t('apperance.amount')}:{' '}
+                                      <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -1213,7 +1234,7 @@ const Appearance: NextPage = (props: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                      Tax: <span className="text-danger">*</span>
+                                      {t('apperance.tax')}: <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -1232,7 +1253,7 @@ const Appearance: NextPage = (props: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                      Total: <span className="text-danger">*</span>
+                                      {t('apperance.total')}: <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -1251,7 +1272,8 @@ const Appearance: NextPage = (props: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                      Footer: <span className="text-danger">*</span>
+                                      {t('apperance.footer')}:{' '}
+                                      <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -1279,7 +1301,7 @@ const Appearance: NextPage = (props: any) => {
                                   maxWidth: '100%',
                                   marginTop: '10px',
                                 }}>
-                                Save
+                                {t('apperance.save')}
                               </button>
                             </div>
                             <div className="appear-body-item a4">
@@ -1297,7 +1319,7 @@ const Appearance: NextPage = (props: any) => {
                                     />
                                   )}
                                   <div className="invoice-print">
-                                    INVOICE
+                                    {t('apperance.invoice')}
                                     <div>
                                       <table className="GeneratedTable">
                                         <tbody>
@@ -1323,15 +1345,17 @@ const Appearance: NextPage = (props: any) => {
                                 <br />
                                 <div className="up_of_table flex justify-between">
                                   <div className="left_up_of_table">
-                                    <div>Billed From</div>
+                                    <div>{t('apperance.billed_from')}</div>
                                     <div>{formObj.en.name}</div>
                                     <div>{formObj.en.email}</div>
                                     <div>{formObj.en.tell}</div>
                                     <div>{formObj.en.address}</div>
-                                    <div>VAT Number: {formObj.en.vatNumber}</div>
+                                    <div>
+                                      {t('apperance.vat_number')}: {formObj.en.vatNumber}
+                                    </div>
                                   </div>
                                   <div className="right_up_of_table">
-                                    <div>Billed To</div>
+                                    <div>{t('apperance.billed_to')}</div>
                                     <div>
                                       {formObj.en.txtCustomer}{' '}
                                       {formObj.is_multi_language && formObj.ar.txtCustomer}
@@ -1353,7 +1377,7 @@ const Appearance: NextPage = (props: any) => {
                                         <br />
                                         {formObj.is_multi_language && formObj.ar.txtQty}
                                       </th>
-                                      <th>Unit Price</th>
+                                      <th>{t('apperance.unit_price')}</th>
                                       {/* <th> {invoicDetails.txtItem}<br />{invoicDetails.is_multi_language && invoicDetails.txtItem2}</th> */}
                                       <th>
                                         {formObj.en.txtTax}{' '}
@@ -1390,59 +1414,8 @@ const Appearance: NextPage = (props: any) => {
                                   <br />
                                   {formObj.is_multi_language && formObj.ar.footer}
                                 </p>
-                                {/* <p className="recipt-footer">{formObj.notes}</p> */}
                                 <br />
                               </div>
-
-                              {/* <div className="preview-invoice-box">
-                                            {previewUrl.length > 0 ? <img src={previewUrl} /> : <img src={formObj.logo} />}
-                                            <div className='top-content'>
-                                                <h6 className='text-primary'>{formObj.name}</h6>
-                                                <h6 className='text-primary'>{formObj.tell}</h6>
-                                            </div>
-                                            <div className='order-details-top'>
-                                                <div className="order-details-top-item">
-                                                    <div>{formObj.txtCustomer} {formObj.is_multi_language && formObj.txtCustomer2}</div>
-                                                    <div>Walk-in-customer</div>
-                                                </div>
-                                                <div className="order-details-top-item">
-                                                    <div>{formObj.orderNo} {formObj.is_multi_language && formObj.orderNo2}</div>
-                                                    <div>1518</div>
-                                                </div>
-                                                <div className="order-details-top-item">
-                                                    <div>{formObj.txtDate} {formObj.is_multi_language && formObj.txtDate2}</div>
-                                                    <div>2023-03-31</div>
-                                                </div>
-                                            </div>
-                                            <div className='order-details-top' style={{ marginTop: '5px' }}>
-                                                <div className="order-details-top-item">
-                                                    <div>{formObj.txtQty} {formObj.is_multi_language && formObj.txtQty2}</div><div>{formObj.txtItem} {formObj.is_multi_language && formObj.txtItem2}</div><div>{formObj.txtAmount} {formObj.is_multi_language && formObj.txtAmount2}</div>
-                                                </div>
-                                            </div>
-                                            <div className='order-details-top' style={{ marginTop: '5px', borderBottom: '1px solid #eaeaea' }}>
-                                                <div className="order-details-top-item">
-                                                    <div>1</div><div>Product Name 1</div><div>5.000</div>
-                                                </div>
-                                            </div>
-                                            <div className='order-details-top' style={{ marginTop: '5px', borderBottom: '1px solid #eaeaea' }}>
-                                                <div className="order-details-top-item">
-                                                    <div>1</div><div>Product Name 2</div><div>4.000</div>
-                                                </div>
-                                            </div>
-                                            <div className='order-details-top' style={{ marginTop: '5px', borderBottom: '1px solid #696969' }}>
-                                                <div className="order-details-top-item">
-                                                    <div></div><div>{formObj.txtTax} {formObj.is_multi_language && formObj.txtTax2}</div><div>0.540</div>
-                                                </div>
-                                            </div>
-                                            <div className='order-details-top' style={{ marginTop: '5px', borderBottom: '1px solid #696969' }}>
-                                                <div className="order-details-top-item">
-                                                    <div></div><div>{formObj.txtTotal} {formObj.is_multi_language && formObj.txtTotal2}</div><div>9.540</div>
-                                                </div>
-                                            </div>
-                                            <div className='top-content' style={{ marginTop: '20px', marginBottom: '20px' }}>
-                                                <h6 className='text-primary'>{formObj.footer}<br />{formObj.is_multi_language && formObj.footer2}</h6>
-                                            </div>
-                                        </div> */}
                             </div>
                           </div>
                         )}
@@ -1457,7 +1430,7 @@ const Appearance: NextPage = (props: any) => {
                   <div className="col-md-12">
                     <Card>
                       <Card.Header className="p-3 bg-white">
-                        <h5>Digital</h5>
+                        <h5>{t('apperance.digital')}</h5>
                         <div className="appear-toolbar">
                           <div className="toolitem"></div>
                           <div className="toolitem"></div>
@@ -1466,14 +1439,14 @@ const Appearance: NextPage = (props: any) => {
                       </Card.Header>
                       <Card.Body>
                         {isLoading ? (
-                          'loading...'
+                          t('apperance.loading')
                         ) : (
                           <div className="appear-body">
                             <div className="appear-body-item">
                               {previewUrl.length == 0 ? (
                                 <div>
                                   <label>
-                                    Your Logo: <span className="text-danger">*</span>
+                                    {t('apperance.logo')}: <span className="text-danger">*</span>
                                   </label>
                                   <input
                                     type="file"
@@ -1497,20 +1470,17 @@ const Appearance: NextPage = (props: any) => {
                               )}
                               <div className="form-group2">
                                 <label>
-                                  Whatsapp: <span className="text-danger">*</span>
+                                  {t('apperance.whatsapp')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
                                   className="form-control"
-
                                   value={formObj?.en?.whatsapp}
-
                                   onChange={(e) => {
                                     setFormObj({
                                       ...formObj,
                                       en: { ...formObj?.en, whatsapp: e.target.value },
                                       whatsapp: e.target.value,
-
                                     });
                                   }}
                                 />
@@ -1518,31 +1488,26 @@ const Appearance: NextPage = (props: any) => {
 
                               <div className="form-group2">
                                 <label>
-                                  Instagram: <span className="text-danger">*</span>
+                                  {t('apperance.instagram')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
                                   className="form-control"
-
                                   value={formObj?.en?.instagram}
-
                                   onChange={(e) => {
                                     setFormObj({
                                       ...formObj,
 
                                       en: { ...formObj?.en, instagram: e.target.value },
                                       instagram: e.target.value,
-
-
                                     });
-
                                   }}
                                 />
                               </div>
 
                               <div className="form-group2">
                                 <label>
-                                  Website: <span className="text-danger">*</span>
+                                  {t('apperance.website')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -1554,210 +1519,12 @@ const Appearance: NextPage = (props: any) => {
 
                                       en: { ...formObj?.en, website: e.target.value },
                                       website: e.target.value,
-
                                     });
                                   }}
                                 />
                               </div>
 
-
-
-
-                              <div className="invoice-settings-body">
-                                {/* <div className="invoice-settings-item">
-                                  <div>Enable Multi Language</div>
-                                  <div>
-                                    <Form.Check
-                                      type="switch"
-                                      className="custom-switch"
-                                      checked={formObj.is_multi_language}
-                                      onChange={(e) => {
-                                        setFormObj({
-                                          ...formObj,
-                                          is_multi_language: !formObj.is_multi_language,
-                                        });
-                                      }}
-                                    />
-                                  </div>
-                                </div> */}
-                              </div>
-                              {/* {formObj.is_multi_language && (
-                                <>
-                                  <div className="form-group2">
-                                    <label>
-                                      Customer: <span className="text-danger">*</span>
-                                    </label>
-                                    <input
-                                      type="text"
-                                      className="form-control"
-                                      value={formObj?.ar?.txtCustomer}
-                                      onChange={(e) => {
-                                        setFormObj({
-                                          ...formObj,
-                                          ar: {
-                                            ...formObj.ar,
-                                            txtCustomer: e.target.value,
-                                          },
-                                        });
-                                      }}
-                                    />
-                                  </div>
-                                  <div className="form-group2">
-                                    <label>
-                                      Order No: <span className="text-danger">*</span>
-                                    </label>
-                                    <input
-                                      type="text"
-                                      className="form-control"
-                                      placeholder=""
-                                      value={formObj?.ar?.orderNo}
-                                      onChange={(e) => {
-                                        setFormObj({
-                                          ...formObj,
-                                          ar: {
-                                            ...formObj.ar,
-                                            orderNo: e.target.value,
-                                          },
-                                        });
-                                      }}
-                                    />
-                                  </div>
-                                  <div className="form-group2">
-                                    <label>
-                                      Order Date: <span className="text-danger">*</span>
-                                    </label>
-                                    <input
-                                      type="text"
-                                      className="form-control"
-                                      placeholder=""
-                                      value={formObj?.ar?.txtDate}
-                                      onChange={(e) => {
-                                        setFormObj({
-                                          ...formObj,
-                                          ar: {
-                                            ...formObj.ar,
-                                            txtDate: e.target.value,
-                                          },
-                                        });
-                                      }}
-                                    />
-                                  </div>
-                                  <div className="form-group2">
-                                    <label>
-                                      Qty: <span className="text-danger">*</span>
-                                    </label>
-                                    <input
-                                      type="text"
-                                      className="form-control"
-                                      value={formObj?.ar?.txtQty}
-                                      onChange={(e) => {
-                                        setFormObj({
-                                          ...formObj,
-                                          ar: {
-                                            ...formObj.ar,
-                                            txtQty: e.target.value,
-                                          },
-                                        });
-                                      }}
-                                    />
-                                  </div>
-                                  <div className="form-group2">
-                                    <label>
-                                      Item: <span className="text-danger">*</span>
-                                    </label>
-                                    <input
-                                      type="text"
-                                      className="form-control"
-                                      value={formObj?.ar?.txtItem}
-                                      onChange={(e) => {
-                                        setFormObj({
-                                          ...formObj,
-                                          ar: {
-                                            ...formObj.ar,
-                                            txtItem: e.target.value,
-                                          },
-                                        });
-                                      }}
-                                    />
-                                  </div>
-                                  <div className="form-group2">
-                                    <label>
-                                      Amount: <span className="text-danger">*</span>
-                                    </label>
-                                    <input
-                                      type="text"
-                                      className="form-control"
-                                      value={formObj?.ar?.txtAmount}
-                                      onChange={(e) => {
-                                        setFormObj({
-                                          ...formObj,
-                                          ar: {
-                                            ...formObj.ar,
-                                            txtAmount: e.target.value,
-                                          },
-                                        });
-                                      }}
-                                    />
-                                  </div>
-                                  <div className="form-group2">
-                                    <label>
-                                      Tax: <span className="text-danger">*</span>
-                                    </label>
-                                    <input
-                                      type="text"
-                                      className="form-control"
-                                      value={formObj.ar?.txtTax}
-                                      onChange={(e) => {
-                                        setFormObj({
-                                          ...formObj,
-                                          ar: {
-                                            ...formObj.ar,
-                                            txtTax: e.target.value,
-                                          },
-                                        });
-                                      }}
-                                    />
-                                  </div>
-                                  <div className="form-group2">
-                                    <label>
-                                      Total: <span className="text-danger">*</span>
-                                    </label>
-                                    <input
-                                      type="text"
-                                      className="form-control"
-                                      value={formObj?.ar.txtTotal}
-                                      onChange={(e) => {
-                                        setFormObj({
-                                          ...formObj,
-                                          ar: {
-                                            ...formObj.ar,
-                                            txtTotal: e.target.value,
-                                          },
-                                        });
-                                      }}
-                                    />
-                                  </div>
-                                  <div className="form-group2">
-                                    <label>
-                                      Footer: <span className="text-danger">*</span>
-                                    </label>
-                                    <input
-                                      type="text"
-                                      className="form-control"
-                                      value={formObj?.ar?.footer}
-                                      onChange={(e) => {
-                                        setFormObj({
-                                          ...formObj,
-                                          ar: {
-                                            ...formObj.ar,
-                                            footer: e.target.value,
-                                          },
-                                        });
-                                      }}
-                                    />
-                                  </div>
-                                </>
-                              )} */}
+                              <div className="invoice-settings-body"></div>
                               <button
                                 type="button"
                                 className="btn btn-primary p-2"
@@ -1767,7 +1534,7 @@ const Appearance: NextPage = (props: any) => {
                                   maxWidth: '100%',
                                   marginTop: '10px',
                                 }}>
-                                Save
+                                {t('apperance.save')}
                               </button>
                             </div>
                             <div className="appear-body-item">
@@ -1777,8 +1544,7 @@ const Appearance: NextPage = (props: any) => {
                                 ) : (
                                   <img src={formObj.en.logo} />
                                 )}
-                                <div className="top-content">
-                                </div>
+                                <div className="top-content"></div>
 
                                 <div
                                   className="order-details-top"
@@ -1787,7 +1553,7 @@ const Appearance: NextPage = (props: any) => {
                                     borderBottom: '1px solid #eaeaea',
                                   }}>
                                   <div className="order-details-top-item">
-                                    <div>Whatsapp</div>
+                                    <div>{t('apperance.whatsapp')}</div>
                                     <div></div>
                                     <div>{formObj.en.whatsapp}</div>
                                   </div>
@@ -1799,7 +1565,7 @@ const Appearance: NextPage = (props: any) => {
                                     borderBottom: '1px solid #696969',
                                   }}>
                                   <div className="order-details-top-item">
-                                    <div>Instagram</div>
+                                    <div>{t('apperance.instagram')}</div>
                                     <div></div>
                                     <div>{formObj.en.instagram}</div>
                                   </div>
@@ -1811,7 +1577,7 @@ const Appearance: NextPage = (props: any) => {
                                     borderBottom: '1px solid #696969',
                                   }}>
                                   <div className="order-details-top-item">
-                                    <div>Website</div>
+                                    <div>{t('apperance.website')}</div>
                                     <div></div>
                                     <div>{formObj.en.website}</div>
                                   </div>
@@ -1850,9 +1616,9 @@ const Appearance: NextPage = (props: any) => {
   );
 };
 export default withAuth(Appearance);
-export async function getServerSideProps({ params }) {
+export async function getServerSideProps({ params, locale }) {
   const { id } = params;
   return {
-    props: { id },
+    props: { id, ...(await serverSideTranslations(locale)) },
   };
 }
