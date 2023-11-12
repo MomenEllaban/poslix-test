@@ -95,7 +95,6 @@
     "ItemsReport": "Items Report",
     "back_to_list": "Back to list"
   },
-<<<<<<< HEAD
   "products":{
     "Add_New_Product": "Add New Product",
     "Product_List": "Product List",
@@ -275,9 +274,9 @@
   "Created_By": "Created By",
   "Qty_Received": "Quantity Received",
   "Created_At":"Created At"
-}
+},
   
-=======
+
   "quotation": {
     "quotation": "Quotation",
     "quotation_list": "Quotation List",
@@ -473,5 +472,4 @@
     "edit_printer": "Edit Printer",
     "close": "Close"
   }
->>>>>>> 064e37b3e0f2fdb92be0f24f5b7c97f16e662e68
 }

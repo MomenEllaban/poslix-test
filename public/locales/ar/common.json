@@ -95,7 +95,6 @@
     "ItemsReport": "تقرير العناصر",
     "back_to_list": "الرجوع للقائمة"
   },
-<<<<<<< HEAD
   "products":{
     "Add_New_Product": "إضافة منتج جديد",
     "Product_List": "قائمة المنتجات",
@@ -273,8 +272,7 @@
   "Exchange_Rate": "سعر الصرف",
   "Created_By": "تم الإنشاء بواسطة",
   "Qty_Received": "الكمية المستلمة",
-  "Created_At": "تم الإنشاء في"
-=======
+  "Created_At": "تم الإنشاء في",
   "quotation": {
     "quotation": "عرض أسعار",
     "quotation_list": "قائمة الأسعار",
@@ -469,8 +467,7 @@
     "add_printer": "إضافة طابعة",
     "edit_printer": "تعديل طابعة",
     "close": "اغلاق"
->>>>>>> 064e37b3e0f2fdb92be0f24f5b7c97f16e662e68
   }
 
   
-}
+}}
