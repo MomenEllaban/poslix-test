@@ -16,7 +16,7 @@ import { generateUniqueString } from 'src/libs/toolsUtils';
 import { createNewData, findAllData } from 'src/services/crud.api';
 import withAuth from 'src/HOCs/withAuth';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'next-i18next';
 //
 function findFalsyKeys(obj): any {
   const falsyKeys = [];
@@ -189,7 +189,7 @@ const Appearance: NextPage = (props: any) => {
                               {previewUrl.length == 0 ? (
                                 <div>
                                   <label>
-                                  {t('apperance.logo')}: <span className="text-danger">*</span>
+                                    {t('apperance.logo')}: <span className="text-danger">*</span>
                                   </label>
                                   <input
                                     type="file"
@@ -213,7 +213,8 @@ const Appearance: NextPage = (props: any) => {
                               )}
                               <div className="form-group2">
                                 <label>
-                                {t('apperance.business_name')}: <span className="text-danger">*</span>
+                                  {t('apperance.business_name')}:{' '}
+                                  <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -257,7 +258,7 @@ const Appearance: NextPage = (props: any) => {
 
                               <div className="form-group2">
                                 <label>
-                                {t('apperance.customer')}: <span className="text-danger">*</span>
+                                  {t('apperance.customer')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -276,7 +277,7 @@ const Appearance: NextPage = (props: any) => {
                               </div>
                               <div className="form-group2">
                                 <label>
-                                {t('apperance.order_no')}: <span className="text-danger">*</span>
+                                  {t('apperance.order_no')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -295,7 +296,8 @@ const Appearance: NextPage = (props: any) => {
                               </div>
                               <div className="form-group2">
                                 <label>
-                                {t('apperance.order_date')}: <span className="text-danger">*</span>
+                                  {t('apperance.order_date')}:{' '}
+                                  <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -314,7 +316,7 @@ const Appearance: NextPage = (props: any) => {
                               </div>
                               <div className="form-group2">
                                 <label>
-                                {t('apperance.qty')}: <span className="text-danger">*</span>
+                                  {t('apperance.qty')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -333,7 +335,7 @@ const Appearance: NextPage = (props: any) => {
                               </div>
                               <div className="form-group2">
                                 <label>
-                                {t('apperance.item')}: <span className="text-danger">*</span>
+                                  {t('apperance.item')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -352,7 +354,7 @@ const Appearance: NextPage = (props: any) => {
                               </div>
                               <div className="form-group2">
                                 <label>
-                                {t('apperance.amount')}: <span className="text-danger">*</span>
+                                  {t('apperance.amount')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -371,7 +373,7 @@ const Appearance: NextPage = (props: any) => {
                               </div>
                               <div className="form-group2">
                                 <label>
-                                {t('apperance.tax')}: <span className="text-danger">*</span>
+                                  {t('apperance.tax')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -390,7 +392,7 @@ const Appearance: NextPage = (props: any) => {
                               </div>
                               <div className="form-group2">
                                 <label>
-                                {t('apperance.total')}: <span className="text-danger">*</span>
+                                  {t('apperance.total')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -409,7 +411,7 @@ const Appearance: NextPage = (props: any) => {
                               </div>
                               <div className="form-group2">
                                 <label>
-                                {t('apperance.footer')}: <span className="text-danger">*</span>
+                                  {t('apperance.footer')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -448,7 +450,8 @@ const Appearance: NextPage = (props: any) => {
                                 <>
                                   <div className="form-group2">
                                     <label>
-                                    {t('apperance.customer')}: <span className="text-danger">*</span>
+                                      {t('apperance.customer')}:{' '}
+                                      <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -467,7 +470,8 @@ const Appearance: NextPage = (props: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                    {t('apperance.order_no')}: <span className="text-danger">*</span>
+                                      {t('apperance.order_no')}:{' '}
+                                      <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -487,7 +491,8 @@ const Appearance: NextPage = (props: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                    {t('apperance.order_date')}: <span className="text-danger">*</span>
+                                      {t('apperance.order_date')}:{' '}
+                                      <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -507,7 +512,7 @@ const Appearance: NextPage = (props: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                    {t('apperance.qty')}: <span className="text-danger">*</span>
+                                      {t('apperance.qty')}: <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -526,7 +531,7 @@ const Appearance: NextPage = (props: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                    {t('apperance.item')}: <span className="text-danger">*</span>
+                                      {t('apperance.item')}: <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -545,7 +550,8 @@ const Appearance: NextPage = (props: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                    {t('apperance.amount')}: <span className="text-danger">*</span>
+                                      {t('apperance.amount')}:{' '}
+                                      <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -583,7 +589,7 @@ const Appearance: NextPage = (props: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                    {t('apperance.total')}: <span className="text-danger">*</span>
+                                      {t('apperance.total')}: <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -602,7 +608,8 @@ const Appearance: NextPage = (props: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                    {t('apperance.footer')}: <span className="text-danger">*</span>
+                                      {t('apperance.footer')}:{' '}
+                                      <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -758,7 +765,7 @@ const Appearance: NextPage = (props: any) => {
                   </div>
                 </div>
               </Tab>
-              <Tab eventKey="Invoice" title={ t('apperance.invoice') + " A4"}>
+              <Tab eventKey="Invoice" title={t('apperance.invoice') + ' A4'}>
                 <div className="row">
                   <div className="col-md-12">
                     <Card>
@@ -779,7 +786,7 @@ const Appearance: NextPage = (props: any) => {
                               {previewUrl.length == 0 ? (
                                 <div>
                                   <label>
-                                  {t('apperance.logo')}: <span className="text-danger">*</span>
+                                    {t('apperance.logo')}: <span className="text-danger">*</span>
                                   </label>
                                   <input
                                     type="file"
@@ -803,7 +810,8 @@ const Appearance: NextPage = (props: any) => {
                               )}
                               <div className="form-group2">
                                 <label>
-                                {t('apperance.business_name')}: <span className="text-danger">*</span>
+                                  {t('apperance.business_name')}:{' '}
+                                  <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -825,7 +833,7 @@ const Appearance: NextPage = (props: any) => {
 
                               <div className="form-group2">
                                 <label>
-                                {t('apperance.email')}: <span className="text-danger">*</span>
+                                  {t('apperance.email')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -869,7 +877,7 @@ const Appearance: NextPage = (props: any) => {
 
                               <div className="form-group2">
                                 <label>
-                                {t('apperance.address')}: <span className="text-danger">*</span>
+                                  {t('apperance.address')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -891,7 +899,8 @@ const Appearance: NextPage = (props: any) => {
 
                               <div className="form-group2">
                                 <label>
-                                {t('apperance.vat_number')}: <span className="text-danger">*</span>
+                                  {t('apperance.vat_number')}:{' '}
+                                  <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -913,7 +922,7 @@ const Appearance: NextPage = (props: any) => {
 
                               <div className="form-group2">
                                 <label>
-                                {t('apperance.customer')}: <span className="text-danger">*</span>
+                                  {t('apperance.customer')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -932,7 +941,7 @@ const Appearance: NextPage = (props: any) => {
                               </div>
                               <div className="form-group2">
                                 <label>
-                                {t('apperance.order_no')}: <span className="text-danger">*</span>
+                                  {t('apperance.order_no')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -951,7 +960,8 @@ const Appearance: NextPage = (props: any) => {
                               </div>
                               <div className="form-group2">
                                 <label>
-                                {t('apperance.order_date')}: <span className="text-danger">*</span>
+                                  {t('apperance.order_date')}:{' '}
+                                  <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -970,7 +980,7 @@ const Appearance: NextPage = (props: any) => {
                               </div>
                               <div className="form-group2">
                                 <label>
-                                {t('apperance.qty')}: <span className="text-danger">*</span>
+                                  {t('apperance.qty')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -989,7 +999,7 @@ const Appearance: NextPage = (props: any) => {
                               </div>
                               <div className="form-group2">
                                 <label>
-                                {t('apperance.item')}: <span className="text-danger">*</span>
+                                  {t('apperance.item')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -1008,7 +1018,7 @@ const Appearance: NextPage = (props: any) => {
                               </div>
                               <div className="form-group2">
                                 <label>
-                                {t('apperance.amount')}: <span className="text-danger">*</span>
+                                  {t('apperance.amount')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -1027,7 +1037,7 @@ const Appearance: NextPage = (props: any) => {
                               </div>
                               <div className="form-group2">
                                 <label>
-                                {t('apperance.tax')}: <span className="text-danger">*</span>
+                                  {t('apperance.tax')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -1046,7 +1056,7 @@ const Appearance: NextPage = (props: any) => {
                               </div>
                               <div className="form-group2">
                                 <label>
-                                {t('apperance.total')}: <span className="text-danger">*</span>
+                                  {t('apperance.total')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -1065,7 +1075,7 @@ const Appearance: NextPage = (props: any) => {
                               </div>
                               <div className="form-group2">
                                 <label>
-                                {t('apperance.footer')}: <span className="text-danger">*</span>
+                                  {t('apperance.footer')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -1104,7 +1114,8 @@ const Appearance: NextPage = (props: any) => {
                                 <>
                                   <div className="form-group2">
                                     <label>
-                                    {t('apperance.customer')}: <span className="text-danger">*</span>
+                                      {t('apperance.customer')}:{' '}
+                                      <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -1123,7 +1134,8 @@ const Appearance: NextPage = (props: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                    {t('apperance.order_no')}: <span className="text-danger">*</span>
+                                      {t('apperance.order_no')}:{' '}
+                                      <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -1143,7 +1155,8 @@ const Appearance: NextPage = (props: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                      {t('apperance.order_date')}: <span className="text-danger">*</span>
+                                      {t('apperance.order_date')}:{' '}
+                                      <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -1163,7 +1176,7 @@ const Appearance: NextPage = (props: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                    {t('apperance.qty')}: <span className="text-danger">*</span>
+                                      {t('apperance.qty')}: <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -1182,7 +1195,7 @@ const Appearance: NextPage = (props: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                    {t('apperance.item')}: <span className="text-danger">*</span>
+                                      {t('apperance.item')}: <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -1201,7 +1214,8 @@ const Appearance: NextPage = (props: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                    {t('apperance.amount')}: <span className="text-danger">*</span>
+                                      {t('apperance.amount')}:{' '}
+                                      <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -1220,7 +1234,7 @@ const Appearance: NextPage = (props: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                    {t('apperance.tax')}: <span className="text-danger">*</span>
+                                      {t('apperance.tax')}: <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -1239,7 +1253,7 @@ const Appearance: NextPage = (props: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                    {t('apperance.total')}: <span className="text-danger">*</span>
+                                      {t('apperance.total')}: <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -1258,7 +1272,8 @@ const Appearance: NextPage = (props: any) => {
                                   </div>
                                   <div className="form-group2">
                                     <label>
-                                    {t('apperance.footer')}: <span className="text-danger">*</span>
+                                      {t('apperance.footer')}:{' '}
+                                      <span className="text-danger">*</span>
                                     </label>
                                     <input
                                       type="text"
@@ -1304,7 +1319,7 @@ const Appearance: NextPage = (props: any) => {
                                     />
                                   )}
                                   <div className="invoice-print">
-                                  {t('apperance.invoice')}
+                                    {t('apperance.invoice')}
                                     <div>
                                       <table className="GeneratedTable">
                                         <tbody>
@@ -1335,7 +1350,9 @@ const Appearance: NextPage = (props: any) => {
                                     <div>{formObj.en.email}</div>
                                     <div>{formObj.en.tell}</div>
                                     <div>{formObj.en.address}</div>
-                                    <div>{t('apperance.vat_number')}: {formObj.en.vatNumber}</div>
+                                    <div>
+                                      {t('apperance.vat_number')}: {formObj.en.vatNumber}
+                                    </div>
                                   </div>
                                   <div className="right_up_of_table">
                                     <div>{t('apperance.billed_to')}</div>
@@ -1429,7 +1446,7 @@ const Appearance: NextPage = (props: any) => {
                               {previewUrl.length == 0 ? (
                                 <div>
                                   <label>
-                                  {t('apperance.logo')}: <span className="text-danger">*</span>
+                                    {t('apperance.logo')}: <span className="text-danger">*</span>
                                   </label>
                                   <input
                                     type="file"
@@ -1453,7 +1470,7 @@ const Appearance: NextPage = (props: any) => {
                               )}
                               <div className="form-group2">
                                 <label>
-                                {t('apperance.whatsapp')}: <span className="text-danger">*</span>
+                                  {t('apperance.whatsapp')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -1471,7 +1488,7 @@ const Appearance: NextPage = (props: any) => {
 
                               <div className="form-group2">
                                 <label>
-                                {t('apperance.instagram')}: <span className="text-danger">*</span>
+                                  {t('apperance.instagram')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -1490,7 +1507,7 @@ const Appearance: NextPage = (props: any) => {
 
                               <div className="form-group2">
                                 <label>
-                                {t('apperance.website')}: <span className="text-danger">*</span>
+                                  {t('apperance.website')}: <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -1507,8 +1524,7 @@ const Appearance: NextPage = (props: any) => {
                                 />
                               </div>
 
-                              <div className="invoice-settings-body">
-                              </div>
+                              <div className="invoice-settings-body"></div>
                               <button
                                 type="button"
                                 className="btn btn-primary p-2"

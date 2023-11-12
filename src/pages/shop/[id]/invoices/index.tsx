@@ -24,7 +24,7 @@ import SalesListTable from 'src/components/dashboard/SalesListTable';
 import { findAllData } from 'src/services/crud.api';
 import Pagination from '@mui/material/Pagination';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'next-i18next';
 
 export default function SalesList(props: any) {
   const { shopId, id } = props;
@@ -67,9 +67,7 @@ export default function SalesList(props: any) {
 
   const [permissions, setPermissions] = useState<any>();
   useEffect(() => {
-
     initDataPage(NUMBER_PAGE_DEFAULT);
-
 
     const perms = JSON.parse(localStorage.getItem('permissions')).filter(
       (loc) => loc.id == router.query.id
@@ -88,7 +86,6 @@ export default function SalesList(props: any) {
     );
 
     setPermissions(getPermissions);
-
   }, [router.asPath]);
 
   function CustomPagination(): React.JSX.Element {
@@ -116,7 +113,6 @@ export default function SalesList(props: any) {
     </AdminLayout>
   );
 }
-
 
 export async function getServerSideProps({ params, locale }) {
   const { id } = params;

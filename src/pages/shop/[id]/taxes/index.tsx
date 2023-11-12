@@ -29,7 +29,7 @@ import { ToastContainer } from 'react-toastify';
 import withAuth from 'src/HOCs/withAuth';
 import { createNewData, deleteData, findAllData, updateData } from 'src/services/crud.api';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'next-i18next';
 
 const Taxes: NextPage = (props: any) => {
   const { shopId, id } = props;

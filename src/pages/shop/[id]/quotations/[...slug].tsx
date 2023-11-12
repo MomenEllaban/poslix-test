@@ -39,7 +39,7 @@ import { Toastify } from 'src/libs/allToasts';
 import { createNewData, findAllData, updateData } from 'src/services/crud.api';
 import { useTaxesList } from 'src/services/pos.service';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'next-i18next';
 const AddQuotations: NextPage = (props: any) => {
   const { id, slug } = props;
   const { t } = useTranslation();
@@ -871,7 +871,9 @@ const AddQuotations: NextPage = (props: any) => {
                             setFormObj({ ...formObj, status: itm!.value });
                           }}
                         />
-                        {errorForm.status && <p className="p-1 h6 text-danger ">{t('quotation.select_one_item')}</p>}
+                        {errorForm.status && (
+                          <p className="p-1 h6 text-danger ">{t('quotation.select_one_item')}</p>
+                        )}
                       </div>
                     </div>
                   </div>

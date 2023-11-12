@@ -20,7 +20,7 @@ import { useReactToPrint } from 'react-to-print';
 import { Toastify } from 'src/libs/allToasts';
 import { ToastContainer } from 'react-toastify';
 import { findAllData, updateData } from 'src/services/crud.api';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { NextPage } from 'next';
 import withAuth from 'src/HOCs/withAuth';
@@ -533,12 +533,12 @@ const SalesList: NextPage = (props: any) => {
 
                     <td>
                       {Number(
-                            +selectedQuotationProducts.filter((ele) => {
-                              if (ele.variant_id) {
-                                return ele.variant_id == line?.variant_id;
-                              }
-                              return ele.product_id == line?.product_id;
-                            })[0]?.product_price
+                        +selectedQuotationProducts.filter((ele) => {
+                          if (ele.variant_id) {
+                            return ele.variant_id == line?.variant_id;
+                          }
+                          return ele.product_id == line?.product_id;
+                        })[0]?.product_price
                       ).toFixed(locationSettings?.location_decimal_places)}
                     </td>
                   </tr>
@@ -714,7 +714,7 @@ const SalesList: NextPage = (props: any) => {
         <div className="mb-4">
           <button
             className="btn m-btn btn-primary p-3"
-            onClick={() => { 
+            onClick={() => {
               router.push('/shop/' + shopId + '/quotations/add');
             }}>
             <FontAwesomeIcon icon={faPlus} /> {t('quotation.add_quotation')}
@@ -746,7 +746,9 @@ const SalesList: NextPage = (props: any) => {
       {/*  */}
 
       <Dialog open={showViewPopUp} fullWidth={true} className="poslix-modal" onClose={handleClose}>
-        <DialogTitle className="poslix-modal text-primary">{t('quotation_sale_model.quotaion_details')}</DialogTitle>
+        <DialogTitle className="poslix-modal text-primary">
+          {t('quotation_sale_model.quotaion_details')}
+        </DialogTitle>
         <DialogContent className="poslix-modal-content">
           <div className="poslix-modal">
             <div className="top-section-details">
@@ -803,13 +805,13 @@ const SalesList: NextPage = (props: any) => {
                   onClick={() => {
                     handlePrint();
                   }}>
-                  {t('quotation_sale_model.print_recipt')} 
+                  {t('quotation_sale_model.print_recipt')}
                 </Button>
                 <Button
                   onClick={() => {
                     handlePrint2();
                   }}>
-                  {t('quotation_sale_model.print_invoice')} 
+                  {t('quotation_sale_model.print_invoice')}
                 </Button>
               </div>
             </div>
@@ -865,12 +867,12 @@ const SalesList: NextPage = (props: any) => {
       </Dialog>
     </AdminLayout>
   );
-}
+};
 export default withAuth(SalesList);
+
 export async function getServerSideProps({ params, locale }) {
   const { id } = params;
   return {
-    props: { id, 
-      ...(await serverSideTranslations(locale)) },
+    props: { id, ...(await serverSideTranslations(locale)) },
   };
 }

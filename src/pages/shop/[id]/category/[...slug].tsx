@@ -6,7 +6,7 @@ import { useRouter } from 'next/router';
 import { useEffect, useRef, useState } from 'react';
 import { Card } from 'react-bootstrap';
 import Spinner from 'react-bootstrap/Spinner';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'next-i18next';
 import Select from 'react-select';
 import { ToastContainer } from 'react-toastify';
 import withAuth from 'src/HOCs/withAuth';
@@ -15,7 +15,7 @@ import { createNewData, findAllData, updateData } from 'src/services/crud.api';
 
 const CategorySlug: NextPage = (props: any) => {
   const { editId, id } = props;
-  const { t } = useTranslation()
+  const { t } = useTranslation();
   const [shopId, setShopId] = useState('');
   const [loading, setLoading] = useState(false);
   const [formObj, setFormObj] = useState({
@@ -129,7 +129,15 @@ const CategorySlug: NextPage = (props: any) => {
       </div>
       <Card className="mb-4">
         <Card.Header className="p-3 bg-white">
-          <h5>{isEdit ?  typeName ==="Category" ? t('category.edit_category'): t('category.edit_brand') : typeName === "Category" ? t('category.add_new_category') : t('category.add_new_brand')}</h5>
+          <h5>
+            {isEdit
+              ? typeName === 'Category'
+                ? t('category.edit_category')
+                : t('category.edit_brand')
+              : typeName === 'Category'
+              ? t('category.add_new_category')
+              : t('category.add_new_brand')}
+          </h5>
         </Card.Header>
         <Card.Body>
           {!loading ? (

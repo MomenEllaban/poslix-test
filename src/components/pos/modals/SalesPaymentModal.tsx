@@ -16,7 +16,7 @@ import { UserContext } from 'src/context/UserContext';
 import { Toastify } from 'src/libs/allToasts';
 import { ToastContainer } from 'react-toastify';
 import { updateData } from 'src/services/crud.api';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'next-i18next';
 
 const SalesPaymentModal = (props: any) => {
   const { locationSettings } = useContext(UserContext);
@@ -35,7 +35,7 @@ const SalesPaymentModal = (props: any) => {
     // to call the parent function to edite
     handlePrint,
     completeHandele,
-    t
+    t,
     ///
   } = props;
   // with discount feature
@@ -47,7 +47,7 @@ const SalesPaymentModal = (props: any) => {
     st: false,
     msg: '',
   });
-  const [paymentData, setPaymentData] = useState<any>({})
+  const [paymentData, setPaymentData] = useState<any>({});
   const [, setJobType] = useRecoilState(cartJobType);
   const [paymentRows, setPaymentRows] = useState<IpaymentRow[]>([
     { amount: 0, method: 'cash', notes: '' },
@@ -69,7 +69,7 @@ const SalesPaymentModal = (props: any) => {
   const [holdItems, setHoldItems] = useState<IHold[]>([]);
 
   useEffect(() => {
-    setPaymentData({amount: userData.due, payment_type: 'cash'})
+    setPaymentData({ amount: userData.due, payment_type: 'cash' });
     setHasError({ st: false, msg: '' });
     let _mustPay = +Math.abs(
       __WithDiscountFeature__total + details?.totalAmount - details?.subTotal
@@ -146,11 +146,11 @@ const SalesPaymentModal = (props: any) => {
     completeHandele(paymentRows[0], userData);
     setPaymentModalShow(false);
     // remove comment to call the api
-    canPay ? insertPayment() : Toastify("error", "Wrong Amount!!");
+    canPay ? insertPayment() : Toastify('error', 'Wrong Amount!!');
   };
 
   async function insertPayment() {
-    const res = await updateData('sales/complete-payment', userData.id, paymentData)
+    const res = await updateData('sales/complete-payment', userData.id, paymentData);
     if (res.data.success) {
       Toastify('success', 'successfully done');
       setPaymentModalShow(false);
@@ -185,7 +185,9 @@ const SalesPaymentModal = (props: any) => {
                   paddingInline: '16px',
                   paddingTop: '6px',
                 }}>
-                <p>{t('invoices.customer_name')}: {userData?.contact_name}</p>
+                <p>
+                  {t('invoices.customer_name')}: {userData?.contact_name}
+                </p>
               </div>
               <div
                 style={{
@@ -194,8 +196,12 @@ const SalesPaymentModal = (props: any) => {
                   paddingInline: '16px',
                   paddingTop: '6px',
                 }}>
-                <p>{t('invoices.invoice_no')}: {userData.id}</p>
-                <p>{t('invoices.location')}: {location}</p>
+                <p>
+                  {t('invoices.invoice_no')}: {userData.id}
+                </p>
+                <p>
+                  {t('invoices.location')}: {location}
+                </p>
               </div>
               <div
                 style={{
@@ -204,14 +210,18 @@ const SalesPaymentModal = (props: any) => {
                   paddingInline: '16px',
                   paddingTop: '6px',
                 }}>
-                <p>{t('invoices.total_amount')}: {userData.sub_total}</p>
-                <p>{t('invoices.payment_note')}: {userData.note ? userData.note : '...'}</p>
+                <p>
+                  {t('invoices.total_amount')}: {userData.sub_total}
+                </p>
+                <p>
+                  {t('invoices.payment_note')}: {userData.note ? userData.note : '...'}
+                </p>
               </div>
             </div>
             <div>
               <div className="payment-item">
                 <label className="label" htmlFor="abount">
-                {t('quotation_sale_model.order_note')}
+                  {t('quotation_sale_model.order_note')}
                 </label>
                 <textarea
                   className="form-control"
@@ -226,15 +236,15 @@ const SalesPaymentModal = (props: any) => {
                   <div key={i} className="payment-box">
                     <div className="payment-item">
                       <label className="label" htmlFor="abount">
-                      {t('invoices.payment')}
+                        {t('invoices.payment')}
                       </label>
                       <input
                         className="form-control"
                         type="number"
                         name="amount"
                         onChange={(e) => {
-                          paymentRowChange(0, e)
-                          setPaymentData({...paymentData, amount: +e.target.value})
+                          paymentRowChange(0, e);
+                          setPaymentData({ ...paymentData, amount: +e.target.value });
                         }}
                         value={paymentData.amount ? paymentData.amount : userData.totalDue}
                       />
@@ -242,15 +252,14 @@ const SalesPaymentModal = (props: any) => {
 
                     <div className="payment-item">
                       <label className="label" htmlFor="abount">
-                      {t('invoices.method')}{' '}
+                        {t('invoices.method')}{' '}
                       </label>
                       <Select
                         styles={selectStyle}
                         options={paymentMethods}
                         onChange={(e: any) => {
-                          paymentRowChange(i, e)
-                          setPaymentData({...paymentData, payment_type: e.value})
-                          
+                          paymentRowChange(i, e);
+                          setPaymentData({ ...paymentData, payment_type: e.value });
                         }}
                         value={paymentMethods.find((f) => {
                           return f.value == +paymentRow.method;
@@ -260,7 +269,7 @@ const SalesPaymentModal = (props: any) => {
 
                     <div className="payment-item">
                       <label className="label" htmlFor="abount">
-                      {t('invoices.pay_note')}
+                        {t('invoices.pay_note')}
                       </label>
                       <input
                         className="form-control"
@@ -273,7 +282,7 @@ const SalesPaymentModal = (props: any) => {
 
                     <div className="payment-item">
                       <label className="label" htmlFor="abount">
-                      {t('invoices.payed_on')}
+                        {t('invoices.payed_on')}
                       </label>
                       <input
                         className="form-control"

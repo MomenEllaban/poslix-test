@@ -27,7 +27,7 @@ import { findAllData } from 'src/services/crud.api';
 import { convertDateStringToDateAndTime } from '../../models/data';
 import SalesPaymentModal from '../pos/modals/SalesPaymentModal';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'next-i18next';
 
 export default function SalesListTable({
   id,

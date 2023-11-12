@@ -21,7 +21,7 @@ import { Toastify } from 'src/libs/allToasts';
 import { findAllData } from 'src/services/crud.api';
 import PrinterModal from '../../../../components/pos/modals/PrinterModal';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'next-i18next';
 
 const Printers: NextPage = (props: any) => {
   const { shopId, rules } = props;

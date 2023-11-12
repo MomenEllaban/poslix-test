@@ -17,10 +17,10 @@ import { Toastify } from 'src/libs/allToasts';
 import withAuth from 'src/HOCs/withAuth';
 import { findAllData } from 'src/services/crud.api';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'next-i18next';
 import { NextPage } from 'next';
 
-const Category : NextPage = ({ id }: any) => {
+const Category: NextPage = ({ id }: any) => {
   const { t } = useTranslation();
   const [cats, setCats] = useState<{ id: number; name: string }[]>([]);
   const [brands, setBrands] = useState<{ id: number; name: string }[]>([]);
@@ -125,7 +125,8 @@ const Category : NextPage = ({ id }: any) => {
                     });
                   else Toastify('error', 'Error On Add New');
                 }}>
-                <FontAwesomeIcon icon={faPlus} />{key ==='categories'? t('category.add_category'): t('category.add_brand')}{' '}
+                <FontAwesomeIcon icon={faPlus} />
+                {key === 'categories' ? t('category.add_category') : t('category.add_brand')}{' '}
               </button>
             </div>
           )}
@@ -271,7 +272,7 @@ const Category : NextPage = ({ id }: any) => {
 export default withAuth(Category);
 export async function getServerSideProps({ params, locale }) {
   console.log(locale);
-  
+
   const { id } = params;
   return {
     props: { id, ...(await serverSideTranslations(locale)) },

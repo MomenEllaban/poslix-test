@@ -18,7 +18,7 @@ import api from 'src/utils/app-api';
 import useSWR from 'swr';
 import PaymentModal from './component/PaymentModal';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'next-i18next';
 
 const PaymentMethods: NextPage = ({ id }: any) => {
   const router = useRouter();
