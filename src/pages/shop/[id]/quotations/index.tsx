@@ -20,9 +20,14 @@ import { useReactToPrint } from 'react-to-print';
 import { Toastify } from 'src/libs/allToasts';
 import { ToastContainer } from 'react-toastify';
 import { findAllData, updateData } from 'src/services/crud.api';
+import { useTranslation } from 'react-i18next';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { NextPage } from 'next';
+import withAuth from 'src/HOCs/withAuth';
 
-export default function SalesList(props: any) {
+const SalesList: NextPage = (props: any) => {
   const { id } = props;
+  const { t } = useTranslation();
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
     // @ts-ignore
     value: 0,
@@ -33,20 +38,6 @@ export default function SalesList(props: any) {
     currency_rate: 1,
     currency_symbol: '',
   });
-
-  const handleClose = () => {
-    setShowViewPopUp(false);
-    setShowQuotation({
-      transferID: null,
-      from: '',
-      status: '',
-      total: 0,
-      products: [],
-      createdBy: '',
-      ceartedAt: '',
-    });
-    setLines([]);
-  };
   const [sales, setsales] = useState<any>([]);
   const [customersNames, setCustomersNames] = useState<any>([]);
   const router = useRouter();
@@ -54,7 +45,6 @@ export default function SalesList(props: any) {
   const [selectId, setSelectId] = useState(0);
   const [selectRow, setSelectRow] = useState<any>({ payment: [] });
   const [lines, setLines] = useState<any>([]);
-
   const [show, setShow] = useState(false);
   const [edit, setEdit] = useState(false);
   const [isLoadItems, setIsLoadItems] = useState(false);
@@ -140,13 +130,6 @@ export default function SalesList(props: any) {
       createdBy: from,
     });
     getItems(transferID);
-    // calc total price
-    // let total_price: number = 0;
-    // quotation?.quotation_list_lines.forEach(el => {
-
-    //   total_price = total_price + ((+el.qty) * (+el?.quotation_line_product?.sell_price))
-    // });
-
     setSelectRow({ ...quotation });
   };
   // ------------------------------------------------------------------------------------------------
@@ -160,7 +143,7 @@ export default function SalesList(props: any) {
     { field: 'id', headerName: '#', minWidth: 50 },
     {
       field: 'customer_id',
-      headerName: 'Customer Name',
+      headerName: t('quotation.customer_name'),
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) => {
         if (row.customer_id) {
@@ -176,11 +159,11 @@ export default function SalesList(props: any) {
         }
       },
     },
-    { field: 'created_at', headerName: 'Quotation Date', flex: 1 },
+    { field: 'created_at', headerName: t('quotation.quotaion_date'), flex: 1 },
     {
       flex: 1,
       field: 'status',
-      headerName: 'Status',
+      headerName: t('quotation.status'),
       renderCell: ({ row }: Partial<GridRowParams>) => {
         if (row.status === 'accepted') {
           return (
@@ -206,7 +189,7 @@ export default function SalesList(props: any) {
     {
       flex: 1,
       field: 'action',
-      headerName: 'Action ',
+      headerName: t('quotation.action'),
       filterable: false,
       sortable: false,
       disableExport: true,
@@ -229,7 +212,6 @@ export default function SalesList(props: any) {
             </Button>
             <Button
               onClick={() => {
-                // localStorage.setItem('showingQuotation', JSON.stringify(row));
                 formatQuotation(row);
                 setShowViewPopUp(true);
               }}>
@@ -694,8 +676,18 @@ export default function SalesList(props: any) {
   const handlePrint2 = useReactToPrint({
     content: () => componentRef2.current,
   });
-  const handleSearch = (e: any) => {
-    setHandleSearchTxt(e.target.value);
+  const handleClose = () => {
+    setShowViewPopUp(false);
+    setShowQuotation({
+      transferID: null,
+      from: '',
+      status: '',
+      total: 0,
+      products: [],
+      createdBy: '',
+      ceartedAt: '',
+    });
+    setLines([]);
   };
   return (
     <AdminLayout shopId={id}>
@@ -706,7 +698,7 @@ export default function SalesList(props: any) {
         shopId={id}
         id={selectId}
         url="quotations-list">
-        Are you Sure You Want Delete This Item ?
+        {t('alert_dialog.delete_msg')}
       </AlertDialog>
       {
         <div style={{ display: 'none' }}>
@@ -722,14 +714,14 @@ export default function SalesList(props: any) {
         <div className="mb-4">
           <button
             className="btn m-btn btn-primary p-3"
-            onClick={() => {
+            onClick={() => { 
               router.push('/shop/' + shopId + '/quotations/add');
             }}>
-            <FontAwesomeIcon icon={faPlus} /> Add Quotation{' '}
+            <FontAwesomeIcon icon={faPlus} /> {t('quotation.add_quotation')}
           </button>
         </div>
 
-        <h5>Quotations List</h5>
+        <h5>{t('quotation.quotation_list')}</h5>
         <DataGrid
           loading={isloading}
           className="datagrid-style"
@@ -754,7 +746,7 @@ export default function SalesList(props: any) {
       {/*  */}
 
       <Dialog open={showViewPopUp} fullWidth={true} className="poslix-modal" onClose={handleClose}>
-        <DialogTitle className="poslix-modal text-primary">Quotaion Details</DialogTitle>
+        <DialogTitle className="poslix-modal text-primary">{t('quotation_sale_model.quotaion_details')}</DialogTitle>
         <DialogContent className="poslix-modal-content">
           <div className="poslix-modal">
             <div className="top-section-details">
@@ -762,11 +754,11 @@ export default function SalesList(props: any) {
               <div className="item-sections">
                 <div className="top-detials-invoice">
                   <div className="top-detials-item">
-                    <p>Quotaion No :</p>
+                    <p>{t('quotation_sale_model.quotaion-no')} :</p>
                     <p>{selectRow.id}</p>
                   </div>
                   <div className="top-detials-item pe-2">
-                    <p>Quotaion Date :</p>
+                    <p>{t('quotation_sale_model.quotaion_date')} :</p>
                     {edit ? (
                       <input
                         type="text"
@@ -782,14 +774,14 @@ export default function SalesList(props: any) {
                     )}
                   </div>
                   <div className="top-detials-item pe-2">
-                    <p>Added By :</p>
+                    <p>{t('quotation_sale_model.added_by')} :</p>
 
                     <p>{selectRow?.employee?.first_name}</p>
                   </div>
                 </div>
                 <div className="top-detials-invoice">
                   <div className="top-detials-item">
-                    <p>Final Total :</p>
+                    <p>{t('quotation_sale_model.final_total')} :</p>
                     <p>
                       {Number(selectRow.total_price).toFixed(
                         locationSettings?.location_decimal_places
@@ -797,7 +789,7 @@ export default function SalesList(props: any) {
                     </p>
                   </div>
                   <div className="top-detials-item">
-                    <p>Customer Name :</p>
+                    <p>{t('quotation_sale_model.customer_name')} :</p>
                     <p>
                       {selectRow?.customer?.first_name} {selectRow?.customer?.last_name}
                     </p>
@@ -811,13 +803,13 @@ export default function SalesList(props: any) {
                   onClick={() => {
                     handlePrint();
                   }}>
-                  Print Recipt
+                  {t('quotation_sale_model.print_recipt')} 
                 </Button>
                 <Button
                   onClick={() => {
                     handlePrint2();
                   }}>
-                  Print Invoice
+                  {t('quotation_sale_model.print_invoice')} 
                 </Button>
               </div>
             </div>
@@ -825,9 +817,9 @@ export default function SalesList(props: any) {
               <div className="row">
                 <div className="invoice-items-container">
                   <div className="header-titles">
-                    <div>Name</div>
-                    <div>Qty</div>
-                    <div>Amount</div>
+                    <div>{t('quotation_sale_model.name')}</div>
+                    <div>{t('quotation_sale_model.qty')}</div>
+                    <div>{t('quotation_sale_model.amount')}</div>
                     {edit && <div></div>}
                   </div>
                   {lines?.map((line: any, index: number) => {
@@ -846,15 +838,6 @@ export default function SalesList(props: any) {
                         <div>{Number(+line?.product_qty).toFixed(0)}</div>
                         <div>
                           {Number(
-                            // +line?.product_qty *
-                            //   +selectedQuotationProducts.filter((ele) => {
-                            //     if (ele.variant_id) {
-                            //       return ele.variant_id == line?.variant_id;
-                            //     }
-                            //     return ele.product_id == line?.product_id;
-                            //   })[0]?.product_price *
-                            // (selectRow.tax_amount / 100) +
-                            // +line?.product_qty *
                             +selectedQuotationProducts.filter((ele) => {
                               if (ele.variant_id) {
                                 return ele.variant_id == line?.variant_id;
@@ -867,7 +850,7 @@ export default function SalesList(props: any) {
                     );
                   })}
                   <div className="header-titles under_items" style={{ marginTop: '20px' }}>
-                    <div>Total</div>
+                    <div>{t('quotation_sale_model.total')}</div>
                     <div>
                       {(+selectRow.total_price).toFixed(locationSettings?.location_decimal_places)}
                     </div>
@@ -880,170 +863,14 @@ export default function SalesList(props: any) {
           </div>
         </DialogContent>
       </Dialog>
-
-      {/*  */}
-
-      {/* FOR VIEW ELEMENT */}
-      {/* <Dialog open={showViewPopUp} fullWidth={true} maxWidth={'md'} onClose={handleClose}>
-        
-        <DialogContent className="poslix-modal-content">
-          <Box
-            component={'div'}
-            sx={{
-              display: 'flex',
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}>
-            <Box
-              component={'div'}
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                width: '50%',
-                gap: '10px',
-                padding: '20px',
-              }}>
-              <Typography
-                variant="h4"
-                sx={{
-                  borderBottom: '1px solid gray',
-                }}>
-                Quotaion Details
-              </Typography>
-              <Box
-                component={'div'}
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}>
-                <Typography variant="h5">Qutation ID:</Typography>
-                <Typography>{showingQuotation.transferID}</Typography>
-              </Box>
-              <Box
-                component={'div'}
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}>
-                <Typography variant="h5">Status:</Typography>
-                <Typography>{showingQuotation.status}</Typography>
-              </Box>
-              <Box
-                component={'div'}
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}>
-                <Typography variant="h5">Total Price:</Typography>
-                <Typography>{showingQuotation.total}</Typography>
-              </Box>
-            </Box>
-            <Box
-              component={'div'}
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                borderLeft: '1px solid gray',
-                width: '50%',
-                padding: '20px',
-                gap: '10px',
-              }}>
-              <Typography
-                variant="h5"
-                sx={{
-                  borderBottom: '1px solid gray',
-                }}>
-                Products:
-              </Typography>
-              {showingQuotation.products.map((ele, index) => (
-                <Box
-                  key={index}
-                  component={'div'}
-                  sx={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                  }}>
-                  <Typography variant="h6">{ele.name}</Typography>
-                  <Typography>{ele.qty} Qty</Typography>
-                </Box>
-              ))}
-              <Box
-                component={'div'}
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}>
-                <Typography variant="h5">Created By:</Typography>
-                <Typography>{showingQuotation.createdBy}</Typography>
-              </Box>
-              <Box
-                component={'div'}
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}>
-                <Typography variant="h5">Created At:</Typography>
-                <Typography>{showingQuotation.ceartedAt}</Typography>
-              </Box>
-            </Box>
-          </Box>
-         
-        </DialogContent>
-        <DialogActions>
-          {edit && (
-            <Button
-              onClick={() => {
-                setShowViewPopUp(false);
-                setEdit(false);
-              }}>
-              Save
-            </Button>
-          )}
-          {!edit && (
-            <div className='mx-3'>
-              <Button
-                className="mr-right"
-                onClick={() => {
-                  handlePrint();
-                }}>
-                Print Recipt
-              </Button>
-              <Button
-                onClick={() => {
-                  handlePrint2();
-                }}>
-                Print Invoice
-              </Button>
-            </div>
-          )}
-          <Button
-            onClick={() => {
-              setEdit(false);
-              setShowViewPopUp(false);
-            }}>
-            Cancel
-          </Button>
-        </DialogActions>
-      </Dialog> */}
     </AdminLayout>
   );
 }
-export async function getServerSideProps({ params }) {
+export default withAuth(SalesList);
+export async function getServerSideProps({ params, locale }) {
   const { id } = params;
   return {
-    props: { id },
+    props: { id, 
+      ...(await serverSideTranslations(locale)) },
   };
 }

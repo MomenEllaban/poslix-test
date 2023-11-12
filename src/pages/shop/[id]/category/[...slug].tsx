@@ -1,10 +1,12 @@
 import { AdminLayout } from '@layout';
 import type { NextPage } from 'next';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import Link from 'next/dist/client/link';
 import { useRouter } from 'next/router';
 import { useEffect, useRef, useState } from 'react';
 import { Card } from 'react-bootstrap';
 import Spinner from 'react-bootstrap/Spinner';
+import { useTranslation } from 'react-i18next';
 import Select from 'react-select';
 import { ToastContainer } from 'react-toastify';
 import withAuth from 'src/HOCs/withAuth';
@@ -13,6 +15,7 @@ import { createNewData, findAllData, updateData } from 'src/services/crud.api';
 
 const CategorySlug: NextPage = (props: any) => {
   const { editId, id } = props;
+  const { t } = useTranslation()
   const [shopId, setShopId] = useState('');
   const [loading, setLoading] = useState(false);
   const [formObj, setFormObj] = useState({
@@ -120,25 +123,25 @@ const CategorySlug: NextPage = (props: any) => {
               e.preventDefault();
               router.push('/shop/' + shopId + '/category');
             }}>
-            Back To List
+            {t('category.back_to_list')}
           </Link>
         </div>
       </div>
       <Card className="mb-4">
         <Card.Header className="p-3 bg-white">
-          <h5>{isEdit ? 'Edit ' + typeName : 'Add New ' + typeName}</h5>
+          <h5>{isEdit ?  typeName ==="Category" ? t('category.edit_category'): t('category.edit_brand') : typeName === "Category" ? t('category.add_new_category') : t('category.add_new_brand')}</h5>
         </Card.Header>
         <Card.Body>
           {!loading ? (
             <form className="form-style">
               <div className="form-group2">
                 <label>
-                  Name: <span className="text-danger">*</span>
+                  {t('category.name')}: <span className="text-danger">*</span>
                 </label>
                 <input
                   type="text"
                   className="form-control"
-                  placeholder=" Enter Name"
+                  placeholder={t('category.enter_name')}
                   value={formObj.name}
                   onChange={(e) => {
                     setFormObj({ ...formObj, name: e.target.value });
@@ -148,11 +151,11 @@ const CategorySlug: NextPage = (props: any) => {
               </div>
               <div className="row">
                 <div className="form-group">
-                  <label>description:</label>
+                  <label>{t('category.description')}:</label>
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="description"
+                    placeholder={t('category.description')}
                     value={formObj.description}
                     onChange={(e) => {
                       setFormObj({ ...formObj, description: e.target.value });
@@ -161,7 +164,7 @@ const CategorySlug: NextPage = (props: any) => {
                 </div>
 
                 <div className="form-group">
-                  <label>Custom Tax :</label>
+                  <label>{t('category.custom_tax')} :</label>
                   <Select
                     // styles={colourStyles}
                     options={taxGroup}
@@ -195,7 +198,7 @@ const CategorySlug: NextPage = (props: any) => {
                     isEdit ? editHandle() : insertHandle();
                   } else alert('Enter Required Field');
                 }}>
-                {isEdit ? 'Edit' : 'Save'}
+                {isEdit ? t('category.edit') : t('category.save')}
               </button>
             </form>
           ) : (
@@ -209,3 +212,8 @@ const CategorySlug: NextPage = (props: any) => {
   );
 };
 export default withAuth(CategorySlug);
+export async function getServerSideProps({ locale }) {
+  return {
+    props: { ...(await serverSideTranslations(locale)) },
+  };
+}

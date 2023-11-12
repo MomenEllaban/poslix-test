@@ -13,7 +13,7 @@ import api from 'src/utils/app-api';
 
 const label = { inputProps: { 'aria-label': 'printer status' } };
 const PrinterModal = (props: any) => {
-  const { openDialog, statusDialog, userdata, showType, shopId,selectId,printersList } = props;
+  const { openDialog, statusDialog, userdata, showType, t, shopId,selectId,printersList } = props;
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const {register,handleSubmit,formState: { errors },reset,setValue,clearErrors,} = useForm({
@@ -101,7 +101,7 @@ const PrinterModal = (props: any) => {
     return (
       <Modal show={open} onHide={handleClose}>
         <Modal.Header className="poslix-modal-title text-primary text-capitalize" closeButton>
-          {showType + ' printer'}
+          {showType ==='add' ? t('printer.add_printer') : t('printer.edit_printer')}
           
         </Modal.Header>
         <Modal.Body>
@@ -114,7 +114,7 @@ const PrinterModal = (props: any) => {
   return (
     <Modal show={open} onHide={handleClose}>
       <Modal.Header className="poslix-modal-title text-primary text-capitalize" closeButton>
-        {showType + ' printer' + selectId}
+      {showType ==='add' ? t('printer.add_printer') +" "+ selectId : t('printer.edit_printer') + " " + selectId}
       </Modal.Header>
       <Modal.Body>
         <Form noValidate onSubmit={handleSubmit(onSubmit, onError)}>
@@ -124,8 +124,8 @@ const PrinterModal = (props: any) => {
                 required
                 type="text"
                 name="name"
-                label="Printer Name"
-                placeholder="Printer Name"
+                label={t('printer.printer_name')}
+                placeholder={t('printer.printer_name')}
                 errors={errors}
                 register={register}
               />
@@ -139,7 +139,7 @@ const PrinterModal = (props: any) => {
                 register={register}
               />
               <SelectField
-              label="print type"
+              label={t('printer.printer_type')}
               name="print_type"
               options={[{value: "receipt",label:"receipt"},{value: "A4",label:"A4"}]} // Pass the business types options
               register={register}
@@ -148,7 +148,7 @@ const PrinterModal = (props: any) => {
               
               />
               <SelectField
-              label="connection method"
+              label={t('printer.connection_method')}
               name="connection"
               options={[{value: "Wifi",label:"Wifi"},{value: "USB",label:"USB"},{value: "Bluetooth",label:"Bluetooth"}]} // Pass the business types options
               register={register}
@@ -157,7 +157,7 @@ const PrinterModal = (props: any) => {
               
               />
               <SelectField
-              label="printer status"
+              label={t('printer.printer_status')}
               name="status"
               options={[{value: "0",label:"off"},{value: "1",label:"on"}]} // Pass the business types options
               register={register}
@@ -174,11 +174,11 @@ const PrinterModal = (props: any) => {
           </Modal.Body>
           <Modal.Footer>
             <a className="btn btn-link link-success fw-medium" onClick={() => handleClose()}>
-              <i className="ri-close-line me-1 align-middle" /> Close
+              <i className="ri-close-line me-1 align-middle" /> {t('printer.close')}
             </a>{' '}
             {showType != 'show' && (
               <Button type="submit" className="text-capitalize" onClick={() => {}}>
-                {showType} Printer
+               {showType ==='add' ? t('printer.add_printer') : t('printer.edit_printer')}
               </Button>
             )}
           </Modal.Footer>
