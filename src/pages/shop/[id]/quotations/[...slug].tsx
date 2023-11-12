@@ -7,11 +7,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import DatePicker from 'react-datepicker';
 import Form from 'react-bootstrap/Form';
 import 'react-datepicker/dist/react-datepicker.css';
-import {
-  ILocationSettings,
-  IPurchaseExpndes,
-  IpurchaseProductItem,
-} from 'src/models/common-model';
+import { ILocationSettings, IPurchaseExpndes, IpurchaseProductItem } from 'src/models/common-model';
 import { DataGrid, GridColDef, GridRowParams } from '@mui/x-data-grid';
 import {
   Button,
@@ -42,9 +38,11 @@ import { ToastContainer } from 'react-toastify';
 import { Toastify } from 'src/libs/allToasts';
 import { createNewData, findAllData, updateData } from 'src/services/crud.api';
 import { useTaxesList } from 'src/services/pos.service';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { useTranslation } from 'react-i18next';
 const AddQuotations: NextPage = (props: any) => {
   const { id, slug } = props;
-
+  const { t } = useTranslation();
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
     // @ts-ignore
     value: 0,
@@ -172,10 +170,10 @@ const AddQuotations: NextPage = (props: any) => {
   };
 
   const columns: GridColDef[] = [
-    { field: 'name', headerName: 'Product Name', minWidth: 200 },
+    { field: 'name', headerName: t('quotation.product_name'), minWidth: 200 },
     {
       field: 'cost',
-      headerName: 'Cost',
+      headerName: t('quotation.cost'),
       colSpan: 1,
       minWidth: 350,
       editable: true,
@@ -221,12 +219,24 @@ const AddQuotations: NextPage = (props: any) => {
         </>
       ),
     },
-    { field: 'price', headerName: 'Price', minWidth: 150, editable: true, type: 'number' },
-    { field: 'quantity', headerName: 'Qty', minWidth: 150, editable: true, type: 'number' },
+    {
+      field: 'price',
+      headerName: t('quotation.price'),
+      minWidth: 150,
+      editable: true,
+      type: 'number',
+    },
+    {
+      field: 'quantity',
+      headerName: t('quotation_sale_model.qty'),
+      minWidth: 150,
+      editable: true,
+      type: 'number',
+    },
     { field: 'vat', headerName: 'VAT %', minWidth: 150, editable: true, type: 'number' },
     {
       field: 'lineTotal',
-      headerName: 'Line Total',
+      headerName: t('quotation.line_total'),
       minWidth: 100,
       type: 'number',
       renderCell: ({ row }: Partial<GridRowParams>) => (
@@ -243,7 +253,7 @@ const AddQuotations: NextPage = (props: any) => {
     },
     {
       field: 'action',
-      headerName: 'Action',
+      headerName: t('quotation.action'),
       minWidth: 100,
       sortable: false,
       disableExport: true,
@@ -368,22 +378,27 @@ const AddQuotations: NextPage = (props: any) => {
       customer_id: formObj.customer_id,
       discount_type: formObj.discount_type,
       discount_amount: formObj.discount_amount,
-      notes:"",
+      notes: '',
       cart: selectProducts.map((prod) => {
-        if(prod.variation_id !== 0){
-          return {product_id: prod.product_id, variation_id: prod.id, qty: prod.quantity, note: '' };
+        if (prod.variation_id !== 0) {
+          return {
+            product_id: prod.product_id,
+            variation_id: prod.id,
+            qty: prod.quantity,
+            note: '',
+          };
         }
         return { product_id: prod.id, qty: prod.quantity, note: '' };
       }),
       tax_type: tax.type,
       tax_amount: tax.tax,
-      payment:[
+      payment: [
         {
           payment_id: formObj.paymentType,
           amount: formObj.paid_amount,
-          note: ""
-        }
-      ]
+          note: '',
+        },
+      ],
     };
     const res = await createNewData('quotations-list', quotationData);
     if (!res.data.success) {
@@ -616,7 +631,7 @@ const AddQuotations: NextPage = (props: any) => {
     }
   }, [jobType]);
   console.log(selectProducts);
-  
+
   //product add / update
   const addToProductQuotations = (e: any) => {
     if (e.type == 'variable') {
@@ -740,14 +755,14 @@ const AddQuotations: NextPage = (props: any) => {
           }}
           aria-labelledby="alert-dialog-title"
           aria-describedby="alert-dialog-description">
-          <DialogTitle id="alert-dialog-title">Remove Product</DialogTitle>
+          <DialogTitle id="alert-dialog-title">{t('alert_dialog.remove_product')}</DialogTitle>
           <DialogContent>
             <DialogContentText id="alert-dialog-description">
-              Are you Sure You Want Remove This Item ?
+              {t('alert_dialog.delete_msg')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setOpenRemoveDialog(false)}>Cancel</Button>
+            <Button onClick={() => setOpenRemoveDialog(false)}>{t('alert_dialog.cancle')}</Button>
             <Button
               onClick={() => {
                 const rows = [...selectProducts];
@@ -761,7 +776,7 @@ const AddQuotations: NextPage = (props: any) => {
                 setOpenRemoveDialog(false);
                 setSelectedExpends([...selectedExpends]);
               }}>
-              Yes
+              {t('alert_dialog.yes')}
             </Button>
           </DialogActions>
         </Dialog>
@@ -769,13 +784,13 @@ const AddQuotations: NextPage = (props: any) => {
           <button
             className="btn m-btn btn-primary p-3"
             onClick={() => router.push('/shop/' + id + '/quotations')}>
-            <FontAwesomeIcon icon={faArrowAltCircleLeft} /> Back To List{' '}
+            <FontAwesomeIcon icon={faArrowAltCircleLeft} /> {t('quotation.back_to_list')}{' '}
           </button>
         </div>
         {loading ? (
           <Card className="mb-4">
             <Card.Header className="p-3 bg-white">
-              <h5>Loading</h5>
+              <h5>{t('quotation.loading')}</h5>
             </Card.Header>
           </Card>
         ) : (
@@ -790,7 +805,7 @@ const AddQuotations: NextPage = (props: any) => {
                     <div className="col-md-3">
                       <div className="form-group2">
                         <label>
-                          Customer : <span className="text-danger">*</span>
+                          {t('quotation.customer_name')} : <span className="text-danger">*</span>
                         </label>
                         <Select
                           styles={selectStyle}
@@ -811,11 +826,11 @@ const AddQuotations: NextPage = (props: any) => {
                     </div>
                     <div className="col-md-3">
                       <div className="form-group2">
-                        <label>Reference No :</label>
+                        <label>{t('quotation.reference_no')} :</label>
                         <input
                           type="text"
                           className="form-control p-2"
-                          placeholder="Reference No"
+                          placeholder={t('quotation.reference_no')}
                           value={formObj.ref_no}
                           onChange={(e) => {
                             setFormObj({ ...formObj, ref_no: e.target.value });
@@ -825,7 +840,7 @@ const AddQuotations: NextPage = (props: any) => {
                     </div>
                     <div className="col-md-3">
                       <div className="form-group2">
-                        <label>Quotation Date :</label>
+                        <label>{t('quotation.quotation_date')} :</label>
                         <DatePicker
                           className="form-control p-2"
                           selected={formObj.date}
@@ -844,7 +859,7 @@ const AddQuotations: NextPage = (props: any) => {
                     <div className="col-md-3">
                       <div className="form-group">
                         <label>
-                          Quotation Status: <span className="text-danger">*</span>
+                          {t('quotation.quotation_status')}: <span className="text-danger">*</span>
                         </label>
                         <Select
                           styles={colourStyles}
@@ -925,7 +940,7 @@ const AddQuotations: NextPage = (props: any) => {
                 <div className="row">
                   <div className="col-md-3">
                     <div className="form-group2">
-                      <label>Paid Amount :</label>
+                      <label>{t('quotation.paid_amount')} :</label>
                       <input
                         type="number"
                         className="form-control p-2"
@@ -940,7 +955,7 @@ const AddQuotations: NextPage = (props: any) => {
                   </div>
                   <div className="col-md-3">
                     <div className="form-group2">
-                      <label>Payment Type :</label>
+                      <label>{t('quotation.payment_type')} :</label>
                       <Select
                         styles={colourStyles}
                         options={paymentTypes}
@@ -966,40 +981,47 @@ const AddQuotations: NextPage = (props: any) => {
                           <>
                             <div key={i} className="purchase-item">
                               <div className="purchase-text">
-                                <p>{pd.label}</p>
                                 {pd.value == 'discount' && (
-                                  <div className="d-flex">
-                                    <div className="px-3">
-                                      <Form.Select
-                                        style={{ width: '130px' }}
-                                        onChange={(e) => {
-                                          setFormObj({ ...formObj, discount_type: e.target.value });
-                                        }}>
-                                        <option value={'fixed'}>Fixed</option>
-                                        <option value={'percent'}>Percent %</option>
-                                      </Form.Select>
+                                  <>
+                                    <p>{t(`quotation.discount`)}</p>
+                                    <div className="d-flex">
+                                      <div className="px-3">
+                                        <Form.Select
+                                          style={{ width: '130px' }}
+                                          onChange={(e) => {
+                                            setFormObj({
+                                              ...formObj,
+                                              discount_type: e.target.value,
+                                            });
+                                          }}>
+                                          <option value={'fixed'}>{t('quotation.fixed')}</option>
+                                          <option value={'percent'}>
+                                            {t('quotation.percent')}
+                                          </option>
+                                        </Form.Select>
+                                      </div>
+                                      <div>
+                                        <Form.Control
+                                          size="sm"
+                                          type="number"
+                                          min={0}
+                                          value={formObj.discount_amount}
+                                          onChange={(e) => {
+                                            setFormObj({
+                                              ...formObj,
+                                              discount_amount: +e.target.value,
+                                            });
+                                          }}
+                                        />
+                                      </div>
+                                      <p>&nbsp;</p>
+                                      <p className="fixed-width">
+                                        {formObj.total_discount.toFixed(
+                                          locationSettings?.location_decimal_places
+                                        )}{' '}
+                                      </p>
                                     </div>
-                                    <div>
-                                      <Form.Control
-                                        size="sm"
-                                        type="number"
-                                        min={0}
-                                        value={formObj.discount_amount}
-                                        onChange={(e) => {
-                                          setFormObj({
-                                            ...formObj,
-                                            discount_amount: +e.target.value,
-                                          });
-                                        }}
-                                      />
-                                    </div>
-                                    <p>&nbsp;</p>
-                                    <p className="fixed-width">
-                                      {formObj.total_discount.toFixed(
-                                        locationSettings?.location_decimal_places
-                                      )}{' '}
-                                    </p>
-                                  </div>
+                                  </>
                                 )}
                                 {/* {pd.value == 'expense' && (
                                   <p>
@@ -1009,15 +1031,18 @@ const AddQuotations: NextPage = (props: any) => {
                                   </p>
                                 )} */}
                                 {pd.value == 'taxes' && !vatInColumn && (
-                                  <div>
-                                    <p className="fixed-width">
-                                      {tax.tax}%(
-                                      {((tax.tax / 100) * formObj.subTotal_price).toFixed(
-                                        locationSettings?.location_decimal_places
-                                      )}
-                                      )
-                                    </p>
-                                  </div>
+                                  <>
+                                    <p>{t(`quotation.taxes`)}</p>
+                                    <div>
+                                      <p className="fixed-width">
+                                        {tax.tax}%(
+                                        {((tax.tax / 100) * formObj.subTotal_price).toFixed(
+                                          locationSettings?.location_decimal_places
+                                        )}
+                                        )
+                                      </p>
+                                    </div>
+                                  </>
                                 )}
                               </div>
                             </div>
@@ -1028,7 +1053,7 @@ const AddQuotations: NextPage = (props: any) => {
                       <div className="purchase-item">
                         {/* {isEditSort && <p className="puchase-arrow" style={{ width: '100px' }}></p>} */}
                         <div className="purchase-text">
-                          <p>Total</p>
+                          <p>{t('quotation.total')}</p>
                           <p>
                             {Number(formObj.total_price).toFixed(
                               locationSettings?.location_decimal_places
@@ -1040,7 +1065,7 @@ const AddQuotations: NextPage = (props: any) => {
                           </p>
                         </div>
                         <div className="purchase-text">
-                          <p>Total Paid</p>
+                          <p>{t('quotation.total_paid')}</p>
                           <p>
                             {formObj.paid_amount.toFixed(locationSettings?.location_decimal_places)}
                             <span style={{ opacity: '0.5', fontSize: '10px' }}>
@@ -1050,7 +1075,7 @@ const AddQuotations: NextPage = (props: any) => {
                           </p>
                         </div>
                         <div className="purchase-text">
-                          <p>Total Remaining</p>
+                          <p>{t('quotation.total_remaining')}</p>
                           <p>
                             {(formObj.total_price - formObj.paid_amount).toFixed(
                               locationSettings?.location_decimal_places
@@ -1102,7 +1127,7 @@ const AddQuotations: NextPage = (props: any) => {
                       else insertPurchase();
                     } else Toastify('error', 'Enter Requires Field');
                   }}>
-                  {isEdit ? 'Edit' : 'Save'}
+                  {isEdit ? t('quotation.edit') : t('quotation.save')}
                 </button>
               </Card.Body>
             </Card>
@@ -1113,9 +1138,9 @@ const AddQuotations: NextPage = (props: any) => {
   );
 };
 export default AddQuotations;
-export async function getServerSideProps({ params }) {
+export async function getServerSideProps({ params, locale }) {
   const { id, slug } = params;
   return {
-    props: { id, slug },
+    props: { id, slug, ...(await serverSideTranslations(locale)) },
   };
 }

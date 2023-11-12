@@ -20,10 +20,14 @@ import { useReactToPrint } from 'react-to-print';
 import { Toastify } from 'src/libs/allToasts';
 import { ToastContainer } from 'react-toastify';
 import { findAllData, updateData } from 'src/services/crud.api';
+import { useTranslation } from 'react-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 
 export default function SalesList(props: any) {
   const { id } = props;
+  const { t } = useTranslation();
+  console.log(t('quotation.action'));
+  
   const [locationSettings, setLocationSettings] = useState<ILocationSettings>({
     // @ts-ignore
     value: 0,
@@ -139,7 +143,7 @@ export default function SalesList(props: any) {
     { field: 'id', headerName: '#', minWidth: 50 },
     {
       field: 'customer_id',
-      headerName: 'Customer Name',
+      headerName: t('quotation.customer_name'),
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) => {
         if (row.customer_id) {
@@ -155,11 +159,11 @@ export default function SalesList(props: any) {
         }
       },
     },
-    { field: 'created_at', headerName: 'Quotation Date', flex: 1 },
+    { field: 'created_at', headerName: t('quotation.quotaion_date'), flex: 1 },
     {
       flex: 1,
       field: 'status',
-      headerName: 'Status',
+      headerName: t('quotation.status'),
       renderCell: ({ row }: Partial<GridRowParams>) => {
         if (row.status === 'accepted') {
           return (
@@ -185,7 +189,7 @@ export default function SalesList(props: any) {
     {
       flex: 1,
       field: 'action',
-      headerName: 'Action ',
+      headerName: t('quotation.action'),
       filterable: false,
       sortable: false,
       disableExport: true,
@@ -694,7 +698,7 @@ export default function SalesList(props: any) {
         shopId={id}
         id={selectId}
         url="quotations-list">
-        Are you Sure You Want Delete This Item ?
+        {t('alert_dialog.delete_msg')}
       </AlertDialog>
       {
         <div style={{ display: 'none' }}>
@@ -713,11 +717,11 @@ export default function SalesList(props: any) {
             onClick={() => {
               router.push('/shop/' + shopId + '/quotations/add');
             }}>
-            <FontAwesomeIcon icon={faPlus} /> Add Quotation{' '}
+            <FontAwesomeIcon icon={faPlus} /> {t('quotation.add_quotation')}{' '}
           </button>
         </div>
 
-        <h5>Quotations List</h5>
+        <h5>{t('quotation.quotation_list')}</h5>
         <DataGrid
           loading={isloading}
           className="datagrid-style"
@@ -742,7 +746,7 @@ export default function SalesList(props: any) {
       {/*  */}
 
       <Dialog open={showViewPopUp} fullWidth={true} className="poslix-modal" onClose={handleClose}>
-        <DialogTitle className="poslix-modal text-primary">Quotaion Details</DialogTitle>
+        <DialogTitle className="poslix-modal text-primary">{t('quotation_sale_model.quotaion_details')}</DialogTitle>
         <DialogContent className="poslix-modal-content">
           <div className="poslix-modal">
             <div className="top-section-details">
@@ -750,11 +754,11 @@ export default function SalesList(props: any) {
               <div className="item-sections">
                 <div className="top-detials-invoice">
                   <div className="top-detials-item">
-                    <p>Quotaion No :</p>
+                    <p>{t('quotation_sale_model.quotaion-no')} :</p>
                     <p>{selectRow.id}</p>
                   </div>
                   <div className="top-detials-item pe-2">
-                    <p>Quotaion Date :</p>
+                    <p>{t('quotation_sale_model.quotaion_date')} :</p>
                     {edit ? (
                       <input
                         type="text"
@@ -770,14 +774,14 @@ export default function SalesList(props: any) {
                     )}
                   </div>
                   <div className="top-detials-item pe-2">
-                    <p>Added By :</p>
+                    <p>{t('quotation_sale_model.added_by')} :</p>
 
                     <p>{selectRow?.employee?.first_name}</p>
                   </div>
                 </div>
                 <div className="top-detials-invoice">
                   <div className="top-detials-item">
-                    <p>Final Total :</p>
+                    <p>{t('quotation_sale_model.final_total')} :</p>
                     <p>
                       {Number(selectRow.total_price).toFixed(
                         locationSettings?.location_decimal_places
@@ -785,7 +789,7 @@ export default function SalesList(props: any) {
                     </p>
                   </div>
                   <div className="top-detials-item">
-                    <p>Customer Name :</p>
+                    <p>{t('quotation_sale_model.customer_name')} :</p>
                     <p>
                       {selectRow?.customer?.first_name} {selectRow?.customer?.last_name}
                     </p>
@@ -799,13 +803,13 @@ export default function SalesList(props: any) {
                   onClick={() => {
                     handlePrint();
                   }}>
-                  Print Recipt
+                  {t('quotation_sale_model.print_recipt')} 
                 </Button>
                 <Button
                   onClick={() => {
                     handlePrint2();
                   }}>
-                  Print Invoice
+                  {t('quotation_sale_model.print_invoice')} 
                 </Button>
               </div>
             </div>
@@ -813,9 +817,9 @@ export default function SalesList(props: any) {
               <div className="row">
                 <div className="invoice-items-container">
                   <div className="header-titles">
-                    <div>Name</div>
-                    <div>Qty</div>
-                    <div>Amount</div>
+                    <div>{t('quotation_sale_model.name')}</div>
+                    <div>{t('quotation_sale_model.qty')}</div>
+                    <div>{t('quotation_sale_model.amount')}</div>
                     {edit && <div></div>}
                   </div>
                   {lines?.map((line: any, index: number) => {
@@ -846,7 +850,7 @@ export default function SalesList(props: any) {
                     );
                   })}
                   <div className="header-titles under_items" style={{ marginTop: '20px' }}>
-                    <div>Total</div>
+                    <div>{t('quotation_sale_model.total')}</div>
                     <div>
                       {(+selectRow.total_price).toFixed(locationSettings?.location_decimal_places)}
                     </div>
@@ -863,6 +867,8 @@ export default function SalesList(props: any) {
   );
 }
 export async function getServerSideProps({ params, locale }) {
+  console.log(locale);
+  
   const { id } = params;
   return {
     props: { id, 
