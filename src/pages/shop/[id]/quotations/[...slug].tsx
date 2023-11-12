@@ -4,7 +4,6 @@ import { useRouter } from 'next/router';
 import { AdminLayout } from '@layout';
 import { Card } from 'react-bootstrap';
 import React, { useState, useEffect, useRef } from 'react';
-import { apiFetchCtr, apiInsertCtr, apiUpdateCtr } from 'src/libs/dbUtils';
 import DatePicker from 'react-datepicker';
 import Form from 'react-bootstrap/Form';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -12,16 +11,7 @@ import {
   ILocationSettings,
   IPurchaseExpndes,
   IpurchaseProductItem,
-  ITokenVerfy,
 } from 'src/models/common-model';
-import { TableExpeseRows, TableTaxRows } from 'src/components/utils/ExpendsRow';
-import * as cookie from 'cookie';
-import {
-  getRealWord,
-  hasPermissions,
-  keyValueRules,
-  verifayTokens,
-} from 'src/pages/api/checkUtils';
 import { DataGrid, GridColDef, GridRowParams } from '@mui/x-data-grid';
 import {
   Button,
@@ -111,7 +101,6 @@ const AddQuotations: NextPage = (props: any) => {
     { label: string; value: string; priority: number }[]
   >([
     { label: 'Discount :', value: 'discount', priority: 1 },
-    // { label: 'Total Expenses :', value: 'expense', priority: 2 },
     { label: 'Taxes :', value: 'taxes', priority: 3 },
   ]);
   const [currencies, setCurrencies] = useState<
@@ -969,75 +958,13 @@ const AddQuotations: NextPage = (props: any) => {
                   </div>
                 </div>
                 <Grid container spacing={2} className="mt-3 d-flex justify-content-start">
-                  {/* <Grid item xs={6} textAlign="left">
-                    <table className="m-table-expends">
-                      <tbody>
-                        <TableExpeseRows
-                          rowsData={selectedExpendsEdit}
-                          curencise={currencies}
-                          selData={selectedExpendsEdit}
-                          deleteTableRows={deleteTableRows}
-                          handleChange={handleChange}
-                        />
-                        <TableExpeseRows
-                          rowsData={expends}
-                          curencise={currencies}
-                          selData={selectedExpends}
-                          deleteTableRows={deleteTableRows}
-                          handleChange={handleChange}
-                        />
-                        <tr>
-                          <td colSpan={3}>
-                            <button
-                              onClick={() => addTableRows()}
-                              className="btn m-btn btn-primary p-2"
-                              style={{ borderRadius: '0px' }}>
-                              {' '}
-                              + Add Shipping Expends
-                            </button>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </Grid> */}
                   <Grid item xs={6}>
                     <div className="purchase-items">
-                      {/* <div className="purchase-item">
-                        <p className="puchase-arrow" style={{ width: '100px' }}></p>
-                        <div className="purchase-text">
-                          <p></p>
-                          <p>
-                            <Button
-                              variant="outlined"
-                              onClick={() => {
-                                setIsEditSort(!isEditSort);
-                              }}>
-                              <EditIcon />
-                            </Button>
-                          </p>
-                        </div>
-                      </div>
-                      <Divider flexItem></Divider> */}
-
                       <Divider flexItem></Divider>
                       {purchaseDetails.map((pd: any, i: number) => {
                         return (
                           <>
                             <div key={i} className="purchase-item">
-                              {/* {isEditSort && (
-                                <p className="puchase-arrow" style={{ width: '100px' }}>
-                                  {isEditSort && i != 0 && (
-                                    <Button variant="outlined" onClick={() => sortHandler(i, 'u')}>
-                                      <KeyboardArrowUpIcon />
-                                    </Button>
-                                  )}
-                                  {isEditSort && purchaseDetails.length - 1 != i && (
-                                    <Button variant="outlined" onClick={() => sortHandler(i, 'd')}>
-                                      <KeyboardArrowDownIcon />
-                                    </Button>
-                                  )}
-                                </p>
-                              )} */}
                               <div className="purchase-text">
                                 <p>{pd.label}</p>
                                 {pd.value == 'discount' && (

@@ -557,6 +557,7 @@ a.nav-link.menu-link span {
 }
 
 button.nav-link.menu-link i,
+button.nav-link.menu-link svg,
 a.nav-link.menu-link i {
   font-size: 25px;
   transition: all ease 0.2s;
@@ -568,6 +569,7 @@ a.nav-link.menu-link:hover {
 }
 
 button.nav-link.menu-link:hover i,
+button.nav-link.menu-link:hover svg,
 a.nav-link.menu-link:hover i {
   color: #1e2537;
   font-size: 30px;

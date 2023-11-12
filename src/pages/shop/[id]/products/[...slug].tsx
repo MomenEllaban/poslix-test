@@ -76,6 +76,8 @@ const initFormError = {
   fabs: false,
   rules: false,
   skuExist: false,
+  brand: false,
+  category_id: false,
 };
 
 const Product: NextPage = ({
@@ -256,7 +258,7 @@ const Product: NextPage = ({
               .filter((va) => !!+va.cost && !!+va.price)
               .map((va) => {
                 return {
-                  name: va.name, 
+                  name: va.name,
                   sku: va.sku,
                   cost: va.cost,
                   price: va.price,
@@ -853,7 +855,9 @@ const Product: NextPage = ({
                       {/* Brand */}
                       <div className="field-cover">
                         <div className="field-section">
-                          <p>Brand:</p>
+                          <p>
+                            Brand:
+                          </p>
                         </div>
                         <div className="field-section">
                           <Select
@@ -866,6 +870,8 @@ const Product: NextPage = ({
                               setFormObj({ ...formObj, brand: itm!.value });
                             }}
                           />
+                          {errorForm.brand && <p className="p-1 h6 text-danger ">Select brand</p>}
+                          <Button variant='contained' className='btn m-btn btn-primary  mt-3' target='_blank' href={`/shop/${shopId}/category/add?type=brands`}>Add Brand</Button >
                         </div>
                       </div>
                       {/* Category */}
@@ -886,6 +892,11 @@ const Product: NextPage = ({
                               setFormObj({ ...formObj, category_id: itm!.value });
                             }}
                           />
+                          {errorForm.category_id && (
+                            <p className="p-1 h6 text-danger ">Select Category</p>
+                          )}
+                          <Button variant='contained' className='btn m-btn btn-primary mt-3' target='_blank' href={`/shop/${shopId}/category/add?type=categories`}>Add Category</Button >
+
                         </div>
                       </div>
                       {/* ُSub Category */}
@@ -1371,6 +1382,8 @@ const Product: NextPage = ({
                         if (isSaving) return Toastify('warning', 'There is a current process');
 
                         errors = [];
+                        if (formObj.category_id == 0) errors.push('error10');
+                        // if (formObj.brand == null) errors.push('error9');
                         if (formObj.name.length == 0) errors.push('error8');
                         if (formObj.sku.length == 0) errors.push('error7');
                         if (formObj.barcode_type == '0') errors.push('error6');
@@ -1386,6 +1399,8 @@ const Product: NextPage = ({
                         }
                         setErrorForm({
                           ...errorForm,
+                          category_id: formObj.category_id == 0,
+                          // brand: formObj.brand == null,
                           name: formObj.name.length == 0,
                           sku: formObj.sku.length == 0,
                           barcode_type: formObj.barcode_type == '0',

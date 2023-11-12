@@ -128,7 +128,9 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
       locationSettings,
       __WithDiscountFeature__total,
     } = this.props;
-
+    console.log(printReceipt);
+    console.log(printReceipt);
+    
     if (invoiceType === 'A4') {
       return (
         <div className="appear-body-item a4">

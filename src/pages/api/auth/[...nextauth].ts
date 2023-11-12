@@ -62,7 +62,7 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
-  session: { strategy: 'jwt', maxAge: 1 * 60 * 60 },
+  session: { strategy: 'jwt', maxAge: 7 * 24 * 60 * 60 },
   callbacks: {
     async jwt({ token, user, account, profile }) {
       if (user) token.user = user as any;

@@ -9,11 +9,7 @@ import ProductSearch from '../product-search/ProductSearch';
 import styles from './CartPanel.module.scss';
 import { usePosContext } from 'src/modules/pos/_context/PosContext';
 
-interface ICustomerItem {
-  value: string | number;
-  label: string;
-  isNew: boolean;
-}
+
 interface IOrderItem {
   isEdit: boolean;
   name: string;
@@ -22,11 +18,6 @@ interface IOrderItem {
   notes?: string;
 }
 
-const initCustomer = {
-  value: '1',
-  label: 'walk-in customer',
-  isNew: false,
-};
 
 const initOrder = {
   isEdit: false,
@@ -35,7 +26,7 @@ const initOrder = {
   orderId: 0,
 };
 
-export default function CartPanel({ shopId }) {
+export default function CartPanel({ shopId ,customer, setCustomer}) {
   const { lang: _lang, isRtl } = usePosContext();
   const dispatch = useAppDispatch()
   const selectCartForLocation = selectCartByLocation(shopId ?? 0);
@@ -45,10 +36,7 @@ export default function CartPanel({ shopId }) {
   //   // dispatch(clearCart({ location_id: shopId }));
   // }, [])
 
-  const [customer, setCustomer] = useState<ICustomerItem>({
-    ...initCustomer,
-    value: cart?.customer_id ?? 0,
-  });
+
 
   const direction = isRtl ? 'rtl' : 'ltr';
   const lang = _lang?.pos;

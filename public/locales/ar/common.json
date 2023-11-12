@@ -1,0 +1,13 @@
+{
+  "g": {
+    "my_business": "أعمالي",
+    "add_new_business": "اضف عمل جديد",
+    "name": "اسم",
+    "type": "أنواع",
+    "action": "أجراءات",
+    "roles": "الأدوار",
+    "users": "المستخدمين",
+    "add_new_location": "إضافة موقع جديد",
+    "back_to_list": "الرجوع للقائمة"
+  }
+}

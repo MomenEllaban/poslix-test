@@ -5,10 +5,12 @@ import { BsFileRuledFill } from 'react-icons/bs';
 import { ImUsers } from 'react-icons/im';
 import { IoBusinessSharp } from 'react-icons/io5';
 import SidebarNavItem from './_components/SidebarNavItem';
+import { useTranslation } from 'next-i18next';
 
 export default function OwnerSidebarNav({ username2 }: any) {
   const router = useRouter();
   const [username, setUsername] = useState('');
+  const { t } = useTranslation();
 
   useEffect(() => {
     var _username: any = router.query.username;
@@ -23,15 +25,17 @@ export default function OwnerSidebarNav({ username2 }: any) {
       </SidebarNavItem> */}
       <SidebarNavItem icon={faChartPie} href={username ? '/' + username + '/business' : ''}>
         <IoBusinessSharp className="nav-icon ms-n3" />
-        My Businesses
+        {t('g.my_business')}
       </SidebarNavItem>
       <SidebarNavItem icon={faUser} href={username ? '/' + username + '/rules' : ''}>
         <BsFileRuledFill className="nav-icon ms-n3" />
-        Roles<small className="ms-auto"></small>
+        {t('g.roles')}
+        <small className="ms-auto"></small>
       </SidebarNavItem>
       <SidebarNavItem icon={faUser} href={username ? '/' + username + '/users' : ''}>
         <ImUsers className="nav-icon ms-n3" />
-        Users<small className="ms-auto"></small>
+        {t('g.users')}
+        <small className="ms-auto"></small>
       </SidebarNavItem>
     </ul>
   );

@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   DataGrid,
   GridColDef,
@@ -6,34 +6,21 @@ import {
   GridToolbarContainer,
   GridToolbarExport,
   GridToolbarColumnsButton,
-  GridToolbar,
-  GridToolbarFilterButton,
   GridToolbarQuickFilter,
 } from '@mui/x-data-grid';
 import { AdminLayout } from '@layout';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faTrash,
-  faPenToSquare,
-  faPlus,
-  faEye,
-  faCheck,
-  faXmark,
-} from '@fortawesome/free-solid-svg-icons';
+import { faTrash, faPlus, faEye, faCheck, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { Button, ButtonGroup } from 'react-bootstrap';
 import { useRouter } from 'next/router';
 import AlertDialog from 'src/components/utils/AlertDialog';
-import { apiFetch, apiFetchCtr } from 'src/libs/dbUtils';
-import { Box, Dialog, DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material';
-import { ILocationSettings, ITokenVerfy } from '@models/common-model';
-import * as cookie from 'cookie';
-import { hasPermissions, keyValueRules, verifayTokens } from 'src/pages/api/checkUtils';
-import { UserContext } from 'src/context/UserContext';
+import { Dialog, DialogContent, DialogTitle } from '@mui/material';
+import { ILocationSettings } from '@models/common-model';
 import { useReactToPrint } from 'react-to-print';
 import { Toastify } from 'src/libs/allToasts';
 import { ToastContainer } from 'react-toastify';
 import { findAllData, updateData } from 'src/services/crud.api';
-import { useTaxesList } from 'src/services/pos.service';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 
 export default function SalesList(props: any) {
   const { id } = props;
@@ -47,26 +34,12 @@ export default function SalesList(props: any) {
     currency_rate: 1,
     currency_symbol: '',
   });
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-
-  const handleClose = () => {
-    setShowViewPopUp(false);
-    setShowQuotation({
-      transferID: null,
-      from: '',
-      status: '',
-      total: 0,
-      products: [],
-      createdBy: '',
-      ceartedAt: '',
-    });
-  };
   const [sales, setsales] = useState<any>([]);
   const [customersNames, setCustomersNames] = useState<any>([]);
   const router = useRouter();
-  const shopId = router.query.id as string;
+  const shopId = router.query.id;
   const [selectId, setSelectId] = useState(0);
-  const [selectRow, setSelectRow] = useState<any>({});
+  const [selectRow, setSelectRow] = useState<any>({ payment: [] });
   const [lines, setLines] = useState<any>([]);
   const [show, setShow] = useState(false);
   const [edit, setEdit] = useState(false);
@@ -75,7 +48,9 @@ export default function SalesList(props: any) {
   const [handleSearchTxt, setHandleSearchTxt] = useState('');
   const [isloading, setIsloading] = useState<any>(false);
   const [invoiceDetails, setInvoiceDetails] = useState<any>();
+  const [selectedQuotationProducts, setSelectedQuotationProducts] = useState([]);
   // const { setInvoiceDetails, invoiceDetails } = useContext(UserContext);
+  const [tax, setTax] = useState(0);
   const [showingQuotation, setShowQuotation] = useState<{
     transferID: number | null;
     from: string;
@@ -111,7 +86,8 @@ export default function SalesList(props: any) {
     setIsLoadItems(true);
     try {
       const res = await findAllData(`quotations-list/${id}`);
-      setLines(res.data.result.quotationsList.quotation_list_lines);
+
+      setLines(res.data.result.quotationsList?.products);
     } catch (e) {
       Toastify('error', 'Something went wrong');
     }
@@ -121,18 +97,23 @@ export default function SalesList(props: any) {
     // }
   };
   const formatQuotation = (quotation: any) => {
-    console.log('qqqqqqqqqqqqqqqqqqqqq', quotation);
-    
-    let total = 0;
+    setTax(quotation.tax_amount);
+    const total = quotation.total_price;
     const products: { name: string; qty: number }[] = [];
     const status = quotation.status;
     const transferID = quotation.id;
     const _locs = JSON.parse(localStorage.getItem('locations') || '[]');
     const from = _locs.find((el) => el.location_id == quotation.location_id).location_name;
     const ceartedAt = quotation.created_at;
-    quotation.quotation_list_lines.forEach((el) => {
-      total += el.qty * +el.quotation_line_product?.sell_price;
-      products.push({ name: el.quotation_line_product?.name, qty: el.qty });
+    const qotProducts = quotation.products;
+
+    setSelectedQuotationProducts(qotProducts);
+
+    quotation?.quotation_list_lines?.forEach((el) => {
+      products.push({
+        name: qotProducts.filter((ele) => ele.id == el.product_id)[0]?.name,
+        qty: el.qty,
+      });
     });
 
     setShowQuotation({
@@ -145,13 +126,7 @@ export default function SalesList(props: any) {
       createdBy: from,
     });
     getItems(transferID);
-    // calc total price
-    let total_price: number = 0;
-    quotation?.quotation_list_lines.forEach((el) => {
-      total_price = total_price + +el.qty * +el?.quotation_line_product?.sell_price;
-    });
-
-    setSelectRow({ ...quotation, total_price });
+    setSelectRow({ ...quotation });
   };
   // ------------------------------------------------------------------------------------------------
   useEffect(() => {
@@ -233,7 +208,6 @@ export default function SalesList(props: any) {
             </Button>
             <Button
               onClick={() => {
-                // localStorage.setItem('showingQuotation', JSON.stringify(row));
                 formatQuotation(row);
                 setShowViewPopUp(true);
               }}>
@@ -318,17 +292,31 @@ export default function SalesList(props: any) {
                   {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtAmount}
                 </th>
               </tr>
-              {lines.length > 0 &&
-                lines.map((line: any, index: number) => {
+              {lines?.length > 0 &&
+                lines?.map((line: any, index: number) => {
                   return (
                     <tr key={index}>
-                      <td>{Number(line.qty).toFixed(0)}</td>
-                      <td>{line?.quotation_line_product?.name}</td>
+                      <td>{Number(line?.product_qty).toFixed(0)}</td>
+                      <td>
+                        {
+                          selectedQuotationProducts.filter((ele) => {
+                            if (ele.variant_id) {
+                              return ele.variant_id == line?.variant_id;
+                            }
+                            return ele.product_id == line?.product_id;
+                          })[0]?.product_name
+                        }
+                      </td>
                       <td></td>
                       <td>
-                        {Number(+line.qty * +line?.quotation_line_product?.sell_price).toFixed(
-                          locationSettings?.location_decimal_places || 4
-                        )}
+                        {Number(
+                          +selectedQuotationProducts.filter((ele) => {
+                            if (ele.variant_id) {
+                              return ele.variant_id == line?.variant_id;
+                            }
+                            return ele.product_id == line?.product_id;
+                          })[0]?.product_price
+                        ).toFixed(locationSettings?.location_decimal_places)}
                       </td>
                     </tr>
                   );
@@ -342,10 +330,9 @@ export default function SalesList(props: any) {
                 </td>
                 <td></td>
                 <td>
-                  {(
-                    ((+selectRow.sub_total / (1 + +selectRow?.tax / 100)) * +selectRow?.tax) /
-                    100
-                  ).toFixed(locationSettings?.location_decimal_places)}
+                  {(((+selectRow?.total_price / (1 + tax / 100)) * tax) / 100).toFixed(
+                    locationSettings?.location_decimal_places
+                  )}
                 </td>
               </tr>
               <tr className="net-amount">
@@ -356,7 +343,9 @@ export default function SalesList(props: any) {
                   {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtDiscount}
                 </td>
                 <td></td>
-                <td>{(+selectRow?.discount).toFixed(locationSettings?.location_decimal_places)}</td>
+                <td>
+                  {(+selectRow?.discount_amount).toFixed(locationSettings?.location_decimal_places)}
+                </td>
               </tr>
               <tr className="net-amount">
                 <td></td>
@@ -371,26 +360,32 @@ export default function SalesList(props: any) {
                   )}
                 </td>
               </tr>
-              {/* <tr className="net-amount">
+              <tr className="net-amount">
                 <td></td>
                 <td className="txt-bold">
                   Total Paid {invoiceDetails?.en?.is_multi_language && 'إجمالى المدفوعات'}
                 </td>
                 <td></td>
                 <td className="txt-bold">
-                  {Number(selectRow.payed).toFixed(locationSettings?.location_decimal_places)}
+                  {Number(selectRow?.payment[0]?.amount).toFixed(
+                    locationSettings?.location_decimal_places
+                  )}
                 </td>
-              </tr> */}
-              {/* <tr className="net-amount">
+              </tr>
+              <tr className="net-amount">
                 <td></td>
                 <td className="txt-bold">
                   Total Due {invoiceDetails?.en?.is_multi_language && 'المتبقى'}
                 </td>
                 <td></td>
                 <td className="txt-bold">
-                  {Number(selectRow.discount).toFixed(locationSettings?.location_decimal_places)}
+                  {selectRow?.total_price - +selectRow?.payment[0]?.amount > 0
+                    ? Number(selectRow?.total_price - +selectRow?.payment[0]?.amount).toFixed(
+                        locationSettings?.location_decimal_places || 4
+                      )
+                    : 0}
                 </td>
-              </tr> */}
+              </tr>
             </thead>
           </table>
           {/*  */}
@@ -495,27 +490,52 @@ export default function SalesList(props: any) {
                 </th>
               </tr>
             </thead>
-            {lines.length > 0 &&
-              lines.map((line: any, index: number) => {
+            {lines?.length > 0 &&
+              lines?.map((line: any, index: number) => {
                 return (
                   <tr key={index}>
-                    <td>{line?.quotation_line_product?.name}</td>
-                    <td>{Number(line?.qty).toFixed(0)}</td>
                     <td>
-                      {Number(line?.quotation_line_product?.sell_price).toFixed(
-                        locationSettings?.location_decimal_places || 4
-                      )}
+                      {
+                        selectedQuotationProducts.filter((ele) => {
+                          if (ele.variant_id) {
+                            return ele.variant_id == line?.variant_id;
+                          }
+                          return ele.product_id == line?.product_id;
+                        })[0]?.product_name
+                      }
+                    </td>
+                    <td>{Number(line?.product_qty).toFixed(0)}</td>
+                    <td>
+                      {Number(
+                        selectedQuotationProducts.filter((ele) => {
+                          if (ele.variant_id) {
+                            return ele.variant_id == line?.variant_id;
+                          }
+                          return ele.product_id == line?.product_id;
+                        })[0]?.product_price
+                      ).toFixed(locationSettings?.location_decimal_places || 4)}
                     </td>
                     <td>
-                      {Number((+line?.pivot?.tax_amount / 100) * +line?.pivot?.price).toFixed(
-                        locationSettings?.location_decimal_places
-                      )}
+                      {Number(
+                        (tax / 100) *
+                          +selectedQuotationProducts.filter((ele) => {
+                            if (ele.variant_id) {
+                              return ele.variant_id == line?.variant_id;
+                            }
+                            return ele.product_id == line?.product_id;
+                          })[0]?.product_price
+                      ).toFixed(locationSettings?.location_decimal_places)}
                     </td>
 
                     <td>
-                      {Number(line?.qty * line?.quotation_line_product?.sell_price).toFixed(
-                        locationSettings?.location_decimal_places || 4
-                      )}
+                      {Number(
+                            +selectedQuotationProducts.filter((ele) => {
+                              if (ele.variant_id) {
+                                return ele.variant_id == line?.variant_id;
+                              }
+                              return ele.product_id == line?.product_id;
+                            })[0]?.product_price
+                      ).toFixed(locationSettings?.location_decimal_places)}
                     </td>
                   </tr>
                 );
@@ -533,15 +553,36 @@ export default function SalesList(props: any) {
                   )}
                 </td>
               </tr>
+              <tr>
+                <td colSpan={4} className="txt_bold_invoice">
+                  Total Paid
+                </td>
+                <td className="txt_bold_invoice">
+                  {Number(selectRow?.payment[0]?.amount).toFixed(
+                    locationSettings?.location_decimal_places || 4
+                  )}
+                </td>
+              </tr>
+              <tr>
+                <td colSpan={4} className="txt_bold_invoice">
+                  Total Due
+                </td>
+                <td className="txt_bold_invoice">
+                  {selectRow?.total_price - +selectRow?.payment[0]?.amount > 0
+                    ? Number(selectRow?.total_price - +selectRow?.payment[0]?.amount).toFixed(
+                        locationSettings?.location_decimal_places || 4
+                      )
+                    : 0}
+                </td>
+              </tr>
             </tbody>
           </table>
 
-          {/*         
           <p className="recipt-footer">
             {invoiceDetails?.en?.footer}
             <br />
             {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.footer}
-          </p> */}
+          </p>
           {/* <p className="recipt-footer">{selectRow.notes}</p> */}
           <br />
         </div>
@@ -556,8 +597,7 @@ export default function SalesList(props: any) {
       const res = await findAllData(`quotations-list?location_id=${shopId}`);
       const customers_names = await findAllData(`customers/${shopId}`);
       setCustomersNames(customers_names.data.result);
-      setsales(res.data.result.quotationsList);
-
+      setsales(res.data.result.quotationsList.reverse());
       //       if (res.data.result.invoiceDetails != null && res.data.result.invoiceDetails.length > 10){
       //         setInvoiceDetails(JSON.parse(res.data.result.invoiceDetails));
       // }
@@ -632,8 +672,18 @@ export default function SalesList(props: any) {
   const handlePrint2 = useReactToPrint({
     content: () => componentRef2.current,
   });
-  const handleSearch = (e: any) => {
-    setHandleSearchTxt(e.target.value);
+  const handleClose = () => {
+    setShowViewPopUp(false);
+    setShowQuotation({
+      transferID: null,
+      from: '',
+      status: '',
+      total: 0,
+      products: [],
+      createdBy: '',
+      ceartedAt: '',
+    });
+    setLines([]);
   };
   return (
     <AdminLayout shopId={id}>
@@ -722,13 +772,12 @@ export default function SalesList(props: any) {
                   <div className="top-detials-item pe-2">
                     <p>Added By :</p>
 
-                    <p>{selectRow.employ_id}</p>
+                    <p>{selectRow?.employee?.first_name}</p>
                   </div>
                 </div>
                 <div className="top-detials-invoice">
                   <div className="top-detials-item">
                     <p>Final Total :</p>
-
                     <p>
                       {Number(selectRow.total_price).toFixed(
                         locationSettings?.location_decimal_places
@@ -741,10 +790,6 @@ export default function SalesList(props: any) {
                       {selectRow?.customer?.first_name} {selectRow?.customer?.last_name}
                     </p>
                   </div>
-                  {/* <div className="top-detials-item" style={{ fontSize: '13px' }}>
-                    <p>Order Note</p>
-                  
-                  </div> */}
                 </div>
               </div>
 
@@ -764,7 +809,7 @@ export default function SalesList(props: any) {
                 </Button>
               </div>
             </div>
-            {lines.length > 0 ? (
+            {lines?.products?.length > 0 || true ? (
               <div className="row">
                 <div className="invoice-items-container">
                   <div className="header-titles">
@@ -776,12 +821,26 @@ export default function SalesList(props: any) {
                   {lines?.map((line: any, index: number) => {
                     return (
                       <div className="header-items under_items" key={index}>
-                        <div>{line.name}</div>
-                        <div>{Number(+line?.qty).toFixed(0)}</div>
                         <div>
-                          {Number(+line?.quotation_line_product?.sell_price).toFixed(
-                            locationSettings?.location_decimal_places
-                          )}
+                          {
+                            selectedQuotationProducts.filter((ele) => {
+                              if (ele.variant_id) {
+                                return ele.variant_id == line?.variant_id;
+                              }
+                              return ele.product_id == line?.product_id;
+                            })[0]?.product_name
+                          }
+                        </div>
+                        <div>{Number(+line?.product_qty).toFixed(0)}</div>
+                        <div>
+                          {Number(
+                            +selectedQuotationProducts.filter((ele) => {
+                              if (ele.variant_id) {
+                                return ele.variant_id == line?.variant_id;
+                              }
+                              return ele.product_id == line?.product_id;
+                            })[0]?.product_price
+                          ).toFixed(locationSettings?.location_decimal_places)}
                         </div>
                       </div>
                     );
@@ -800,170 +859,13 @@ export default function SalesList(props: any) {
           </div>
         </DialogContent>
       </Dialog>
-
-      {/*  */}
-
-      {/* FOR VIEW ELEMENT */}
-      {/* <Dialog open={showViewPopUp} fullWidth={true} maxWidth={'md'} onClose={handleClose}>
-        
-        <DialogContent className="poslix-modal-content">
-          <Box
-            component={'div'}
-            sx={{
-              display: 'flex',
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}>
-            <Box
-              component={'div'}
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                width: '50%',
-                gap: '10px',
-                padding: '20px',
-              }}>
-              <Typography
-                variant="h4"
-                sx={{
-                  borderBottom: '1px solid gray',
-                }}>
-                Quotaion Details
-              </Typography>
-              <Box
-                component={'div'}
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}>
-                <Typography variant="h5">Qutation ID:</Typography>
-                <Typography>{showingQuotation.transferID}</Typography>
-              </Box>
-              <Box
-                component={'div'}
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}>
-                <Typography variant="h5">Status:</Typography>
-                <Typography>{showingQuotation.status}</Typography>
-              </Box>
-              <Box
-                component={'div'}
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}>
-                <Typography variant="h5">Total Price:</Typography>
-                <Typography>{showingQuotation.total}</Typography>
-              </Box>
-            </Box>
-            <Box
-              component={'div'}
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                borderLeft: '1px solid gray',
-                width: '50%',
-                padding: '20px',
-                gap: '10px',
-              }}>
-              <Typography
-                variant="h5"
-                sx={{
-                  borderBottom: '1px solid gray',
-                }}>
-                Products:
-              </Typography>
-              {showingQuotation.products.map((ele, index) => (
-                <Box
-                  key={index}
-                  component={'div'}
-                  sx={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                  }}>
-                  <Typography variant="h6">{ele.name}</Typography>
-                  <Typography>{ele.qty} Qty</Typography>
-                </Box>
-              ))}
-              <Box
-                component={'div'}
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}>
-                <Typography variant="h5">Created By:</Typography>
-                <Typography>{showingQuotation.createdBy}</Typography>
-              </Box>
-              <Box
-                component={'div'}
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}>
-                <Typography variant="h5">Created At:</Typography>
-                <Typography>{showingQuotation.ceartedAt}</Typography>
-              </Box>
-            </Box>
-          </Box>
-         
-        </DialogContent>
-        <DialogActions>
-          {edit && (
-            <Button
-              onClick={() => {
-                setShowViewPopUp(false);
-                setEdit(false);
-              }}>
-              Save
-            </Button>
-          )}
-          {!edit && (
-            <div className='mx-3'>
-              <Button
-                className="mr-right"
-                onClick={() => {
-                  handlePrint();
-                }}>
-                Print Recipt
-              </Button>
-              <Button
-                onClick={() => {
-                  handlePrint2();
-                }}>
-                Print Invoice
-              </Button>
-            </div>
-          )}
-          <Button
-            onClick={() => {
-              setEdit(false);
-              setShowViewPopUp(false);
-            }}>
-            Cancel
-          </Button>
-        </DialogActions>
-      </Dialog> */}
     </AdminLayout>
   );
 }
-export async function getServerSideProps({ params }) {
+export async function getServerSideProps({ params, locale }) {
   const { id } = params;
   return {
-    props: { id },
+    props: { id, 
+      ...(await serverSideTranslations(locale)) },
   };
 }

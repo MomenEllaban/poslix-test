@@ -20,7 +20,7 @@ const Locations = () => {
   const [selectedId, setSelectedId] = useState(0);
   const router = useRouter();
 
-  const handleDeleteFunc = () => {};
+  // const handleDeleteFunc = () => {};
 
   async function initDataPage() {
     if (router.isReady) {
