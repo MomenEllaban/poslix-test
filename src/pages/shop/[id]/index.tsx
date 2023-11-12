@@ -28,6 +28,9 @@ import { findAllData } from 'src/services/crud.api';
 import { useRouter } from 'next/router';
 import { Spinner } from 'react-bootstrap';
 
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { useTranslation } from 'next-i18next';
+
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -49,20 +52,22 @@ ChartJS.register(
   Tooltip
 );
 
-const data22 = {
-  labels: ['Red', 'Blue', 'Yellow'],
-  datasets: [
-    {
-      data: [300, 50, 100],
-      backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
-      hoverBackgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
-    },
-  ],
-};
-let _locs = []
-const periods=["daily","weekly",'monthly',"yearly"]
+// const data22 = {
+//   labels: ['Red', 'Blue', 'Yellow'],
+//   datasets: [
+//     {
+//       data: [300, 50, 100],
+//       backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+//       hoverBackgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+//     },
+//   ],
+// };
+let _locs = [];
+const periods = ['daily', 'weekly', 'monthly', 'yearly'];
 const Home = (props: any) => {
-  const router = useRouter()
+  const router = useRouter();
+  const { t } = useTranslation();
+
   const { shopId } = props;
   const [period, setPeriod] = useState('weakly');
   const [dashboardData, setDashboardData] = useState<any>();
@@ -87,29 +92,31 @@ const Home = (props: any) => {
     currency_symbol: '',
   });
 
-  async function initData() {
-  }
+  async function initData() {}
   // ----------------------------------------------------------------------------------------------
   const getDashbordData = async () => {
-setIsLoading(true)
+    setIsLoading(true);
     try {
-      const res = await findAllData(`location-report?location_id=${router.query.id}&salesPeriod=${periods[txtP1?.index-1]}&purchasePeriod=${periods[txtP2?.index-1]}&expensesPeriod=${periods[txtP3?.index-1]}&CustomerPeriod=${periods[txtP4?.index-1]}`);
+      const res = await findAllData(
+        `location-report?location_id=${router.query.id}&salesPeriod=${
+          periods[txtP1?.index - 1]
+        }&purchasePeriod=${periods[txtP2?.index - 1]}&expensesPeriod=${
+          periods[txtP3?.index - 1]
+        }&CustomerPeriod=${periods[txtP4?.index - 1]}`
+      );
       setDashboardData(res?.data?.result);
-
-    }
-    catch (e) {
+    } catch (e) {
       Toastify('error', 'Somthing wrong!!, try agian');
       return;
     }
     // setIsProductsLoadingloading(false)
-    setIsLoading(false)
-
-  }
+    setIsLoading(false);
+  };
 
   // ----------------------------------------------------------------------------------------------
   useEffect(() => {
-    getDashbordData()
-  }, [txtP1,txtP2,txtP3,txtP4,router.query.id])
+    getDashbordData();
+  }, [txtP1, txtP2, txtP3, txtP4, router.query.id]);
   // ----------------------------------------------------------------------------------------------
   useEffect(() => {
     initData();
@@ -119,12 +126,11 @@ setIsLoading(true)
     if (_locs.toString().length > 10)
       setLocationSettings(
         _locs[
-        _locs.findIndex((loc: any) => {
-          return loc.location_id == shopId;
-        })
+          _locs.findIndex((loc: any) => {
+            return loc.location_id == shopId;
+          })
         ]
       );
-
 
     setTxtP1({ name: getTxtTimeFrame(1), index: 1 });
     setTxtP2({ name: getTxtTimeFrame(1), index: 1 });
@@ -132,7 +138,7 @@ setIsLoading(true)
     setTxtP4({ name: getTxtTimeFrame(1), index: 1 });
   }, []);
   function getTxtTimeFrame(p: number) {
-    setPeriod(p == 1 ? 'daily' : p == 2 ? 'weekly' : p == 3 ? 'monthly' : p == 4 ? 'yearly' : '')
+    setPeriod(p == 1 ? 'daily' : p == 2 ? 'weekly' : p == 3 ? 'monthly' : p == 4 ? 'yearly' : '');
     if (p == 1) return 'Daily';
     else if (p == 2) return 'Weekly';
     else if (p == 3) return 'Monthly';
@@ -145,7 +151,6 @@ setIsLoading(true)
     return p;
   }
   const btnHandleTimeFrame = (index: number, p: number) => {
-    
     index = getRightNum(index);
     if (p == 1) setTxtP1({ name: getTxtTimeFrame(index), index: index });
     else if (p == 2) setTxtP2({ name: getTxtTimeFrame(index), index: index });
@@ -190,11 +195,11 @@ setIsLoading(true)
 
   // const labels = ['January', 'February', 'March', 'April', 'May', 'June', 'July'];
   const data_bar = {
-    labels: dashboardData?.monthlySales?.map(item => `Month ${item.month}`) || [],
+    labels: dashboardData?.monthlySales?.map((item) => `Month ${item.month}`) || [],
     datasets: [
       {
         label: 'Monthly Sales',
-        data: dashboardData?.monthlySales?.map(item => parseFloat(item.total)) || [],
+        data: dashboardData?.monthlySales?.map((item) => parseFloat(item.total)) || [],
         backgroundColor: [
           'rgba(255, 99, 132, 0.2)',
           'rgba(54, 162, 235, 0.2)',
@@ -217,12 +222,16 @@ setIsLoading(true)
   };
 
   const data_last_low = {
-    labels: upDown ? dashboardData?.bottomProducts?.map(item => item.product_name) :  dashboardData?.topProducts?.map(item => item.product_name),
+    labels: upDown
+      ? dashboardData?.bottomProducts?.map((item) => item.product_name)
+      : dashboardData?.topProducts?.map((item) => item.product_name),
     // labels: dashboardData?.topProducts?.map(item => item.product_name),
     datasets: [
       {
         label: 'TOP/Down Products',
-        data: upDown ? dashboardData?.bottomProducts?.map(item => parseFloat(item.transaction_count)) || [] : dashboardData?.topProducts?.map(item => parseFloat(item.transaction_count)) || [],
+        data: upDown
+          ? dashboardData?.bottomProducts?.map((item) => parseFloat(item.transaction_count)) || []
+          : dashboardData?.topProducts?.map((item) => parseFloat(item.transaction_count)) || [],
         // data: dashboardData?.topProducts?.map(item => parseFloat(item.transaction_count)) || [],
         backgroundColor: [
           'rgba(255, 99, 132, 0.2)',
@@ -247,9 +256,11 @@ setIsLoading(true)
 
   return (
     <AdminLayout shopId={shopId}>
-      {isLoading?<div className='centered-dev' style={{zIndex:'2'}} >
-        <Spinner/>
-      </div>:null}
+      {isLoading ? (
+        <div className="centered-dev" style={{ zIndex: '2' }}>
+          <Spinner />
+        </div>
+      ) : null}
       <div className="row loc-dash-top" style={{ background: '#f6f8fa' }}>
         <div className="loc-dash-top-items">
           <div className="inner-loc-dash-top-items">
@@ -258,8 +269,8 @@ setIsLoading(true)
             </div>
           </div>
           <div className="inner-loc-dash-top-items dash-top-items-details">
-            <h4>SALES</h4>
-            <h5 ref={title1}>{txtP1.name}</h5>
+            <h4>{t('g.SALES')}</h4>
+            <h5 ref={title1}>{t(`g.${txtP1.name}`)}</h5>
             <h3>
               {dashboardData?.sales}
               {/* {Number(box1Price[txtP1.index - 1]).toFixed(
@@ -285,8 +296,8 @@ setIsLoading(true)
             </div>
           </div>
           <div className="inner-loc-dash-top-items dash-top-items-details">
-            <h4>PURCHASES</h4>
-            <h5 ref={title2}>{txtP2.name}</h5>
+            <h4>{t('g.PURCHASES')}</h4>
+            <h5 ref={title2}>{t(`g.${txtP1.name}`)}</h5>
             <h3>
               {dashboardData?.purchases}
               {/* {Number(box3Price[txtP2.index - 1]).toFixed(
@@ -312,8 +323,8 @@ setIsLoading(true)
             </div>
           </div>
           <div className="inner-loc-dash-top-items dash-top-items-details">
-            <h4>EXPENSES</h4>
-            <h5 ref={title3}>{txtP3.name}</h5>
+            <h4>{t('g.EXPENSES')}</h4>
+            <h5 ref={title3}>{t(`g.${txtP1.name}`)}</h5>
             <h3>
               {dashboardData?.expenses}
               {/* {Number(box2Price[txtP3.index - 1]).toFixed(
@@ -339,8 +350,8 @@ setIsLoading(true)
             </div>
           </div>
           <div className="inner-loc-dash-top-items dash-top-items-details">
-            <h4>CUSTOMERS</h4>
-            <h5 ref={title4}>{txtP4.name}</h5>
+            <h4>{t('g.CUSTOMERS')}</h4>
+            <h5 ref={title4}>{t(`g.${txtP1.name}`)}</h5>
             <h3>
               {dashboardData?.customers}
               {/* {Number(box4Price[txtP4.index - 1])} */}
@@ -359,7 +370,7 @@ setIsLoading(true)
       </div>
       <div className="row loc-dash-top-under">
         <div className="loc-dash-big-chart">
-          <h4>Monthly Sales</h4>
+          <h4>{t('g.MonthlySales')}</h4>
           <div>
             <Bar
               data={data_bar}
@@ -374,7 +385,7 @@ setIsLoading(true)
         </div>
         <div className="loc-dash-small-chart">
           <h4>
-            Top 7 Products
+            {t('g.Top_7_Products')}
             <Switch checked={upDown} onChange={handleUpDown} />
             <span>{upDown ? 'Down' : 'Up'}</span>
           </h4>
@@ -393,22 +404,34 @@ setIsLoading(true)
       <div className="row loc-dash-top-under">
         <div className="">
           <div className="loc-dasg-box">
-            <h4>The last 10 invoices</h4>
+            <h4>{t('The_last_10_invoices')}</h4>
             <div className="loc-dasg-box-content  d-flex justify-content-between flex-wrap">
               <div className="me-head-table">
-                <div className="m-fileds text-start" style={{ width: '20%' }}>#</div>
+                <div className="m-fileds text-start" style={{ width: '20%' }}>
+                  #
+                </div>
                 {/* <div className="m-fileds text-start">Date</div> */}
-                <div className="m-fileds text-start" style={{ width: '30%' }}>Date</div>
-                <div className="m-fileds text-start" style={{ width: '25%' }}>final Total</div>
-                <div className="m-fileds text-start" style={{ width: '25%' }}>Created By</div>
+                <div className="m-fileds text-start" style={{ width: '30%' }}>
+                  {t('g.Date')}
+                </div>
+                <div className="m-fileds text-start" style={{ width: '25%' }}>
+                  {t('g.finalTotal')}
+                </div>
+                <div className="m-fileds text-start" style={{ width: '25%' }}>
+                  {t('g.CreatedBy')}
+                </div>
               </div>
               {dashboardData?.lastInvoices?.map((itm, i: number) => {
-                console.log(itm);
-                
+                // console.log(itm);
+
                 return (
                   <div key={i} className="me-tr-table">
-                    <div className="m-fileds" style={{ width: '20%' }}>{itm.id}</div>
-                    <div className="m-fileds" style={{ width: '30%' }}>{getRightTime(itm.created_at)}</div>
+                    <div className="m-fileds" style={{ width: '20%' }}>
+                      {itm.id}
+                    </div>
+                    <div className="m-fileds" style={{ width: '30%' }}>
+                      {getRightTime(itm.created_at)}
+                    </div>
                     <div className="m-fileds" style={{ width: '25%' }}>
                       {Number(itm.total_price).toFixed(locationSettings?.location_decimal_places)}{' '}
                       {locationSettings?.currency_code}
@@ -416,7 +439,10 @@ setIsLoading(true)
                     <div className="m-fileds" style={{ width: '25%' }}>
                       {/* {_locs.find(l => l.location_id == itm.created_by
                       )?.location_name} */}
-                      {itm.user.last_name !== null ? itm.user.first_name + " " + itm.user.last_name : itm.user.first_name}</div>
+                      {itm.user.last_name !== null
+                        ? itm.user.first_name + ' ' + itm.user.last_name
+                        : itm.user.first_name}
+                    </div>
                   </div>
                 );
               })}
@@ -429,14 +455,20 @@ setIsLoading(true)
 };
 export default Home;
 export async function getServerSideProps(context: any) {
-  if (context.query.id == undefined)
+  const { query, locale } = context;
+
+  if (query.id == undefined) {
     return {
       redirect: {
         permanent: false,
         destination: '/page403',
       },
     };
+  }
   return {
-    props: { shopId: context.query.id },
+    props: {
+      shopId: query.id,
+      ...(await serverSideTranslations(locale)),
+    },
   };
 }

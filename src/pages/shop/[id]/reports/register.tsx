@@ -12,6 +12,8 @@ import RegisterToPrint from 'src/modules/reports/_components/RegisterToPrint';
 import api from 'src/utils/app-api';
 import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
 
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { useTranslation } from 'next-i18next';
 interface IDetails {
   total_hand_cash: number;
   total_cash: number;
@@ -34,9 +36,11 @@ function SalesReport() {
   const router = useRouter();
   const shopId = router.query.id ?? '';
   const { invoicDetails } = useUser();
-  const [locationSettings, setLocationSettings] = useState<any>()
+  const [locationSettings, setLocationSettings] = useState<any>();
 
   const componentRef = useRef(null);
+
+  const { t } = useTranslation();
 
   const [show, setShow] = useState(false);
   const [selectId, setSelectId] = useState(0);
@@ -47,70 +51,69 @@ function SalesReport() {
   const [details, setDetails] = useState(initialDetailsState);
 
   const columns: GridColDef<IOpenCloseReport>[] = [
-      { field: 'id', headerName: '#', maxWidth: 72 },
-      {
-        field: 'name',
-        headerName: 'Cashier',
-        maxWidth: 100,
-        renderCell: ({ row }: Partial<GridRowParams>) => row.status,
-      },
-      {
-        field: 'status',
-        headerName: 'Type',
-        maxWidth: 100,
-        disableColumnMenu: true,
-        renderCell: ({ row }: Partial<GridRowParams>) => row.status,
-      },
-      {
-        field: 'closing_amount',
-        headerName: 'hand cash',
-        flex: 1,
-        renderCell: ({ row }: Partial<GridRowParams>) =>
-          Number(row.hand_cash).toFixed(locationSettings?.location_decimal_places),
-      },
-      {
-        field: 'total_card_slips',
-        headerName: 'Card',
-        flex: 1,
-        renderCell: ({ row }: Partial<GridRowParams>) =>
-          Number(row.cart).toFixed(locationSettings?.location_decimal_places),
-      },
-      {
-        field: 'total_cash',
-        headerName: 'Cash',
-        flex: 1,
-        renderCell: ({ row }: Partial<GridRowParams>) =>
-          Number(row.cash).toFixed(locationSettings?.location_decimal_places),
-      },
-      {
-        field: 'total_cheques',
-        headerName: 'Cheques',
-        flex: 1,
-        renderCell: ({ row }: Partial<GridRowParams>) =>
-          Number(row.cheque).toFixed(locationSettings?.location_decimal_places),
-      },
-      {
-        field: 'total_bank',
-        headerName: 'Bank',
-        flex: 1,
-        renderCell: ({ row }: Partial<GridRowParams>) =>
-          Number(row.bank).toFixed(locationSettings?.location_decimal_places),
-      },
-      {
-        field: 'date',
-        headerName: 'Date',
-        minWidth: 120,
-        renderCell: ({ row }: Partial<GridRowParams>) =>
-          `${new Date(row.date).toLocaleDateString()}`,
-      },
-      {
-        field: 'closing_note',
-        headerName: 'Note',
-        flex: 1,
-        disableColumnMenu: true,
-        renderCell: ({ row }) => row.note?.trim() || '---',
-      },
-    ];
+    { field: 'id', headerName: '#', maxWidth: 72 },
+    {
+      field: 'name',
+      headerName: t('g.Cashier'),
+      maxWidth: 100,
+      renderCell: ({ row }: Partial<GridRowParams>) => row.status,
+    },
+    {
+      field: 'status',
+      headerName: t('g.type'),
+      maxWidth: 100,
+      disableColumnMenu: true,
+      renderCell: ({ row }: Partial<GridRowParams>) => row.status,
+    },
+    {
+      field: 'closing_amount',
+      headerName: t('g.handCash'),
+      flex: 1,
+      renderCell: ({ row }: Partial<GridRowParams>) =>
+        Number(row.hand_cash).toFixed(locationSettings?.location_decimal_places),
+    },
+    {
+      field: 'total_card_slips',
+      headerName: t('g.Card'),
+      flex: 1,
+      renderCell: ({ row }: Partial<GridRowParams>) =>
+        Number(row.cart).toFixed(locationSettings?.location_decimal_places),
+    },
+    {
+      field: 'total_cash',
+      headerName: t('g.Cash'),
+      flex: 1,
+      renderCell: ({ row }: Partial<GridRowParams>) =>
+        Number(row.cash).toFixed(locationSettings?.location_decimal_places),
+    },
+    {
+      field: 'total_cheques',
+      headerName: t('g.Cheques'),
+      flex: 1,
+      renderCell: ({ row }: Partial<GridRowParams>) =>
+        Number(row.cheque).toFixed(locationSettings?.location_decimal_places),
+    },
+    {
+      field: 'total_bank',
+      headerName: t('g.Bank'),
+      flex: 1,
+      renderCell: ({ row }: Partial<GridRowParams>) =>
+        Number(row.bank).toFixed(locationSettings?.location_decimal_places),
+    },
+    {
+      field: 'date',
+      headerName: t('g.Date'),
+      minWidth: 120,
+      renderCell: ({ row }: Partial<GridRowParams>) => `${new Date(row.date).toLocaleDateString()}`,
+    },
+    {
+      field: 'closing_note',
+      headerName: t('g.Note'),
+      flex: 1,
+      disableColumnMenu: true,
+      renderCell: ({ row }) => row.note?.trim() || '---',
+    },
+  ];
 
   async function initDataPage() {
     setIsLoadItems(true);
@@ -144,7 +147,7 @@ function SalesReport() {
         id={selectId}
         type="deleteSale"
         products={sales}>
-        Are you Sure You Want Delete This Item ?
+        {t('g.Are_you_Sure_You_Want_Delete_This_Item')}
       </AlertDialog>
       {
         <div style={{ display: 'none' }}>
@@ -158,20 +161,20 @@ function SalesReport() {
         </div>
       }
       <div className="page-content-style card">
-        <h5> Report Open Register</h5>
+        <h5>{t('g.ReportOpenRegister')}</h5>
         <div className="deatils_box">
           <div>
-            <span>Total: </span>
+            <span>{t('g.Total')}: </span>
             {details.total?.toFixed(locationSettings?.location_decimal_places)}{' '}
             {locationSettings?.currency_code}
           </div>
           <div>
-            <span>Total Bank: </span>
+            <span>{t('g.TotalBank')}: </span>
             {details.total_bank?.toFixed(locationSettings?.location_decimal_places)}{' '}
             {locationSettings?.currency_code}
           </div>
           <div>
-            <span>Total Card: </span>
+            <span>{t('g.TotalCard')}: </span>
             {details.total_cart?.toFixed(locationSettings?.location_decimal_places)}{' '}
             {locationSettings?.currency_code}
           </div>
@@ -197,3 +200,13 @@ function SalesReport() {
 }
 
 export default withAuth(SalesReport);
+
+export async function getServerSideProps(context) {
+  const { locale } = context;
+
+  return {
+    props: {
+      ...(await serverSideTranslations(locale)),
+    },
+  };
+}

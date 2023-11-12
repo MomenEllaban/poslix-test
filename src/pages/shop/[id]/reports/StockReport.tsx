@@ -24,12 +24,17 @@ import Select from 'react-select';
 import { StateManagerProps } from 'react-select/dist/declarations/src/useStateManager';
 import { intersectionBy } from 'lodash';
 
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { useTranslation } from 'next-i18next';
+
 type IBrandWithSelect = IBrand & { label: string; value: number };
 type ICategoryWithSelect = ICategory & { label: string; value: number };
 
 function StockReport() {
   const router = useRouter();
   const shopId = router.query.id;
+
+  const { t } = useTranslation();
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [sales, setSales] = useState<any>([]);
@@ -155,48 +160,48 @@ function StockReport() {
 
   //table columns
   const columns: GridColDef<IStockReport>[] = [
-    { field: 'sku', headerName: 'SKU', width: 80 },
-    { field: 'product_name', headerName: 'Product Name', minWidth: 80, flex: 1 },
-    { field: 'brand_name', headerName: 'Brand Name' },
-    { field: 'category_name', headerName: 'Category' },
+    { field: 'sku', headerName: t('g.SKU'), width: 80 },
+    { field: 'product_name', headerName: t('g.ProductName'), minWidth: 80, flex: 1 },
+    { field: 'brand_name', headerName: t('g.BrandName') },
+    { field: 'category_name', headerName: t('g.Category') },
     // { field: 'location_name', headerName: 'Location', flex: 1, minWidth: 120 },
     {
       field: 'unit_name',
-      headerName: 'Unit Price',
+      headerName: t('g.UnitPrice'),
       flex: 1,
       renderCell: ({ row }) => getLocalizedPrice(row.sell_price),
     },
     {
       field: 'available_qty',
-      headerName: 'Current Stock',
+      headerName: t('g.CurrentStock'),
       flex: 1,
       renderCell: ({ row }) => `${+row?.available_qty || 0} ${row.unit_name}`,
     },
     {
       field: 'current_stock_value_purchase',
-      headerName: 'Current Stock (By Purchse)',
+      headerName: t('g.CurrentStock (By Purchse)'),
       renderCell: ({ row }) => getLocalizedPrice(+row?.available_qty * +row.cost_price),
     },
     {
       field: 'current_stock_value_sell',
-      headerName: 'Current Stock (By Sell)',
+      headerName: t('g.CurrentStock(By Sell)'),
       renderCell: ({ row }) => getLocalizedPrice(+row?.available_qty * +row.sell_price),
     },
 
     {
       field: 'profit',
-      headerName: 'Potential Profit',
+      headerName: t('g.PotentialProfit'),
       renderCell: ({ row }) =>
         getLocalizedPrice(+row?.available_qty * (+row.sell_price - +row.cost_price)),
     },
     {
       field: 'sell_price',
-      headerName: 'Sell Price',
+      headerName: t('g.SellPrice'),
       renderCell: ({ row }) => getLocalizedPrice(row.sell_price),
     },
     {
       field: 'sold_qty',
-      headerName: 'Total Unit Sold',
+      headerName: t('g.TotalUnitSold'),
       renderCell: ({ row }) => (+row.sold_qty).toFixed(0),
     },
   ];
@@ -361,15 +366,15 @@ function StockReport() {
   const handlePrint = useReactToPrint({
     content: () => componentRef.current,
   });
-  const onRowsSelectionHandler = (selectedRowsData: any) => {
-    setSelectRow(selectedRowsData);
-    setSelectId(selectedRowsData.id);
-    getItems(selectedRowsData.id);
-    setShowViewPopUp(true);
-  };
-  const handleSearch = (e: any) => {
-    setHandleSearchTxt(e.target.value);
-  };
+  // const onRowsSelectionHandler = (selectedRowsData: any) => {
+  //   setSelectRow(selectedRowsData);
+  //   setSelectId(selectedRowsData.id);
+  //   getItems(selectedRowsData.id);
+  //   setShowViewPopUp(true);
+  // };
+  // const handleSearch = (e: any) => {
+  //   setHandleSearchTxt(e.target.value);
+  // };
   return (
     <AdminLayout shopId={shopId}>
       <div className="flex" style={{ alignItems: 'center' }}>
@@ -379,7 +384,7 @@ function StockReport() {
             isClearable
             value={selectedCategory}
             id="category-select"
-            placeholder="Category"
+            placeholder={t('g.Category')}
             onChange={handleSelectCategory}
           />
         </FormControl>
@@ -391,13 +396,13 @@ function StockReport() {
             isClearable
             options={brands}
             value={selectedBrand}
-            placeholder="Brand"
+            placeholder={t('g.Brand')}
             onChange={handleSelectBrand}
           />
         </FormControl>
 
         <Button onClick={resetFilters} style={{ height: '2.5rem', marginLeft: 'auto' }}>
-          CLEAR
+          {t('g.CLEAR')}
         </Button>
       </div>
       <AlertDialog
@@ -406,7 +411,7 @@ function StockReport() {
         id={selectId}
         type="deleteSale"
         products={sales}>
-        Are you Sure You Want Delete This Item ?
+        {t('g.Are_you_Sure_You_Want_Delete_This_Item')}
       </AlertDialog>
       {
         <div style={{ display: 'none' }}>
@@ -414,7 +419,7 @@ function StockReport() {
         </div>
       }
       <div className="page-content-style card">
-        <h5> Stock Report</h5>
+        <h5> {t('g.StockReport')}</h5>
         {/* <div className="deatils_box">
           <div>
             <span>SubTotal: </span>
@@ -457,7 +462,7 @@ function StockReport() {
       </div>
       {/* FOR VIEW ELEMENT */}
       <Dialog open={showViewPopUp} fullWidth={true} className="poslix-modal" onClose={handleClose}>
-        <DialogTitle className="poslix-modal text-primary">Sale Details</DialogTitle>
+        <DialogTitle className="poslix-modal text-primary">{t('g.SaleDetails')}</DialogTitle>
         <DialogContent className="poslix-modal-content">
           <div className="poslix-modal">
             <div className="top-section-details">
@@ -465,29 +470,30 @@ function StockReport() {
               <div className="item-sections">
                 <div className="top-detials-invoice">
                   <div className="top-detials-item">
-                    <p>Invoice No :</p>
+                    <p>{t('g.InvoiceNo')} :</p>
                     <p>{selectRow.id}</p>
                   </div>
                   <div className="top-detials-item">
-                    <p>Invoice Date :</p>
+                    <p>{t('g.InvoiceDate')} :</p>
                     <p>{selectRow.sale_date}</p>
                   </div>
                   <div className="top-detials-item">
-                    <p>Added By :</p>
+                    <p>{t('g.AddedBy')} :</p>
                     <p>{selectRow.added_by}</p>
                   </div>
                 </div>
                 <div className="top-detials-invoice">
                   <div className="top-detials-item">
-                    <p>Final Total :</p>
+                    <p>{t('g.FinalTotal')} :</p>
                     <p>{selectRow.total_price}</p>
                   </div>
                   <div className="top-detials-item">
-                    <p>Customer Name :</p>
+                    <p>{t('g.CustomerName')} :</p>
+
                     <p>{selectRow.customer_name}</p>
                   </div>
                   <div className="top-detials-item" style={{ fontSize: '13px' }}>
-                    <p>Order Note</p>
+                    <p>{t('g.OrderNote')}</p>
                     <p>{selectRow.notes}</p>
                   </div>
                 </div>
@@ -497,18 +503,18 @@ function StockReport() {
                   onClick={() => {
                     handlePrint();
                   }}>
-                  Print Recipt
+                  {t('g.PrintRecipt')}
                 </Button>{' '}
-                <Button>Print Invoice</Button>
+                <Button>{t('g.PrintInvoice')}</Button>
               </div>
             </div>
             {lines && !isLoadItems ? (
               <div className="row">
                 <div className="invoice-items-container">
                   <div className="header-titles">
-                    <div>Name</div>
-                    <div>Qty</div>
-                    <div>Amount</div>
+                    <div>{t('g.Name')}</div>
+                    <div>{t('g.Qty')}</div>
+                    <div>{t('g.Amount')}</div>
                   </div>
                   {lines.map((line: any, index: number) => {
                     return (
@@ -521,7 +527,7 @@ function StockReport() {
                   })}
                   <div className="header-titles under_items" style={{ marginTop: '20px' }}>
                     <div></div>
-                    <div>Total</div>
+                    <div>{t('g.Total')}</div>
                     <div>{selectRow.total_price}</div>
                   </div>
                 </div>
@@ -536,7 +542,7 @@ function StockReport() {
             onClick={() => {
               setShowViewPopUp(false);
             }}>
-            Cancel
+            {t('g.Cancel')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -545,3 +551,13 @@ function StockReport() {
 }
 
 export default withAuth(StockReport);
+
+export async function getServerSideProps(context) {
+  const { req, locale } = context;
+
+  return {
+    props: {
+      ...(await serverSideTranslations(locale)),
+    },
+  };
+}

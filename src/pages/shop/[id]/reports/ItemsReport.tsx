@@ -15,12 +15,15 @@ import withAuth from 'src/HOCs/withAuth';
 import DatePicker from 'src/components/filters/Date';
 import AlertDialog from 'src/components/utils/AlertDialog';
 import { useUser } from 'src/context/UserContext';
-import { apiFetch, apiFetchCtr } from 'src/libs/dbUtils';
+// import { apiFetch, apiFetchCtr } from 'src/libs/dbUtils';
 import CustomToolbar from 'src/modules/reports/_components/CustomToolbar';
 import ItemsReportToPrint from 'src/modules/reports/_components/ItemsReportToPrint';
 import { findAllData } from 'src/services/crud.api';
 import api from 'src/utils/app-api';
 import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
+
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { useTranslation } from 'next-i18next';
 
 function ItemsReport() {
   const router = useRouter();
@@ -28,10 +31,12 @@ function ItemsReport() {
 
   const componentRef = useRef(null);
 
+  const { t } = useTranslation();
+
   const { locationSettings, setLocationSettings, invoicDetails } = useUser();
 
   const [sales, setSales] = useState<any>([]);
-  const [filteredSales, setFilteredSales] = useState<any>([]);  
+  const [filteredSales, setFilteredSales] = useState<any>([]);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [selectId, setSelectId] = useState(0);
   const [selectRow, setSelectRow] = useState<any>({});
@@ -61,7 +66,7 @@ function ItemsReport() {
   const handleClose = () => setAnchorEl(null);
 
   const resetFilters = () => {
-    setFilteredSales(()=> sales);
+    setFilteredSales(() => sales);
     setSelectedCustomer('');
     setSelectedSupplier('');
     setSelectedRange(null);
@@ -73,28 +78,28 @@ function ItemsReport() {
     () => [
       {
         field: 'product_name',
-        headerName: 'Product',
+        headerName: t('g.Product'),
         renderCell: ({ row }) => row?.product?.name,
       },
       {
         field: 'product_sku',
-        headerName: 'SKU',
+        headerName: t('g.SKU'),
         renderCell: ({ row }) => row?.product?.sku,
       },
       {
         field: 'product_category',
-        headerName: 'Category',
+        headerName: t('g.Category'),
         renderCell: ({ row }) => row?.product?.category?.name,
       },
       {
         field: 'product_brand',
-        headerName: 'Brand',
+        headerName: t('g.Brand'),
         // @ts-ignore
         renderCell: ({ row }) => row?.product?.brand?.name || '---',
       },
       {
         field: 'Purchase Date',
-        headerName: 'Purchase Date',
+        headerName: t('g.PurchaseDate'),
         width: 180,
         renderCell: ({ row }) =>
           `${new Date(row.date).toLocaleDateString()} ${new Date(row.date).toLocaleTimeString()}`,
@@ -107,13 +112,13 @@ function ItemsReport() {
       // },
       {
         field: 'supplier_name',
-        headerName: 'Supplier',
+        headerName: t('g.Supplier'),
         // @ts-ignore
         renderCell: ({ row }) => row?.supplier_name || 'walk-in supplier',
       },
       {
         field: 'purchase_price',
-        headerName: 'Purchase Price',
+        headerName: t('g.PurchasePrice'),
         renderCell: ({ row }) =>
           (+row?.product?.cost_price).toFixed(locationSettings?.location_decimal_places) +
           ' ' +
@@ -121,31 +126,31 @@ function ItemsReport() {
       },
       {
         field: 'sale_date',
-        headerName: 'Sale Date',
+        headerName: t('g.SaleDate'),
         width: 180,
         renderCell: ({ row }) =>
           `${new Date(row.date).toLocaleDateString()} ${new Date(row.date).toLocaleTimeString()}`,
       },
       {
         field: 'order_id',
-        headerName: 'Sale',
+        headerName: t('g.Sale'),
         maxWidth: 72,
         renderCell: ({ row }) => row.order_id,
       },
       {
         field: 'contact_name',
-        headerName: 'Customer',
+        headerName: t('g.Customer'),
         renderCell: ({ row }) => `${row.contact_first_name} ${row.contact_last_name}`,
       },
 
       {
         field: 'qty',
-        headerName: 'Qty',
+        headerName: t('g.Qty'),
         renderCell: ({ row }) => (+row.qty).toFixed(0),
       },
       {
         field: 'price',
-        headerName: 'Selling Price',
+        headerName: t('g.SellingPrice'),
         renderCell: ({ row }) =>
           (+row.product.sell_price).toFixed(locationSettings?.location_decimal_places) +
           ' ' +
@@ -163,8 +168,8 @@ function ItemsReport() {
       .then(({ data }) => {
         const _salesList = data.result.data;
         const mappedSalesList = [];
-//mohamed elsayed
-        // const _salesListWithoutProducts = _salesList.map((item, index) => { 
+        //mohamed elsayed
+        // const _salesListWithoutProducts = _salesList.map((item, index) => {
         //   const { products, ...rest } = item;
         //   products.forEach((product) => {
         //     mappedSalesList.push({ ...rest, product });
@@ -172,8 +177,8 @@ function ItemsReport() {
         //   return {...rest, id: index};
         // });
         // console.log();
-        let index = 0
-        _salesList.forEach((item) => { 
+        let index = 0;
+        _salesList.forEach((item) => {
           const { products, ...rest } = item;
           products.forEach((product) => {
             mappedSalesList.push({ id: index++, ...rest, product });
@@ -253,17 +258,17 @@ function ItemsReport() {
       tax: taxAmount,
       cost: totalPriceAndTax,
     });
-    if (selectedSupplier?.length > 0){
-      console.log(111111111);
+    if (selectedSupplier?.length > 0) {
+      // console.log(111111111);
       localFilteredSales = localFilteredSales.filter((el) => el.supplier_name === selectedSupplier);
     }
-    if (selectedCustomer?.length > 0){
-      console.log(222222222);
+    if (selectedCustomer?.length > 0) {
+      // console.log(222222222);
       localFilteredSales = localFilteredSales.filter(
         (el) => el.contact_first_name === selectedCustomer
       );
     }
-    setFilteredSales(()=> localFilteredSales);
+    setFilteredSales(() => localFilteredSales);
   }, [strSelectedDate, selectedSupplier, selectedCustomer]);
 
   /*************************************/
@@ -276,12 +281,11 @@ function ItemsReport() {
     initDataPage();
   }, [shopId]);
 
-
   return (
     <AdminLayout shopId={shopId}>
       <div className="flex" style={{ alignItems: 'center' }}>
         <FormControl sx={{ m: 1, width: 220 }}>
-          <InputLabel id="customer-select-label">Supplier</InputLabel>
+          <InputLabel id="customer-select-label">{t('g.Supplier')}</InputLabel>
           <Select
             labelId="Supplier-select-label"
             id="Supplier-select"
@@ -306,12 +310,12 @@ function ItemsReport() {
           }}
         />
         <FormControl sx={{ m: 1, width: 220 }}>
-          <InputLabel id="customer-select-label">Customer</InputLabel>
+          <InputLabel id="customer-select-label">{t('g.Customer')}</InputLabel>
           <Select
             labelId="customer-select-label"
             id="customer-select"
             value={selectedCustomer}
-            label="Customer"
+            label={t('g.Customer')}
             onChange={handleChangeCustomer}>
             {customersOptions.map((customer, index) => (
               <MenuItem key={index} value={customer.first_name}>
@@ -321,7 +325,7 @@ function ItemsReport() {
           </Select>
         </FormControl>
         <Button onClick={resetFilters} style={{ height: '56px', marginLeft: 'auto' }}>
-          CLEAR
+          {t('g.CLEAR')}
         </Button>
       </div>
       <AlertDialog
@@ -330,7 +334,7 @@ function ItemsReport() {
         id={selectId}
         type="deleteSale"
         products={sales}>
-        Are you Sure You Want Delete This Item ?
+        {t('g.Are_you_Sure_You_Want_Delete_This_Item')}
       </AlertDialog>
       {
         <div style={{ display: 'none' }}>
@@ -345,7 +349,7 @@ function ItemsReport() {
       }
       <div className="page-content-style card">
         {/* {console.log(filteredSales)} */}
-        <h5> Items Report</h5>
+        <h5> {t('g.ItemsReport')}</h5>
         {/* <div className="deatils_box">
           <div>
             <span>SubTotal: </span>
@@ -389,7 +393,7 @@ function ItemsReport() {
       </div>
       {/* FOR VIEW ELEMENT */}
       <Dialog open={showViewPopUp} fullWidth={true} className="poslix-modal" onClose={handleClose}>
-        <DialogTitle className="poslix-modal text-primary">Sale Details</DialogTitle>
+        <DialogTitle className="poslix-modal text-primary">{t('g.SaleDetails')}</DialogTitle>
         <DialogContent className="poslix-modal-content">
           <div className="poslix-modal">
             <div className="top-section-details">
@@ -397,15 +401,15 @@ function ItemsReport() {
               <div className="item-sections">
                 <div className="top-detials-invoice">
                   <div className="top-detials-item">
-                    <p>Invoice No :</p>
+                    <p>{t('g.InvoiceNo')} :</p>
                     <p>{selectRow.id}</p>
                   </div>
                   <div className="top-detials-item">
-                    <p>Invoice Date :</p>
+                    <p>{t('g.InvoiceDate')} :</p>
                     <p>{selectRow.sale_date}</p>
                   </div>
                   <div className="top-detials-item">
-                    <p>Added By :</p>
+                    <p>{t('g.AddedBy')} :</p>
                     <p>{selectRow.added_by}</p>
                   </div>
                 </div>
@@ -415,11 +419,11 @@ function ItemsReport() {
                     <p>{selectRow.total_price}</p>
                   </div>
                   <div className="top-detials-item">
-                    <p>Customer Name :</p>
+                    <p>{t('g.CustomerName')} :</p>
                     <p>{selectRow.customer_name}</p>
                   </div>
                   <div className="top-detials-item" style={{ fontSize: '13px' }}>
-                    <p>Order Note</p>
+                    <p>{t('g.OrderNote')}</p>
                     <p>{selectRow.notes}</p>
                   </div>
                 </div>
@@ -429,18 +433,18 @@ function ItemsReport() {
                   onClick={() => {
                     handlePrint();
                   }}>
-                  Print Recipt
+                  {t('g.PrintRecipt')}
                 </Button>{' '}
-                <Button>Print Invoice</Button>
+                <Button>{t('g.PrintInvoice')}</Button>
               </div>
             </div>
             {lines && !isLoadItems ? (
               <div className="row">
                 <div className="invoice-items-container">
                   <div className="header-titles">
-                    <div>Name</div>
-                    <div>Qty</div>
-                    <div>Amount</div>
+                    <div>{t('g.Name')}</div>
+                    <div>{t('g.Qty')}</div>
+                    <div>{t('g.Amount')}</div>
                   </div>
                   {lines.map((line: any, index: number) => {
                     return (
@@ -453,7 +457,7 @@ function ItemsReport() {
                   })}
                   <div className="header-titles under_items" style={{ marginTop: '20px' }}>
                     <div></div>
-                    <div>Total</div>
+                    <div>{t('g.Total')}</div>
                     <div>{selectRow.total_price}</div>
                   </div>
                 </div>
@@ -468,7 +472,7 @@ function ItemsReport() {
             onClick={() => {
               setShowViewPopUp(false);
             }}>
-            Cancel
+            {t('g.Cancel')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -477,3 +481,13 @@ function ItemsReport() {
 }
 
 export default withAuth(ItemsReport);
+
+export async function getServerSideProps(context) {
+  const { locale } = context;
+
+  return {
+    props: {
+      ...(await serverSideTranslations(locale)),
+    },
+  };
+}

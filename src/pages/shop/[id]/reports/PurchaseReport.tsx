@@ -1,7 +1,7 @@
 import { AdminLayout } from '@layout';
 import { ILocation } from '@models/auth.types';
-import { IProduct } from '@models/pos.types';
-import { EStatus, IItemSalesReport } from '@models/reports.types';
+// import { IProduct } from '@models/pos.types';
+// import { EStatus, IItemSalesReport } from '@models/reports.types';
 import { Dialog, DialogActions, DialogContent, DialogTitle, MenuItem } from '@mui/material';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
@@ -13,20 +13,25 @@ import { Button } from 'react-bootstrap';
 import { useReactToPrint } from 'react-to-print';
 import withAuth from 'src/HOCs/withAuth';
 import DatePicker from 'src/components/filters/Date';
-import AlertDialog from 'src/components/utils/AlertDialog';
+// import AlertDialog from 'src/components/utils/AlertDialog';
 import { useUser } from 'src/context/UserContext';
-import { apiFetch, apiFetchCtr } from 'src/libs/dbUtils';
+// import { apiFetch, apiFetchCtr } from 'src/libs/dbUtils';
 import CustomToolbar from 'src/modules/reports/_components/CustomToolbar';
-import ItemsReportToPrint from 'src/modules/reports/_components/ItemsReportToPrint';
+// import ItemsReportToPrint from 'src/modules/reports/_components/ItemsReportToPrint';
 import { findAllData } from 'src/services/crud.api';
 import api from 'src/utils/app-api';
 import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
+
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { useTranslation } from 'next-i18next';
 
 function PurchaseReport() {
   const router = useRouter();
   const shopId = router.query.id ?? '';
 
   const componentRef = useRef(null);
+
+  const { t } = useTranslation();
 
   const { locationSettings, setLocationSettings, invoicDetails } = useUser();
 
@@ -58,41 +63,41 @@ function PurchaseReport() {
     setSelectedProducts(event.target.value);
   };
 
-  const handleClose = () => setAnchorEl(null);
+  // const handleClose = () => setAnchorEl(null);
 
   const resetFilters = () => {
     setFilteredSales(() => sales);
     setSelectedProducts('');
     setSelectedSupplier('');
-    setSelectedRange(()=>null);
-    setStrSelectedDate(()=>[]);
+    setSelectedRange(() => null);
+    setStrSelectedDate(() => []);
   };
-  
+
   //table columns
   const columns: GridColDef<any>[] = useMemo(
     () => [
       {
         field: 'product_name',
-        headerName: 'Product',
+        headerName: t('g.Product'),
         flex: 1,
         renderCell: ({ row }) => row?.product_name,
       },
       {
         field: 'product_sku',
-        headerName: 'SKU',
+        headerName: t('g.SKU'),
         flex: 1,
         renderCell: ({ row }) => row?.product_sku,
       },
       {
         field: 'supplier_name',
-        headerName: 'Supplier',
+        headerName: t('g.Supplier'),
         flex: 1,
         // @ts-ignore
         renderCell: ({ row }) => row?.supplier_name || 'walk-in supplier',
       },
       {
         field: 'created_at',
-        headerName: 'Date',
+        headerName: t('g.Date'),
         flex: 1,
         renderCell: ({ row }) =>
           `${new Date(row?.created_at).toLocaleDateString()} ${new Date(
@@ -101,13 +106,13 @@ function PurchaseReport() {
       },
       {
         field: 'qty',
-        headerName: 'Quantity',
+        headerName: t('g.Quantity'),
         flex: 1,
         renderCell: ({ row }) => (+row.qty).toFixed(0),
       },
       {
         field: 'cost',
-        headerName: 'Unit Purchase Price',
+        headerName: t('g.UnitPurchase rice'),
         flex: 1,
         // @ts-ignore
         renderCell: ({ row }) =>
@@ -117,11 +122,10 @@ function PurchaseReport() {
       },
       {
         field: 'subtotal',
-        headerName: 'Subtotal',
+        headerName: t('g.SubTotal'),
         flex: 1,
         // @ts-ignore
-        renderCell: ({ row }) =>
-          `${locationSettings.currency_code} ${(row?.subtotal)}`,
+        renderCell: ({ row }) => `${locationSettings.currency_code} ${row?.subtotal}`,
       },
     ],
     [locationSettings]
@@ -148,16 +152,16 @@ function PurchaseReport() {
 
     const supplierRes = await findAllData(`suppliers/${shopId}`);
     setSuppliersOptions(supplierRes.data.result);
-    const productsRes = await findAllData(`products/${shopId}`)
+    const productsRes = await findAllData(`products/${shopId}`);
     setProductsOptions([...productsRes.data.result.data]);
     setIsLoadItems(false);
   }
 
-  const handlePrint = useReactToPrint({ content: () => componentRef.current });
+  // const handlePrint = useReactToPrint({ content: () => componentRef.current });
 
-  const handleSearch = (e: any) => {
-    setHandleSearchTxt(e.target.value);
-  };
+  // const handleSearch = (e: any) => {
+  //   setHandleSearchTxt(e.target.value);
+  // };
 
   useEffect(() => {
     let localFilteredSales = [];
@@ -207,14 +211,12 @@ function PurchaseReport() {
     if (selectedSupplier?.length > 0) {
       localFilteredSales = localFilteredSales.filter((el) => el.supplier_name === selectedSupplier);
     }
-    
+
     if (selectedProduct?.length > 0) {
       console.log(selectedProduct);
       console.log(localFilteredSales);
-      
-      localFilteredSales = localFilteredSales.filter(
-        (el) => el.product_name === selectedProduct
-      );
+
+      localFilteredSales = localFilteredSales.filter((el) => el.product_name === selectedProduct);
     }
     setFilteredSales(() => localFilteredSales);
   }, [strSelectedDate, selectedSupplier, selectedProduct]);
@@ -232,7 +234,7 @@ function PurchaseReport() {
     <AdminLayout shopId={shopId}>
       <div className="flex" style={{ alignItems: 'center' }}>
         <FormControl sx={{ m: 1, width: 220 }}>
-          <InputLabel id="customer-select-label">Product</InputLabel>
+          <InputLabel id="customer-select-label">{t('g.Product')}</InputLabel>
           <Select
             labelId="customer-select-label"
             id="customer-select"
@@ -247,7 +249,7 @@ function PurchaseReport() {
           </Select>
         </FormControl>
         <FormControl sx={{ m: 1, width: 220 }}>
-          <InputLabel id="customer-select-label">Supplier</InputLabel>
+          <InputLabel id="customer-select-label">{t('g.Supplier')}</InputLabel>
           <Select
             labelId="Supplier-select-label"
             id="Supplier-select"
@@ -272,7 +274,7 @@ function PurchaseReport() {
           }}
         />
         <Button onClick={resetFilters} style={{ height: '56px', marginLeft: 'auto' }}>
-          CLEAR
+          {t('g.CLEAR')}
         </Button>
       </div>
       {/* <AlertDialog
@@ -295,7 +297,7 @@ function PurchaseReport() {
         </div>
       } */}
       <div className="page-content-style card">
-        <h5> Product Purchase Report</h5>
+        <h5> {t('g.ProductPurchaseReport')}</h5>
         <DataGrid
           loading={isLoadItems}
           className="datagrid-style"
@@ -404,3 +406,13 @@ function PurchaseReport() {
 }
 
 export default withAuth(PurchaseReport);
+
+export async function getServerSideProps(context) {
+  const { req, locale } = context;
+
+  return {
+    props: {
+      ...(await serverSideTranslations(locale)),
+    },
+  };
+}
