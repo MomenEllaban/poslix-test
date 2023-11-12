@@ -37,6 +37,8 @@ import NotifiModal from '../../../../components/utils/NotifiModal';
 import { apiDeleteCtr } from '../../../../libs/dbUtils';
 
 import { getSession } from 'next-auth/react';
+import { useTranslation } from 'next-i18next';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 
 const colourStyles = productDetailsColourStyles;
 
@@ -95,6 +97,7 @@ const Product: NextPage = ({
   const [previewUrl, setPreviewUrl] = useState<string>('');
   const [errorForm, setErrorForm] = useState(initFormError);
   const [formObj, setFormObj] = useState<any>(initialFormObject);
+  const { t } = useTranslation();
 
   const [tailoring, seTtailoring] = useState<{ value: number; label: string }[]>([]);
   const [loading, setLoading] = useState(false);
@@ -604,7 +607,7 @@ const Product: NextPage = ({
       <div className="row">
         <div className="mb-4">
           <Link className="btn btn-primary p-3" href={'/shop/' + router.query.id + '/products'}>
-            Back To List
+            {t("products.Back_To_List")}
           </Link>
         </div>
       </div>
@@ -649,7 +652,7 @@ const Product: NextPage = ({
       </Dialog>
       <Card className="mb-4">
         <Card.Header className="p-3 bg-white">
-          <h5>{isEdit ? 'Edit Product ' : 'Add New Product'} </h5>
+          <h5>{isEdit ? t('products.Edit_Product') : t('products.Add_New_Product')} </h5>
         </Card.Header>
         <Card.Body>
           {!loading ? (
@@ -677,8 +680,8 @@ const Product: NextPage = ({
                           <label htmlFor={'product-image'}>
                             <img src={'/images/dashboard/imageholder.jpg'} />
                             <br />
-                            Drop Your Image Or <span>Click</span>
-                            <p>Supports : JPG,PNG</p>
+                            {t("products.Drop_Your_Image_Or")} <span>{t("products.Click")}</span>
+                            <p>{t("Supports")} : JPG,PNG</p>
                           </label>
                         </>
                       )}
@@ -695,10 +698,10 @@ const Product: NextPage = ({
                           event.currentTarget.value = null;
                         }}
                       />
-                      {errorForm.img && <p className="p-1 h6 text-danger ">Select Image </p>}
+                      {errorForm.img && <p className="p-1 h6 text-danger ">{t("products.Select_Image")} </p>}
                       {isSaving && (
                         <div className="uploader-bar-box">
-                          <p>{percent != 100 ? 'Uploading Image...' : 'Saveing Form Data...'}</p>
+                          <p>{percent != 100 ? t('products.Uploading_Image...') : t('products.Saveing_Form_Data...')}</p>
                           <div className="uploader-bar" style={{ width: `${percent}%` }}></div>
                         </div>
                       )}
@@ -711,35 +714,35 @@ const Product: NextPage = ({
                       <div className="field-cover">
                         <div className="field-section">
                           <p>
-                            Product/Service Name: <span className="text-danger">*</span>
+                            {t("products.Product/Service_Name")}: <span className="text-danger">*</span>
                           </p>
                         </div>
                         <div className="field-section">
                           <input
                             type="text"
                             className="form-control"
-                            placeholder="Product/Service Name"
+                            placeholder={t("products.Product/Service_Name")}
                             value={formObj.name}
                             onChange={(e) => {
                               setFormObj({ ...formObj, name: e.target.value });
                             }}
                           />
                           {errorForm.name && (
-                            <p className="p-1 h6 text-danger ">Enter Product name</p>
+                            <p className="p-1 h6 text-danger ">{t("products.Enter_Product_name")}</p>
                           )}
                         </div>
                       </div>
                       {/* second  */}
                       <div className="field-cover">
                         <div className="field-section">
-                          <p>Product/Service Second Name:</p>
+                          <p>{t("products.Product/Service_Second_Name")}:</p>
                         </div>
 
                         <div className="field-section">
                           <input
                             type="text"
                             className="form-control"
-                            placeholder="Product/Service Second Name"
+                            placeholder={t("products.Product/Service_Second_Name")}
                             value={formObj.productName2}
                             onChange={(e) => {
                               setFormObj({ ...formObj, productName2: e.target.value });
@@ -751,7 +754,7 @@ const Product: NextPage = ({
                       <div className="field-cover">
                         <div className="field-section">
                           <p>
-                            Sku: <span className="text-danger">*</span>
+                            {t("products.sku")}: <span className="text-danger">*</span>
                           </p>
                         </div>
                         <div className="field-section">
@@ -765,17 +768,17 @@ const Product: NextPage = ({
                             }}
                           />
                           {errorForm.sku && (
-                            <p className="p-1 h6 text-danger ">Enter Product Sku</p>
+                            <p className="p-1 h6 text-danger ">{t("products.Enter_Product_Sku")}</p>
                           )}
                           {errorForm.skuExist && (
-                            <p className="p-1 h6 text-danger ">Enter Product unique Sku</p>
+                            <p className="p-1 h6 text-danger ">{t("products.Enter_Product_unique_Sku")}</p>
                           )}
                         </div>
                       </div>
                       {/* Barcode Type  */}
                       <div className="field-cover">
                         <div className="field-section">
-                          <p>Barcode Type:</p>
+                          <p>{t("products.Barcode_Type")}:</p>
                         </div>
                         <div className="field-section">
                           <Select
@@ -789,7 +792,7 @@ const Product: NextPage = ({
                             }}
                           />
                           {errorForm.barcode_type && (
-                            <p className="p-1 h6 text-danger ">Select One Option</p>
+                            <p className="p-1 h6 text-danger ">{t("products.Select_One_Option")}</p>
                           )}
                         </div>
                       </div>
@@ -798,7 +801,7 @@ const Product: NextPage = ({
                         <div className="field-cover">
                           <div className="field-section">
                             <p>
-                              Tailoring Type: <span className="text-danger">*</span>
+                              {t("products.Tailoring_Type")}: <span className="text-danger">*</span>
                             </p>
                           </div>
 
@@ -817,12 +820,12 @@ const Product: NextPage = ({
                         </div>
                       )}
                       {errorForm.isTailoring && (
-                        <p className="p-1 h6 text-danger ">You must select One</p>
+                        <p className="p-1 h6 text-danger ">{t("products.You_must_select_One")}</p>
                       )}
                       {/* Unit */}
                       <div className="field-cover">
                         <div className="field-section">
-                          <p>Unit:</p>
+                          <p>{t("products.Unit")}:</p>
                         </div>
                         <div className="field-section">
                           <Select
@@ -841,7 +844,7 @@ const Product: NextPage = ({
                       {iType == 'Kianvqyqndr' && (
                         <div className="field-cover">
                           <div className="field-section">
-                            <p>Is Fabric:</p>
+                            <p>{t("products.Is_Fabric")}:</p>
                           </div>
                           <div className="field-section">
                             <Switch
@@ -856,7 +859,7 @@ const Product: NextPage = ({
                       <div className="field-cover">
                         <div className="field-section">
                           <p>
-                            Brand:
+                            {t("products.Brand")}:
                           </p>
                         </div>
                         <div className="field-section">
@@ -870,15 +873,15 @@ const Product: NextPage = ({
                               setFormObj({ ...formObj, brand: itm!.value });
                             }}
                           />
-                          {errorForm.brand && <p className="p-1 h6 text-danger ">Select brand</p>}
-                          <Button variant='contained' className='btn m-btn btn-primary  mt-3' target='_blank' href={`/shop/${shopId}/category/add?type=brands`}>Add Brand</Button >
+                          {errorForm.brand && <p className="p-1 h6 text-danger ">{t("products.Select_brand")}</p>}
+                          <Button variant='contained' className='btn m-btn btn-primary  mt-3' target='_blank' href={`/shop/${shopId}/category/add?type=brands`}>{t("products.Add_Brand")}</Button >
                         </div>
                       </div>
                       {/* Category */}
                       <div className="field-cover">
                         <div className="field-section">
                           <p>
-                            Category: <span className="text-danger">*</span>
+                            {t("products.Category")}: <span className="text-danger">*</span>
                           </p>
                         </div>
                         <div className="field-section">
@@ -893,16 +896,16 @@ const Product: NextPage = ({
                             }}
                           />
                           {errorForm.category_id && (
-                            <p className="p-1 h6 text-danger ">Select Category</p>
+                            <p className="p-1 h6 text-danger ">{t("products.Select_Category")}</p>
                           )}
-                          <Button variant='contained' className='btn m-btn btn-primary mt-3' target='_blank' href={`/shop/${shopId}/category/add?type=categories`}>Add Category</Button >
+                          <Button variant='contained' className='btn m-btn btn-primary mt-3' target='_blank' href={`/shop/${shopId}/category/add?type=categories`}>{t("products.Add_Category")}</Button >
 
                         </div>
                       </div>
                       {/* ُSub Category */}
                       <div className="field-cover" style={{ display: 'none' }}>
                         <div className="field-section">
-                          <p>Sub Category:</p>
+                          <p>{t("products.Sub_Category")}:</p>
                         </div>
                         <div className="field-section">
                           <Select styles={colourStyles} />
@@ -919,7 +922,7 @@ const Product: NextPage = ({
                     <div className="field-cover">
                       <div className="field-section">
                         <p>
-                          Is Service:{' '}
+                          {t("products.Is_Service")}:{' '}
                           <CustomWidthTooltip
                             PopperProps={{
                               disablePortal: true,
@@ -932,10 +935,10 @@ const Product: NextPage = ({
                             disableTouchListener
                             title={
                               <React.Fragment>
-                                <Typography color="inherit">Service Product</Typography>
-                                {'This Product will be as service'}
+                                <Typography color="inherit">{t("products.Service_Product")}</Typography>
+                                {t('This_Product_will_be_as_service')}
                                 <br />
-                                <em>{'without stock like massage etc..'}</em>
+                                <em>{t('without_stock_like_massage_etc')}</em>
                               </React.Fragment>
                             }>
                             <span onClick={() => handleTooltipOpen('msg')}>
@@ -956,7 +959,7 @@ const Product: NextPage = ({
                     {/* Type */}
                     <div className="field-cover">
                       <div className="field-section">
-                        <p>Type:</p>
+                        <p>{t("products.Type")}:</p>
                       </div>
                       <div className="field-section">
                         <Select
@@ -1000,11 +1003,11 @@ const Product: NextPage = ({
                           className="table table-hover variation"
                           style={{ maxWidth: '700px' }}>
                           <thead>
-                            <th>Name</th>
-                            <th>Second Name</th>
-                            <th>sku</th>
-                            <th>cost</th>
-                            <th>price</th>
+                            <th>{t("products.Name")}</th>
+                            <th>{t("products.Second_Name")}</th>
+                            <th>{t("products.sku")}</th>
+                            <th>{t("products.cost")}</th>
+                            <th>{t("products.price")}</th>
                           </thead>
                           <tbody>
                             {formObj.variations.map((vr: any, i: number) => {
@@ -1015,7 +1018,7 @@ const Product: NextPage = ({
                                       type="text"
                                       name="name"
                                       className="form-control p-2"
-                                      placeholder="Enter Name"
+                                      placeholder={t("products.Enter_Name")}
                                       value={vr.name}
                                       onChange={(e) => {
                                         handleInputChange(e, i);
@@ -1027,7 +1030,7 @@ const Product: NextPage = ({
                                       type="text"
                                       name="name2"
                                       className="form-control p-2"
-                                      placeholder="Enter second Name"
+                                      placeholder={t("products.Enter_second_Name")}
                                       value={vr.name2}
                                       onChange={(e) => {
                                         handleInputChange(e, i);
@@ -1039,7 +1042,7 @@ const Product: NextPage = ({
                                       type="text"
                                       name="sku"
                                       className="form-control p-2"
-                                      placeholder="Enter sku"
+                                      placeholder={t("products.Enter_sku")}
                                       value={vr.sku}
                                       onChange={(e) => {
                                         handleInputChange(e, i);
@@ -1052,7 +1055,7 @@ const Product: NextPage = ({
                                       name="cost"
                                       min={0}
                                       className="form-control p-2"
-                                      placeholder="Enter cost"
+                                      placeholder={t("products.Enter_cost")}
                                       value={vr.cost}
                                       onChange={(e) => {
                                         handleInputChange(e, i);
@@ -1065,7 +1068,7 @@ const Product: NextPage = ({
                                       name="price"
                                       min={0}
                                       className="form-control p-2"
-                                      placeholder="Enter price"
+                                      placeholder={t("products.Enter_price")}
                                       value={vr.price}
                                       onChange={(e) => {
                                         handleInputChange(e, i);
@@ -1089,7 +1092,7 @@ const Product: NextPage = ({
                     {/* Tailoring package content */}
                     {formObj.type == 'tailoring_package' && iType == 'Kianvqyqndr' && (
                       <div className="form-group mt-4">
-                        <p>Select Fabrics: *</p>
+                        <p>{t("products.Select_Fabrics")}: *</p>
                         <Select
                           styles={colourStyles}
                           options={allFabrics}
@@ -1097,7 +1100,7 @@ const Product: NextPage = ({
                         />
                         <br />
                         {errorForm.fabs && (
-                          <p className="p-1 h6 text-danger ">Select One Option at Least</p>
+                          <p className="p-1 h6 text-danger ">{t("products.Select_One_Option_at_Least")}</p>
                         )}
                         <div style={{ height: 300, width: '100%' }}>
                           <DataGrid
@@ -1108,19 +1111,19 @@ const Product: NextPage = ({
                             onCellEditCommit={saveToCell}
                           />
                         </div>
-                        <p className="mt-4">Enter The Prices</p>
+                        <p className="mt-4">{t("products.Enter_The_Prices")}</p>
                         {errorForm.rules && (
-                          <p className="p-1 h6 text-danger ">Enter The Price Rules</p>
+                          <p className="p-1 h6 text-danger ">{t("products.Enter_The_Price_Rules")}</p>
                         )}
                         <div className="form-group mt-4">
                           <Table
                             className="table table-hover variation"
                             style={{ maxWidth: '700px' }}>
                             <thead>
-                              <th>Name</th>
-                              <th>From</th>
-                              <th>To</th>
-                              <th>price</th>
+                              <th>{t("products.Name")}</th>
+                              <th>{t("products.From")}</th>
+                              <th>{t("products.To")}</th>
+                              <th>{t("products.price")}</th>
                             </thead>
                             <tbody>
                               {formObj.tailoringPrices.map((vr: any, i: number) => {
@@ -1131,7 +1134,7 @@ const Product: NextPage = ({
                                         type="text"
                                         name="name"
                                         className="form-control p-2"
-                                        placeholder="Enter Name"
+                                        placeholder={t("products.Enter_Name")}
                                         value={vr.name}
                                         onChange={(e) => {
                                           handleInputChangeTailoring(e, i);
@@ -1144,7 +1147,7 @@ const Product: NextPage = ({
                                         name="from"
                                         min={0}
                                         className="form-control p-2"
-                                        placeholder="Enter Start Length"
+                                        placeholder={t("products.Enter_Start_Length")}
                                         value={vr.from}
                                         onChange={(e) => {
                                           handleInputChangeTailoring(e, i);
@@ -1157,7 +1160,7 @@ const Product: NextPage = ({
                                         name="to"
                                         min={0}
                                         className="form-control p-2"
-                                        placeholder="Enter End Length"
+                                        placeholder={t("products.Enter_End_Length")}
                                         value={vr.to}
                                         onChange={(e) => {
                                           handleInputChangeTailoring(e, i);
@@ -1170,7 +1173,7 @@ const Product: NextPage = ({
                                         name="price"
                                         min={0}
                                         className="form-control p-2"
-                                        placeholder="Enter Price"
+                                        placeholder={t("products.Enter_Price")}
                                         value={vr.price}
                                         onChange={(e) => {
                                           handleInputChangeTailoring(e, i);
@@ -1198,14 +1201,14 @@ const Product: NextPage = ({
                         <div className="field-cover">
                           <div className="field-section">
                             <p>
-                              Cost: <span className="text-danger">*</span>
+                              {t("products.Cost")}: <span className="text-danger">*</span>
                             </p>
                           </div>
                           <div className="field-section">
                             <input
                               type="text"
                               className="form-control"
-                              placeholder="Purchase Price"
+                              placeholder={t("products.Purchase_Price")}
                               value={formObj.cost_price}
                               onKeyPress={handleNumberKeyPress}
                               onChange={(e) => {
@@ -1218,14 +1221,14 @@ const Product: NextPage = ({
                         <div className="field-cover">
                           <div className="field-section">
                             <p>
-                              Price: <span className="text-danger">*</span>
+                              {t("products.Price")}: <span className="text-danger">*</span>
                             </p>
                           </div>
                           <div className="field-section">
                             <input
                               type="text"
                               className="form-control"
-                              placeholder="Sell Price"
+                              placeholder={t("products.Sell_Price")}
                               value={formObj.sell_price}
                               onKeyPress={handleNumberKeyPress}
                               onChange={(e) => {
@@ -1241,14 +1244,14 @@ const Product: NextPage = ({
                       <div className="field-cover">
                         <div className="field-section">
                           <p>
-                            Alert Quantity: <span className="text-danger">*</span>
+                            {t("products.Alert_Quantity")}: <span className="text-danger">*</span>
                           </p>
                         </div>
                         <div className="field-section">
                           <input
                             type="number"
                             className="form-control"
-                            placeholder="Alert Quantity"
+                            placeholder={t("products.Alert_Quantity")}
                             value={formObj.alertQuantity}
                             min={0}
                             onChange={(e) => {
@@ -1263,7 +1266,7 @@ const Product: NextPage = ({
                         {/* Sell Over Stock */}
                         <div className="field-cover">
                           <div className="field-section">
-                            <p>Sell Over Stock:</p>
+                            <p>{t("products.Sell_Over_Stock")}:</p>
                           </div>
                           <div className="field-section">
                             <Switch
@@ -1278,7 +1281,7 @@ const Product: NextPage = ({
                         <div className="field-cover">
                           <div className="field-section">
                             <p>
-                              Enable Multi Price:{' '}
+                              {t("products.Enable_Multi_Price")}:{' '}
                               <CustomWidthTooltip
                                 PopperProps={{
                                   disablePortal: true,
@@ -1291,10 +1294,10 @@ const Product: NextPage = ({
                                 disableTouchListener
                                 title={
                                   <React.Fragment>
-                                    <Typography color="inherit">Multi Price</Typography>
-                                    {'A product can have several prices'}
+                                    <Typography color="inherit">{t("products.Multi_Price")}</Typography>
+                                    {t('products.A_product_can_have_several_prices')}
                                     <br />
-                                    <em>{'It depends on the price of your purchases'}</em>
+                                    <em>{t('It_depends_on_the_price_of_your_purchases')}</em>
                                   </React.Fragment>
                                 }>
                                 <span onClick={() => handleTooltipOpen('multi')}>
@@ -1315,7 +1318,7 @@ const Product: NextPage = ({
                         {/* FIFO OR LIFO */}
                         <div className="field-cover">
                           <div className="field-section">
-                            <p>FIFO OR LIFO:</p>
+                            <p>{t("products.FIFO_OR_LIFO")}:</p>
                           </div>
                           <div className="field-section">
                             <Switch
@@ -1331,7 +1334,7 @@ const Product: NextPage = ({
                     <div className="field-cover">
                       <div className="field-section">
                         <p>
-                          Custom Tax:{' '}
+                          {t("products.Custom_Tax")}:{' '}
                           <CustomWidthTooltip
                             PopperProps={{
                               disablePortal: true,
@@ -1344,10 +1347,10 @@ const Product: NextPage = ({
                             disableTouchListener
                             title={
                               <React.Fragment>
-                                <Typography color="inherit">specific Group A Tax</Typography>
-                                {'You can Choose a specific Group tax For this Product'}
+                                <Typography color="inherit">{t("products.specific_Group_A_Tax")}</Typography>
+                                {t('You_can_Choose_a_specific_Group_tax_For_this_Product')}
                                 <br />
-                                <em>{'For Create Group Tax, go to setting/taxes'}</em>
+                                <em>{t('For_Create_Group_Tax,_go_to_setting/taxes')}</em>
                               </React.Fragment>
                             }>
                             <span onClick={() => handleTooltipOpen('tax')}>
@@ -1416,7 +1419,7 @@ const Product: NextPage = ({
                           else img != null ? handleUpload() : insertProduct();
                         } else Toastify('error', 'Enter Requires Field');
                       }}>
-                      {isEdit ? 'Edit' : 'Save'}
+                      {isEdit ? t('products.Edit') : t('products.Save')}
                     </button>
                   </div>
                 )}
@@ -1538,7 +1541,7 @@ async function getData(endPoint: string, API_BASE: string, _token: string) {
 }
 
 export async function getServerSideProps(context) {
-  const { query, req } = context;
+  const { query, req, locale } = context;
 
   if (Number.isNaN(+query?.id)) {
     return {
@@ -1573,6 +1576,7 @@ export async function getServerSideProps(context) {
       resUnits,
       resBrands,
       dataProduct,
+      ...(await serverSideTranslations(locale))
     },
   };
 }

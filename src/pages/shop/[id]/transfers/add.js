@@ -1,6 +1,7 @@
 import { useRouter } from 'next/router';
 import { AddTranseferComponent } from '../../../../components/add-transefer/add-transefer';
 import { AdminLayout } from '@layout';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 
 const Add = () => {
     const router = useRouter()
@@ -12,3 +13,10 @@ const Add = () => {
 }
 
 export default Add;
+export async function getServerSideProps({ locale}) {
+    return {
+      props: {  
+              ...(await serverSideTranslations(locale))
+      },
+    };
+  }

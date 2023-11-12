@@ -31,6 +31,9 @@ import { Toastify } from 'src/libs/allToasts';
 import { createNewData, findAllData } from 'src/services/crud.api';
 import api from 'src/utils/app-api';
 import { darkModeContext } from '../../../../context/DarkModeContext';
+import { useTranslation } from 'next-i18next';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+
 // import styles from './table.module.css';
 // import { grey } from '@mui/material/colors';
 
@@ -71,6 +74,7 @@ import { darkModeContext } from '../../../../context/DarkModeContext';
 // };
 
 const Product: NextPage = (props: any) => {
+  const { t } = useTranslation();
   const { id } = props;
   const { locationSettings: mySit, setLocationSettings: setmySit } = useUser();
   const [shopId, setShopId] = useState('');
@@ -109,7 +113,7 @@ const Product: NextPage = (props: any) => {
     },
     {
       field: 'image',
-      headerName: 'Image',
+      headerName: t('products.Image'),
       flex: 1,
       headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
@@ -129,28 +133,28 @@ const Product: NextPage = (props: any) => {
     },
     {
       field: 'type',
-      headerName: 'Type',
+      headerName: t('products.Type'),
       flex: 0.5,
       headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
     },
     {
       field: 'sku',
-      headerName: 'sku ',
+      headerName: t('products.sku'),
       flex: 0.5,
       headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
     },
     {
       field: 'name',
-      headerName: 'name ',
+      headerName: t('products.name'),
       flex: 1,
       headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
     },
     {
       field: 'sell_price',
-      headerName: 'Sell (Min - Max)',
+      headerName: t('products.Sell (Min - Max)'),
       flex: 1,
       headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
@@ -171,7 +175,7 @@ const Product: NextPage = (props: any) => {
 
     {
       field: 'category',
-      headerName: 'Category',
+      headerName: t('products.Category'),
       flex: 1,
       headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
@@ -179,7 +183,7 @@ const Product: NextPage = (props: any) => {
     },
     {
       field: 'stock',
-      headerName: 'Qty',
+      headerName: t('products.Qty'),
       flex: 0.5,
       headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
@@ -192,7 +196,7 @@ const Product: NextPage = (props: any) => {
     },
     {
       field: 'action',
-      headerName: 'Action ',
+      headerName: t('products.Action'),
       sortable: false,
       disableExport: true,
       headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
@@ -439,13 +443,13 @@ const Product: NextPage = (props: any) => {
         show={show}
         onClose={() => setShow(false)}
         onConfirm={handleDeleteSingleProduct}
-        message="Are you sure to delete this item?"
+        message={t("products.Are_you_sure_to_delete_this_item?")}
       />
       <ConfirmationModal
         show={showDeleteSelected}
         onClose={() => setShowDeleteSelected(false)}
         onConfirm={handleDeleteMultiProducts}
-        message="Are you sure to delete the items?"
+        message={t("products.Are_you_sure_to_delete_the_items?")}
       />
 
       <ShowPriceListModal
@@ -472,7 +476,7 @@ const Product: NextPage = (props: any) => {
           <button
             className="btn btn-primary p-3"
             onClick={() => router.push('/shop/' + shopId + '/products/add')}>
-            <FontAwesomeIcon icon={faPlus} /> Add New Product{' '}
+            <FontAwesomeIcon icon={faPlus} /> {t("products.Add_New_Product")}{' '}
           </button>
           {/* <TextField label="search name/sku" variant="filled" onChange={handleSearch} /> */}
         </div>
@@ -480,7 +484,7 @@ const Product: NextPage = (props: any) => {
 
       <>
         <div className="page-content-style card">
-          <h5>Product List</h5>
+          <h5>{t("products.Product_List")}</h5>
           <DataGrid
             loading={isLoading}
             ref={dataGridRef}
@@ -510,9 +514,10 @@ const Product: NextPage = (props: any) => {
 
 export default withAuth(Product);
 
-export async function getServerSideProps({ params }) {
+export async function getServerSideProps({ params,locale }) {
   const { id } = params;
   return {
-    props: { id },
-  };
+    props: { id ,
+      ...(await serverSideTranslations(locale))
+  }};
 }

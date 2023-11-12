@@ -44,6 +44,8 @@ import { cartJobType } from 'src/recoil/atoms';
 import api from 'src/utils/app-api';
 import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
 import { paymentStatusData, paymentTypeData, purchaseStatusDataAdd } from '../../../../models/data';
+import { useTranslation } from 'next-i18next';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 
 import 'react-datepicker/dist/react-datepicker.css';
 
@@ -66,6 +68,7 @@ const initialSupplier = [{ supplier_id: -1, id: -1, value: -1, label: 'Loading .
 const mapToSelectList = (item) => ({ ...item, label: item.name, value: item.id });
 
 const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
+  const { t } = useTranslation();
   const router = useRouter();
   const [jobType] = useRecoilState(cartJobType);
   const { locationSettings, setLocationSettings } = useUser();
@@ -437,7 +440,6 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
     } else Toastify('error', 'already exists in list');
   };
   const saveToCell = (params: any) => {
-    console.log(params.field);
     const found = selectProducts.findIndex((el) => el.id === params.id);
     if (found > -1) {
       var _datas: any = selectProducts;
@@ -616,10 +618,10 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
         }}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description">
-        <DialogTitle id="alert-dialog-title">Remove Product</DialogTitle>
+        <DialogTitle id="alert-dialog-title">{t("purchases.Remove_Product")}</DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            Are you Sure You Want Remove This Item ?
+            {t("purchases.Are_you_Sure_You_Want_Remove_This_Item?")}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -637,7 +639,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
               setOpenRemoveDialog(false);
               setSelectedExpends([...selectedExpends]);
             }}>
-            Yes
+            {t("purchases.Yes")}
           </Button>
         </DialogActions>
       </Dialog>
@@ -645,20 +647,20 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
         <button
           className="btn m-btn btn-primary p-3"
           onClick={() => router.push('/shop/' + shopId + '/purchases')}>
-          <FontAwesomeIcon icon={faArrowAltCircleLeft} /> Back To List{' '}
+          <FontAwesomeIcon icon={faArrowAltCircleLeft} /> {t("purchases.Back_To_List")}{' '}
         </button>
       </div>
       {loading ? (
         <Card className="mb-4">
           <Card.Header className="p-3 bg-white">
-            <h5>Loading</h5>
+            <h5>{t("purchases.Loading")}</h5>
           </Card.Header>
         </Card>
       ) : (
         <>
           <Card className="mb-4">
             <Card.Header className="p-3 bg-white">
-              <h5>{isEdit ? 'Edit Purchase ' : 'Add Purchase'}</h5>
+              <h5>{isEdit ? t('purchases.Edit_Purchase ') : t('purchases.Add_Purchase')}</h5>
             </Card.Header>
             <Card.Body>
               <div className="form-style2">
@@ -666,7 +668,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                   <div className="col-md-3">
                     <div className="form-group2">
                       <label>
-                        Supplier : <span className="text-danger">*</span>
+                        {t("purchases.Supplier")} : <span className="text-danger">*</span>
                       </label>
                       <Select
                         isLoading={dataLoading}
@@ -679,17 +681,17 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                         }}
                       />
                       {errorForm.supplier_id && (
-                        <p className="p-1 h6 text-danger ">Select a Supplier</p>
+                        <p className="p-1 h6 text-danger ">{t("purchases.Select_a_Supplier")}</p>
                       )}
                     </div>
                   </div>
                   <div className="col-md-3">
                     <div className="form-group2">
-                      <label>Reference No :</label>
+                      <label>{t("purchases.Reference_No")} :</label>
                       <input
                         type="text"
                         className="form-control p-2"
-                        placeholder="Reference No"
+                        placeholder={t("purchases.Reference_No")}
                         value={formObj.ref_no}
                         onChange={(e) => {
                           setFormObj((prev)=>({ ...prev, ref_no: e.target.value }));
@@ -699,7 +701,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                   </div>
                   <div className="col-md-3">
                     <div className="form-group2">
-                      <label>Purchase Date :</label>
+                      <label>{t("purchases.Purchase_Date")} :</label>
                       <DatePicker
                         className="form-control p-2"
                         selected={formObj.date}
@@ -711,14 +713,14 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                 <div className="row">
                   <div className="col-md-3" style={{ display: 'none' }}>
                     <div className="form-group">
-                      <label>Document : </label>
+                      <label>{t("purchases.Document")} : </label>
                       <input type="file" accept="image/*" className="form-control" />
                     </div>
                   </div>
                   <div className="col-md-3">
                     <div className="form-group">
                       <label>
-                        Purchase Status: <span className="text-danger">*</span>
+                        {t("purchases.Purchase_Status")}: <span className="text-danger">*</span>
                       </label>
                       <Select
                         styles={purchasesColourStyles}
@@ -731,7 +733,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                         }}
                       />
                       {errorForm.purchaseStatus && (
-                        <p className="p-1 h6 text-danger ">Select One Item</p>
+                        <p className="p-1 h6 text-danger ">{t("purchases.Select_One_Item")}</p>
                       )}
                     </div>
                   </div>
@@ -742,7 +744,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                     <div className="col-md-3">
                       <div className="form-group">
                         <label>
-                          Payment Status: <span className="text-danger">*</span>
+                          {t("purchases.Payment_Status")}: <span className="text-danger">*</span>
                         </label>
                         <Select
                           styles={purchasesColourStyles}
@@ -762,45 +764,45 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                           }}
                         />
                         {errorForm.paymentStatus && (
-                          <p className="p-1 h6 text-danger ">Select One Item</p>
+                          <p className="p-1 h6 text-danger ">{t("purchases.Select_One_Item")}</p>
                         )}
                       </div>
                     </div>
                     {formObj.paymentStatus == 'partially_paid' && (
                       <div className="col-md-3">
                         <div className="form-group2">
-                          <label>Paid Amount :</label>
+                          <label>{t("purchases.Paid_Amount")} :</label>
                           <input
                             type="text"
                             className="form-control p-2"
-                            placeholder="Paid Amount"
+                            placeholder={t("purchases.Paid_Amount")}
                             value={formObj.paid_amount}
                             onChange={(e) => {
                               setFormObj((prev)=>({ ...prev, paid_amount: +e.target.value }));
                             }}
                           />
-                          {errorForm.paid && <p className="p-1 h6 text-danger ">Enter A Amount</p>}
+                          {errorForm.paid && <p className="p-1 h6 text-danger ">{t("purchases.Enter_A_Amount")}</p>}
                         </div>
                       </div>
                     )}
                     {formObj.paymentStatus != 'due' && (
                       <div className="col-md-3">
                         <div className="form-group2">
-                          <label>Payment Date :</label>
+                          <label>{t("purchases.Payment_Date")} :</label>
                           <DatePicker
                             className="form-control p-2"
                             selected={formObj.paymentDate}
                             onChange={(date: Date) => setFormObj((prev)=>({ ...prev, paymentDate: date }))}
                           />
                           {errorForm.paymentDate && (
-                            <p className="p-1 h6 text-danger ">Enter Payment Date From Calander</p>
+                            <p className="p-1 h6 text-danger ">{t("purchases.Enter_Payment_Date_From_Calander")}</p>
                           )}
                         </div>
                       </div>
                     )}
                     <div className="col-md-3">
                       <div className="form-group2">
-                        <label>Payment Type :</label>
+                        <label>{t("purchases.Payment_Type")} :</label>
                         <Select
                           styles={purchasesColourStyles}
                           options={paymentTypes}
@@ -812,7 +814,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                           }}
                         />
                         {errorForm.paymentType && (
-                          <p className="p-1 h6 text-danger ">Select One Item</p>
+                          <p className="p-1 h6 text-danger ">{t("purchases.Select_One_Item")}</p>
                         )}
                       </div>
                     </div>
@@ -831,7 +833,6 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                   styles={purchasesSelectStyle}
                   value={currencies?.filter((f: any) => f.value == (formObj.currency_id || locationSettings.currency_id))}
                   onChange={(itm) => {
-                    console.log(itm);
                     
                     setFormObj((prev) => ({
                       ...prev,
@@ -840,7 +841,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                     }));
                   }}
                 />
-                {errorForm.currency_id && <p className="p-1 h6 text-danger ">Select a Currency</p>}
+                {errorForm.currency_id && <p className="p-1 h6 text-danger ">{t("purchases.Select_a_Currency")}</p>}
               </div>
             </div>
             <div className="col-md-3" style={{ display: 'none' }}>
@@ -867,14 +868,14 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                 onChange={(e) => addToProductQuotations(e)}
               />
               {errorForm.products && (
-                <p className="p-1 h6 text-danger ">Select One Product at Least</p>
+                <p className="p-1 h6 text-danger ">{t("purchases.Select_One_Product_at_Least")}</p>
               )}
             </Card.Header>
             <Card.Body>
               <div style={{ height: 300, width: '100%' }}>
                 <DataGrid
                   rows={selectProducts}
-                  columns={columns}
+                  columns={columns.map(el=>({...el,headerName:t(`purchases.${el.headerName}`)}))}
                   pageSize={10}
                   rowsPerPageOptions={[10]}
                   onCellEditCommit={saveToCell}
@@ -908,7 +909,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                             className="btn m-btn btn-primary p-2"
                             style={{ borderRadius: '0px' }}>
                             {' '}
-                            + Add Shipping Expends
+                            + {t("purchases.Add_Shipping_Expends")}
                           </button>
                         </td>
                       </tr>
@@ -935,7 +936,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                     <div className="purchase-item">
                       {isEditSort && <p className="puchase-arrow" style={{ width: '100px' }}></p>}
                       <div className="purchase-text">
-                        <p>items</p>
+                        <p>{t("purchases.items")}</p>
                         <p>
                           {selectProducts.length}{' '}
                           <span style={{ opacity: '0.5' }}> [{total_qty}]</span>{' '}
@@ -946,7 +947,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                     <div className="purchase-item">
                       {isEditSort && <p className="puchase-arrow" style={{ width: '100px' }}></p>}
                       <div className="purchase-text">
-                        <p>Sub Total</p>
+                        <p>{t("purchases.Sub_Total")}</p>
                         <p>
                           {Number(formObj.subTotal_price).toFixed(
                             locationSettings?.location_decimal_places
@@ -957,6 +958,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                     </div>
                     <Divider flexItem></Divider>
                     {purchaseDetails.map((pd, i: number) => {
+                      
                       return (
                         <Fragment key={`${pd.value}-purchase-details`}>
                           <div className="purchase-item">
@@ -975,7 +977,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                               </p>
                             )}
                             <div className="purchase-text">
-                              <p>{pd.label}</p>
+                              <p>{t(`purchases.${pd.label}`)}</p>
                               {pd.value == 'discount' && (
                                 <div className="d-flex">
                                   <div className="px-3">
@@ -984,8 +986,8 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                                       onChange={(e) => {
                                         setFormObj((prev)=> ({ ...prev, discount_type: e.target.value }));
                                       }}>
-                                      <option value={'fixed'}>Fixed</option>
-                                      <option value={'percent'}>Percent %</option>
+                                      <option value={'fixed'}>{t("purchases.Fixed")}</option>
+                                      <option value={'percent'}>{t("purchases.Percent")} %</option>
                                     </Form.Select>
                                   </div>
                                   <div>
@@ -1034,7 +1036,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                                             className="btn m-btn btn-primary p-2"
                                             style={{ borderRadius: '0px' }}>
                                             {' '}
-                                            + Add Taxe(s)
+                                            + {t("purchases.Add_Taxe")}(s)
                                           </button>
                                         </td>
                                       </tr>
@@ -1058,7 +1060,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                     <div className="purchase-item">
                       {isEditSort && <p className="puchase-arrow" style={{ width: '100px' }}></p>}
                       <div className="purchase-text">
-                        <p>Total</p>
+                        <p>{t("purchases.Total")}</p>
                         <p>
                           {Number(formObj.total_price).toFixed(
                             locationSettings?.location_decimal_places
@@ -1070,7 +1072,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                         </p>
                       </div>
                       <div className="purchase-text">
-                        <p>Total Paid</p>
+                        <p>{t("purchases.Total_Paid")}</p>
                         <p>
                           {formObj.paid_amount.toFixed(locationSettings?.location_decimal_places)}
                           <span style={{ opacity: '0.5', fontSize: '10px' }}>
@@ -1080,7 +1082,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                         </p>
                       </div>
                       <div className="purchase-text">
-                        <p>Total Remaining</p>
+                        <p>{t("purchases.Total_Remaining")}</p>
                         <p>
                           {(formObj.total_price - formObj.paid_amount).toFixed(
                             locationSettings?.location_decimal_places
@@ -1092,7 +1094,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                         </p>
                       </div>
                       {errorForm.morePaid && (
-                        <p className="p-1 h6 text-danger ">Error! ,Enter Right Amount</p>
+                        <p className="p-1 h6 text-danger ">{t("purchases.Error!_,Enter_Right_Amount")}</p>
                       )}
                     </div>
                   </div>
@@ -1104,7 +1106,6 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                 onClick={(e) => {
                   e.preventDefault();
                   errors = [];
-                  console.log(formObj.currency_id);
                   
                   if (
                     formObj.supplier_id === null ||
@@ -1125,7 +1126,6 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                   }
                   if (formObj.paymentStatus == 'partially_paid' && formObj.paid_amount < 0.5)
                     errors.push(' partially paid');
-                    console.log(formObj.currency_id);
                   setErrorForm({
                     ...errorForm,
 
@@ -1144,7 +1144,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
                     else insertPurchase();
                   } else Toastify('error', 'Enter Requires Field');
                 }}>
-                {isEdit ? 'Edit' : 'Save'}
+                {isEdit ? t('purchases.Edit') : t('purchases.Save')}
               </button>
             </Card.Body>
           </Card>
@@ -1155,9 +1155,11 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
 };
 export default withAuth(AddPurchase);
 
-export async function getServerSideProps({ params, query }) {
+export async function getServerSideProps({ params, query ,locale}) {
   const { id } = params;
   return {
-    props: { id, shopId: query.id },
+    props: { id, shopId: query.id,     
+            ...(await serverSideTranslations(locale))
+    },
   };
 }
