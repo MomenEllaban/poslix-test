@@ -26,10 +26,13 @@ import { addMultipleToCart } from 'src/redux/slices/cart.slice';
 import { findAllData } from 'src/services/crud.api';
 import { convertDateStringToDateAndTime } from '../../models/data';
 import SalesPaymentModal from '../pos/modals/SalesPaymentModal';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { useTranslation } from 'react-i18next';
 
 export default function SalesListTable({
   id,
   shopId,
+  t,
   rules,
   salesList,
   loading,
@@ -37,7 +40,6 @@ export default function SalesListTable({
 }: any) {
   const dispatch = useAppDispatch();
   const componentRef = useRef(null);
-
   const [locationSettings, setLocationSettings] = useState<any>();
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -83,24 +85,24 @@ export default function SalesListTable({
     { field: 'id', headerName: '#', minWidth: 50 },
     {
       field: 'contact_name',
-      headerName: 'Customer Name',
+      headerName: t('invoices.customer_name'),
       flex: 1,
       renderCell({ row }) {
         return row.contact_name !== ' ' ? row.contact_name : 'walk-in customer';
       },
     },
     { field: 'mobile', headerName: 'Mobile', flex: 1, disableColumnMenu: true },
-    { field: 'date', headerName: 'Sale Date', flex: 1 },
+    { field: 'date', headerName: t('invoices.sale_date'), flex: 1 },
     {
       field: 'total',
-      headerName: 'Final Total ',
+      headerName: t('invoices.final_total'),
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) =>
         Number(+row.total).toFixed(locationSettings?.location_decimal_places),
     },
     {
       field: 'payed',
-      headerName: 'Amount paid',
+      headerName: t('invoices.amount_paid'),
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) =>
         Number(+row.payed).toFixed(locationSettings?.location_decimal_places),
@@ -108,7 +110,7 @@ export default function SalesListTable({
     {
       flex: 1,
       field: 'due',
-      headerName: 'Total Due',
+      headerName: t('invoices.total_due'),
       renderCell: ({ row }: Partial<GridRowParams>) => {
         let renderdDue = Number(+row.due);
         if (renderdDue < 0) {
@@ -120,7 +122,7 @@ export default function SalesListTable({
     {
       flex: 1,
       field: 'status',
-      headerName: 'Status',
+      headerName: t('invoices.status'),
       renderCell: ({ row }: Partial<GridRowParams>) => {
         if (row.due === 0 || row.due < 0) {
           return <div className="sty_Paid">Paid</div>;
@@ -134,7 +136,7 @@ export default function SalesListTable({
     {
       flex: 1,
       field: 'action',
-      headerName: 'Action ',
+      headerName: t('invoices.action'),
       filterable: false,
       sortable: false,
       disableExport: true,
@@ -696,7 +698,7 @@ export default function SalesListTable({
         shopId={shopId}
         id={selectId}
         url={'sales'}>
-        Are you Sure You Want Delete This Item ?
+        {t('alert_dialog.delete_msg')}
       </AlertDialog>
       <div style={{ display: 'none' }}>
         <ComponentToPrint ref={componentRef} />
@@ -705,7 +707,7 @@ export default function SalesListTable({
         <ComponentToPrint2 ref={componentRef2} />
       </div>
       <div className="page-content-style card">
-        <h5>Invoices List</h5>
+        <h5>{t('invoices.invoices_list')}</h5>
         {/* {salesList.data && ( */}
         <DataGrid
           className="datagrid-style"
@@ -732,7 +734,7 @@ export default function SalesListTable({
       {/* FOR VIEW ELEMENT */}
       <Dialog open={showViewPopUp} fullWidth={true} className="poslix-modal" onClose={handleClose}>
         <DialogTitle className="poslix-modal text-primary">
-          {edit ? 'Edit Sale' : 'Sale Details'}
+          {edit ? 'Edit Sale' : t('quotation_sale_model.sale_details')}
         </DialogTitle>
         <DialogContent className="poslix-modal-content">
           <div className="poslix-modal">
@@ -741,11 +743,11 @@ export default function SalesListTable({
               <div className="item-sections">
                 <div className="top-detials-invoice">
                   <div className="top-detials-item">
-                    <p>Invoice No :</p>
+                    <p>{t('quotation_sale_model.invoice_no')} :</p>
                     <p>{selectRow.id}</p>
                   </div>
                   <div className="top-detials-item pe-2">
-                    <p>Invoice Date :</p>
+                    <p>{t('quotation_sale_model.invoice_date')} :</p>
                     {edit ? (
                       <input
                         type="text"
@@ -757,7 +759,7 @@ export default function SalesListTable({
                     )}
                   </div>
                   <div className="top-detials-item pe-2">
-                    <p>Added By :</p>
+                    <p>{t('quotation_sale_model.added_by')} :</p>
                     {edit ? (
                       <input type="text" className="form-control" value={selectRow.user_name} />
                     ) : (
@@ -767,7 +769,7 @@ export default function SalesListTable({
                 </div>
                 <div className="top-detials-invoice">
                   <div className="top-detials-item">
-                    <p>Final Total :</p>
+                    <p>{t('quotation_sale_model.final_total')} :</p>
                     {edit ? (
                       <input
                         type="text"
@@ -785,7 +787,7 @@ export default function SalesListTable({
                     )}
                   </div>
                   <div className="top-detials-item">
-                    <p>Customer Name :</p>
+                    <p>{t('quotation_sale_model.customer_name')} :</p>
                     {edit ? (
                       <input type="text" className="form-control" value={selectRow.customer_name} />
                     ) : (
@@ -793,7 +795,7 @@ export default function SalesListTable({
                     )}
                   </div>
                   <div className="top-detials-item" style={{ fontSize: '13px' }}>
-                    <p>Order Note</p>
+                    <p>{t('quotation_sale_model.order_note')}</p>
                     {edit ? (
                       <input type="text" className="form-control" value={selectRow.notes} />
                     ) : (
@@ -809,13 +811,13 @@ export default function SalesListTable({
                     onClick={() => {
                       handlePrint();
                     }}>
-                    Print Recipt
+                    {t('quotation_sale_model.print_recipt')}
                   </Button>
                   <Button
                     onClick={() => {
                       handlePrint2();
                     }}>
-                    Print Invoice
+                    {t('quotation_sale_model.print_invoice')}
                   </Button>
                 </div>
               )}
@@ -824,9 +826,9 @@ export default function SalesListTable({
               <div className="row">
                 <div className="invoice-items-container">
                   <div className="header-titles">
-                    <div>Name</div>
-                    <div>Qty</div>
-                    <div>Amount</div>
+                    <div>{t('quotation_sale_model.name')}</div>
+                    <div>{t('quotation_sale_model.qty')}</div>
+                    <div>{t('quotation_sale_model.amount')}</div>
                     {edit && <div></div>}
                   </div>
                   {lines.length > 0 &&
@@ -860,7 +862,7 @@ export default function SalesListTable({
                     })}
                   <div className="header-titles under_items" style={{ marginTop: '20px' }}>
                     <div></div>
-                    <div>Total</div>
+                    <div>{t('quotation_sale_model.total')}</div>
                     <div>
                       {edit ? (
                         <input
@@ -880,7 +882,7 @@ export default function SalesListTable({
                 </div>
               </div>
             ) : (
-              <div>loading...</div>
+              <div>{t('quotation_sale_model.loading')}</div>
             )}
           </div>
         </DialogContent>
@@ -891,7 +893,7 @@ export default function SalesListTable({
                 setShowViewPopUp(false);
                 setEdit(false);
               }}>
-              Save
+              {t('quotation_sale_model.save')}
             </Button>
           )}
           <Button
@@ -899,12 +901,13 @@ export default function SalesListTable({
               setEdit(false);
               setShowViewPopUp(false);
             }}>
-            Cancel
+            {t('quotation_sale_model.cancel')}
           </Button>
         </DialogActions>
       </Dialog>
 
       <SalesPaymentModal
+        t={t}
         userData={paymentModalData}
         statusDialog={paymentModalShow}
         setPaymentModalShow={setPaymentModalShow}

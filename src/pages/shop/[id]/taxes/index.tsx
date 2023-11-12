@@ -28,9 +28,12 @@ import { Toastify } from 'src/libs/allToasts';
 import { ToastContainer } from 'react-toastify';
 import withAuth from 'src/HOCs/withAuth';
 import { createNewData, deleteData, findAllData, updateData } from 'src/services/crud.api';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { useTranslation } from 'react-i18next';
 
 const Taxes: NextPage = (props: any) => {
   const { shopId, id } = props;
+  const { t } = useTranslation();
   const selectStyle = {
     control: (style: any) => ({
       ...style,
@@ -227,7 +230,7 @@ const Taxes: NextPage = (props: any) => {
   async function showDetailsHandle(id: number) {
     setSelectId(id);
     setIsLoadingDetails(true);
-    const res = await findAllData(`taxes/${id}/show`)
+    const res = await findAllData(`taxes/${id}/show`);
     if (!res.data.success) {
       Toastify('error', 'Has Error ,try Again');
       return;
@@ -276,7 +279,7 @@ const Taxes: NextPage = (props: any) => {
   };
 
   useEffect(() => {
-    const perms = JSON.parse(localStorage.getItem('permissions')).filter(loc => loc.id==id);
+    const perms = JSON.parse(localStorage.getItem('permissions')).filter((loc) => loc.id == id);
     const getPermissions = { hasView: false, hasInsert: false, hasEdit: false, hasDelete: false };
     perms[0]?.permissions.map((perm) =>
       perm.name.includes('taxes/view')
@@ -295,7 +298,7 @@ const Taxes: NextPage = (props: any) => {
 
   useEffect(() => {
     initDataPage();
-  }, [permissions])
+  }, [permissions]);
   return (
     <>
       <AdminLayout shopId={id}>
@@ -315,8 +318,7 @@ const Taxes: NextPage = (props: any) => {
           alertFun={(e: boolean) => setShowDetails(e)}
           id={selectId}
           type="deleteTax"
-          taxs={taxs}
-        >
+          taxs={taxs}>
           <Table className="table table-hover" responsive>
             <thead className="thead-dark">
               <tr>
@@ -343,6 +345,7 @@ const Taxes: NextPage = (props: any) => {
         </ShowDialog>
 
         <AddGroupModal
+          t={t}
           alertShow={groupModal}
           shopId={id}
           alertFun={(e: boolean) => setGroupModal(e)}
@@ -355,17 +358,17 @@ const Taxes: NextPage = (props: any) => {
           <div className="col-md-12">
             <Card>
               <Card.Header className="p-3 bg-white">
-                <h5>Taxes List</h5>
+                <h5>{t('taxes.taxes_list')}</h5>
               </Card.Header>
               <Card.Body>
                 {!isLoading ? (
                   <Table className="table table-hover remove-last-del-icon" responsive>
                     <thead className="thead-dark">
                       <tr>
-                        <th style={{ width: '50%' }}>Name</th>
-                        <th style={{ width: '15%' }}>Amount (%)</th>
-                        <th style={{ width: '10%' }}>is Primary?</th>
-                        <th>Action</th>
+                        <th style={{ width: '50%' }}>{t('taxes.name')}</th>
+                        <th style={{ width: '15%' }}>{t('taxes.amount')} (%)</th>
+                        <th style={{ width: '10%' }}>{t('taxes.is_primary')}?</th>
+                        <th>{t('taxes.action')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -378,7 +381,7 @@ const Taxes: NextPage = (props: any) => {
                                 name="tax-name"
                                 className="form-control p-2"
                                 disabled={!permissions.hasInsert}
-                                placeholder="Enter New Tax Name"
+                                placeholder={t('taxes.enter_tax_name')}
                                 value={ex.name}
                                 onChange={(e) => {
                                   handleInputChange(e, i);
@@ -394,7 +397,7 @@ const Taxes: NextPage = (props: any) => {
                                 name="tax-value"
                                 disabled={!permissions.hasInsert}
                                 className="form-control p-2"
-                                placeholder="Tax Value"
+                                placeholder={t('taxes.tax_value')}
                                 value={ex.amount}
                                 onChange={(e) => {
                                   handleInputChange(e, i);
@@ -445,16 +448,16 @@ const Taxes: NextPage = (props: any) => {
             {/* excces */}
             <Card className="mt-4">
               <Card.Header className="p-3 bg-white">
-                <h5>Excise Taxes List</h5>
+                <h5>{t('taxes.excise_taxes_list')}</h5>
               </Card.Header>
               <Card.Body>
                 {!isLoading ? (
                   <Table className="table table-hover remove-last-del-icon" responsive>
                     <thead className="thead-dark">
                       <tr>
-                        <th style={{ width: '50%' }}>Name</th>
-                        <th style={{ width: '15%' }}>Amount (%)</th>
-                        <th style={{ width: '35%' }}>Action</th>
+                        <th style={{ width: '50%' }}>{t('taxes.name')}</th>
+                        <th style={{ width: '15%' }}>{t('taxes.amount')} (%)</th>
+                        <th style={{ width: '35%' }}>{t('taxes.action')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -467,7 +470,7 @@ const Taxes: NextPage = (props: any) => {
                                 name="tax-name"
                                 className="form-control p-2"
                                 disabled={!permissions.hasInsert}
-                                placeholder="Enter New Tax Name"
+                                placeholder={t('taxes.enter_tax_name')}
                                 value={ex.name}
                                 onChange={(e) => {
                                   handleChangeExcAndService(e, i, true);
@@ -479,7 +482,7 @@ const Taxes: NextPage = (props: any) => {
                                 type="number"
                                 min={0}
                                 step={1}
-                                name="tax-value"
+                                name={t('taxes.tax_value')}
                                 disabled={!permissions.hasInsert}
                                 className="form-control p-2"
                                 placeholder="Add Excise Tax Value"
@@ -521,17 +524,17 @@ const Taxes: NextPage = (props: any) => {
             {/* Service Charge */}
             <Card className="mt-4">
               <Card.Header className="p-3 bg-white">
-                <h5>Service Charge Taxes List</h5>
+                <h5>{t('taxes.service_charge_taxes_list')}</h5>
               </Card.Header>
               <Card.Body>
                 {!isLoading ? (
                   <Table className="table table-hover remove-last-del-icon">
                     <thead className="thead-dark">
                       <tr>
-                        <th style={{ width: '15%' }}>Type</th>
-                        <th style={{ width: '30%' }}>Name</th>
-                        <th style={{ width: '25%' }}>Amount (%)</th>
-                        <th style={{ width: '35%' }}>Action</th>
+                        <th style={{ width: '15%' }}>{t('taxes.type')}</th>
+                        <th style={{ width: '30%' }}>{t('taxes.name')}</th>
+                        <th style={{ width: '25%' }}>{t('taxes.amount')} (%)</th>
+                        <th style={{ width: '35%' }}>{t('taxes.action')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -560,7 +563,7 @@ const Taxes: NextPage = (props: any) => {
                                 name="tax-name"
                                 className="form-control p-2"
                                 disabled={!permissions.hasInsert}
-                                placeholder="Tax Name"
+                                placeholder={t('taxes.tax_name')}
                                 value={ex.name}
                                 onChange={(e) => {
                                   handleChangeExcAndService(e, i, false);
@@ -575,7 +578,7 @@ const Taxes: NextPage = (props: any) => {
                                 name="tax-value"
                                 disabled={!permissions.hasInsert}
                                 className="form-control p-2"
-                                placeholder="Add Service Charge Value"
+                                placeholder={t('taxes.add_service_charge_value')}
                                 value={ex.amount}
                                 onChange={(e) => {
                                   handleChangeExcAndService(e, i, false);
@@ -615,16 +618,16 @@ const Taxes: NextPage = (props: any) => {
 
             <Card className="mt-4">
               <Card.Header className="p-3 bg-white">
-                <h5>Groupe Taxes List</h5>
+                <h5>{t('taxes.groupe_taxes_list')}</h5>
               </Card.Header>
               <Card.Body>
                 {!isLoading ? (
                   <Table className="table table-hover" responsive>
                     <thead className="thead-dark">
                       <tr>
-                        <th style={{ width: '50%' }}>Name</th>
-                        <th style={{ width: '10%' }}>Default Tax</th>
-                        <th style={{ width: '35%' }}>Action</th>
+                        <th style={{ width: '50%' }}>{t('taxes.name')}</th>
+                        <th style={{ width: '10%' }}>{t('taxes.default_tax')}</th>
+                        <th style={{ width: '35%' }}>{t('taxes.action')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -675,7 +678,7 @@ const Taxes: NextPage = (props: any) => {
               {!isLoading && permissions.hasInsert && (
                 <div className="m-3">
                   <button className="btn m-btn btn-primary p-3" onClick={() => addNewGroup()}>
-                    <FontAwesomeIcon icon={faPlus} /> Add New Group{' '}
+                    <FontAwesomeIcon icon={faPlus} /> {t('taxes.add_new_group')}{' '}
                   </button>
                 </div>
               )}
@@ -687,9 +690,9 @@ const Taxes: NextPage = (props: any) => {
   );
 };
 export default withAuth(Taxes);
-export async function getServerSideProps({ params }) {
-  const { id } = params
+export async function getServerSideProps({ params, locale }) {
+  const { id } = params;
   return {
-    props: {id},
-  }
+    props: { id, ...(await serverSideTranslations(locale)) },
+  };
 }
