@@ -20,6 +20,8 @@ import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
 import Customermodal from '../../../../components/pos/modals/CustomerModal';
 import { useProducts } from '../../../../context/ProductContext';
 import { PosProvider } from 'src/modules/pos/_context/PosContext';
+import { useTranslation } from 'next-i18next';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 
 interface ISelectionCustomer extends Partial<ICustomer> {
   value: string;
@@ -35,7 +37,7 @@ const initialCustomer = {
 
 const Customers: NextPage = ({ id }: any) => {
   const router = useRouter();
-
+  const { t } = useTranslation();
   const { customers } = useProducts();
   const { locationSettings, setLocationSettings } = useUser();
 
@@ -84,8 +86,9 @@ const Customers: NextPage = ({ id }: any) => {
         setSelectId,
         router,
         setCustomerIsModal,
+        t,
       }),
-    [id, permissions, router]
+    [id, permissions, router, t]
   );
 
   /*********************************************/
@@ -132,7 +135,7 @@ const Customers: NextPage = ({ id }: any) => {
           shopId={id}
           id={selectId}
           url={'customers'}>
-          Are you Sure You Want Delete This Customer ?
+          {t('alert_dialog.delete_customer')}
         </AlertDialog>
         {/* start */}
         {/* router.push('/shop/' + shopId + '/customers/add') */}
@@ -144,13 +147,13 @@ const Customers: NextPage = ({ id }: any) => {
                 setShowType('add');
                 setCustomerIsModal(true);
               }}>
-              <FontAwesomeIcon icon={faPlus} /> Add New Customer{' '}
+              <FontAwesomeIcon icon={faPlus} /> {t('customer.add_new_customer')}{' '}
             </button>
           </div>
         )}
         {!isLoading ? (
           <div className="page-content-style card">
-            <h5>Customer List</h5>
+            <h5>{t('customer.customer_list')}</h5>
             <DataGrid
               className="datagrid-style"
               sx={{
@@ -176,6 +179,7 @@ const Customers: NextPage = ({ id }: any) => {
         )}
       </AdminLayout>
       <Customermodal
+        t={t}
         shopId={id}
         showType={showType}
         userdata={customer}
@@ -189,9 +193,9 @@ const Customers: NextPage = ({ id }: any) => {
 
 export default withAuth(Customers);
 
-export async function getServerSideProps({ params }) {
+export async function getServerSideProps({ params, locale }) {
   const { id } = params;
   return {
-    props: { id },
+    props: { id, ...(await serverSideTranslations(locale)) },
   };
 }

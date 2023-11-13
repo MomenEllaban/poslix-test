@@ -14,6 +14,7 @@ import { useProducts } from '../../../context/ProductContext';
 import { apiUpdateCtr } from '../../../libs/dbUtils';
 import { findAllData } from 'src/services/crud.api';
 import { usePosContext } from 'src/modules/pos/_context/PosContext';
+import { useTranslation } from 'next-i18next';
 
 const customerTemplate = {
   id: 0,
@@ -31,17 +32,12 @@ const customerTemplate = {
 
 const CustomerModal = (props: any) => {
   const { openDialog, statusDialog, userdata, showType, shopId } = props;
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [moreInfo, setMoreInfo] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [pricingGroups, setPricingGroups] = useState([]);
   const [currentPricingGroup, setCurrentPricingGroup] = useState<number | null>();
-
-  const { lang: _lang } = usePosContext();
-  const lang = _lang?.pos;
-  const addHeader = _lang.add_customer;
-  const editHeader = _lang.edit_customer;
-
   const [customerInfo, setCustomerInfo] = useState(customerTemplate);
   const { customers, setCustomers } = useProducts();
   const router = useRouter();
@@ -183,7 +179,7 @@ const CustomerModal = (props: any) => {
     return (
       <Modal show={open} onHide={handleClose}>
         <Modal.Header className="poslix-modal-title text-primary text-capitalize" closeButton>
-          {showType == 'edit' ? editHeader : addHeader}
+          {showType == 'edit' ? t('customer.edit_customer') : t('customer.add_customer')}
         </Modal.Header>
         <Modal.Body>
           <Box sx={{ display: 'flex', justifyContent: 'center', margin: '20px' }}>
@@ -196,7 +192,7 @@ const CustomerModal = (props: any) => {
   return (
     <Modal show={open} onHide={handleClose}>
       <Modal.Header className="poslix-modal-title text-primary text-capitalize" closeButton>
-        {showType == 'edit' ? editHeader : addHeader}
+        {showType == 'edit' ? t('customer.edit_customer') : t('customer.add_customer')}
       </Modal.Header>
       <Modal.Body>
         <Form noValidate onSubmit={handleSubmit(onSubmit, onError)}>
@@ -206,16 +202,16 @@ const CustomerModal = (props: any) => {
                 required
                 type="text"
                 name="first_name"
-                label={lang.CustomerModal.firstName}
-                placeholder={lang.CustomerModal.firstName}
+                label={t('customer.first_name')}
+                placeholder={t('customer.first_name')}
                 errors={errors}
                 register={register}
               />
               <FormField
                 type="text"
                 name="last_name"
-                label={lang.CustomerModal.lastName}
-                placeholder={lang.CustomerModal.lastName}
+                label={t('customer.last_name')}
+                placeholder={t('customer.last_name')}
                 errors={errors}
                 register={register}
               />
@@ -223,22 +219,22 @@ const CustomerModal = (props: any) => {
                 required
                 type="text"
                 name="mobile"
-                label={lang.CustomerModal.mobile}
-                placeholder={lang.CustomerModal.enterMobile}
+                label={t('customer.mobile')}
+                placeholder={t('customer.enter_mobile')}
                 errors={errors}
                 register={register}
               />
               <div className="col-lg-6 mb-3">
-                <label>{lang.CustomerModal.pricingGroup}</label>
+                <label>{t('customer.pricing_group')}</label>
                 <select
                   className="form-select"
                   name="pricing_group"
-                  placeholder={lang.CustomerModal.enterPrice}
+                  placeholder={t('customer.selected_pricing_group')}
                   defaultValue={0}
                   value={currentPricingGroup ? currentPricingGroup : null}
                   onChange={(e) => setCurrentPricingGroup(+e.target.value)}>
                   <option value={0} disabled>
-                    {lang.CustomerModal.selectPrice}
+                    {t('customer.selected_pricing_group')}
                   </option>
                   {pricingGroups.map((el, i) => {
                     return (
@@ -257,8 +253,8 @@ const CustomerModal = (props: any) => {
                 onClick={() => {
                   setMoreInfo(!moreInfo);
                 }}>
-                {moreInfo ? `${lang.CustomerModal.less} ` : `${lang.CustomerModal.more} `}{' '}
-                {lang.CustomerModal.information}{' '}
+                {moreInfo ? `${t('customer.less_info')} ` : `${t('customer.more_info')} `}{' '}
+                {/* {lang.CustomerModal.information}{' '} */}
                 <i className={`ri-arrow-${moreInfo ? 'up' : 'down'}-s-line ps-1`} />
               </Button>
             </div>
@@ -269,8 +265,8 @@ const CustomerModal = (props: any) => {
                   <FormField
                     type="text"
                     name="address_line_1"
-                    label={lang.CustomerModal.addressLine1}
-                    placeholder={lang.CustomerModal.enterAddressLine1}
+                    label={t('customer.address_line') + " 1"}
+                    placeholder={t('customer.enter_address_line') + " 1"}
                     errors={errors}
                     register={register}
                   />
@@ -280,8 +276,8 @@ const CustomerModal = (props: any) => {
                   <FormField
                     type="text"
                     name="address_line_2"
-                    label={lang.CustomerModal.addressLine2}
-                    placeholder={lang.CustomerModal.enterAddressLine2}
+                    label={t('customer.address_line') + " 2"}
+                    placeholder={t('customer.enter_address_line') + " 2"}
                     errors={errors}
                     register={register}
                   />
@@ -291,8 +287,8 @@ const CustomerModal = (props: any) => {
                   <FormField
                     type="text"
                     name="country"
-                    label={lang.CustomerModal.hassan}
-                    placeholder={lang.CustomerModal.enterCountry}
+                    label={t('customer.country')}
+                    placeholder={t('customer.enter_country')}
                     errors={errors}
                     register={register}
                   />
@@ -301,8 +297,8 @@ const CustomerModal = (props: any) => {
                   <FormField
                     type="text"
                     name="state"
-                    label={lang.CustomerModal.state}
-                    placeholder={lang.CustomerModal.enterState}
+                    label={t('customer.state')}
+                    placeholder={t('customer.enter_state')}
                     errors={errors}
                     register={register}
                   />
@@ -311,8 +307,8 @@ const CustomerModal = (props: any) => {
                   <FormField
                     type="text"
                     name="city"
-                    label={lang.CustomerModal.city}
-                    placeholder={lang.CustomerModal.enterCity}
+                    label={t('customer.city')}
+                    placeholder={t('customer.enter_city')}
                     errors={errors}
                     register={register}
                   />
@@ -322,8 +318,8 @@ const CustomerModal = (props: any) => {
                   <FormField
                     type="text"
                     name="zip_code"
-                    label={lang.CustomerModal.zipCode}
-                    placeholder={lang.CustomerModal.enterZipCode}
+                    label={t('customer.zip')}
+                    placeholder={t('customer.enter_zip')}
                     errors={errors}
                     register={register}
                   />
@@ -332,8 +328,8 @@ const CustomerModal = (props: any) => {
                 <FormField
                   type="text"
                   name="shipping_address"
-                  label={lang.CustomerModal.shippingAddress}
-                  placeholder={lang.CustomerModal.enterShippingAddress}
+                  label={t('customer.shipping_address')}
+                  placeholder={t('customer.enter_shipping_address')}
                   errors={errors}
                   register={register}
                 />
@@ -342,11 +338,11 @@ const CustomerModal = (props: any) => {
           </Modal.Body>
           <Modal.Footer>
             <a className="btn btn-link link-success fw-medium" onClick={() => handleClose()}>
-              <i className="ri-close-line me-1 align-middle" /> {lang.CustomerModal.close}
+              <i className="ri-close-line me-1 align-middle" /> {t('customer.close')}
             </a>{' '}
             {showType != 'show' && (
               <Button type="submit" className="text-capitalize" onClick={() => {}}>
-                {showType == 'edit' ? editHeader : addHeader}
+                {showType == 'edit' ? t('customer.edit_customer') : t('customer.add_customer')}
               </Button>
             )}
           </Modal.Footer>
