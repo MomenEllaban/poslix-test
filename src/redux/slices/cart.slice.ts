@@ -185,14 +185,14 @@ const cartSlice = createSlice({
       cart.lastDue = lastDue;
       cart.customer_id = customerId;
       products.map((prod) => {
-        const existingItem = cart.cartItems.find((item) => item.id === prod.id);
+        const existingItem = cart.cartItems.find((item) => item.id === prod.product_id);
         if (existingItem) {
-          existingItem.quantity = +existingItem.pivot.qty;
+          existingItem.quantity = +existingItem.product_qty;
         } else {
-          cart.cartItems.push({ ...prod, product_id: prod.id, quantity: +prod.pivot.qty });
+          cart.cartItems.push({ ...prod, product_id: prod.product_id, quantity: +prod.product_qty });
         }
-        cart.cartSellTotal += +prod.sell_price * +prod.pivot.qty;
-        cart.cartCostTotal += +prod.cost_price * +prod.pivot.qty;
+        cart.cartSellTotal += +prod.product_price * +prod.product_qty;
+        cart.cartCostTotal += +prod.cost_price||0 * +prod.product_qty;
       });
       localStorage.setItem('cart', JSON.stringify(state));
       state = [cart];

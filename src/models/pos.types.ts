@@ -29,6 +29,9 @@ export interface ICategory {
 }
 
 export interface IProduct {
+  product_name?:any;
+  product_id?:any;
+  product_price?:any;
   id: number;
   name: string;
   business_id?: number;

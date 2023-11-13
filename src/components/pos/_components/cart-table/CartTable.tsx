@@ -71,9 +71,11 @@ export default function CartTable({ customer, shopId }) {
     }
   }
   // ------------------------------------------------------------------------------------------------
-  useEffect(() => {
-    // getpricingGroups()
-  }, [])
+  // useEffect(() => {
+  //   console.log('akkk');
+  //   dispatch(setCart(undefined))
+  //   localStorage.removeItem('cart');
+  //   }, [customers])
   // ------------------------------------------------------------------------------------------------
   // useEffect(() => {
   //   setSelectedCustomer(customers?.find(el => customer?.label?.includes(el?.mobile)))

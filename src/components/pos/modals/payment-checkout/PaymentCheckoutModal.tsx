@@ -126,7 +126,6 @@ export default function PaymentCheckoutModal({
   });
 const [sentData, setSentData] = useState<any>()
   const onSubmit = (data) => {
-    console.log("submittttt")
     const checkoutData = {
       notes: data?.notes,
       payment: data?.payment,
@@ -144,13 +143,14 @@ const [sentData, setSentData] = useState<any>()
         note: data?.notes,
       })),
     };
+    
     setSentData(checkoutData)
     api
       .post('/checkout', checkoutData)
       .then((res) => {
-        console.log(res.data.result);
         
         setPrintReceipt({
+          ...res.data.result.sales,
           ...res.data.result.data,
           due: res.data.result.sales.due,
           paid: res.data.result.sales.payed,
