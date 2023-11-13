@@ -99,11 +99,26 @@ function SalesReport() {
     [locationSettings]
   );
 
+  const handelFilterEndPoint = (): string => {
+    let endPoint = '';
+    if (strSelectedDate.length > 0) {
+      endPoint = endPoint + `&start_date=${strSelectedDate[0]}&end_date=${strSelectedDate[1]}`;
+    }
+    if (selectedRange) {
+      endPoint = endPoint + `&dateRange=${selectedRange}`;
+    }
+    if (selectedCustomer) {
+      endPoint = endPoint + `&contact_first_name=${selectedCustomer}`;
+    }
+    return endPoint;
+  };
+
   async function initDataPage(numPage = NUMBER_PAGE_DEFAULT) {
     setIsLoading(true);
+    const endPoint = handelFilterEndPoint();
     pageNumRef.current = numPage;
     api
-      .get(`reports/sales/${shopId}?page=${numPage}`)
+      .get(`reports/sales/${shopId}?page=${numPage}${endPoint}`)
       .then(({ data }) => {
         setSales(data.result.data);
         setFilteredSales(data.result.data);
@@ -129,79 +144,73 @@ function SalesReport() {
 
   useEffect(() => {
     if (!shopId) return;
+
+    initDataPage(NUMBER_PAGE_DEFAULT);
+  }, [shopId, strSelectedDate, selectedRange, selectedCustomer]);
+
+  useEffect(() => {
+    if (!shopId) return;
     getSelectedData();
     const locations: ILocation[] = getLocalStorage(ELocalStorageKeys.LOCATIONS);
     const currentLocation = locations.find((location) => +location.location_id === +shopId);
     setLocationSettings(currentLocation ?? locationSettings);
-
-    initDataPage();
   }, [shopId]);
 
   const handlePrint = useReactToPrint({
     content: () => componentRef.current,
   });
-  // const onRowsSelectionHandler = (selectedRowsData: any) => {
-  //   setSelectRow(selectedRowsData);
-  //   setSelectId(selectedRowsData.id);
-  //   getItems(selectedRowsData.id);
-  //   setShowViewPopUp(true);
-  // };
 
-  // const handleSearch = (e: any) => {
-  //   setHandleSearchTxt(e.target.value);
-  // };
+  // useEffect(() => {
+  //   let localFilteredSales = [];
+  //   if (strSelectedDate.length === 2) {
+  //     const filteredList = filteredSales.filter((sale: ISalesReport) => {
+  //       const dateCreated = sale.date.split(' ')[0];
+  //       return (
+  //         new Date(dateCreated).getDate() >= new Date(strSelectedDate[0]).getDate() &&
+  //         new Date(dateCreated).getMonth() >= new Date(strSelectedDate[0]).getMonth() &&
+  //         new Date(dateCreated).getFullYear() >= new Date(strSelectedDate[0]).getFullYear() &&
+  //         new Date(dateCreated).getDate() <= new Date(strSelectedDate[1]).getDate() &&
+  //         new Date(dateCreated).getMonth() <= new Date(strSelectedDate[1]).getMonth() &&
+  //         new Date(dateCreated).getFullYear() <= new Date(strSelectedDate[1]).getFullYear()
+  //       );
+  //     });
 
-  useEffect(() => {
-    let localFilteredSales = [];
-    if (strSelectedDate.length === 2) {
-      const filteredList = filteredSales.filter((sale: ISalesReport) => {
-        const dateCreated = sale.date.split(' ')[0];
-        return (
-          new Date(dateCreated).getDate() >= new Date(strSelectedDate[0]).getDate() &&
-          new Date(dateCreated).getMonth() >= new Date(strSelectedDate[0]).getMonth() &&
-          new Date(dateCreated).getFullYear() >= new Date(strSelectedDate[0]).getFullYear() &&
-          new Date(dateCreated).getDate() <= new Date(strSelectedDate[1]).getDate() &&
-          new Date(dateCreated).getMonth() <= new Date(strSelectedDate[1]).getMonth() &&
-          new Date(dateCreated).getFullYear() <= new Date(strSelectedDate[1]).getFullYear()
-        );
-      });
+  //     setSelectedDateValue(`${strSelectedDate[0]} - ${strSelectedDate[1]}`);
+  //     localFilteredSales = filteredList;
+  //   } else if (strSelectedDate.length === 1) {
+  //     const filteredList = sales.filter((sale: ISalesReport) => {
+  //       const dateCreated = sale.date.split(' ')[0];
+  //       return (
+  //         new Date(dateCreated).getDate() === new Date(strSelectedDate[0]).getDate() &&
+  //         new Date(dateCreated).getMonth() === new Date(strSelectedDate[0]).getMonth() &&
+  //         new Date(dateCreated).getFullYear() === new Date(strSelectedDate[0]).getFullYear()
+  //       );
+  //     });
+  //     setSelectedDateValue(strSelectedDate[0]);
+  //     localFilteredSales = filteredList;
+  //   } else {
+  //     localFilteredSales = sales;
+  //   }
 
-      setSelectedDateValue(`${strSelectedDate[0]} - ${strSelectedDate[1]}`);
-      localFilteredSales = filteredList;
-    } else if (strSelectedDate.length === 1) {
-      const filteredList = sales.filter((sale: ISalesReport) => {
-        const dateCreated = sale.date.split(' ')[0];
-        return (
-          new Date(dateCreated).getDate() === new Date(strSelectedDate[0]).getDate() &&
-          new Date(dateCreated).getMonth() === new Date(strSelectedDate[0]).getMonth() &&
-          new Date(dateCreated).getFullYear() === new Date(strSelectedDate[0]).getFullYear()
-        );
-      });
-      setSelectedDateValue(strSelectedDate[0]);
-      localFilteredSales = filteredList;
-    } else {
-      localFilteredSales = sales;
-    }
+  //   //Eslam 19
+  //   let totalPrice = 0;
+  //   let taxAmount = 0;
+  //   localFilteredSales.forEach((obj: ISalesReport) => {
+  //     const price = +obj.sub_total;
+  //     const tax = parseFloat(obj.tax);
+  //     totalPrice += price;
+  //     taxAmount += tax;
+  //   });
+  //   const totalPriceAndTax = totalPrice + taxAmount;
+  //   setDetails({ subTotal: totalPrice, tax: taxAmount, total: totalPriceAndTax });
 
-    //Eslam 19
-    let totalPrice = 0;
-    let taxAmount = 0;
-    localFilteredSales.forEach((obj: ISalesReport) => {
-      const price = +obj.sub_total;
-      const tax = parseFloat(obj.tax);
-      totalPrice += price;
-      taxAmount += tax;
-    });
-    const totalPriceAndTax = totalPrice + taxAmount;
-    setDetails({ subTotal: totalPrice, tax: taxAmount, total: totalPriceAndTax });
+  //   if (selectedCustomer?.length > 0)
+  //     localFilteredSales = localFilteredSales.filter((el) =>
+  //       el.contact_name.includes(selectedCustomer)
+  //     );
 
-    if (selectedCustomer?.length > 0)
-      localFilteredSales = localFilteredSales.filter((el) =>
-        el.contact_name.includes(selectedCustomer)
-      );
-
-    setFilteredSales(localFilteredSales);
-  }, [strSelectedDate, selectedCustomer]);
+  //   setFilteredSales(localFilteredSales);
+  // }, [strSelectedDate, selectedCustomer]);
 
   const handleChangeCustomer = (event: SelectChangeEvent<string>) => {
     setSelectedCustomer(event.target.value);
@@ -244,6 +253,7 @@ function SalesReport() {
           setStrSelectedDate={setStrSelectedDate}
           selectedRange={selectedRange}
           setSelectedRange={setSelectedRange}
+          valueTextRange
         />
         <FormControl sx={{ m: 1, width: 220 }}>
           <InputLabel id="customer-select-label">Customer</InputLabel>
