@@ -161,25 +161,31 @@ function ItemsReport() {
     [locationSettings]
   );
 
+  const handelFilterEndPoint = (): string => {
+    let endPoint = '';
+    if (strSelectedDate.length > 0) {
+      endPoint = endPoint + `&purchase_date=${strSelectedDate[0]}`;
+    }
+    if (selectedSupplier) {
+      endPoint = endPoint + `&supplier_name=${selectedSupplier}`;
+    }
+    if (selectedCustomer) {
+      endPoint = endPoint + `&contact_first_name=${selectedCustomer}`;
+    }
+    return endPoint;
+  };
+
   // init sales data
   async function initDataPage(numPage = NUMBER_PAGE_DEFAULT) {
     setIsLoadItems(true);
+    const endPoint = handelFilterEndPoint();
     api
-      .get(`reports/item-sales/${shopId}?page=${numPage}`)
+      .get(`reports/item-sales/${shopId}?page=${numPage}${endPoint}`)
       .then(({ data }) => {
         pageNumRef.current = numPage;
         const _salesList = data.result.data;
         setPaginationTotal(data.result.pagination?.last_page);
         const mappedSalesList = [];
-        //mohamed elsayed
-        // const _salesListWithoutProducts = _salesList.map((item, index) => {
-        //   const { products, ...rest } = item;
-        //   products.forEach((product) => {
-        //     mappedSalesList.push({ ...rest, product });
-        //   });
-        //   return {...rest, id: index};
-        // });
-        // console.log();
         let index = 0;
         _salesList.forEach((item) => {
           const { products, ...rest } = item;
@@ -198,72 +204,68 @@ function ItemsReport() {
 
   const handlePrint = useReactToPrint({ content: () => componentRef.current });
 
-  // const onRowsSelectionHandler = (selectedRowsData: any) => {
-  //   setSelectRow(selectedRowsData);
-  //   setSelectId(selectedRowsData.id);
-  //   setShowViewPopUp(true);
-  // };
-  // const handleSearch = (e: any) => {
-  //   setHandleSearchTxt(e.target.value);
-  // };
+  // useEffect(() => {
+  //   let localFilteredSales = [];
+  //   if (strSelectedDate.length === 2) {
+  //     const filteredList = sales.filter((sale) => {
+  //       const dateCreated = sale.date.split(' ')[0];
+  //       return (
+  //         new Date(dateCreated).getDate() >= new Date(strSelectedDate[0]).getDate() &&
+  //         new Date(dateCreated).getMonth() >= new Date(strSelectedDate[0]).getMonth() &&
+  //         new Date(dateCreated).getFullYear() >= new Date(strSelectedDate[0]).getFullYear() &&
+  //         new Date(dateCreated).getDate() <= new Date(strSelectedDate[1]).getDate() &&
+  //         new Date(dateCreated).getMonth() <= new Date(strSelectedDate[1]).getMonth() &&
+  //         new Date(dateCreated).getFullYear() <= new Date(strSelectedDate[1]).getFullYear()
+  //       );
+  //     });
+  //     setSelectedDateValue(`${strSelectedDate[0]} - ${strSelectedDate[1]}`);
+  //     localFilteredSales = filteredList;
+  //   } else if (strSelectedDate.length === 1) {
+  //     const filteredList = sales.filter((sale) => {
+  //       const dateCreated = sale.date.split(' ')[0];
+  //       return (
+  //         new Date(dateCreated).getDate() === new Date(strSelectedDate[0]).getDate() &&
+  //         new Date(dateCreated).getMonth() === new Date(strSelectedDate[0]).getMonth() &&
+  //         new Date(dateCreated).getFullYear() === new Date(strSelectedDate[0]).getFullYear()
+  //       );
+  //     });
+  //     setSelectedDateValue(strSelectedDate[0]);
+  //     localFilteredSales = filteredList;
+  //   } else {
+  //     localFilteredSales = sales;
+  //   }
+  //   //Eslam 19
+  //   let totalPrice = 0;
+  //   let taxAmount = 0;
+  //   localFilteredSales.forEach((obj) => {
+  //     const price = parseFloat(obj.price);
+  //     const tax = parseFloat(obj.tax);
+  //     totalPrice += price;
+  //     taxAmount += tax;
+  //   });
+  //   const totalPriceAndTax = totalPrice + taxAmount;
+  //   setDetails({
+  //     subTotal: totalPrice,
+  //     tax: taxAmount,
+  //     cost: totalPriceAndTax,
+  //   });
+  //   if (selectedSupplier?.length > 0) {
+  //     // console.log(111111111);
+  //     localFilteredSales = localFilteredSales.filter((el) => el.supplier_name === selectedSupplier);
+  //   }
+  //   if (selectedCustomer?.length > 0) {
+  //     // console.log(222222222);
+  //     localFilteredSales = localFilteredSales.filter(
+  //       (el) => el.contact_first_name === selectedCustomer
+  //     );
+  //   }
+  //   setFilteredSales(() => localFilteredSales);
+  // }, [strSelectedDate, selectedSupplier, selectedCustomer]);
 
   useEffect(() => {
-    let localFilteredSales = [];
-    if (strSelectedDate.length === 2) {
-      const filteredList = sales.filter((sale) => {
-        const dateCreated = sale.date.split(' ')[0];
-        return (
-          new Date(dateCreated).getDate() >= new Date(strSelectedDate[0]).getDate() &&
-          new Date(dateCreated).getMonth() >= new Date(strSelectedDate[0]).getMonth() &&
-          new Date(dateCreated).getFullYear() >= new Date(strSelectedDate[0]).getFullYear() &&
-          new Date(dateCreated).getDate() <= new Date(strSelectedDate[1]).getDate() &&
-          new Date(dateCreated).getMonth() <= new Date(strSelectedDate[1]).getMonth() &&
-          new Date(dateCreated).getFullYear() <= new Date(strSelectedDate[1]).getFullYear()
-        );
-      });
-      setSelectedDateValue(`${strSelectedDate[0]} - ${strSelectedDate[1]}`);
-      localFilteredSales = filteredList;
-    } else if (strSelectedDate.length === 1) {
-      const filteredList = sales.filter((sale) => {
-        const dateCreated = sale.date.split(' ')[0];
-        return (
-          new Date(dateCreated).getDate() === new Date(strSelectedDate[0]).getDate() &&
-          new Date(dateCreated).getMonth() === new Date(strSelectedDate[0]).getMonth() &&
-          new Date(dateCreated).getFullYear() === new Date(strSelectedDate[0]).getFullYear()
-        );
-      });
-      setSelectedDateValue(strSelectedDate[0]);
-      localFilteredSales = filteredList;
-    } else {
-      localFilteredSales = sales;
-    }
-    //Eslam 19
-    let totalPrice = 0;
-    let taxAmount = 0;
-    localFilteredSales.forEach((obj) => {
-      const price = parseFloat(obj.price);
-      const tax = parseFloat(obj.tax);
-      totalPrice += price;
-      taxAmount += tax;
-    });
-    const totalPriceAndTax = totalPrice + taxAmount;
-    setDetails({
-      subTotal: totalPrice,
-      tax: taxAmount,
-      cost: totalPriceAndTax,
-    });
-    if (selectedSupplier?.length > 0) {
-      // console.log(111111111);
-      localFilteredSales = localFilteredSales.filter((el) => el.supplier_name === selectedSupplier);
-    }
-    if (selectedCustomer?.length > 0) {
-      // console.log(222222222);
-      localFilteredSales = localFilteredSales.filter(
-        (el) => el.contact_first_name === selectedCustomer
-      );
-    }
-    setFilteredSales(() => localFilteredSales);
-  }, [strSelectedDate, selectedSupplier, selectedCustomer]);
+    if (!shopId) return;
+    initDataPage(NUMBER_PAGE_DEFAULT);
+  }, [strSelectedDate, selectedSupplier, selectedCustomer, shopId]);
 
   const getSelectedData = async () => {
     const supplierRes = await findAllData(`suppliers/${shopId}`);
@@ -284,7 +286,7 @@ function ItemsReport() {
     setLocations(locations);
     const currentLocation = locations.find((location) => +location.location_id === +shopId);
     setLocationSettings(currentLocation ?? locationSettings);
-    initDataPage();
+    // initDataPage();
   }, [shopId]);
 
   function CustomPagination(): React.JSX.Element {
