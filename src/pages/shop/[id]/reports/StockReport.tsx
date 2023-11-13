@@ -51,7 +51,7 @@ function StockReport() {
   const [isLoadItems, setIsLoadItems] = useState(false);
   const [showViewPopUp, setShowViewPopUp] = useState(false);
   // const [handleSearchTxt, setHandleSearchTxt] = useState('');
-  const [details, setDetails] = useState({ subTotal: 1, tax: 0, cost: 0 });
+  // const [details, setDetails] = useState({ subTotal: 1, tax: 0, cost: 0 });
   const { setInvoicDetails, invoicDetails, locationSettings, setLocationSettings } = useUser();
 
   const [selectedBrand, setSelectedBrand] = useState<IBrandWithSelect | null>();
@@ -62,9 +62,9 @@ function StockReport() {
 
   const [filteredSales, setFilteredSales] = useState<any>([]);
   // const [selectedRange, setSelectedRange] = useState(null);
-  const [strSelectedDate, setStrSelectedDate] = useState([]);
-  const [selectedDateVlaue, setSelectedDateValue] = useState('');
-  const [selectedCustomer, setSelectedCustomer] = useState('');
+  // const [strSelectedDate, setStrSelectedDate] = useState([]);
+  // const [selectedDateVlaue, setSelectedDateValue] = useState('');
+  // const [selectedCustomer, setSelectedCustomer] = useState('');
   // const [customersOptions, setCustomersOptions] = useState([]);
 
   const [paginationTotal, setPaginationTotal] = useState(NUMBER_PAGE_DEFAULT);
@@ -89,6 +89,7 @@ function StockReport() {
     setFilteredByBrands(_filteredSales);
     console.log(_filteredSales);
   };
+
   const handleSelectCategory: StateManagerProps['onChange'] = (
     category: ICategory & { label: string; value: number }
   ) => {
@@ -97,60 +98,61 @@ function StockReport() {
     const _filteredSales = sales?.filter((sale) => sale.category_id === category.id);
     setFilteredByCategories(_filteredSales);
   };
+
   const filteredArr = intersectionBy(filteredByBrands, filteredByCategories, 'id');
 
-  useEffect(() => {
-    let localFilteredSales = [];
-    if (strSelectedDate?.length === 2) {
-      const filteredList = sales?.filter((sale) => {
-        const dateCreated = sale.created_at.split(' ')[0];
-        return (
-          new Date(dateCreated).getDate() >= new Date(strSelectedDate[0]).getDate() &&
-          new Date(dateCreated).getMonth() >= new Date(strSelectedDate[0]).getMonth() &&
-          new Date(dateCreated).getFullYear() >= new Date(strSelectedDate[0]).getFullYear() &&
-          new Date(dateCreated).getDate() <= new Date(strSelectedDate[1]).getDate() &&
-          new Date(dateCreated).getMonth() <= new Date(strSelectedDate[1]).getMonth() &&
-          new Date(dateCreated).getFullYear() <= new Date(strSelectedDate[1]).getFullYear()
-        );
-      });
-      setSelectedDateValue(`${strSelectedDate[0]} - ${strSelectedDate[1]}`);
-      localFilteredSales = filteredList;
-    } else if (strSelectedDate?.length === 1) {
-      const filteredList = sales.filter((sale) => {
-        const dateCreated = sale.created_at.split(' ')[0];
-        return (
-          new Date(dateCreated).getDate() === new Date(strSelectedDate[0]).getDate() &&
-          new Date(dateCreated).getMonth() === new Date(strSelectedDate[0]).getMonth() &&
-          new Date(dateCreated).getFullYear() === new Date(strSelectedDate[0]).getFullYear()
-        );
-      });
-      setSelectedDateValue(strSelectedDate[0]);
-      localFilteredSales = filteredList;
-    } else {
-      localFilteredSales = sales;
-    }
-    if (selectedCustomer) {
-      localFilteredSales = localFilteredSales.filter(
-        (sale) => sale.customer_name === selectedCustomer
-      );
-    }
-    //Eslam 19
-    let totalPrice = 0;
-    let taxAmount = 0;
-    localFilteredSales.forEach((obj) => {
-      const price = parseFloat(obj.total_price);
-      const tax = parseFloat(obj.tax_amount);
-      totalPrice += price;
-      taxAmount += tax;
-    });
-    const totalPriceAndTax = totalPrice + taxAmount;
-    setDetails({
-      subTotal: totalPrice,
-      tax: taxAmount,
-      cost: totalPriceAndTax,
-    });
-    setFilteredSales(localFilteredSales);
-  }, [strSelectedDate, selectedCustomer]);
+  // useEffect(() => {
+  //   let localFilteredSales = [];
+  //   if (strSelectedDate?.length === 2) {
+  //     const filteredList = sales?.filter((sale) => {
+  //       const dateCreated = sale.created_at.split(' ')[0];
+  //       return (
+  //         new Date(dateCreated).getDate() >= new Date(strSelectedDate[0]).getDate() &&
+  //         new Date(dateCreated).getMonth() >= new Date(strSelectedDate[0]).getMonth() &&
+  //         new Date(dateCreated).getFullYear() >= new Date(strSelectedDate[0]).getFullYear() &&
+  //         new Date(dateCreated).getDate() <= new Date(strSelectedDate[1]).getDate() &&
+  //         new Date(dateCreated).getMonth() <= new Date(strSelectedDate[1]).getMonth() &&
+  //         new Date(dateCreated).getFullYear() <= new Date(strSelectedDate[1]).getFullYear()
+  //       );
+  //     });
+  //     setSelectedDateValue(`${strSelectedDate[0]} - ${strSelectedDate[1]}`);
+  //     localFilteredSales = filteredList;
+  //   } else if (strSelectedDate?.length === 1) {
+  //     const filteredList = sales.filter((sale) => {
+  //       const dateCreated = sale.created_at.split(' ')[0];
+  //       return (
+  //         new Date(dateCreated).getDate() === new Date(strSelectedDate[0]).getDate() &&
+  //         new Date(dateCreated).getMonth() === new Date(strSelectedDate[0]).getMonth() &&
+  //         new Date(dateCreated).getFullYear() === new Date(strSelectedDate[0]).getFullYear()
+  //       );
+  //     });
+  //     setSelectedDateValue(strSelectedDate[0]);
+  //     localFilteredSales = filteredList;
+  //   } else {
+  //     localFilteredSales = sales;
+  //   }
+  //   if (selectedCustomer) {
+  //     localFilteredSales = localFilteredSales.filter(
+  //       (sale) => sale.customer_name === selectedCustomer
+  //     );
+  //   }
+  //   //Eslam 19
+  //   let totalPrice = 0;
+  //   let taxAmount = 0;
+  //   localFilteredSales.forEach((obj) => {
+  //     const price = parseFloat(obj.total_price);
+  //     const tax = parseFloat(obj.tax_amount);
+  //     totalPrice += price;
+  //     taxAmount += tax;
+  //   });
+  //   const totalPriceAndTax = totalPrice + taxAmount;
+  //   setDetails({
+  //     subTotal: totalPrice,
+  //     tax: taxAmount,
+  //     cost: totalPriceAndTax,
+  //   });
+  //   setFilteredSales(localFilteredSales);
+  // }, [strSelectedDate, selectedCustomer]);
 
   const resetFilters = () => {
     setFilteredByCategories(sales);
@@ -303,13 +305,26 @@ function StockReport() {
       );
     }
   }
+  const handelFilterEndPoint = (): string => {
+    let endPoint = '';
+
+    if (selectedBrand) {
+      endPoint = endPoint + `&brand_id=${selectedBrand.value}`;
+    }
+    if (selectedCategory) {
+      endPoint = endPoint + `&category_id=${selectedCategory.value}`;
+    }
+    return endPoint;
+  };
 
   // init sales data
   async function initDataPage(numPages = NUMBER_PAGE_DEFAULT) {
     setIsLoadItems(true);
     pageNumRef.current = numPages;
+    const endPoint = handelFilterEndPoint();
+
     api
-      .get(`reports/itemStock`, { params: { page: numPages, location_id: shopId } })
+      .get(`reports/itemStock?location_id=${shopId}&page=${numPages}${endPoint}`)
       .then(({ data }) => {
         const brandSet = new Map();
         const _sales = data?.result?.data?.map((item) => ({
@@ -338,20 +353,6 @@ function StockReport() {
       });
   }
 
-  // async function getItems(id: number) {
-  //   setIsLoadItems(true);
-  //   const { success, newdata } = await apiFetchCtr({
-  //     fetch: 'transactions',
-  //     subType: 'getSaleItems',
-  //     shopId,
-  //     id,
-  //   });
-  //   if (success) {
-  //     setLines(newdata);
-  //     setIsLoadItems(false);
-  //   }
-  // }
-
   const getSelectedData = () => {
     posService.getBrands(shopId as string).then(({ result }) => {
       setBrands(result.map((p) => ({ ...p, label: p.name, value: p.id })));
@@ -363,8 +364,13 @@ function StockReport() {
 
   useEffect(() => {
     if (!shopId) return;
-    initDataPage();
+    initDataPage(NUMBER_PAGE_DEFAULT);
+  }, [shopId, router.query.slug, selectedBrand, selectedCategory]);
+
+  useEffect(() => {
+    if (!shopId) return;
     getSelectedData();
+
     const locations: ILocation[] = getLocalStorage(ELocalStorageKeys.LOCATIONS);
     const currentLocation = locations.find((location) => +location.location_id === +shopId);
     setLocationSettings(currentLocation ?? locationSettings);
@@ -373,15 +379,6 @@ function StockReport() {
   const handlePrint = useReactToPrint({
     content: () => componentRef.current,
   });
-  // const onRowsSelectionHandler = (selectedRowsData: any) => {
-  //   setSelectRow(selectedRowsData);
-  //   setSelectId(selectedRowsData.id);
-  //   getItems(selectedRowsData.id);
-  //   setShowViewPopUp(true);
-  // };
-  // const handleSearch = (e: any) => {
-  //   setHandleSearchTxt(e.target.value);
-  // };
 
   function CustomPagination(): React.JSX.Element {
     return (
