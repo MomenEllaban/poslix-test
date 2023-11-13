@@ -404,7 +404,7 @@ const Home = (props: any) => {
       <div className="row loc-dash-top-under">
         <div className="">
           <div className="loc-dasg-box">
-            <h4>{t('The_last_10_invoices')}</h4>
+            <h4>{t('g.The_last_10_invoices')}</h4>
             <div className="loc-dasg-box-content  d-flex justify-content-between flex-wrap">
               <div className="me-head-table">
                 <div className="m-fileds text-start" style={{ width: '20%' }}>
