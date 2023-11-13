@@ -22,6 +22,8 @@ import { useUser } from 'src/context/UserContext';
 import { Toastify } from 'src/libs/allToasts';
 import CustomToolbar from 'src/modules/reports/_components/CustomToolbar';
 import { findAllData } from 'src/services/crud.api';
+import { useTranslation } from 'next-i18next';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 
 const Purchases: NextPage = ({ shopId, id }: any) => {
   const [purchases, setPurchases] = useState<{ id: number; name: string; sku: string }[]>([]);
@@ -34,38 +36,39 @@ const Purchases: NextPage = ({ shopId, id }: any) => {
   const [selectId, setSelectId] = useState(0);
   const [show, setShow] = useState(false);
   const router = useRouter();
+  const { t } = useTranslation();
 
   const columns: GridColDef[] = [
     { field: 'id', headerName: '#', minWidth: 50 },
     {
       field: 'supplier',
-      headerName: 'Supplier',
+      headerName: t('purchases.Supplier'),
       renderCell: ({ row }: Partial<GridRowParams>) => row.supplier?.name || 'walk-in supplier',
       flex: 0.55,
     },
     {
       field: 'status',
-      headerName: 'Stock Status',
+      headerName: t('purchases.Stock_Status'),
       flex: 0.5,
       renderCell: ({ row }: Partial<GridRowParams>) => getStatusStyle(row.status),
     },
     {
       field: 'payment_status',
-      headerName: 'Payment Status',
+      headerName: t('purchases.Payment_Status'),
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) => getStatusStyle(row.payment_status),
     },
 
     {
       field: 'total_price',
-      headerName: 'Total Price',
+      headerName: t('purchases.Total_Price'),
       flex: 1,
       renderCell: (params) =>
         Number(params.value).toFixed(locationSettings?.location_decimal_places),
     },
     {
       field: 'action',
-      headerName: 'Action ',
+      headerName: t('purchases.Action'),
       sortable: false,
       disableExport: true,
       flex: 1,
@@ -188,8 +191,8 @@ const Purchases: NextPage = ({ shopId, id }: any) => {
         shopId={id}
         id={selectId}
         url={'purchase'}>
-        Are you Sure You Want Delete This Item?
-      </AlertDialog>
+       {t("purchases.Are_you_Sure_You_Want_Delete_This_Item?")}
+   </AlertDialog>
       {isShowQtyManager && (
         <PurchasesQtyCheckList
           selectedIndex={selectedIndex}
@@ -219,14 +222,14 @@ const Purchases: NextPage = ({ shopId, id }: any) => {
                   onClick={() => {
                     router.push('/shop/' + shopId + '/purchases/add');
                   }}>
-                  <FontAwesomeIcon icon={faPlus} /> New Purchase
+                  <FontAwesomeIcon icon={faPlus} /> {t("purchases.New_Purchase")}
                 </button>
               </div>
             )}
          
               <div>
                 <div className="page-content-style card">
-                  <h5>Purchases List</h5>
+                  <h5>{t("purchases.Purchases_List")}</h5>
                   <DataGrid
                   loading={isloading}
                     className="datagrid-style"
@@ -252,9 +255,11 @@ const Purchases: NextPage = ({ shopId, id }: any) => {
   );
 };
 export default withAuth(Purchases);
-export async function getServerSideProps({ params, query }) {
+export async function getServerSideProps({ params, query,locale }) {
   const { id } = params;
   return {
-    props: { id, shopId: query.id },
+    props: { id, shopId: query.id , 
+           ...(await serverSideTranslations(locale))
+    },
   };
 }

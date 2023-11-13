@@ -22,6 +22,8 @@ import { barcodeSelectStyles } from 'src/modules/barcode/_utils/barcode-select-s
 import { cartJobType } from 'src/recoil/atoms';
 import api from 'src/utils/app-api';
 import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
+import { useTranslation } from 'next-i18next';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 
 interface IOption {
   name: boolean;
@@ -48,6 +50,7 @@ const initProductVariation = { product_id: 0, product_name: '', is_service: 0 };
 const Barcodes: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = ({ shopId }) => {
   const componentRef = useRef(null);
   const { locationSettings, setLocationSettings } = useUser();
+  const { t } = useTranslation();
 
   const [jobType, setJobType] = useRecoilState(cartJobType);
 
@@ -65,7 +68,7 @@ const Barcodes: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>>
     () =>
       [
         { field: 'id', minWidth: 50 },
-        { field: 'name', headerName: 'name', minWidth: 150 },
+        { field: 'name', headerName: t('products.name'), minWidth: 150 },
         {
           field: 'quantity',
           headerName: 'Quantity to Print',
@@ -73,7 +76,7 @@ const Barcodes: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>>
           renderHeader(params) {
             return (
               <div className="d-flex w-100 flex-row gap-3 align-items-center justify-content-center">
-                Qty <BiEdit />
+                {t("products.Qty")} <BiEdit />
               </div>
             );
           },
@@ -82,7 +85,7 @@ const Barcodes: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>>
         },
         {
           field: 'action',
-          headerName: 'Action ',
+          headerName: t('products.Action'),
           sortable: false,
           disableExport: true,
           renderCell: ({ row }: Partial<GridRowParams>) => (
@@ -208,9 +211,9 @@ const Barcodes: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>>
 
       {!isLoading ? (
         <div className="page-content-style card">
-          <h5>Barcode Generator</h5>
+          <h5>{t("products.Barcode_Generator")}</h5>
           <h5>
-            Step1: <span style={{ color: '#cdc8c8' }}>Selecet Products</span>
+            {t("products.Step1")}: <span style={{ color: '#cdc8c8' }}>{t("products.Selecet_Products")}</span>
           </h5>
           <Select
             styles={barcodeSelectStyles}
@@ -232,11 +235,11 @@ const Barcodes: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>>
             }}
           />
           <h5>
-            Step2: <span style={{ color: '#cdc8c8' }}>Options</span>
+            {t("products.Step2")}: <span style={{ color: '#cdc8c8' }}>{t("products.Options")}</span>
           </h5>
           <div className="invoice-settings-body" style={{ maxWidth: '500px' }}>
             <div className="invoice-settings-item">
-              <div>Business Name</div>
+              <div>{t("products.Business_Name")}</div>
               <div>
                 <Form.Check
                   type="switch"
@@ -246,7 +249,7 @@ const Barcodes: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>>
               </div>
             </div>
             <div className="invoice-settings-item">
-              <div>Product Name</div>
+              <div>{t("products.Product_Name")}</div>
               <div>
                 <Form.Check
                   type="switch"
@@ -256,7 +259,7 @@ const Barcodes: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>>
               </div>
             </div>
             <div className="invoice-settings-item">
-              <div>Price</div>
+              <div>{t("products.Price")}</div>
               <div>
                 <Form.Check
                   type="switch"
@@ -266,7 +269,7 @@ const Barcodes: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>>
               </div>
             </div>
             <div className="invoice-settings-item">
-              <div>Category</div>
+              <div>{t("products.Category")}</div>
               <div>
                 <Form.Check
                   type="switch"
@@ -281,7 +284,7 @@ const Barcodes: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>>
             className="btn btn-primary p-2"
             onClick={handlePrint}
             style={{ width: '100%', maxWidth: '500px', marginTop: '10px' }}>
-            Show
+            {t("products.Show")}
           </button>
         </div>
       ) : (
@@ -302,10 +305,11 @@ const Barcodes: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>>
 
 export default withAuth(Barcodes);
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
+export const getServerSideProps: GetServerSideProps = async ({query,locale}) => {
   return {
     props: {
-      shopId: context.query.id,
+      shopId: query.id,
+      ...(await serverSideTranslations(locale))
     },
   };
 };

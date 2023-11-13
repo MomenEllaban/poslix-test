@@ -8,6 +8,7 @@ import { useDispatch,useSelector } from 'react-redux';
 import {addTodigitalCart ,incrementQuantity, decrementQuantity, removeItem} from '../../redux/slices/digitalCartSlice';
 import { useAppDispatch, useAppSelector } from "src/hooks";
 import {ProductVariablesModal} from "../digital/product-variables-modal";
+import { useTranslation } from 'next-i18next';
 
 const style = {
   position: 'absolute' ,
@@ -30,6 +31,7 @@ ProductItem = ({product,addItemTocart,location}) => {
     const [ moadlIsopen, setMoadlIsopen ] = useState(false);
     const handleOpen = () => {setOpen(true)};
     const handleClose = () => {setOpen(false) ;setMoadlIsopen(false)};
+    const { t } = useTranslation();
 
     const dispatch = useAppDispatch()
     const cart = useAppSelector((state) => state.cart)
@@ -85,7 +87,7 @@ const modalHandler = (event) => {
             <Button variant="" onClick={(e)=>{
                            
                 addItemTocart(product)
-            }}>Transefer</Button>
+            }}>{t("transefers.Transefer")}</Button>
         </div>
         {/* {<ProductVariablesModal location={location} addItemTocart={addItemTocart} product={product} open={openVariablesModal} setOpen={setOpenVariablesModal}/>} */}
     </div>

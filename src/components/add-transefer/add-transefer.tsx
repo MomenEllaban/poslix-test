@@ -10,9 +10,12 @@ import { useRouter } from 'next/router';
 import { Item } from './item';
 import { Spinner } from 'react-bootstrap';
 import { VariantsProductModal } from './variants-product-modal';
+import { useTranslation } from 'next-i18next';
+
+
 let locations
 const AddTranseferComponent = () => {
-
+    const { t } = useTranslation();
     const [isloading, setIsloading] = useState(false);
     const [isProductsLoadingloading, setIsProductsLoadingloading] = useState(false);
     const router = useRouter()
@@ -216,7 +219,7 @@ const AddTranseferComponent = () => {
 
             <div className={styles.add_transefer_wrapper}>
                 {/* from auto compolete */}
-                <h5 className='p-2'>Add New Transfer{' '}</h5>
+                <h5 className='p-2'>{t("transfers.Add_New_Transfer")}{' '}</h5>
                 <div className='d-flex gap-3 mb-3 flex-wrap'>
                     <Autocomplete
                         size='small'
@@ -232,7 +235,7 @@ const AddTranseferComponent = () => {
                         sx={{ width: '30%' }}
                         renderInput={(params) =>
                             <TextField
-                                {...params} label="From" />}
+                                {...params} label={t("transfers.From")} />}
                     />
                     {/* to auto compolete */}
                     <Autocomplete
@@ -250,10 +253,10 @@ const AddTranseferComponent = () => {
                         sx={{ width: '30%' }}
                         renderInput={(params) =>
                             <TextField
-                                {...params} label="To" />}
+                                {...params} label={t("transfers.To")} />}
                     />
                     {/* referance texfeild*/}
-                    <TextField type='number' sx={{ width: '30%' }} id="ref no" label="Referance Number" placeholder="Reference Number" variant='outlined' size='small' value={referanceNumber} onChange={(e) => {
+                    <TextField type='number' sx={{ width: '30%' }} id="ref no" label={t("transfers.Referance_Number")} placeholder={t("transfers.Reference_Number")} variant='outlined' size='small' value={referanceNumber} onChange={(e) => {
                         setReferanceNumber(e.target.value)
                     }} />
                     {/* products auto complete */}
@@ -275,7 +278,7 @@ const AddTranseferComponent = () => {
                         }}
                         sx={{ width: '61.5%' }}
                         renderInput={(params) =>
-                            <TextField  {...params} label="Select Product" />}
+                            <TextField  {...params} label={t("transfers.Select_Product")} />}
                     />
 
 
@@ -284,7 +287,7 @@ const AddTranseferComponent = () => {
                     {/* status select start */}
                     <FormControl size='small'
                         sx={{ width: '30%', marginBottom: '8px' }}>
-                        <InputLabel id="select-product-label">Select Product Status</InputLabel>
+                        <InputLabel id="select-product-label">{t("transfers.Select_Product_Status")}</InputLabel>
                         <Select
                             size='small'
                             labelId="select-product-label"
@@ -295,17 +298,17 @@ const AddTranseferComponent = () => {
                             }}
                         >
                             <MenuItem value="received">
-                                Received
+                                {t("transfers.Received")}
                             </MenuItem>
 
                             <MenuItem value="partially_received">
-                                Partially Received
+                                {t("transfers.Partially_Received")}
                             </MenuItem>
                             <MenuItem value="processing">
-                                Processing
+                                {t("transfers.Processing")}
                             </MenuItem>
                             <MenuItem value="cancelled">
-                                Cancelled
+                                {t("transfers.Cancelled")}
                             </MenuItem>
 
                         </Select>
@@ -329,7 +332,7 @@ const AddTranseferComponent = () => {
                     disabled={!referanceNumber || isProductsLoadingloading || isloading || !to?.location_id || !from?.location_id || selectedProducts?.length === 0}
                     className="btn btn-primary my-2"
                     onClick={addTransefer}>{isloading ? <Spinner style={{ width: '20px', height: '20px' }} /> : <FontAwesomeIcon icon={faPlus} />}
-                    Send Transfer{' '}
+                    {t("transfers.Send_Transfer")}{' '}
                 </button>
             </div>
 

@@ -1,27 +1,29 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
+import { useTranslation } from 'next-i18next';
 
 const Item = ({ addItemTocart, reduceProductQty, item, fromLocation, index ,removeProductFromCart}) => {
+    const { t } = useTranslation();
 
     return (<>
         {index === 0 && <div className="cart-item gap-2">
             <div className="order_btn fw-bold text-capitalize col-2">
-                name
+                {t("transfers.name")}
             </div>
             <div className="order_btn fw-bold text-capitalize col-1">
-                stock
+                {t("transfers.stock")}
             </div>
             <div className="order_btn fw-bold text-capitalize text-center col-2">
-                Qyt
+                {t("transfers.Qyt")}
             </div>
 
             <div className="order_btn fw-bold text-capitalize col-2">
-                price
+                {t("transfers.price")}
 
             </div>
             <div className="order_btn fw-bold text-capitalize col-2">
-                cost
+                {t("transfers.cost")}
 
             </div>
 
