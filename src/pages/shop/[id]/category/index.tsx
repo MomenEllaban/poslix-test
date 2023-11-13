@@ -271,9 +271,7 @@ const Category: NextPage = ({ id }: any) => {
 };
 export default withAuth(Category);
 export async function getServerSideProps({ params, locale }) {
-  console.log(locale);
-
-  const { id } = params;
+ const { id } = params;
   return {
     props: { id, ...(await serverSideTranslations(locale)) },
   };
