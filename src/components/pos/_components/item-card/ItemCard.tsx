@@ -13,6 +13,7 @@ import { findAllData } from 'src/services/crud.api';
 import { useProducts } from 'src/context/ProductContext';
 
 export const ItemCard = ({groups, customer,product }) => {
+  
   const dispatch = useAppDispatch();
   const { locationSettings } = useUser();
   // const selectCartForLocation = selectCartByLocation(shopId);
@@ -34,12 +35,20 @@ const [customerPricingGroup, setCustomerPricingGroup] = useState<any>()
 
 //   }, [customer])
   // ------------------------------------------------------------------------------------------------
+ 
   // ------------------------------------------------------------------------------------------------
   useEffect(() => {
-if(!customer?.id){setCustomerPricingGroup(undefined)}else{
+
+    if(customer?.value===0){
+      console.log('customer1',customer?.value);
+
+      setCustomerPricingGroup(undefined)
+    }else{
+console.log('customer2');
+
     setCustomerPricingGroup(groups?.find(el => el.id === customer?.price_groups_id))
   }
-  }, [customer])
+  }, [customer,customers])
   // ------------------------------------------------------------------------------------------------
   // useEffect(() => {
 

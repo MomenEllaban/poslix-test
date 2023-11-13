@@ -632,6 +632,8 @@ export const useGetSalesReport = (
       ...config,
     }
   );
+  console.log(data,'data');
+  
   return {
     salesReport: (data?.result ?? { data: [] }) as ISalesReport,
     isLoading,

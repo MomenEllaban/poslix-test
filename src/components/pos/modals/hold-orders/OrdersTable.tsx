@@ -93,6 +93,7 @@ export default function OrdersTable({ lang, shopId, searchQuery = '', closeModal
       flex: 1,
       disableColumnMenu: true,
       renderCell({ row }) {
+        
         return row.sub_total.toFixed(locationSettings?.location_decimal_places);
       },
     },
