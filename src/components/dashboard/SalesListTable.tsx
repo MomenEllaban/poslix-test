@@ -18,12 +18,12 @@ import { useReactToPrint } from 'react-to-print';
 import { ToastContainer } from 'react-toastify';
 import { useRecoilState } from 'recoil';
 import AlertDialog from 'src/components/utils/AlertDialog';
-import { useAppDispatch } from 'src/hooks';
 import { Toastify } from 'src/libs/allToasts';
 import { cartJobType } from 'src/recoil/atoms';
-import { addMultipleToCart } from 'src/redux/slices/cart.slice';
+import { addMultipleToCart, selectCartByLocation } from 'src/redux/slices/cart.slice';
 import { findAllData } from 'src/services/crud.api';
 import SalesPaymentModal from '../pos/modals/SalesPaymentModal';
+import { useAppDispatch, useAppSelector } from 'src/hooks';
 
 export default function SalesListTable({
   id,
@@ -60,6 +60,8 @@ export default function SalesListTable({
   const [invoiceDetails, setInvoiceDetails] = useState<any>({});
   const [paymentModalShow, setPaymentModalShow] = useState<boolean>(false);
   const [paymentModalData, setPaymentModalData] = useState({});
+  const selectCartForLocation = selectCartByLocation(shopId);
+  const cart = useAppSelector(selectCartForLocation);
 
   const checkPrintType = async () => {
     const res = await findAllData(`appearance/${router.query.id}`);
@@ -201,6 +203,8 @@ export default function SalesListTable({
 
   class ComponentToPrint extends React.PureComponent {
     render() {
+      const { tax } = this.props;
+
       if (!selectRow) return;
       return (
         <div className="bill">
@@ -281,11 +285,13 @@ export default function SalesListTable({
                   {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtTax}
                 </td>
                 <td></td>
-                <td>
-                  {(
+                <td>  
+                   {(+selectRow?.tax ||(+tax/100*+selectRow.sub_total)
+                  ).toFixed(locationSettings?.location_decimal_places)}
+                               {/* {(
                     ((+selectRow.sub_total / (1 + +selectRow?.tax / 100)) * +selectRow?.tax) /
                     100
-                  ).toFixed(locationSettings?.location_decimal_places)}
+                  ).toFixed(locationSettings?.location_decimal_places)} */}
                 </td>
               </tr>
               <tr className="net-amount">
@@ -514,9 +520,9 @@ export default function SalesListTable({
     if (_locs.toString().length > 10)
       setLocationSettings(
         _locs[
-          _locs.findIndex((loc: any) => {
-            return loc.value == id;
-          })
+        _locs.findIndex((loc: any) => {
+          return loc.value == id;
+        })
         ]
       );
 
@@ -617,7 +623,7 @@ export default function SalesListTable({
         {t('alert_dialog.delete_msg')}
       </AlertDialog>
       <div style={{ display: 'none' }}>
-        <ComponentToPrint ref={componentRef} />
+        <ComponentToPrint tax={cart?.cartTax} ref={componentRef} />
       </div>
       <div style={{ display: 'none' }}>
         <ComponentToPrint2 ref={componentRef2} />

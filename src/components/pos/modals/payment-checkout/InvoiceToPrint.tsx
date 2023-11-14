@@ -1,6 +1,7 @@
 import { ILocationSettings } from '@models/common-model';
 import { IPayment, IProduct } from '@models/pos.types';
 import { EPaymentStatus } from '@models/reports.types';
+import { useRouter } from 'next/router';
 import React from 'react';
 
 interface IProductWithPivot extends IProduct {
@@ -59,6 +60,7 @@ interface IProps {
 
   //   is_multi_language: boolean;
   // };
+  tax?:any;
   invoiceDetails?: any;
   customers: { label: string }[];
   customer: { label: string };
@@ -79,7 +81,10 @@ interface IProps {
 }
 
 class InvoiceToPrint extends React.PureComponent<IProps> {
+
+  
   perperdForPrint(prods: IProductWithPivot[]) {
+  
     let counter = 0;
     return prods?.map((prod: IProductWithPivot, i: number) => {
       counter++;
@@ -96,9 +101,10 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
     });
   }
   
-  perperdForA4Print(prods: IProductWithPivot[]) {
+  perperdForA4Print(tax,prods) {
     let counter = 0;
     return prods?.map((prod: IProductWithPivot, i: number) => {
+      
       counter++;
 
       return (
@@ -109,7 +115,7 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
             {(+prod?.product_price).toFixed(this.props.locationSettings?.location_decimal_places)}
           </td>
           <td>
-            {((+prod?.product_tax / 100) * +prod?.product_price || 0).toFixed(
+            {((+(prod?.product_tax||tax) / 100) * +prod?.product_price || 0).toFixed(
               this.props.locationSettings?.location_decimal_places
             )}
           </td>
@@ -125,6 +131,7 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
 
   render() {
     const {
+      tax,
       invoiceType,
       invoiceDetails,
       printReceipt,
@@ -220,7 +227,7 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
                 </tr>
               </thead>
               <tbody>
-                {this.perperdForA4Print(printReceipt?.data[0]?.products)}
+                {this.perperdForA4Print(tax,printReceipt?.data[0]?.products)}
                 <tr>
                   {/* <td>{invoiceDetails?.txtTax} {invoiceDetails?.en?.is_multi_language && invoiceDetails?.txtTax}</td> */}
                   <td colSpan={4} className="txt_bold_invoice">

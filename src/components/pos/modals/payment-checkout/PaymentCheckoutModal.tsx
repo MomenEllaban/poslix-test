@@ -19,6 +19,7 @@ import { usePosContext } from 'src/modules/pos/_context/PosContext';
 import { clearCart, selectCartByLocation } from 'src/redux/slices/cart.slice';
 import api from 'src/utils/app-api';
 import InvoiceToPrint from './InvoiceToPrint';
+import { useRouter } from 'next/router';
 
 export default function PaymentCheckoutModal({
   show,
@@ -178,11 +179,17 @@ const [sentData, setSentData] = useState<any>()
     content: () => componentRef.current,
     onAfterPrint: () => setPrint(false),
   });
+  const router=useRouter()
+    console.log(router.query.id);
+    // const selectCartForLocation = selectCartByLocation(shopId);
 
+    // const cart = useAppSelector(selectCartForLocation);
+  
   return (
     <div>
       <div style={{ display: 'none' }}>
         <InvoiceToPrint
+        tax={cart?.cartTax}
           ref={componentRef}
           customer={customer}
           invoiceType={invoiceType}
