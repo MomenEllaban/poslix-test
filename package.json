@@ -6,7 +6,6 @@
     "dev": "next dev",
     "build": "next build --no-lint",
     "start": "next start",
-    
     "lint": "next lint",
     "format": "prettier --check --ignore-path .gitignore ."
   },
@@ -29,7 +28,7 @@
     "@types/formidable": "^2.0.5",
     "@types/recoil": "^0.0.9",
     "apexcharts": "^3.41.0",
-    "axios": "^0.27.2",
+    "axios": "^1.6.1",
     "bootstrap": "^5.2.1",
     "chart.js": "^3.9.1",
     "classnames": "^2.3.2",
@@ -112,5 +111,5 @@
   },
   "engines": {
     "node": ">=16 <17.9"
-  }  
+  }
 }
