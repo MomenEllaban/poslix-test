@@ -70,7 +70,19 @@ const NavMenu: any = ({ shopId }: any) => {
     }
     setIsFullScreen(!isFullScreen);
   };
+// ------------------------------------------------------------------------------------------------
+// const handleSetLangToCookie = (name: string) => {
+//   const KEY_LANG = 'lang';
+//   localStorage.setItem(ELocalStorageKeys.LANGUAGE,name)
+//   setCookie(KEY_LANG, name);
+//   if (name == 'en') {
 
+//     setLang(en);
+//   } else {
+//     setLang(ar);
+//   }
+// };
+// ------------------------------------------------------------------------------------------------
   return (
     <>
       <CloseRegister

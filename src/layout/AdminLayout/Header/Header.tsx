@@ -13,6 +13,7 @@ import { GrLanguage } from 'react-icons/gr';
 /*MOHAMMED MAHER */
 import classNames from 'classnames';
 import { useDarkMode } from '../../../context/DarkModeContext';
+import { ELocalStorageKeys } from 'src/utils/local-storage';
 
 type HeaderProps = {
   toggleSidebar: () => void;
@@ -29,6 +30,7 @@ export default function Header(props: HeaderProps) {
 
   const handleSetLangToCookie = (name: string) => {
     const KEY_LANG = 'lang';
+    localStorage.setItem(ELocalStorageKeys.LANGUAGE,name)
     setCookie(KEY_LANG, name);
   };
 

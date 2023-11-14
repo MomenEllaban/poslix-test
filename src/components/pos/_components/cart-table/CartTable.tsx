@@ -32,7 +32,6 @@ export default function CartTable({ customer, shopId }) {
   const router = useRouter()
   const selectCartForLocation = selectCartByLocation(shopId);
   const cart = useAppSelector(selectCartForLocation);
-console.log("vvvvvvvvvv", cart);
 
   const dispatch = useAppDispatch();
 

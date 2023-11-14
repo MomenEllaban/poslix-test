@@ -36,6 +36,7 @@ export default function DigitalProducts({ shopId }) {
 
     return totalPrice;
   };
+
   // ------------------------------------------------------------------------------------------------
   const addItemTocart = (item: any) => {
     const updatedItem = cartItems.find((p) => p.id === item.id);
@@ -119,7 +120,6 @@ export default function DigitalProducts({ shopId }) {
   const getTotal = () => {
     let totalQuantity = 0;
     let totalPrice = 0;
-    console.log(digitalCart);
     digitalCart?.forEach((item) => {
       totalQuantity += item.quantity;
       totalPrice += item.price * item.quantity;
