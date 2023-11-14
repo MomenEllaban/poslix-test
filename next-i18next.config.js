@@ -12,4 +12,5 @@ module.exports = {
   fallbackNS: ['common'],
   defaultNS: ['common'],
   serializeConfig: false,
+  returnNull: false,
 };
