@@ -12,7 +12,7 @@ import { Spinner } from 'react-bootstrap';
 import { VariantsProductModal } from './variants-product-modal';
 import { useTranslation } from 'next-i18next';
 
-
+let locations
 const AddTranseferComponent = () => {
     const { t } = useTranslation();
     const [isloading, setIsloading] = useState(false);
@@ -20,7 +20,6 @@ const AddTranseferComponent = () => {
     const router = useRouter()
     const [from, setFrom] = useState<any>();
     const [referanceNumber, setReferanceNumber] = useState<any>('');
-    let locations
     const [to, setTo] = useState<any>();
     const [fromProducts, setFromProducts] = useState([]);
     const [toProducts, setToProducts] = useState([]);
