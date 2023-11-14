@@ -9,9 +9,11 @@ import { createNewData, updateData } from 'src/services/crud.api';
 import { useRouter } from 'next/router';
 import { ProductContext } from 'src/context/ProductContext';
 import { Dialog } from '@mui/material';
+import { useTranslation } from 'next-i18next';
 
 const PaymentModal = (props: any) => {
-  const { openDialog, statusDialog, showType, fetchData, t } = props;
+  const { openDialog, statusDialog, showType, fetchData } = props;
+  const { t } = useTranslation();
 
   const methodTemplate = { id: 0, name: '' };
   const [methodsName, setMethodName] = useState(methodTemplate);
