@@ -4,18 +4,18 @@ import { IBrand, ICategory } from '@models/pos.types';
 import { IStockReport } from '@models/reports.types';
 import { Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import { SelectChangeEvent } from '@mui/material/Select';
+// import InputLabel from '@mui/material/InputLabel';
+// import { SelectChangeEvent } from '@mui/material/Select';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { nanoid } from '@reduxjs/toolkit';
 import { useRouter } from 'next/router';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { Button } from 'react-bootstrap';
 import { useReactToPrint } from 'react-to-print';
 import withAuth from 'src/HOCs/withAuth';
 import AlertDialog from 'src/components/utils/AlertDialog';
 import { useUser } from 'src/context/UserContext';
-import { apiFetchCtr } from 'src/libs/dbUtils';
+// import { apiFetchCtr } from 'src/libs/dbUtils';
 import CustomToolbar from 'src/modules/reports/_components/CustomToolbar';
 import posService from 'src/services/pos.service';
 import api from 'src/utils/app-api';
@@ -23,6 +23,7 @@ import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
 import Select from 'react-select';
 import { StateManagerProps } from 'react-select/dist/declarations/src/useStateManager';
 import { intersectionBy } from 'lodash';
+import Pagination from '@mui/material/Pagination';
 
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useTranslation } from 'next-i18next';
@@ -46,14 +47,16 @@ function StockReport() {
     setAnchorEl(null);
   };
 
+  const NUMBER_PAGE_DEFAULT = 1;
+
   const [selectId, setSelectId] = useState(0);
   const [selectRow, setSelectRow] = useState<any>({});
   const [lines, setLines] = useState<any>([]);
   const [show, setShow] = useState(false);
   const [isLoadItems, setIsLoadItems] = useState(false);
   const [showViewPopUp, setShowViewPopUp] = useState(false);
-  const [handleSearchTxt, setHandleSearchTxt] = useState('');
-  const [details, setDetails] = useState({ subTotal: 1, tax: 0, cost: 0 });
+  // const [handleSearchTxt, setHandleSearchTxt] = useState('');
+  // const [details, setDetails] = useState({ subTotal: 1, tax: 0, cost: 0 });
   const { setInvoicDetails, invoicDetails, locationSettings, setLocationSettings } = useUser();
 
   const [selectedBrand, setSelectedBrand] = useState<IBrandWithSelect | null>();
@@ -63,11 +66,15 @@ function StockReport() {
   const [filteredByCategories, setFilteredByCategories] = useState([]);
 
   const [filteredSales, setFilteredSales] = useState<any>([]);
-  const [selectedRange, setSelectedRange] = useState(null);
-  const [strSelectedDate, setStrSelectedDate] = useState([]);
-  const [selectedDateVlaue, setSelectedDateValue] = useState('');
-  const [selectedCustomer, setSelectedCustomer] = useState('');
-  const [customersOptions, setCustomersOptions] = useState([]);
+  // const [selectedRange, setSelectedRange] = useState(null);
+  // const [strSelectedDate, setStrSelectedDate] = useState([]);
+  // const [selectedDateVlaue, setSelectedDateValue] = useState('');
+  // const [selectedCustomer, setSelectedCustomer] = useState('');
+  // const [customersOptions, setCustomersOptions] = useState([]);
+
+  const [paginationTotal, setPaginationTotal] = useState(NUMBER_PAGE_DEFAULT);
+
+  const pageNumRef = useRef(NUMBER_PAGE_DEFAULT) as React.MutableRefObject<number>;
 
   const getLocalizedPrice = useCallback(
     (price: number | string): string =>
@@ -87,6 +94,7 @@ function StockReport() {
     setFilteredByBrands(_filteredSales);
     console.log(_filteredSales);
   };
+
   const handleSelectCategory: StateManagerProps['onChange'] = (
     category: ICategory & { label: string; value: number }
   ) => {
@@ -95,60 +103,61 @@ function StockReport() {
     const _filteredSales = sales?.filter((sale) => sale.category_id === category.id);
     setFilteredByCategories(_filteredSales);
   };
+
   const filteredArr = intersectionBy(filteredByBrands, filteredByCategories, 'id');
 
-  useEffect(() => {
-    let localFilteredSales = [];
-    if (strSelectedDate?.length === 2) {
-      const filteredList = sales?.filter((sale) => {
-        const dateCreated = sale.created_at.split(' ')[0];
-        return (
-          new Date(dateCreated).getDate() >= new Date(strSelectedDate[0]).getDate() &&
-          new Date(dateCreated).getMonth() >= new Date(strSelectedDate[0]).getMonth() &&
-          new Date(dateCreated).getFullYear() >= new Date(strSelectedDate[0]).getFullYear() &&
-          new Date(dateCreated).getDate() <= new Date(strSelectedDate[1]).getDate() &&
-          new Date(dateCreated).getMonth() <= new Date(strSelectedDate[1]).getMonth() &&
-          new Date(dateCreated).getFullYear() <= new Date(strSelectedDate[1]).getFullYear()
-        );
-      });
-      setSelectedDateValue(`${strSelectedDate[0]} - ${strSelectedDate[1]}`);
-      localFilteredSales = filteredList;
-    } else if (strSelectedDate?.length === 1) {
-      const filteredList = sales.filter((sale) => {
-        const dateCreated = sale.created_at.split(' ')[0];
-        return (
-          new Date(dateCreated).getDate() === new Date(strSelectedDate[0]).getDate() &&
-          new Date(dateCreated).getMonth() === new Date(strSelectedDate[0]).getMonth() &&
-          new Date(dateCreated).getFullYear() === new Date(strSelectedDate[0]).getFullYear()
-        );
-      });
-      setSelectedDateValue(strSelectedDate[0]);
-      localFilteredSales = filteredList;
-    } else {
-      localFilteredSales = sales;
-    }
-    if (selectedCustomer) {
-      localFilteredSales = localFilteredSales.filter(
-        (sale) => sale.customer_name === selectedCustomer
-      );
-    }
-    //Eslam 19
-    let totalPrice = 0;
-    let taxAmount = 0;
-    localFilteredSales.forEach((obj) => {
-      const price = parseFloat(obj.total_price);
-      const tax = parseFloat(obj.tax_amount);
-      totalPrice += price;
-      taxAmount += tax;
-    });
-    const totalPriceAndTax = totalPrice + taxAmount;
-    setDetails({
-      subTotal: totalPrice,
-      tax: taxAmount,
-      cost: totalPriceAndTax,
-    });
-    setFilteredSales(localFilteredSales);
-  }, [strSelectedDate, selectedCustomer]);
+  // useEffect(() => {
+  //   let localFilteredSales = [];
+  //   if (strSelectedDate?.length === 2) {
+  //     const filteredList = sales?.filter((sale) => {
+  //       const dateCreated = sale.created_at.split(' ')[0];
+  //       return (
+  //         new Date(dateCreated).getDate() >= new Date(strSelectedDate[0]).getDate() &&
+  //         new Date(dateCreated).getMonth() >= new Date(strSelectedDate[0]).getMonth() &&
+  //         new Date(dateCreated).getFullYear() >= new Date(strSelectedDate[0]).getFullYear() &&
+  //         new Date(dateCreated).getDate() <= new Date(strSelectedDate[1]).getDate() &&
+  //         new Date(dateCreated).getMonth() <= new Date(strSelectedDate[1]).getMonth() &&
+  //         new Date(dateCreated).getFullYear() <= new Date(strSelectedDate[1]).getFullYear()
+  //       );
+  //     });
+  //     setSelectedDateValue(`${strSelectedDate[0]} - ${strSelectedDate[1]}`);
+  //     localFilteredSales = filteredList;
+  //   } else if (strSelectedDate?.length === 1) {
+  //     const filteredList = sales.filter((sale) => {
+  //       const dateCreated = sale.created_at.split(' ')[0];
+  //       return (
+  //         new Date(dateCreated).getDate() === new Date(strSelectedDate[0]).getDate() &&
+  //         new Date(dateCreated).getMonth() === new Date(strSelectedDate[0]).getMonth() &&
+  //         new Date(dateCreated).getFullYear() === new Date(strSelectedDate[0]).getFullYear()
+  //       );
+  //     });
+  //     setSelectedDateValue(strSelectedDate[0]);
+  //     localFilteredSales = filteredList;
+  //   } else {
+  //     localFilteredSales = sales;
+  //   }
+  //   if (selectedCustomer) {
+  //     localFilteredSales = localFilteredSales.filter(
+  //       (sale) => sale.customer_name === selectedCustomer
+  //     );
+  //   }
+  //   //Eslam 19
+  //   let totalPrice = 0;
+  //   let taxAmount = 0;
+  //   localFilteredSales.forEach((obj) => {
+  //     const price = parseFloat(obj.total_price);
+  //     const tax = parseFloat(obj.tax_amount);
+  //     totalPrice += price;
+  //     taxAmount += tax;
+  //   });
+  //   const totalPriceAndTax = totalPrice + taxAmount;
+  //   setDetails({
+  //     subTotal: totalPrice,
+  //     tax: taxAmount,
+  //     cost: totalPriceAndTax,
+  //   });
+  //   setFilteredSales(localFilteredSales);
+  // }, [strSelectedDate, selectedCustomer]);
 
   const resetFilters = () => {
     setFilteredByCategories(sales);
@@ -301,18 +310,34 @@ function StockReport() {
       );
     }
   }
+  const handelFilterEndPoint = (): string => {
+    let endPoint = '';
+
+    if (selectedBrand) {
+      endPoint = endPoint + `&brand_id=${selectedBrand.value}`;
+    }
+    if (selectedCategory) {
+      endPoint = endPoint + `&category_id=${selectedCategory.value}`;
+    }
+    return endPoint;
+  };
 
   // init sales data
-  async function initDataPage() {
+  async function initDataPage(numPages = NUMBER_PAGE_DEFAULT) {
     setIsLoadItems(true);
+    pageNumRef.current = numPages;
+    const endPoint = handelFilterEndPoint();
+
     api
-      .get(`reports/itemStock`, { params: { all_data: 1, location_id: shopId } })
+      .get(`reports/itemStock?location_id=${shopId}&page=${numPages}${endPoint}`)
       .then(({ data }) => {
         const brandSet = new Map();
-        const _sales = data.result.map((item) => ({
+        const _sales = data?.result?.data?.map((item) => ({
           id: nanoid(5),
           ...item,
         }));
+
+        setPaginationTotal(data.result.last_page);
         setSales(_sales);
         setFilteredSales(_sales);
         setFilteredByBrands(_sales);
@@ -325,38 +350,31 @@ function StockReport() {
             });
           }
         });
-        const brandList = Array.from(brandSet).map(([name, value]) => ({ ...value }));
-        console.log(brandList);
+        // const brandList = Array.from(brandSet).map(([name, value]) => ({ ...value }));
+        // console.log(brandList);
       })
       .finally(() => {
         setIsLoadItems(false);
       });
+  }
 
+  const getSelectedData = () => {
     posService.getBrands(shopId as string).then(({ result }) => {
       setBrands(result.map((p) => ({ ...p, label: p.name, value: p.id })));
     });
     posService.getCategories(shopId as string).then(({ result }) => {
       setCategories(result.map((p) => ({ ...p, label: p.name, value: p.id })));
     });
-  }
-
-  async function getItems(id: number) {
-    setIsLoadItems(true);
-    const { success, newdata } = await apiFetchCtr({
-      fetch: 'transactions',
-      subType: 'getSaleItems',
-      shopId,
-      id,
-    });
-    if (success) {
-      setLines(newdata);
-      setIsLoadItems(false);
-    }
-  }
+  };
 
   useEffect(() => {
     if (!shopId) return;
-    initDataPage();
+    initDataPage(NUMBER_PAGE_DEFAULT);
+  }, [shopId, router.query.slug, selectedBrand, selectedCategory]);
+
+  useEffect(() => {
+    if (!shopId) return;
+    getSelectedData();
 
     const locations: ILocation[] = getLocalStorage(ELocalStorageKeys.LOCATIONS);
     const currentLocation = locations.find((location) => +location.location_id === +shopId);
@@ -366,15 +384,20 @@ function StockReport() {
   const handlePrint = useReactToPrint({
     content: () => componentRef.current,
   });
-  // const onRowsSelectionHandler = (selectedRowsData: any) => {
-  //   setSelectRow(selectedRowsData);
-  //   setSelectId(selectedRowsData.id);
-  //   getItems(selectedRowsData.id);
-  //   setShowViewPopUp(true);
-  // };
-  // const handleSearch = (e: any) => {
-  //   setHandleSearchTxt(e.target.value);
-  // };
+
+  function CustomPagination(): React.JSX.Element {
+    return (
+      <Pagination
+        color="primary"
+        variant="outlined"
+        shape="rounded"
+        page={pageNumRef.current}
+        count={paginationTotal}
+        onChange={(event, value) => initDataPage(value)}
+      />
+    );
+  }
+
   return (
     <AdminLayout shopId={shopId}>
       <div className="flex" style={{ alignItems: 'center' }}>
@@ -455,9 +478,9 @@ function StockReport() {
           }}
           rows={filteredArr}
           columns={columns}
-          pageSize={30}
-          rowsPerPageOptions={[10]}
-          components={{ Toolbar: CustomToolbar }}
+          // pageSize={30}
+          // rowsPerPageOptions={[10]}
+          components={{ Toolbar: CustomToolbar, Pagination: CustomPagination }}
         />
       </div>
       {/* FOR VIEW ELEMENT */}

@@ -2,7 +2,8 @@ import { AdminLayout } from '@layout';
 import { ILocation } from '@models/auth.types';
 // import { IProduct } from '@models/pos.types';
 // import { EStatus, IItemSalesReport } from '@models/reports.types';
-import { Dialog, DialogActions, DialogContent, DialogTitle, MenuItem } from '@mui/material';
+import { MenuItem } from '@mui/material';
+// import { Dialog, DialogActions, DialogContent, DialogTitle, MenuItem } from '@mui/material';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
@@ -10,7 +11,7 @@ import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { useRouter } from 'next/router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from 'react-bootstrap';
-import { useReactToPrint } from 'react-to-print';
+// import { useReactToPrint } from 'react-to-print';
 import withAuth from 'src/HOCs/withAuth';
 import DatePicker from 'src/components/filters/Date';
 // import AlertDialog from 'src/components/utils/AlertDialog';
@@ -21,6 +22,7 @@ import CustomToolbar from 'src/modules/reports/_components/CustomToolbar';
 import { findAllData } from 'src/services/crud.api';
 import api from 'src/utils/app-api';
 import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
+import Pagination from '@mui/material/Pagination';
 
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useTranslation } from 'next-i18next';
@@ -29,21 +31,22 @@ function PurchaseReport() {
   const router = useRouter();
   const shopId = router.query.id ?? '';
 
-  const componentRef = useRef(null);
+  // const componentRef = useRef(null);
 
   const { t } = useTranslation();
 
   const { locationSettings, setLocationSettings, invoicDetails } = useUser();
+  const NUMBER_PAGE_DEFAULT = 1;
 
   const [sales, setSales] = useState<any>([]);
   const [filteredSales, setFilteredSales] = useState<any>([]);
-  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-  const [selectId, setSelectId] = useState(0);
-  const [selectRow, setSelectRow] = useState<any>({});
-  const [lines, setLines] = useState<any>([]);
-  const [show, setShow] = useState(false);
+  // const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  // const [selectId, setSelectId] = useState(0);
+  // const [selectRow, setSelectRow] = useState<any>({});
+  // const [lines, setLines] = useState<any>([]);
+  // const [show, setShow] = useState(false);
   const [isLoadItems, setIsLoadItems] = useState(false);
-  const [showViewPopUp, setShowViewPopUp] = useState(false);
+  // const [showViewPopUp, setShowViewPopUp] = useState(false);
   const [handleSearchTxt, setHandleSearchTxt] = useState('');
   const [details, setDetails] = useState({ subTotal: 1, tax: 0, cost: 0 });
   const [selectedRange, setSelectedRange] = useState(null);
@@ -54,6 +57,9 @@ function PurchaseReport() {
   const [locations, setLocations] = useState([]);
   const [suppliersOptions, setSuppliersOptions] = useState([]);
   const [productsOptions, setProductsOptions] = useState([]);
+  const [paginationTotal, setPaginationTotal] = useState(NUMBER_PAGE_DEFAULT);
+
+  const pageNumRef = useRef(NUMBER_PAGE_DEFAULT) as React.MutableRefObject<number>;
 
   const handleChangeSupplier = (event: SelectChangeEvent<string>) => {
     setSelectedSupplier(event.target.value);
@@ -132,13 +138,15 @@ function PurchaseReport() {
   );
 
   // init sales data
-  async function initDataPage() {
+  async function initDataPage(numPage = NUMBER_PAGE_DEFAULT) {
     setIsLoadItems(true);
     api
-      .get(`reports/purchase/${shopId}`, { params: { all_data: 1 } })
+      .get(`reports/purchase/${shopId}?page=${numPage}`)
       .then(({ data }) => {
         const _salesList = data.result;
         const mappedSalesList = [];
+        setPaginationTotal(data.result.last_page);
+        pageNumRef.current = numPage;
         //mohamed elsayed
         let index = 0;
         _salesList.forEach((item) => {
@@ -148,20 +156,18 @@ function PurchaseReport() {
         setSales(mappedSalesList);
         setFilteredSales(() => mappedSalesList);
       })
-      .finally(() => {});
+      .finally(() => {
+        setIsLoadItems(false);
+      });
+  }
 
+
+  const getSelectedData = async () => {
     const supplierRes = await findAllData(`suppliers/${shopId}`);
     setSuppliersOptions(supplierRes.data.result);
     const productsRes = await findAllData(`products/${shopId}`);
     setProductsOptions([...productsRes.data.result.data]);
-    setIsLoadItems(false);
-  }
-
-  // const handlePrint = useReactToPrint({ content: () => componentRef.current });
-
-  // const handleSearch = (e: any) => {
-  //   setHandleSearchTxt(e.target.value);
-  // };
+  };
 
   useEffect(() => {
     let localFilteredSales = [];
@@ -223,12 +229,26 @@ function PurchaseReport() {
   /*************************************/
   useEffect(() => {
     if (!shopId) return;
+    getSelectedData();
     const locations: ILocation[] = getLocalStorage(ELocalStorageKeys.LOCATIONS);
     setLocations(locations);
     const currentLocation = locations.find((location) => +location.location_id === +shopId);
     setLocationSettings(currentLocation ?? locationSettings);
     initDataPage();
   }, [shopId]);
+
+  function CustomPagination(): React.JSX.Element {
+    return (
+      <Pagination
+        color="primary"
+        variant="outlined"
+        shape="rounded"
+        page={pageNumRef.current}
+        count={paginationTotal}
+        onChange={(event, value) => initDataPage(value)}
+      />
+    );
+  }
 
   return (
     <AdminLayout shopId={shopId}>
@@ -311,9 +331,9 @@ function PurchaseReport() {
           }}
           rows={filteredSales}
           columns={columns}
-          pageSize={30}
-          rowsPerPageOptions={[10]}
-          components={{ Toolbar: CustomToolbar }}
+          // pageSize={30}
+          // rowsPerPageOptions={[10]}
+          components={{ Toolbar: CustomToolbar, Pagination: CustomPagination }}
         />
       </div>
       {/* FOR VIEW ELEMENT */}

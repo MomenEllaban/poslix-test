@@ -60,7 +60,20 @@ const DigitalCart = ({
             if (newValue) addItemTocart(newValue);
           }}
           sx={{ width: '100%' }}
-          renderInput={(params) => <TextField {...params} label="Select Product" />}
+          renderInput={(params) => 
+            <TextField
+            inputProps={{
+              ...params.inputProps,
+            }}
+            fullWidth
+            size="small"
+            id="Select Product"
+            InputProps={{
+              ...params.InputProps,
+            }}
+            label={'Select Product'}
+          />          
+        }
         />
         <div className="digital-cart-items-list">
           {cartItems?.length >= 1 ? (
