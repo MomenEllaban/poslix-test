@@ -40,12 +40,8 @@ const [customerPricingGroup, setCustomerPricingGroup] = useState<any>()
   useEffect(() => {
 
     if(customer?.value===0){
-      console.log('customer1',customer?.value);
-
       setCustomerPricingGroup(undefined)
     }else{
-console.log('customer2');
-
     setCustomerPricingGroup(groups?.find(el => el.id === customer?.price_groups_id))
   }
   }, [customer,customers])

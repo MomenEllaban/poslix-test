@@ -192,17 +192,17 @@ export default function DigitalProducts({ shopId }) {
       {renderedScreen === 'products' ? (
         <div style={{ direction: lang == en ? 'ltr' : 'rtl' }}>
           <div className="digital-products-main bg-white">
-            <div className="digital-products-header">
+            {/* <div className="digital-products-header">
               <h1>{lang.digital.digital_product}</h1>
-            </div>
+            </div> */}
 
             <div className="digital-products-container">
               <div className="digital-products">
                 <div className="digital-product-list bg-light">
-                  <div
+                  {/* <div
                     style={{ borderRadius: '8px' }}
-                    className="toggle-brands-catigories-buttons-wrapper ">
-                    <div
+                    className="toggle-brands-catigories-buttons-wrapper "> */}
+                    {/* <div
                       onClick={() => {
                         setRenderedTabs('categories');
                       }}
@@ -211,8 +211,8 @@ export default function DigitalProducts({ shopId }) {
                         renderedTabs === 'categories' ? 'bg-success' : 'bg-light'
                       } ${renderedTabs === 'categories' ? 'text-light' : 'text-success'}`}>
                       {lang.pos.itemList.category}
-                    </div>
-                    <div
+                    </div> */}
+                    {/* <div
                       onClick={() => {
                         setRenderedTabs('brands');
                       }}
@@ -221,8 +221,8 @@ export default function DigitalProducts({ shopId }) {
                         renderedTabs === 'brands' ? 'bg-success' : 'bg-light'
                       } ${renderedTabs === 'brands' ? 'text-light' : 'text-success'}`}>
                       {lang.pos.itemList.brand}
-                    </div>
-                  </div>
+                    </div> */}
+                  {/* </div> */}
                   <div className="w-100 d-flex justify-content-center bg-light">
                     <Tabs
                       value={value}

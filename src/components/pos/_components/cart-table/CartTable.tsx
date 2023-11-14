@@ -32,6 +32,7 @@ export default function CartTable({ customer, shopId }) {
   const router = useRouter()
   const selectCartForLocation = selectCartByLocation(shopId);
   const cart = useAppSelector(selectCartForLocation);
+console.log("vvvvvvvvvv", cart);
 
   const dispatch = useAppDispatch();
 
@@ -140,7 +141,7 @@ export default function CartTable({ customer, shopId }) {
           {( cart?.cartItems)?.map((product:any, idx) => (
             <tr key={product.id}>
               <td>{idx + 1}</td>
-              <td>{product.name}</td>
+              <td>{product.name || product.product_name}</td>
               <td>
                 <span className={styles['qty-col']}>
                   <Button
@@ -205,7 +206,7 @@ export default function CartTable({ customer, shopId }) {
                         locationSettings?.location_decimal_places
                       )
                     } </span>
-                    <span > {(+product?.sell_price)?.toFixed(
+                    <span > {(+product?.sell_price || +product.product_price)?.toFixed(
                       locationSettings?.location_decimal_places
                     )}</span>
 
@@ -213,7 +214,7 @@ export default function CartTable({ customer, shopId }) {
                   : <span>{
 
 
-                    (+product?.sell_price)?.toFixed(
+                    (+product?.sell_price || +product.product_price)?.toFixed(
                       locationSettings?.location_decimal_places
                     )
                   } </span>
