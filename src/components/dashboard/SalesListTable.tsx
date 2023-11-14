@@ -203,7 +203,7 @@ export default function SalesListTable({
 
   class ComponentToPrint extends React.PureComponent {
     render() {
-      const { tax } = this.props;
+      // const { tax } = this.props;
 
       if (!selectRow) return;
       return (
@@ -286,7 +286,7 @@ export default function SalesListTable({
                 </td>
                 <td></td>
                 <td>  
-                   {(+selectRow?.tax ||(+tax/100*+selectRow.sub_total)
+                   {(+selectRow?.tax ||0
                   ).toFixed(locationSettings?.location_decimal_places)}
                                {/* {(
                     ((+selectRow.sub_total / (1 + +selectRow?.tax / 100)) * +selectRow?.tax) /
@@ -623,7 +623,9 @@ export default function SalesListTable({
         {t('alert_dialog.delete_msg')}
       </AlertDialog>
       <div style={{ display: 'none' }}>
-        <ComponentToPrint tax={cart?.cartTax} ref={componentRef} />
+        <ComponentToPrint 
+        // tax={cart?.cartTax}
+         ref={componentRef} />
       </div>
       <div style={{ display: 'none' }}>
         <ComponentToPrint2 ref={componentRef2} />
