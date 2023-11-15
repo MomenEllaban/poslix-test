@@ -120,12 +120,8 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
           <td>
             {(+prod?.product_price).toFixed(this.props.locationSettings?.location_decimal_places)}
           </td>
-          {/* <td>
-            {((+(prod?.product_tax||tax) / 100) * +prod?.product_price || 0).toFixed(
-              this.props.locationSettings?.location_decimal_places
-            )}
-          </td> */}
-          <td>
+      
+              <td colSpan={2}>
             {(+prod?.product_price * +prod?.product_qty).toFixed(
               this.props.locationSettings?.location_decimal_places
             )}
@@ -220,13 +216,7 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
                     {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtQty}
                   </th>
                   <th>Unit Price</th>
-                  {/* <th> {invoiceDetails?.txtItem}<br />{invoiceDetails?.en?.is_multi_language && invoiceDetails?.txtItem2}</th> */}
-                  {/* <th>
-                    {invoiceDetails?.en?.txtTax}
-                    <br />
-                    {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtTax}
-                  </th> */}
-                  <th>
+                    <th colSpan={2}>
                     {' '}
                     {invoiceDetails?.en?.txtAmount}
                     <br />
