@@ -429,11 +429,11 @@ export default function SalesListTable({
                   {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtQty}
                 </th>
                 <th>Unit Price</th>
-                <th>
+                {/* <th>
                   {invoiceDetails?.en?.txtTax}
                   <br />
                   {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtTax}
-                </th>
+                </th> */}
                 <th>
                   {' '}
                   {invoiceDetails?.en?.txtAmount}
@@ -451,11 +451,11 @@ export default function SalesListTable({
                     <td>
                       {Number(line.product_price).toFixed(locationSettings?.location_decimal_places)}
                     </td>
-                    <td>
+                    {/* <td>
                       {Number((+tax / 100) * +line.product_price).toFixed(
                         locationSettings?.location_decimal_places
                       )}
-                    </td>
+                    </td> */}
                     <td>
                       {Number(+line.product_qty * +line.product_price).toFixed(
                         locationSettings?.location_decimal_places
@@ -475,6 +475,17 @@ export default function SalesListTable({
                   {Number(selectRow.sub_total).toFixed(locationSettings?.location_decimal_places)}
                 </td>
               </tr>
+              <tr>
+                  {/* <td>{invoiceDetails?.txtTax} {invoiceDetails?.en?.is_multi_language && invoiceDetails?.txtTax}</td> */}
+                  <td colSpan={4} className="txt_bold_invoice">
+                    Tax Amount 
+                    {" "}
+                    {invoiceDetails?.en?.is_multi_language && 'قيمة الضريبة'}
+                  </td>
+                  <td className="txt_bold_invoice">
+                    {Number(selectRow?.tax).toFixed(locationSettings?.location_decimal_places)}
+                  </td>
+                </tr>
               <tr>
                 <td colSpan={4} className="txt_bold_invoice">
                   Total Paid {invoiceDetails?.en?.is_multi_language && 'إجمالى المدفوعات'}

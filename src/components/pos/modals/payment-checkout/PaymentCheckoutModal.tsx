@@ -189,7 +189,7 @@ const [sentData, setSentData] = useState<any>()
     <div>
       <div style={{ display: 'none' }}>
         <InvoiceToPrint
-        tax={cart?.cartTax}
+        // tax={cart?.cartTax}
           ref={componentRef}
           customer={customer}
           invoiceType={invoiceType}
