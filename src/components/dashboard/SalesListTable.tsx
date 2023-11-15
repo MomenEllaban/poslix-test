@@ -434,7 +434,7 @@ export default function SalesListTable({
                   <br />
                   {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtTax}
                 </th> */}
-                <th>
+                <th colSpan={2}>
                   {' '}
                   {invoiceDetails?.en?.txtAmount}
                   <br />
@@ -456,7 +456,7 @@ export default function SalesListTable({
                         locationSettings?.location_decimal_places
                       )}
                     </td> */}
-                    <td>
+                    <td colSpan={2}>
                       {Number(+line.product_qty * +line.product_price).toFixed(
                         locationSettings?.location_decimal_places
                       )}
