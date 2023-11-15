@@ -161,7 +161,9 @@ export default function CartTable({ customer, shopId }) {
                       value: product.quantity,
                       style: {
                         textAlign: 'center',
-                        height: '0'
+                        height: '0',
+                        paddingLeft: "0",
+                        paddingRight: "0",
                       }
                     }}
                     onInput={(e: ChangeEvent<HTMLInputElement>) => {
