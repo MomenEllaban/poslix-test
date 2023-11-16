@@ -10,11 +10,13 @@ import { Toastify } from 'src/libs/allToasts';
 import { findAllData } from 'src/services/crud.api';
 import api from 'src/utils/app-api';
 import useSWR from 'swr';
+import { useTranslation } from 'next-i18next';
+
 
 export default function ExpensesCategoriesView() {
   const router = useRouter();
   const shopId = router.query.id;
-
+  const { t } = useTranslation();
   const [show, setShow] = useState(-1);
 
   const [isDeleteLoading, setIsDeleteLoading] = useState(false);
@@ -129,7 +131,7 @@ export default function ExpensesCategoriesView() {
   return (
     <Card>
       <Card.Header className="p-3 bg-white">
-        <h5>Category List</h5>
+        <h5>{t('expenses.category_list')}</h5>
       </Card.Header>
       <Card.Body className="table-responsive text-nowrap">
         {!isLoading ? (
@@ -137,8 +139,8 @@ export default function ExpensesCategoriesView() {
             <thead className="thead-dark">
               <tr>
                 <th style={{ width: '6%' }}>#</th>
-                <th>Name</th>
-                <th>Action</th>
+                <th>{t('expenses.name')}</th>
+                <th>{t('expenses.action')}</th>
               </tr>
             </thead>
             <tbody>
@@ -154,7 +156,7 @@ export default function ExpensesCategoriesView() {
                         disabled={!catPermissions.hasInsert}
                         name="tax-name"
                         className="form-control p-2"
-                        placeholder="New category name"
+                        placeholder={t('expenses.new_category_name')}
                         value={category.name}
                         onChange={(e) => {
                           setCategories((list) => {
@@ -203,7 +205,7 @@ export default function ExpensesCategoriesView() {
                               loading={isDeleteLoading}
                               onClose={() => setShow(-1)}
                               onConfirm={() => handleDeleteCategory(category.id)}
-                              message="Are you sure you want to delete this category?"
+                              message={t('alert_dialog.delete_category')}
                               show={category.id === show}
                             />
                           </>

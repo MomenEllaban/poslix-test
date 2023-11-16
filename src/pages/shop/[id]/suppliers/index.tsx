@@ -5,6 +5,7 @@ import { ILocation } from '@models/auth.types';
 import { ISupplier } from '@models/suppliers.types';
 import { DataGrid, GridColDef, GridRowParams } from '@mui/x-data-grid';
 import type { NextPage } from 'next';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { Button, ButtonGroup } from 'react-bootstrap';
@@ -17,13 +18,15 @@ import CustomToolbar from 'src/modules/reports/_components/CustomToolbar';
 import { useSuppliersList } from 'src/services/suppliers.service';
 import api from 'src/utils/app-api';
 import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
+import { useTranslation } from 'next-i18next';
 
 type TProduct = { id: number; name: string; sku: string; type: string; qty: number };
 
 const Suppliers: NextPage = (props: any) => {
   const router = useRouter();
   const { locationSettings, setLocationSettings } = useUser();
-  const { id } = props
+  const { id } = props;
+  const { t } = useTranslation();
   const shopId = id;
 
   const { isLoading: isSuppliersLoading, suppliersList, error, refetch } = useSuppliersList(shopId);
@@ -58,20 +61,22 @@ const Suppliers: NextPage = (props: any) => {
 
   const columns: GridColDef<ISupplier>[] = [
     { field: 'id', headerName: '#', width: 60 },
-    { field: 'name', headerName: 'Name', flex: 1 },
-    { field: 'facility_name', headerName: 'Facility Name', flex: 1 },
+    { field: 'name', headerName: t('supplier.name'), flex: 1 },
+    { field: 'facility_name', headerName: t('supplier.facility_name'), flex: 1 },
     {
       field: 'invoice_address',
-      headerName: 'Address',
+      headerName: t('supplier.address'),
       flex: 3,
       renderCell({ row }) {
-        return `${row.invoice_address == null ? "" : row.invoice_address} ${row.invoice_City == null ? "" : row.invoice_City}  ${row.invoice_Country == null ? "" : row.invoice_Country} `;
+        return `${row.invoice_address == null ? '' : row.invoice_address} ${
+          row.invoice_City == null ? '' : row.invoice_City
+        }  ${row.invoice_Country == null ? '' : row.invoice_Country} `;
       },
     },
-    { field: 'postal_code', headerName: 'Postal Code', flex: 1 },
+    { field: 'postal_code', headerName: t('supplier.postal_code'), flex: 1 },
     {
       field: 'action',
-      headerName: 'Action ',
+      headerName: t('supplier.action'),
       sortable: false,
       disableExport: true,
       flex: 1,
@@ -98,9 +103,11 @@ const Suppliers: NextPage = (props: any) => {
 
           <ConfirmationModal
             show={showDeleteModal}
-            onConfirm={() => { handleDeleteSupplier(selectId), console.log(selectId) }}
+            onConfirm={() => {
+              handleDeleteSupplier(selectId), console.log(selectId);
+            }}
             onClose={() => setShowDeleteModal(false)}
-            message="Are you sure you want to delete this supplier?"
+            message={t('alert_dialog.delete_supplier')}
           />
 
           <Button
@@ -137,17 +144,18 @@ const Suppliers: NextPage = (props: any) => {
               setType('add');
               setSupplierModal(true);
             }}>
-            <FontAwesomeIcon icon={faPlus} /> Add New Supplier{' '}
+            <FontAwesomeIcon icon={faPlus} /> {t('supplier.add_new_supplier')}{' '}
           </button>
         </div>
 
         <div className="page-content-style card">
-          <h5>Suppliers List</h5>
+          <h5>{t('supplier.supplier_list')}</h5>
           <DataGrid
             loading={isSuppliersLoading}
             className="datagrid-style"
             sx={{
-              '.MuiDataGrid-columnSeparator': { display: 'none', }, '&.MuiDataGrid-root': { border: 'none', },
+              '.MuiDataGrid-columnSeparator': { display: 'none' },
+              '&.MuiDataGrid-root': { border: 'none' },
             }}
             rows={suppliersList}
             columns={columns}
@@ -169,9 +177,9 @@ const Suppliers: NextPage = (props: any) => {
   );
 };
 export default Suppliers;
-export async function getServerSideProps({ params }) {
+export async function getServerSideProps({ params, locale }) {
   const { id } = params;
   return {
-    props: { id },
+    props: { id, ...(await serverSideTranslations(locale)) },
   };
 }

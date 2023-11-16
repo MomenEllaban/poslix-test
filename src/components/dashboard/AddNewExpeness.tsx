@@ -9,6 +9,7 @@ import useSWR from 'swr';
 import { getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
 import storage from 'firebaseConfig';
 import { generateUniqueString } from 'src/libs/toolsUtils';
+import { useTranslation } from 'next-i18next';
 
 const AddNewExpeness = ({
   shopId,
@@ -19,6 +20,7 @@ const AddNewExpeness = ({
   initData,
 }: any) => {
   const router = useRouter();
+  const { t } = useTranslation();
   const [cats, setCategories] = useState<ICategory[]>([]);
 
   const [formObj, setFormObj] = useState<any>({
@@ -104,7 +106,7 @@ const AddNewExpeness = ({
           <div className="col-md-6">
             <div className="form-group2">
               <label>
-                Category Expense: <span className="text-danger">*</span>
+                {t('expenses.category_expense')}: <span className="text-danger">*</span>
               </label>
               <Select
                 styles={colourStyles}
@@ -121,7 +123,7 @@ const AddNewExpeness = ({
           <div className="col-md-6">
             <div className="form-group2">
               <label>
-                Name: <span className="text-danger">*</span>
+               {t('expenses.name')}: <span className="text-danger">*</span>
               </label>
               <input
                 type="text"
@@ -140,7 +142,7 @@ const AddNewExpeness = ({
           <div className="col-md-6">
             <div className="form-group2">
               <label>
-                Amount: <span className="text-danger">*</span>
+                {t('expenses.amount')}: <span className="text-danger">*</span>
               </label>
               <input
                 type="number"
@@ -158,7 +160,7 @@ const AddNewExpeness = ({
           </div>
           <div className="col-md-6">
             <div className="form-group2">
-              <label>Date:</label>
+              <label>{t('expenses.date')}:</label>
               <DatePicker
                 className="form-control p-2"
                 selected={formObj.date}
@@ -168,7 +170,7 @@ const AddNewExpeness = ({
           </div>
           <div className="col-md-6">
             <div className="form-group2">
-              <label>Attach:</label>
+              <label>{t('expenses.attach')}:</label>
               <input
                 type="file"
                 className="form-control"
@@ -205,7 +207,7 @@ const AddNewExpeness = ({
             } else Toastify('error', 'Fix The Error Fist');
             // editExpenses();
           }}>
-          {selectId > 0 ? 'Edit' : 'Add'}
+          {selectId > 0 ? t('expenses.edit') : t('expenses.add')}
         </button>
       </form>
       <hr />
