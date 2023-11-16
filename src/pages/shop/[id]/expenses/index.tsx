@@ -10,6 +10,7 @@ import { AdminLayout } from '@layout';
 import { IExpenseList } from '@models/common-model';
 import { DataGrid, GridColDef, GridRowParams } from '@mui/x-data-grid';
 import type { NextPage } from 'next';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { Button, ButtonGroup, Card } from 'react-bootstrap';
@@ -26,11 +27,12 @@ import { apiInsertCtr } from 'src/libs/dbUtils';
 import ExpensesCategoriesView from 'src/modules/expneses/_view/expneses-categories-view';
 import CustomToolbar from 'src/modules/reports/_components/CustomToolbar';
 import { findAllData } from 'src/services/crud.api';
+import { useTranslation } from 'next-i18next';
 
 const Expenses: NextPage = ({ id }: any) => {
   const router = useRouter();
   const shopId = router.query.id;
-
+  const { t } = useTranslation();
   const [cate, setCate] = useState<{ id: number; name: string; isNew: boolean }[]>([]);
   const [expensesList, setExpensesList] = useState<IExpenseList[]>([]);
   const [show, setShow] = useState(false);
@@ -48,29 +50,29 @@ useEffect(()=>{
 },[])
   const columns: GridColDef[] = [
     { field: 'id', headerName: '#', minWidth: 50 },
-    { field: 'name', headerName: 'Name', flex: 1 },
+    { field: 'name', headerName: t('expenses.name'), flex: 1 },
     {
       field: 'expense_category',
-      headerName: 'Category',
+      headerName: t('expenses.category'),
       flex: 1,
       renderCell: ({ row }) => row?.expense_category?.name,
     },
     {
       field: 'amount',
-      headerName: 'amount',
+      headerName: t('expenses.amount'),
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) =>
         Number(row.amount).toFixed(locationSettings?.location_decimal_places),
     },
     {
       field: 'date',
-      headerName: 'Date',
+      headerName: t('expenses.date'),
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) => row.created_at,
     },
     {
       field: 'path',
-      headerName: 'Attached File',
+      headerName: t('expenses.attached_file'),
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) => (
         <ButtonGroup className="mb-2 m-buttons-style">
@@ -84,7 +86,7 @@ useEffect(()=>{
     },
     {
       field: 'action',
-      headerName: 'Action ',
+      headerName: t('expenses.action'),
       sortable: false,
       disableExport: true,
       renderCell: ({ row }: Partial<GridRowParams>) => (
@@ -162,7 +164,7 @@ useEffect(()=>{
     <AdminLayout shopId={id}>
       <ToastContainer />
       <AlertDialog alertShow={show} alertFun={handleDeleteFuc} id={selectId} url={type}>
-        Are you Sure You Want Delete This Item ?
+      {t('alert_dialog.delete_msg')}
       </AlertDialog>
       <div className="row">
         <Tabs
@@ -170,10 +172,10 @@ useEffect(()=>{
           activeKey={key}
           onSelect={(k: any) => setKey(k)}
           className="mb-3 p-3">
-          <Tab eventKey="list" title="List">
+          <Tab eventKey="list" title={t('expenses.list')}>
             <Card>
               <Card.Header className="p-3 bg-white">
-                <h5>Expense List</h5>
+                <h5>{t('expenses.expense_list')}</h5>
               </Card.Header>
               <Card.Body style={{ minHeight: '650px ' }}>
                 {!isLoading && permissions.hasInsert && (
@@ -185,7 +187,7 @@ useEffect(()=>{
                         </>
                       ) : (
                         <>
-                          <FontAwesomeIcon icon={faPlus} /> Add Expense{' '}
+                          <FontAwesomeIcon icon={faPlus} /> {t('expenses.add_expense')}{' '}
                         </>
                       )}
                     </button>
@@ -223,7 +225,7 @@ useEffect(()=>{
               </Card.Body>
             </Card>
           </Tab>
-          <Tab eventKey="category" title="Category">
+          <Tab eventKey="category" title={t('expenses.category')}>
             <ExpensesCategoriesView />
           </Tab>
         </Tabs>
@@ -234,9 +236,9 @@ useEffect(()=>{
   );
 };
 export default withAuth(Expenses);
-export async function getServerSideProps({ params }) {
+export async function getServerSideProps({ params, locale }) {
   const { id } = params;
   return {
-    props: { id },
+    props: { id, ...(await serverSideTranslations(locale)) },
   };
 }
