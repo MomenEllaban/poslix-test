@@ -11,7 +11,7 @@ import { useRouter } from 'next/router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from 'react-bootstrap';
 import { useReactToPrint } from 'react-to-print';
-import withAuth from 'src/HOCs/withAuth';
+// import withAuth from 'src/HOCs/withAuth';
 import DatePicker from 'src/components/filters/Date';
 import AlertDialog from 'src/components/utils/AlertDialog';
 import { useUser } from 'src/context/UserContext';
@@ -80,91 +80,89 @@ function ItemsReport() {
   };
 
   //table columns
-  const columns: GridColDef<IItemSalesReport & { product: IProduct }>[] = useMemo(
-    () => [
-      {
-        field: 'product_name',
-        headerName: t('g.Product'),
-        renderCell: ({ row }) => row?.product?.name,
-      },
-      {
-        field: 'product_sku',
-        headerName: t('g.SKU'),
-        renderCell: ({ row }) => row?.product?.sku,
-      },
-      {
-        field: 'product_category',
-        headerName: t('g.Category'),
-        renderCell: ({ row }) => row?.product?.category?.name,
-      },
-      {
-        field: 'product_brand',
-        headerName: t('g.Brand'),
-        // @ts-ignore
-        renderCell: ({ row }) => row?.product?.brand?.name || '---',
-      },
-      {
-        field: 'Purchase Date',
-        headerName: t('g.PurchaseDate'),
-        width: 180,
-        renderCell: ({ row }) =>
-          `${new Date(row.date).toLocaleDateString()} ${new Date(row.date).toLocaleTimeString()}`,
-      },
-      // {
-      //   field: 'purchase_id',
-      //   headerName: 'Purchase ID',
-      //   // @ts-ignore
-      //   renderCell: ({ row }) => row?.product?.supplier?.name || '---',
-      // },
-      {
-        field: 'supplier_name',
-        headerName: t('g.Supplier'),
-        // @ts-ignore
-        renderCell: ({ row }) => row?.supplier_name || 'walk-in supplier',
-      },
-      {
-        field: 'purchase_price',
-        headerName: t('g.PurchasePrice'),
-        renderCell: ({ row }) =>
-          (+row?.product?.cost_price).toFixed(locationSettings?.location_decimal_places) +
-          ' ' +
-          locationSettings?.currency_name,
-      },
-      {
-        field: 'sale_date',
-        headerName: t('g.SaleDate'),
-        width: 180,
-        renderCell: ({ row }) =>
-          `${new Date(row.date).toLocaleDateString()} ${new Date(row.date).toLocaleTimeString()}`,
-      },
-      {
-        field: 'order_id',
-        headerName: t('g.Sale'),
-        maxWidth: 72,
-        renderCell: ({ row }) => row.order_id,
-      },
-      {
-        field: 'contact_name',
-        headerName: t('g.Customer'),
-        renderCell: ({ row }) => `${row.contact_first_name} ${row.contact_last_name}`,
-      },
+  const columns: GridColDef<IItemSalesReport & { product: IProduct }>[] = [
+    {
+      field: 'products',
+      headerName: t('g.Product'),
+      renderCell: ({ row }) => row?.product.name,
+      // valueGetter: ({ row }) => (row?.products?.length > 0 ? row?.products[0].product_name : ''),
+    },
+    {
+      field: 'product_sku',
+      headerName: t('g.SKU'),
+      renderCell: ({ row }) => row?.product?.sku,
+    },
+    {
+      field: 'product_category',
+      headerName: t('g.Category'),
+      renderCell: ({ row }) => row?.product?.category?.name,
+    },
+    {
+      field: 'product_brand',
+      headerName: t('g.Brand'),
+      // @ts-ignore
+      renderCell: ({ row }) => row?.product?.brand?.name || '---',
+    },
+    {
+      field: 'Purchase Date',
+      headerName: t('g.PurchaseDate'),
+      width: 180,
+      renderCell: ({ row }) =>
+        `${new Date(row.date).toLocaleDateString()} ${new Date(row.date).toLocaleTimeString()}`,
+    },
+    // {
+    //   field: 'purchase_id',
+    //   headerName: 'Purchase ID',
+    //   // @ts-ignore
+    //   renderCell: ({ row }) => row?.product?.supplier?.name || '---',
+    // },
+    {
+      field: 'supplier_name',
+      headerName: t('g.Supplier'),
+      // @ts-ignore
+      renderCell: ({ row }) => row?.supplier_name || 'walk-in supplier',
+    },
+    {
+      field: 'purchase_price',
+      headerName: t('g.PurchasePrice'),
+      renderCell: ({ row }) =>
+        (+row?.product?.cost_price).toFixed(locationSettings?.location_decimal_places) +
+        ' ' +
+        locationSettings?.currency_name,
+    },
+    {
+      field: 'sale_date',
+      headerName: t('g.SaleDate'),
+      width: 180,
+      renderCell: ({ row }) =>
+        `${new Date(row.date).toLocaleDateString()} ${new Date(row.date).toLocaleTimeString()}`,
+    },
+    {
+      field: 'order_id',
+      headerName: t('g.Sale'),
+      maxWidth: 72,
+      renderCell: ({ row }) => row.order_id,
+    },
+    {
+      field: 'contact_name',
+      headerName: t('g.Customer'),
+      renderCell: ({ row }) => `${row.contact_first_name} ${row.contact_last_name}`,
+    },
 
-      {
-        field: 'qty',
-        headerName: t('g.Qty'),
-        renderCell: ({ row }) => (+row.qty).toFixed(0),
-      },
-      {
-        field: 'price',
-        headerName: t('g.SellingPrice'),
-        renderCell: ({ row }) =>
-          (+row.product.sell_price).toFixed(locationSettings?.location_decimal_places) +
-          ' ' +
-          locationSettings?.currency_name,
-      },
-    ],
-    [locationSettings]
-  );
+    {
+      field: 'qty',
+      headerName: t('g.Qty'),
+      renderCell: ({ row }) => (+row.qty).toFixed(0),
+    },
+    {
+      field: 'price',
+      headerName: t('g.SellingPrice'),
+      renderCell: ({ row }) =>
+        (+row.product[0]?.sell_price).toFixed(locationSettings?.location_decimal_places) +
+        ' ' +
+        locationSettings?.currency_name,
+    },
+  ];
 
   const handelFilterEndPoint = (): string => {
     let endPoint = '';
@@ -188,6 +186,7 @@ function ItemsReport() {
       .get(`reports/item-sales/${shopId}?page=${numPage}${endPoint}`)
       .then(({ data }) => {
         pageNumRef.current = numPage;
+        console.log(data.result?.pagination?.data);
         const _salesList = data.result?.pagination?.data;
         setPaginationTotal(data.result.pagination?.last_page);
         const mappedSalesList = [];
@@ -208,64 +207,6 @@ function ItemsReport() {
   }
 
   const handlePrint = useReactToPrint({ content: () => componentRef.current });
-
-  // useEffect(() => {
-  //   let localFilteredSales = [];
-  //   if (strSelectedDate.length === 2) {
-  //     const filteredList = sales.filter((sale) => {
-  //       const dateCreated = sale.date.split(' ')[0];
-  //       return (
-  //         new Date(dateCreated).getDate() >= new Date(strSelectedDate[0]).getDate() &&
-  //         new Date(dateCreated).getMonth() >= new Date(strSelectedDate[0]).getMonth() &&
-  //         new Date(dateCreated).getFullYear() >= new Date(strSelectedDate[0]).getFullYear() &&
-  //         new Date(dateCreated).getDate() <= new Date(strSelectedDate[1]).getDate() &&
-  //         new Date(dateCreated).getMonth() <= new Date(strSelectedDate[1]).getMonth() &&
-  //         new Date(dateCreated).getFullYear() <= new Date(strSelectedDate[1]).getFullYear()
-  //       );
-  //     });
-  //     setSelectedDateValue(`${strSelectedDate[0]} - ${strSelectedDate[1]}`);
-  //     localFilteredSales = filteredList;
-  //   } else if (strSelectedDate.length === 1) {
-  //     const filteredList = sales.filter((sale) => {
-  //       const dateCreated = sale.date.split(' ')[0];
-  //       return (
-  //         new Date(dateCreated).getDate() === new Date(strSelectedDate[0]).getDate() &&
-  //         new Date(dateCreated).getMonth() === new Date(strSelectedDate[0]).getMonth() &&
-  //         new Date(dateCreated).getFullYear() === new Date(strSelectedDate[0]).getFullYear()
-  //       );
-  //     });
-  //     setSelectedDateValue(strSelectedDate[0]);
-  //     localFilteredSales = filteredList;
-  //   } else {
-  //     localFilteredSales = sales;
-  //   }
-  //   //Eslam 19
-  //   let totalPrice = 0;
-  //   let taxAmount = 0;
-  //   localFilteredSales.forEach((obj) => {
-  //     const price = parseFloat(obj.price);
-  //     const tax = parseFloat(obj.tax);
-  //     totalPrice += price;
-  //     taxAmount += tax;
-  //   });
-  //   const totalPriceAndTax = totalPrice + taxAmount;
-  //   setDetails({
-  //     subTotal: totalPrice,
-  //     tax: taxAmount,
-  //     cost: totalPriceAndTax,
-  //   });
-  //   if (selectedSupplier?.length > 0) {
-  //     // console.log(111111111);
-  //     localFilteredSales = localFilteredSales.filter((el) => el.supplier_name === selectedSupplier);
-  //   }
-  //   if (selectedCustomer?.length > 0) {
-  //     // console.log(222222222);
-  //     localFilteredSales = localFilteredSales.filter(
-  //       (el) => el.contact_first_name === selectedCustomer
-  //     );
-  //   }
-  //   setFilteredSales(() => localFilteredSales);
-  // }, [strSelectedDate, selectedSupplier, selectedCustomer]);
 
   useEffect(() => {
     if (!shopId) return;
@@ -508,13 +449,10 @@ function ItemsReport() {
 
 export default ItemsReport;
 
-export async function getServerSideProps({locale}) {
-  
-
+export async function getServerSideProps({ locale }) {
   return {
     props: {
       ...(await serverSideTranslations(locale)),
     },
   };
 }
-

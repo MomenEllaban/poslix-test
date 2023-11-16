@@ -35,8 +35,6 @@ export default function Sidebar({ isShow, isShowMd, isOwner, shopId }: ISidebarP
       id="sidebar"
       className={classNames(`sidebar d-flex flex-column position-fixed h-100`, {
         show: isShow,
-        'dark-mode-body': darkMode,
-        'light-mode-body': !darkMode,
         'sidebar-narrow': isNarrow,
         'md-hide': !isShowMd,
       })}
@@ -49,7 +47,6 @@ export default function Sidebar({ isShow, isShowMd, isOwner, shopId }: ISidebarP
       </div>
 
       <div className="sidebar-nav flex-fill">
-
         {isOwner ? <OwnerSidebarNav /> : <SidebarNav shopId={shopId} />}
       </div>
 

@@ -106,7 +106,6 @@ function StockReport() {
 
   const filteredArr = intersectionBy(filteredByBrands, filteredByCategories, 'id');
 
-  // useEffect(() => {
   //   let localFilteredSales = [];
   //   if (strSelectedDate?.length === 2) {
   //     const filteredList = sales?.filter((sale) => {
@@ -169,6 +168,7 @@ function StockReport() {
 
   //table columns
   const columns: GridColDef<IStockReport>[] = [
+    { field: 'id', headerName: '#', width: 80 },
     { field: 'sku', headerName: t('g.SKU'), width: 80 },
     { field: 'product_name', headerName: t('g.ProductName'), minWidth: 80, flex: 1 },
     { field: 'brand_name', headerName: t('g.BrandName') },
@@ -331,25 +331,29 @@ function StockReport() {
     api
       .get(`reports/itemStock?location_id=${shopId}&page=${numPages}${endPoint}`)
       .then(({ data }) => {
-        const brandSet = new Map();
-        const _sales = data?.result?.data?.map((item) => ({
-          id: nanoid(5),
-          ...item,
-        }));
+        // const brandSet = new Map();
+        // const _sales = data?.result?.data?.map((item) => ({
+        //   id: nanoid(5),
+        //   ...item,
+        // }));
+
+        const _data = data.result.data;
+        delete _data.rows_count;
+        const _sales = Object.values(_data) ?? [];
 
         setPaginationTotal(data.result.last_page);
         setSales(_sales);
         setFilteredSales(_sales);
         setFilteredByBrands(_sales);
         setFilteredByCategories(_sales);
-        _sales.forEach(({ brand_id, brand_name }) => {
-          if (!brandSet.has(brand_id)) {
-            brandSet.set(brand_id, {
-              id: brand_id,
-              name: brand_name,
-            });
-          }
-        });
+        // _sales.forEach(({brand_id,brand_name}) => {
+        //   if (!brandSet.has(brand_id)) {
+        //     brandSet.set(brand_id, {
+        //       id: brand_id,
+        //       name: brand_name,
+        //     });
+        //   }
+        // });
         // const brandList = Array.from(brandSet).map(([name, value]) => ({ ...value }));
         // console.log(brandList);
       })
@@ -573,11 +577,9 @@ function StockReport() {
   );
 }
 
-export default withAuth(StockReport);
+export default StockReport;
 
-export async function getServerSideProps(context) {
-  const { req, locale } = context;
-
+export async function getServerSideProps({ locale }) {
   return {
     props: {
       ...(await serverSideTranslations(locale)),

@@ -259,7 +259,7 @@ const Home = (props: any) => {
           <Spinner />
         </div>
       ) : null}
-      <div className="row loc-dash-top" style={{ background: '#f6f8fa' }}>
+      <div className="row loc-dash-top">
         <div className="loc-dash-top-items">
           <div className="inner-loc-dash-top-items">
             <div className="top-cricle-dash">

@@ -32,6 +32,8 @@ export interface IProduct {
   product_name?:any;
   product_id?:any;
   product_price?:any;
+  product_sku:string;
+  category_name:string;
   id: number;
   name: string;
   business_id?: number;

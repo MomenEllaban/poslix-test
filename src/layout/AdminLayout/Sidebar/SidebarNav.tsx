@@ -17,6 +17,8 @@ import SupplierModal from 'src/components/pos/modals/SupplierModal';
 import CustomerModal from 'src/components/pos/modals/CustomerModal';
 import { PosProvider } from 'src/modules/pos/_context/PosContext';
 
+import { useTranslation } from 'next-i18next';
+
 const Soon = () => (
   <span className="soon-badge">
     <style jsx>{`
@@ -69,6 +71,8 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
   const [loading, setLoading] = useState(true);
 
   const [activeEventKey, setActiveEventKey] = useState('');
+
+  const { t } = useTranslation();
 
   // const [permiss, setPermiss] = useState(initialPermissions);
   // ----------------------------------transefere modal----------------------------------------------
@@ -231,7 +235,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
       </PosProvider>
       <SidebarNavItem href={'/shop/' + shopId} isShown={!!router.query.id}>
         <FiHome className="nav-icon ms-n3" />
-        Dashboard
+        {t('sidebarNav.Dashboard')}
         <small className="ms-auto"></small>
       </SidebarNavItem>
 
@@ -245,13 +249,14 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
           toggleIcon="MdOutlineLocalGroceryStore"
           setActiveEventKey={setActiveEventKey}
           activeEventKey={activeEventKey}
-          toggleText="Inventory">
+          toggleText={t('sidebarNav.Inventory')}>
           {permissions.hasProducts && (
             <SidebarNavItem
               href={'/shop/' + shopId + '/products'}
               sub={true}
               isShown={!!router.query.id}>
-              Products
+              {t('sidebarNav.Products')}
+
               <div className={styles.drawer_plus_icon_wrapper}>
                 <AddBoxTwoToneIcon
                   onClick={(e) => {
@@ -269,7 +274,8 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
               href={'/shop/' + shopId + '/purchases'}
               sub={true}
               isShown={!!router.query.id}>
-              Purchases
+              {t('sidebarNav.Purchases')}
+
               <div className={styles.drawer_plus_icon_wrapper}>
                 <AddBoxTwoToneIcon
                   onClick={(e) => {
@@ -286,7 +292,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
               href={'/shop/' + shopId + '/transfers'}
               sub={true}
               isShown={!!router.query.id}>
-              Transfers <Soon />
+              {t('sidebarNav.Transfers')} <Soon />
               <div className={styles.drawer_plus_icon_wrapper}>
                 <AddBoxTwoToneIcon
                   onClick={(e) => {
@@ -303,7 +309,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
               href={'/shop/' + shopId + '/suppliers'}
               sub={true}
               isShown={!!router.query.id}>
-              Suppliers
+              {t('sidebarNav.Suppliers')}
               <div className={styles.drawer_plus_icon_wrapper}>
                 <AddBoxTwoToneIcon
                   onClick={(e) => {
@@ -320,7 +326,8 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
               href={'/shop/' + shopId + '/expenses'}
               sub={true}
               isShown={!!router.query.id}>
-              Expenses
+              {t('sidebarNav.Expenses')}
+
               <div className={styles.drawer_plus_icon_wrapper}>
                 <AddBoxTwoToneIcon
                   onClick={(e) => {
@@ -340,7 +347,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
               href={'/shop/' + shopId + '/tailoring'}
               sub={true}
               isShown={!!router.query.id}>
-              Tailoring
+              {t('sidebarNav.Tailoring')}
             </SidebarNavItem>
           )}
         </SidebarNavGroup>
@@ -352,7 +359,8 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
           href={'/shop/' + shopId + '/pricing'}
           isShown={!!router.query.id}>
           <Money className="nav-icon ms-n3" />
-          Pricing Groups
+
+          {t('sidebarNav.PricingGroups')}
           <Soon />
           <small className="ms-auto"></small>
         </SidebarNavItem>
@@ -364,13 +372,13 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
           eventKey={'1'}
           setActiveEventKey={setActiveEventKey}
           activeEventKey={activeEventKey}
-          toggleText="Sales">
+          toggleText={t('sidebarNav.Sales')}>
           {permissions.hasQuotations && (
             <SidebarNavItem
               href={'/shop/' + shopId + '/quotations'}
               sub={true}
               isShown={!!router.query.id}>
-              Quotations
+              {t('sidebarNav.Quotations')}
             </SidebarNavItem>
           )}
           {permissions.hasSalesList && (
@@ -379,7 +387,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
               sub={true}
               isShown={!!router.query.id}>
               {' '}
-              Invoices
+              {t('sidebarNav.Invoices')}
             </SidebarNavItem>
           )}
 
@@ -388,11 +396,11 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
               <>
                 {localStorage.setItem('orders', 'true')}
                 <SidebarNavItem href={'/shop/' + shopId + '/orders'} isShown={!!router.query.id}>
-                  Orders
+                  {t('sidebarNav.Orders')}
                 </SidebarNavItem>
                 {localStorage.setItem('orders', 'true')}
                 <SidebarNavItem href={'/shop/' + shopId + '/orders'} isShown={!!router.query.id}>
-                  Orders
+                  {t('sidebarNav.Orders')}
                 </SidebarNavItem>
               </>
             )}
@@ -404,7 +412,9 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
           href={'/shop/' + shopId + '/customers'}
           isShown={!!router.query.id}>
           <BsPeopleFill className="nav-icon ms-n3" />
-          Customers
+
+          {t('sidebarNav.Customers')}
+
           {/* <small className="ms-auto"></small> */}
           <div className={styles.drawer_plus_icon_wrapper}>
             <AddBoxTwoToneIcon
@@ -427,13 +437,13 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
           eventKey={'2'}
           setActiveEventKey={setActiveEventKey}
           activeEventKey={activeEventKey}
-          toggleText="Report">
+          toggleText={t('sidebarNav.Report')}>
           {permissions.hasRegisterReport && (
             <SidebarNavItem
               href={'/shop/' + shopId + '/reports/register'}
               sub={true}
               isShown={!!router.query.id}>
-              Open Close Register
+              {t('sidebarNav.OpenCloseRegister')}
             </SidebarNavItem>
           )}
 
@@ -442,7 +452,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
               href={'/shop/' + shopId + '/reports/SalesReport'}
               sub={true}
               isShown={!!router.query.id}>
-              Sales Report
+              {t('sidebarNav.SalesReport')}
             </SidebarNavItem>
           )}
           {/* Eslam 20  */}
@@ -451,7 +461,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
               href={'/shop/' + shopId + '/reports/ItemsReport'}
               sub={true}
               isShown={!!router.query.id}>
-              Items Report{' '}
+              {t('sidebarNav.ItemsReport')}
             </SidebarNavItem>
           )}
           {permissions.hasStockReport && (
@@ -459,7 +469,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
               href={'/shop/' + shopId + '/reports/StockReport'}
               sub={true}
               isShown={!!router.query.id}>
-              Stock Report{' '}
+              {t('sidebarNav.StockReport')}
             </SidebarNavItem>
           )}
           {permissions.hasStockReport && (
@@ -467,7 +477,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
               href={'/shop/' + shopId + '/reports/PurchaseReport'}
               sub={true}
               isShown={!!router.query.id}>
-              Purchase Report{' '}
+              {t('sidebarNav.PurchaseReport')}
             </SidebarNavItem>
           )}
           {/* {permissions.hasCategorySales && (
@@ -497,7 +507,9 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
           href={'/shop/' + shopId + '/appstore'}
           isShown={!!router.query.id}>
           <BiStore className="nav-icon ms-n3" />
-          App Store <Soon />
+
+          {t('sidebarNav.AppStore')}
+          <Soon />
           <small className="ms-auto"></small>
         </SidebarNavItem>
       )}
@@ -512,13 +524,13 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
           toggleIcon="IoSettingsSharp"
           setActiveEventKey={setActiveEventKey}
           activeEventKey={activeEventKey}
-          toggleText="Settings">
+          toggleText={t('sidebarNav.Settings')}>
           {permissions.hasTaxes && (
             <SidebarNavItem
               href={'/shop/' + shopId + '/taxes'}
               sub={true}
               isShown={!!router.query.id}>
-              Taxes
+              {t('sidebarNav.Taxes')}
             </SidebarNavItem>
           )}
           {permissions.hasAppearance && (
@@ -526,7 +538,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
               href={'/shop/' + shopId + '/appearance'}
               sub={true}
               isShown={!!router.query.id}>
-              Appearance
+              {t('sidebarNav.Appearance')}
             </SidebarNavItem>
           )}
           {permissions.hasCategories && (
@@ -534,7 +546,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
               href={'/shop/' + shopId + '/category'}
               sub={true}
               isShown={!!router.query.id}>
-              Category & Brands
+              {t('sidebarNav.Category&Brands')}
             </SidebarNavItem>
           )}
           {permissions.hasPayment && (
@@ -542,7 +554,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
               href={'/shop/' + shopId + '/payment'}
               sub={true}
               isShown={!!router.query.id}>
-              Payment Methods
+              {t('sidebarNav.PaymentMethods')}
             </SidebarNavItem>
           )}
           {permissions.hasPrint && (
@@ -550,7 +562,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
               href={'/shop/' + shopId + '/Printsetting'}
               sub={true}
               isShown={!!router.query.id}>
-              Print setting
+              {t('sidebarNav.PrintSetting')}
             </SidebarNavItem>
           )}
         </SidebarNavGroup>
@@ -558,7 +570,8 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
       {permissions.hasPos && (
         <SidebarNavItem icon={faDesktop} href={'/pos/' + shopId} isShown={!!router.query.id}>
           <MdOutlinePointOfSale className="nav-icon ms-n3" />
-          POS
+
+          {t('sidebarNav.POS')}
           <small className="ms-auto"></small>
         </SidebarNavItem>
       )}
@@ -568,7 +581,10 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
           href={`/shop/${shopId}/digital/`}
           isShown={!!router.query.id}>
           <BsMenuButtonWideFill className="nav-icon ms-n3" />
-          Digital Menu <Soon />
+
+          {t('sidebarNav.DigitalMenu')}
+
+          <Soon />
           <small className="ms-auto"></small>
         </SidebarNavItem>
       )}

@@ -49,11 +49,11 @@ function SalesReport() {
   const [show, setShow] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showViewPopUp, setShowViewPopUp] = useState(false);
-  const [handleSearchTxt, setHandleSearchTxt] = useState('');
+  // const [handleSearchTxt, setHandleSearchTxt] = useState('');
   const [details, setDetails] = useState({ subTotal: 1, tax: 0, total: 0 });
   const [selectedRange, setSelectedRange] = useState(null);
   const [strSelectedDate, setStrSelectedDate] = useState([]);
-  const [selectedDateVlaue, setSelectedDateValue] = useState('');
+  // const [selectedDateVlaue, setSelectedDateValue] = useState('');
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(pageSizeOptions[0]);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -66,69 +66,66 @@ function SalesReport() {
     setAnchorEl(null);
   };
 
-  const columns: GridColDef[] = useMemo(
-    () => [
-      { field: 'id', headerName: '#', maxWidth: 72 },
-      {
-        field: 'date',
-        headerName: t('g.Date'),
-        width: 180,
-        renderCell: ({ row }) => new Date(row.date).toLocaleDateString(),
-      },
-      {
-        field: 'user_name',
-        headerName: t('g.SoldBy'),
-        flex: 1,
-        valueGetter: ({ row }) => {
-          let name = '';
+  const columns: GridColDef[] = [
+    { field: 'id', headerName: '#', maxWidth: 72 },
+    {
+      field: 'date',
+      headerName: t('g.Date'),
+      width: 180,
+      renderCell: ({ row }) => new Date(row.date).toLocaleDateString(),
+    },
+    {
+      field: 'user_name',
+      headerName: t('g.SoldBy'),
+      flex: 1,
+      valueGetter: ({ row }) => {
+        let name = '';
 
-          if (row?.user_first_name) {
-            name = row?.user_first_name + ' ' + (row?.user_last_name ?? '');
-          } else {
-            name = row?.user_name;
-          }
+        if (row?.user_first_name) {
+          name = row?.user_first_name + ' ' + (row?.user_last_name ?? '');
+        } else {
+          name = row?.user_name;
+        }
 
-          return name;
-        },
+        return name;
       },
-      {
-        field: 'contact_name',
-        headerName: t('g.SoldTo'),
-        flex: 1,
-        // renderCell: ({ row }) => row?.contact_name?.trim() ?? (`${row?.contact_first_name} ${row?.contact_last_name}` || 'walk-in-customer'),
-        valueGetter: ({ row }) => {
-          let name = '';
+    },
+    {
+      field: 'contact_name',
+      headerName: t('g.SoldTo'),
+      flex: 1,
+      // renderCell: ({ row }) => row?.contact_name?.trim() ?? (`${row?.contact_first_name} ${row?.contact_last_name}` || 'walk-in-customer'),
+      valueGetter: ({ row }) => {
+        let name = '';
 
-          if (row?.contact_first_name) {
-            name = row?.contact_first_name + ' ' + row?.contact_last_name;
-          } else {
-            name = row?.contact_name?.trim();
-          }
+        if (row?.contact_first_name) {
+          name = row?.contact_first_name + ' ' + row?.contact_last_name;
+        } else {
+          name = row?.contact_name?.trim();
+        }
 
-          return name || 'walk-in-customer';
-        },
+        return name || 'walk-in-customer';
       },
-      {
-        field: 'tax',
-        headerName: t('g.Tax'),
-        flex: 1,
-        disableColumnMenu: true,
-        renderCell: ({ row }: Partial<GridRowParams>) =>
-          (+(row.tax ?? 0))?.toFixed(locationSettings?.location_decimal_places),
-      },
-      {
-        field: 'total_price',
-        headerName: t('g.Total'),
-        maxWidth: 72,
-        renderCell: ({ row }: Partial<GridRowParams>) =>
-          `${(+row.sub_total + +row.tax).toFixed(
-            locationSettings?.location_decimal_places
-          )} ${locationSettings?.currency_code}`,
-      },
-      { field: 'notes', headerName: t('g.Note'), flex: 1, disableColumnMenu: true },
-    ],
-    [locationSettings]
-  );
+    },
+    {
+      field: 'tax',
+      headerName: t('g.Tax'),
+      flex: 1,
+      disableColumnMenu: true,
+      renderCell: ({ row }: Partial<GridRowParams>) =>
+        (+(row.tax ?? 0))?.toFixed(locationSettings?.location_decimal_places),
+    },
+    {
+      field: 'total_price',
+      headerName: t('g.Total'),
+      maxWidth: 72,
+      renderCell: ({ row }: Partial<GridRowParams>) =>
+        `${(+row.sub_total + +row.tax).toFixed(
+          locationSettings?.location_decimal_places
+        )} ${locationSettings?.currency_code}`,
+    },
+    { field: 'notes', headerName: t('g.Note'), flex: 1, disableColumnMenu: true },
+  ];
 
   const handelFilterEndPoint = (): string => {
     let endPoint = '';
@@ -191,7 +188,6 @@ function SalesReport() {
     content: () => componentRef.current,
   });
 
-  // useEffect(() => {
   //   let localFilteredSales = [];
   //   if (strSelectedDate.length === 2) {
   //     const filteredList = filteredSales.filter((sale: ISalesReport) => {
@@ -527,11 +523,9 @@ function SalesReport() {
   );
 }
 
-export default withAuth(SalesReport);
+export default SalesReport;
 
-export async function getServerSideProps(context) {
-  const { locale } = context;
-
+export async function getServerSideProps({ locale }) {
   return {
     props: {
       ...(await serverSideTranslations(locale)),

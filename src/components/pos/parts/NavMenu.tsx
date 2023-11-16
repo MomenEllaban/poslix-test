@@ -10,7 +10,7 @@ import { selectPos, setPosRegister } from 'src/redux/slices/pos.slice';
 import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
 import CloseRegister from '../modals/CloseRegister';
 import styles from './NavMenu.module.scss';
-import classNames from 'classnames';
+// import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCoffee, faCompress, faExpand } from '@fortawesome/free-solid-svg-icons';
 
@@ -70,19 +70,19 @@ const NavMenu: any = ({ shopId }: any) => {
     }
     setIsFullScreen(!isFullScreen);
   };
-// ------------------------------------------------------------------------------------------------
-// const handleSetLangToCookie = (name: string) => {
-//   const KEY_LANG = 'lang';
-//   localStorage.setItem(ELocalStorageKeys.LANGUAGE,name)
-//   setCookie(KEY_LANG, name);
-//   if (name == 'en') {
+  // ------------------------------------------------------------------------------------------------
+  // const handleSetLangToCookie = (name: string) => {
+  //   const KEY_LANG = 'lang';
+  //   localStorage.setItem(ELocalStorageKeys.LANGUAGE,name)
+  //   setCookie(KEY_LANG, name);
+  //   if (name == 'en') {
 
-//     setLang(en);
-//   } else {
-//     setLang(ar);
-//   }
-// };
-// ------------------------------------------------------------------------------------------------
+  //     setLang(en);
+  //   } else {
+  //     setLang(ar);
+  //   }
+  // };
+  // ------------------------------------------------------------------------------------------------
   return (
     <>
       <CloseRegister
@@ -101,7 +101,7 @@ const NavMenu: any = ({ shopId }: any) => {
             <span data-key="t-dashboards">{lang.pos.navmenu.dashboard}</span>
           </Link>
           <button className="nav-link menu-link d-flex" onClick={toggleFullScreen}>
-          <FontAwesomeIcon icon={isFullScreen ? faCompress: faExpand} />
+            <FontAwesomeIcon icon={isFullScreen ? faCompress : faExpand} />
             <span data-key="t-dashboards">
               {!isFullScreen ? lang.pos.navmenu.fullscreen : lang.pos.navmenu.minimize}
             </span>

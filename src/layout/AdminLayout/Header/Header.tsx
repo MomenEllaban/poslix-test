@@ -4,16 +4,17 @@ import HeaderFeaturedNav from '@layout/AdminLayout/Header/HeaderFeaturedNav';
 import HeaderProfileNav from '@layout/AdminLayout/Header/HeaderProfileNav';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useLayoutEffect } from 'react';
 import { Button, Container, Dropdown } from 'react-bootstrap';
-import { setCookie } from 'cookies-next';
+import { setCookie, getCookie } from 'cookies-next';
 
 import { GrLanguage } from 'react-icons/gr';
 
 /*MOHAMMED MAHER */
 import classNames from 'classnames';
-import { useDarkMode } from '../../../context/DarkModeContext';
+// import { useDarkMode } from '../../../context/DarkModeContext';
 import { ELocalStorageKeys } from 'src/utils/local-storage';
+import DarkModeToggle from '../DarkModeToggle';
 
 type HeaderProps = {
   toggleSidebar: () => void;
@@ -24,26 +25,34 @@ export default function Header(props: HeaderProps) {
   const { toggleSidebar, toggleSidebarMd } = props;
   const [fullname, setFullname] = useState('');
 
-  const { darkMode } = useDarkMode();
-
   const pathname = usePathname();
 
-  const handleSetLangToCookie = (name: string) => {
-    const KEY_LANG = 'lang';
-    localStorage.setItem(ELocalStorageKeys.LANGUAGE,name)
-    setCookie(KEY_LANG, name);
+  const KEY_LANG = 'lang';
+  const handleSetLangToCookie = (lang: string) => {
+    localStorage.setItem(ELocalStorageKeys.LANGUAGE, lang);
+    setCookie(KEY_LANG, lang);
+    handleSetAttr(lang);
+  };
+
+  const handleSetAttr = (lang: string | boolean) => {
+    const htmlElement = document.getElementsByTagName('html')[0];
+    const isDir = lang === 'ar' ? 'rtl' : 'ltr';
+    htmlElement.setAttribute('dir', isDir);
   };
 
   useEffect(() => {
     setFullname(localStorage.getItem('userfullname') || '');
   }, []);
+
+  useLayoutEffect(() => {
+    const lang = getCookie(KEY_LANG) ?? 'en';
+    handleSetAttr(lang);
+  }, []);
+
   return (
     <header
       style={{ zIndex: 999 }}
-      className={classNames('header bg-white shadow-sm position-sticky top-0 sticky-top2 p-2', {
-        'dark-mode-body': darkMode,
-        'light-mode-body': !darkMode,
-      })}>
+      className={classNames('header bg-white shadow-sm position-sticky top-0 sticky-top2 p-2')}>
       <Container fluid className="header-navbar d-flex align-items-center">
         <Button
           variant="link"
@@ -64,6 +73,9 @@ export default function Header(props: HeaderProps) {
         </Link>
         <div className="header-nav d-none d-md-flex">
           <HeaderFeaturedNav />
+        </div>
+        <div className="dark-mode">
+          <DarkModeToggle />
         </div>
         <Dropdown className="header-nav ms-auto">
           <Dropdown.Toggle
@@ -100,9 +112,6 @@ export default function Header(props: HeaderProps) {
             </div>
           </Dropdown.Menu>
         </Dropdown>
-        {/* <div className="ms-2">
-          <DarkModeToggle />
-        </div> */}
         <div className="header-nav ms-auto">
           <div>Hi {fullname}</div>
         </div>
