@@ -130,12 +130,13 @@ const CustomerModal = (props: any) => {
       .get('/customers/' + theId + '/show')
       .then((res) => {
         const selCustomer = res?.data?.result?.profile;
-
+        console.log(selCustomer);
+        
         Object.entries(selCustomer).forEach(([key, value]) => {
           if (!value) value = '';
           setValue(key, value);
         });
-        if (selCustomer.price_groups_id) setCurrentPricingGroup(selCustomer.price_groups_id);
+        if (selCustomer.pricing_group.id) setCurrentPricingGroup(selCustomer.pricing_group.id);
       })
       .catch(() => {
         Toastify('error', 'has error, Try Again...');

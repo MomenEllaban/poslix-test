@@ -84,18 +84,18 @@ function ItemsReport() {
     {
       field: 'products',
       headerName: t('g.Product'),
-      renderCell: ({ row }) => row?.product.name,
+      renderCell: ({ row }) => row?.product?.product_name,
       // valueGetter: ({ row }) => (row?.products?.length > 0 ? row?.products[0].product_name : ''),
     },
     {
       field: 'product_sku',
       headerName: t('g.SKU'),
-      renderCell: ({ row }) => row?.product?.sku,
+      renderCell: ({ row }) => row?.product?.product_sku || '---',
     },
     {
       field: 'product_category',
       headerName: t('g.Category'),
-      renderCell: ({ row }) => row?.product?.category?.name,
+      renderCell: ({ row }) => row?.product?.category_name || '---',
     },
     {
       field: 'product_brand',
@@ -126,9 +126,11 @@ function ItemsReport() {
       field: 'purchase_price',
       headerName: t('g.PurchasePrice'),
       renderCell: ({ row }) =>
-        (+row?.product?.cost_price).toFixed(locationSettings?.location_decimal_places) +
-        ' ' +
-        locationSettings?.currency_name,
+        row?.product?.product_cost
+          ? (+row?.product?.product_cost).toFixed(locationSettings?.location_decimal_places) +
+            ' ' +
+            locationSettings?.currency_name
+          : '---',
     },
     {
       field: 'sale_date',
@@ -158,9 +160,11 @@ function ItemsReport() {
       field: 'price',
       headerName: t('g.SellingPrice'),
       renderCell: ({ row }) =>
-        (+row.product[0]?.sell_price).toFixed(locationSettings?.location_decimal_places) +
-        ' ' +
-        locationSettings?.currency_name,
+        row.product?.product_price
+          ? (+row.product?.product_price).toFixed(locationSettings?.location_decimal_places) +
+            ' ' +
+            locationSettings?.currency_name
+          : '---',
     },
   ];
 

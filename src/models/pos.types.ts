@@ -29,6 +29,7 @@ export interface ICategory {
 }
 
 export interface IProduct {
+  product_cost: any;
   product_name?:any;
   product_id?:any;
   product_price?:any;

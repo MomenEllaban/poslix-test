@@ -1,6 +1,6 @@
 import { faArrowAltCircleLeft, faCircleCheck } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { DataGrid, GridColDef, GridRowParams } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridEditInputCell, GridRowParams } from '@mui/x-data-grid';
 import { useEffect, useState } from 'react';
 import { Spinner } from 'react-bootstrap';
 import { Toastify } from 'src/libs/allToasts';
@@ -18,6 +18,8 @@ const PurchasesQtyCheckList = (props: any) => {
       alert("Failed");
       return;
     }
+    console.log(res.data);
+    
     setProducts(res.data.result.products)
     setIsLoading(false);
     setOrderLines(res.data.result.stocks);
@@ -33,8 +35,8 @@ const PurchasesQtyCheckList = (props: any) => {
         return <p>{product?.name}</p>
       },
     },
-    { field: 'cost', headerName: 'Cost', minWidth: 150 },
-    { field: 'price', headerName: 'Price', minWidth: 150 },
+    // { field: 'cost', headerName: 'Cost', minWidth: 150 },
+    // { field: 'price', headerName: 'Price', minWidth: 150 },
     {
       field: 'qty',
       headerName: 'Total Qty',
@@ -45,22 +47,39 @@ const PurchasesQtyCheckList = (props: any) => {
       field: 'qty_received',
       headerName: 'Qty Received',
       minWidth: 150,
-      renderCell: ({ row }: Partial<GridRowParams>) => (
-        <>
-          <div>
-            {Number(row.qty_received).toFixed(2)}{' '}
-            {row.qty - row.qty_received == 0 && <FontAwesomeIcon icon={faCircleCheck} />}
-          </div>
-        </>
-      ),
+      renderCell: ({ row }: Partial<GridRowParams>) => {
+        console.log(row);
+        
+        return (
+          <>
+            <div>
+              {Number(row.qty_received).toFixed(2)}{' '}
+              {row.qty - row.qty_received == 0 && <FontAwesomeIcon icon={faCircleCheck} />}
+            </div>
+          </>
+        )
+      },
     },
-    // {
-    //   field: 'qty_entered',
-    //   headerName: 'Enter Qty',
-    //   minWidth: 150,
-    //   type: 'number',
-    //   editable: true,
-    // },
+    {
+      field: 'qty_entered',
+      headerName: 'Enter Qty',
+      minWidth: 150,
+      type: 'number',
+      editable: true,
+      renderEditCell: (params) => {
+        console.log(params.row);
+        
+        return (
+          <GridEditInputCell 
+            {...params}
+            inputProps={{
+              min: 0,
+              max: params.row.qty
+            }}
+          />
+        )
+      }
+    },
   ];
   const onRowsSelectionHandler = (params: any) => {
     const found = orderLines.findIndex((el) => el.id === params.id);
