@@ -1427,11 +1427,13 @@ const Product: NextPage = ({
                         if (isSaving) return Toastify('warning', 'There is a current process');
 
                         errors = [];
-                        formObj.variations.forEach((el, index) => {
-                          if (el.sku === '') {
-                            errors.push(`error1${index + 1}`);
-                          }
-                        });
+                        if (formObj.type == 'variable') {
+                          formObj.variations.forEach((el, index) => {
+                            if (el.sku === '') {
+                              errors.push(`error1${index + 1}`);
+                            }
+                          });
+                        }
                         if (formObj.category_id == 0) errors.push('error10');
                         // if (formObj.brand == null) errors.push('error9');
                         if (formObj.name.length == 0) errors.push('error8');
