@@ -2019,3 +2019,11 @@ td {
     }
   }
 }
+
+// table
+
+@media screen and (max-width: 426px) {
+  .table-responsive{
+    overflow-x:scroll
+  }
+}

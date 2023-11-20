@@ -2,7 +2,8 @@
 import { paymentTypeData } from '@models/data';
 import classNames from 'classnames';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Button, Form, InputGroup, Stack } from 'react-bootstrap';
+import { Button, Form, InputGroup, Stack,Spinner } from 'react-bootstrap';
+
 import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
@@ -41,6 +42,7 @@ export default function PaymentCheckoutModal({
   const [printReceipt, setPrintReceipt] = useState<any>();
   const [print, setPrint] = useState<boolean>(false);
   const [__WithDiscountFeature__total, set__WithDiscountFeature__total] = useState<number>(0);
+  const [isPending, setIsPending] = useState(false)
 
   const [remaining, setRemaining] = useState<number>(0);
 
@@ -127,6 +129,7 @@ export default function PaymentCheckoutModal({
   });
 const [sentData, setSentData] = useState<any>()
   const onSubmit = (data) => {
+    setIsPending(true)
     const checkoutData = {
       notes: data?.notes,
       payment: data?.payment,
@@ -164,7 +167,10 @@ const [sentData, setSentData] = useState<any>()
       })
       .then(() => {
         dispatch(clearCart({ location_id: shopId }));
-      });
+      }).finally( ()=>{
+        setIsPending(false)
+
+      })
   };
 
   const paidSum = useMemo(() => {
@@ -426,6 +432,7 @@ const [sentData, setSentData] = useState<any>()
             )}
 
             <Button
+            disabled={isPending}
               type="submit"
               form="hook-form"
               className={classNames(
@@ -433,7 +440,11 @@ const [sentData, setSentData] = useState<any>()
                 'btn-primary',
                 ' right nexttab'
               )}>
-              <span>{lang.paymentCheckoutModal.completeOrder}</span>
+                {
+                  isPending ? 
+                  <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+                :
+              <span>{lang.paymentCheckoutModal.completeOrder}</span>}
               <MdOutlineShoppingCartCheckout />
             </Button>
           </div>

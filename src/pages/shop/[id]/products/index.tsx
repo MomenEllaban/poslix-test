@@ -6,6 +6,7 @@ import { Button as MButton } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 // import useMediaQuery from '@mui/material/useMediaQuery';
 // import { debounce } from '@mui/material/utils';
+import ModelSendProduct from "src/modules/products/ModelSendProduct"
 import {
   DataGrid,
   GridColDef,
@@ -85,7 +86,7 @@ const Product: NextPage = (props: any) => {
   const [products, setProducts] = useState<
     { id: number; name: string; sku: string; type: string; qty: number }[]
   >([]);
-  const [show, setShow] = useState(false);
+  const [showModelSendProduct, setShowModelSendProduct] = useState(false);
   // const [showDeleteAll, setShowDeleteAll] = useState(false);
   const [selectId, setSelectId] = useState(0);
   const [type, setType] = useState('');
@@ -101,6 +102,7 @@ const Product: NextPage = (props: any) => {
   // const [totalRows, setTotalRows] = useState();
   const { darkMode } = useContext(darkModeContext);
   const [permissions, setPermissions] = useState<any>();
+  const [show, setShow] = useState(false);
 
   const [showDeleteSelected, setShowDeleteSelected] = useState(false);
   const columns: GridColDef[] = [
@@ -229,6 +231,7 @@ const Product: NextPage = (props: any) => {
     },
   ];
 
+
   const fileRef = useRef(null);
   const importFileClickHandler = () => {
     fileRef.current.click();
@@ -243,17 +246,7 @@ const Product: NextPage = (props: any) => {
   };
 
   function CustomToolbar() {
-    // const [isHovered, setIsHovered] = useState(false);
 
-    // const divStyle = {
-    //   background: isHovered ? '#99CC66' : '#779933',
-    //   padding: '4px',
-    //   display: 'flex',
-    //   alignItems: 'center',
-    //   borderRadius: '12px',
-    //   marginRight: '0.5rem',
-    //   transition: 'background-color 0.3s',
-    // };
     return (
       <GridToolbarContainer className="d-flex align-items-center">
         <GridToolbarExport
@@ -273,8 +266,10 @@ const Product: NextPage = (props: any) => {
 
         <GridToolbarColumnsButton />
         <MButton onClick={() => setShowDeleteSelected(true)}>Delete Selected</MButton>
-
+        <MButton onClick={()=> setShowModelSendProduct(true)} disabled={!selectedItems?.length}>Send</MButton>
+      
         <GridToolbarQuickFilter />
+      
       </GridToolbarContainer>
     );
   }
@@ -340,12 +335,7 @@ const Product: NextPage = (props: any) => {
     );
   }, [router.asPath]);
 
-  // const handleDeleteFuc = (result: boolean, msg: string, section: string) => {
-  //   initDataPage();
-  //   if (msg.length > 0) Toastify(result ? 'success' : 'error', msg);
-  //   setShow(false);
-  //   setShowDeleteAll(false);
-  // };
+
   const onRowsSelectionHandler = (ids: any) => {
     setSelectedItems(ids);
   };
@@ -360,13 +350,6 @@ const Product: NextPage = (props: any) => {
       }
     }
   };
-  // const handleSearch = (event) => {
-  //   debounceSearchTerm(event.target.value);
-  // };
-  // Debounce user input with lodash debounce function
-  // const debounceSearchTerm = debounce((value) => {
-  //   setSearchTerm(value);
-  // }, 500);
 
   // Filter products based on search term
   useEffect(() => {
@@ -391,9 +374,6 @@ const Product: NextPage = (props: any) => {
   }, [shopId]);
 
   const theme = useTheme();
-  // const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
-  // const isMediumScreen = useMediaQuery(theme.breakpoints.between('md', 'lg'));
-  // const getRowClassName = () => styles.rowStyling;
 
   const handleDeleteMultiProducts = () => {
     setIsLoading(true);
@@ -437,7 +417,9 @@ const Product: NextPage = (props: any) => {
       });
   };
   return (
+    <>
     <AdminLayout shopId={id}>
+      <ModelSendProduct selectedItems={selectedItems} setShow={setShowModelSendProduct} show={showModelSendProduct} />
       <ToastContainer />
       <ConfirmationModal
         show={show}
@@ -509,6 +491,7 @@ const Product: NextPage = (props: any) => {
         </div>
       </>
     </AdminLayout>
+            </>
   );
 };
 

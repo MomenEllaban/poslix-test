@@ -68,9 +68,7 @@ export default function Header(props: HeaderProps) {
           onClick={toggleSidebarMd}>
           <FontAwesomeIcon icon={faBars} />
         </Button>
-        <Link href="/" className="header-brand d-md-none">
-          sidebar-brand-full
-        </Link>
+       
         <div className="header-nav d-none d-md-flex">
           <HeaderFeaturedNav />
         </div>
