@@ -12,7 +12,7 @@ type Location = {
   location_name: string;
 };
 
-export default function ModelSendProduct({ show, setShow, selectedItems }) {
+export default function ModelSendProduct({ show, setShow, selectedItems, products }) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
   const shopId = +router.query.id ?? 0;
@@ -20,6 +20,7 @@ export default function ModelSendProduct({ show, setShow, selectedItems }) {
   const [locations, setLocations] = useState([]);
   const [currentShopId, setCurrentShopId] = useState<string>('');
   const [isPending, setIsPending] = useState(false);
+  const [sendProducts, setSendProducts] = useState([]);
 
   const getLocations = async () => {
     setIsLoading(true);
@@ -40,13 +41,15 @@ export default function ModelSendProduct({ show, setShow, selectedItems }) {
     const data = {
       location_id: shopId,
       transferred_location_id: +currentShopId,
-      cart: selectedItems?.map((item) => ({ product_id: item })),
+      cart: sendProducts,
     };
+
     try {
       setIsPending(true);
-      const res = await createNewData(`/sendProducts`, data);
+      const res = await createNewData(`/send-products`, data);
       if (res.data.success) {
-        Toastify('success', res.data.result.message);
+        Toastify('success', "success send product");
+        setShow(false)
       }
     } catch (e) {
       console.log(e);
@@ -61,6 +64,33 @@ export default function ModelSendProduct({ show, setShow, selectedItems }) {
     setLocations(locs?.[0]?.locations);
     getLocations();
   }, []);
+
+  useEffect(() => {
+    if (!show) {
+      return;
+    }
+    for (const item of products) {
+      if (selectedItems.includes(item.id)) {
+        if (item?.variations.length > 0) {
+          for (const variation of item.variations) {
+            setSendProducts((prev) => [
+              ...prev,
+              {
+                product_id: item.id,
+                variation_id: variation.id,
+              },
+            ]);
+          }
+        }
+        setSendProducts((prev) => [
+          ...prev,
+          {
+            product_id: item.id,
+          },
+        ]);
+      }
+    }
+  }, [show]);
 
   return (
     <div>
@@ -88,7 +118,7 @@ export default function ModelSendProduct({ show, setShow, selectedItems }) {
                     </option>
                   ) : (
                     <>
-                      <option value={0} disabled>
+                      <option value={''} disabled>
                         Select Location
                       </option>
                       {locations?.map((el) => (

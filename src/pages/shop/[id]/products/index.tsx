@@ -6,7 +6,7 @@ import { Button as MButton } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 // import useMediaQuery from '@mui/material/useMediaQuery';
 // import { debounce } from '@mui/material/utils';
-import ModelSendProduct from "src/modules/products/ModelSendProduct"
+import ModelSendProduct from 'src/modules/products/ModelSendProduct';
 import {
   DataGrid,
   GridColDef,
@@ -84,7 +84,14 @@ const Product: NextPage = (props: any) => {
   const dataGridRef = useRef(null);
   const router = useRouter();
   const [products, setProducts] = useState<
-    { id: number; name: string; sku: string; type: string; qty: number }[]
+    {
+      id: number;
+      name: string;
+      sku: string;
+      type: string;
+      qty: number;
+      variations: [{ id: number }];
+    }[]
   >([]);
   const [showModelSendProduct, setShowModelSendProduct] = useState(false);
   // const [showDeleteAll, setShowDeleteAll] = useState(false);
@@ -92,7 +99,7 @@ const Product: NextPage = (props: any) => {
   const [type, setType] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isOpenPriceDialog, setIsOpenPriceDialog] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  // const [searchTerm, setSearchTerm] = useState('');
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [selectedItems, setSelectedItems] = useState<Array<string>>([]);
   const [locationModal, setLocationModal] = useState<boolean>(false);
@@ -231,14 +238,13 @@ const Product: NextPage = (props: any) => {
     },
   ];
 
-
   const fileRef = useRef(null);
   const importFileClickHandler = () => {
     fileRef.current.click();
   };
   const importFileHandler = async (e: ChangeEvent<HTMLInputElement>) => {
     const formData = new FormData();
-    console.log(e.target.files[0]);
+    // console.log(e.target.files[0]);
     formData.append('file', e.target.files[0]);
     const res = await createNewData(`products/${router.query.id}/import`, formData);
     if (res.data.success) initDataPage();
@@ -246,7 +252,6 @@ const Product: NextPage = (props: any) => {
   };
 
   function CustomToolbar() {
-
     return (
       <GridToolbarContainer className="d-flex align-items-center">
         <GridToolbarExport
@@ -266,10 +271,11 @@ const Product: NextPage = (props: any) => {
 
         <GridToolbarColumnsButton />
         <MButton onClick={() => setShowDeleteSelected(true)}>Delete Selected</MButton>
-        <MButton onClick={()=> setShowModelSendProduct(true)} disabled={!selectedItems?.length}>Send</MButton>
-      
+        <MButton onClick={() => setShowModelSendProduct(true)} disabled={!selectedItems?.length}>
+          Send
+        </MButton>
+
         <GridToolbarQuickFilter />
-      
       </GridToolbarContainer>
     );
   }
@@ -335,10 +341,13 @@ const Product: NextPage = (props: any) => {
     );
   }, [router.asPath]);
 
-
   const onRowsSelectionHandler = (ids: any) => {
     setSelectedItems(ids);
+
+  
+    // setSendProducts
   };
+
   const handleCellClick = (params, event) => {
     if (params.field === 'qty') {
       let index = products.findIndex((p) => params.id == p.id);
@@ -352,18 +361,18 @@ const Product: NextPage = (props: any) => {
   };
 
   // Filter products based on search term
-  useEffect(() => {
-    if (searchTerm.trim()) {
-      const filteredList = products.filter(
-        (product) =>
-          product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          product.sku.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setFilteredProducts(filteredList);
-    } else {
-      setFilteredProducts(products);
-    }
-  }, [searchTerm, products]);
+  // useEffect(() => {
+  //   if (searchTerm.trim()) {
+  //     const filteredList = products.filter(
+  //       (product) =>
+  //         product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //         product.sku.toLowerCase().includes(searchTerm.toLowerCase())
+  //     );
+  //     setFilteredProducts(filteredList);
+  //   } else {
+  //     setFilteredProducts(products);
+  //   }
+  // }, [searchTerm, products]);
 
   useEffect(() => {
     if (router.isReady) setShopId(router.query.id.toString());
@@ -373,7 +382,7 @@ const Product: NextPage = (props: any) => {
     initDataPage();
   }, [shopId]);
 
-  const theme = useTheme();
+  // const theme = useTheme();
 
   const handleDeleteMultiProducts = () => {
     setIsLoading(true);
@@ -418,89 +427,93 @@ const Product: NextPage = (props: any) => {
   };
   return (
     <>
-    <AdminLayout shopId={id}>
-      <ModelSendProduct selectedItems={selectedItems} setShow={setShowModelSendProduct} show={showModelSendProduct} />
-      <ToastContainer />
-      <ConfirmationModal
-        show={show}
-        onClose={() => setShow(false)}
-        onConfirm={handleDeleteSingleProduct}
-        message={t("products.Are_you_sure_to_delete_this_item?")}
-      />
-      <ConfirmationModal
-        show={showDeleteSelected}
-        onClose={() => setShowDeleteSelected(false)}
-        onConfirm={handleDeleteMultiProducts}
-        message={t("products.Are_you_sure_to_delete_the_items?")}
-      />
+      <AdminLayout shopId={id}>
+        <ModelSendProduct
+          selectedItems={selectedItems}
+          setShow={setShowModelSendProduct}
+          show={showModelSendProduct}
+          products={products}
+        />
+        <ToastContainer />
+        <ConfirmationModal
+          show={show}
+          onClose={() => setShow(false)}
+          onConfirm={handleDeleteSingleProduct}
+          message={t('products.Are_you_sure_to_delete_this_item?')}
+        />
+        <ConfirmationModal
+          show={showDeleteSelected}
+          onClose={() => setShowDeleteSelected(false)}
+          onConfirm={handleDeleteMultiProducts}
+          message={t('products.Are_you_sure_to_delete_the_items?')}
+        />
 
-      <ShowPriceListModal
-        shopId={id}
-        productId={selectId}
-        type={type}
-        isOpenPriceDialog={isOpenPriceDialog}
-        setIsOpenPriceDialog={() => setIsOpenPriceDialog(false)}
-      />
-      <LocationModal
-        showDialog={locationModal}
-        setShowDialog={setLocationModal}
-        locations={locations}
-        data={selectedItems}
-        setData={setSelectedItems}
-        shopId={id}
-        value={locations.findIndex((loc: any) => {
-          return loc.value == id;
-        })}
-      />
-      {/* start */}
-      {!isLoading && permissions.hasInsert && (
-        <div className="mb-2 flex items-center justify-between">
-          <button
-            className="btn btn-primary p-3"
-            onClick={() => router.push('/shop/' + shopId + '/products/add')}>
-            <FontAwesomeIcon icon={faPlus} /> {t("products.Add_New_Product")}{' '}
-          </button>
-          {/* <TextField label="search name/sku" variant="filled" onChange={handleSearch} /> */}
-        </div>
-      )}
+        <ShowPriceListModal
+          shopId={id}
+          productId={selectId}
+          type={type}
+          isOpenPriceDialog={isOpenPriceDialog}
+          setIsOpenPriceDialog={() => setIsOpenPriceDialog(false)}
+        />
+        <LocationModal
+          showDialog={locationModal}
+          setShowDialog={setLocationModal}
+          locations={locations}
+          data={selectedItems}
+          setData={setSelectedItems}
+          shopId={id}
+          value={locations.findIndex((loc: any) => {
+            return loc.value == id;
+          })}
+        />
+        {/* start */}
+        {!isLoading && permissions.hasInsert && (
+          <div className="mb-2 flex items-center justify-between">
+            <button
+              className="btn btn-primary p-3"
+              onClick={() => router.push('/shop/' + shopId + '/products/add')}>
+              <FontAwesomeIcon icon={faPlus} /> {t('products.Add_New_Product')}{' '}
+            </button>
+            {/* <TextField label="search name/sku" variant="filled" onChange={handleSearch} /> */}
+          </div>
+        )}
 
-      <>
-        <div className="page-content-style card">
-          <h5>{t("products.Product_List")}</h5>
-          <DataGrid
-            loading={isLoading}
-            ref={dataGridRef}
-            checkboxSelection
-            className="datagrid-style"
-            sx={{
-              '.MuiDataGrid-columnSeparator': {
-                display: 'none',
-              },
-              '&.MuiDataGrid-root': {
-                border: 'none',
-              },
-            }}
-            rows={filteredProducts}
-            columns={columns}
-            pageSize={10}
-            rowsPerPageOptions={[10]}
-            onSelectionModelChange={(ids: any) => onRowsSelectionHandler(ids)}
-            onCellClick={handleCellClick}
-            components={{ Toolbar: CustomToolbar }}
-          />
-        </div>
-      </>
-    </AdminLayout>
-            </>
+        <>
+          <div className="page-content-style card">
+            <h5>{t('products.Product_List')}</h5>
+            <DataGrid
+              loading={isLoading}
+              ref={dataGridRef}
+              checkboxSelection
+              className="datagrid-style"
+              sx={{
+                '.MuiDataGrid-columnSeparator': {
+                  display: 'none',
+                },
+                '&.MuiDataGrid-root': {
+                  border: 'none',
+                },
+              }}
+              rows={filteredProducts}
+              columns={columns}
+              pageSize={10}
+              rowsPerPageOptions={[10]}
+              onSelectionModelChange={(ids: any) => onRowsSelectionHandler(ids)}
+              onCellClick={handleCellClick}
+              components={{ Toolbar: CustomToolbar }}
+            />
+          </div>
+        </>
+      </AdminLayout>
+    </>
   );
 };
 
 export default withAuth(Product);
 
-export async function getServerSideProps({ params,locale }) {
+export async function getServerSideProps({ params, locale }) {
   const { id } = params;
   return {
-    props: { id ,
-      ...(await serverSideTranslations(locale))
-  }};
+    props: { id, ...(await serverSideTranslations(locale)) },
+  };
 }
