@@ -2,14 +2,14 @@ body {
   background-color: red($color: #000000);
 }
 
-html[dir="rtl"] {
+html[dir='rtl'] {
   direction: rtl;
 
   body {
     direction: rtl;
   }
 
-  .sidebar+.wrapper {
+  .sidebar + .wrapper {
     padding-right: var(--sidebar-width);
 
     padding-left: 0;
@@ -26,7 +26,7 @@ html[dir="rtl"] {
   }
 }
 
-html[dir="ltr"] {
+html[dir='ltr'] {
   direction: ltr;
 
   body {
@@ -810,7 +810,7 @@ td {
   margin-bottom: 20px;
 }
 
-.header-titles>div {
+.header-titles > div {
   font-weight: 600 !important;
 }
 
@@ -897,7 +897,7 @@ td {
   padding: 10px;
 }
 
-.toolbar-tailoring>div {
+.toolbar-tailoring > div {
   font-weight: bold;
 }
 
@@ -997,7 +997,8 @@ td {
   width: 50px;
 }
 
-.loc-dash-top-items .inner-loc-dash-top-items:first-child img {}
+.loc-dash-top-items .inner-loc-dash-top-items:first-child img {
+}
 
 .loc-dash-top-items .inner-loc-dash-top-items:nth-child(2) {
   flex: 1 1 auto;
@@ -1112,7 +1113,8 @@ td {
   background: #eaeaea;
 }
 
-.loc-dasg-box .loc-dasg-box-content {}
+.loc-dasg-box .loc-dasg-box-content {
+}
 
 .loc-dasg-box .loc-dasg-box-content .me-head-table {
   display: flex;
@@ -1789,7 +1791,6 @@ td {
   select,
   input,
   label,
-
   i,
   th,
   td {
@@ -1807,15 +1808,13 @@ td {
   }
 
   small {
-    &:not([class*="text-danger"]) {
+    &:not([class*='text-danger']) {
       color: #fff !important;
     }
-
-
   }
 
   input {
-    &:not([type="search"]) {
+    &:not([type='search']) {
       border-color: #fff;
       border-width: 1px;
       border-style: solid;
@@ -1850,7 +1849,6 @@ td {
   }
 
   .header,
-  .sidebar,
   table,
   thead,
   tbody,
@@ -1859,11 +1857,21 @@ td {
     background-color: #222 !important;
   }
 
+  .sidebar {
+    ul {
+      background-color: #fff !important;
+    }
+
+    .sidebar-nav .nav-link,
+    svg {
+      color: #303c54 !important;
+    }
+  }
   .nav-link.active {
     color: #222 !important;
   }
 
-  .table> :not(caption)>*>* {
+  .table > :not(caption) > * > * {
     background-color: #222 !important;
   }
 
@@ -1872,7 +1880,6 @@ td {
   }
 
   .open-register {
-
     input,
     select {
       background-color: #fff !important;
@@ -1889,7 +1896,6 @@ td {
       &::placeholder {
         color: #000 !important;
       }
-
     }
   }
 
@@ -1910,7 +1916,6 @@ td {
   }
 
   .loc-dash-top-under {
-
     .loc-dash-big-chart,
     .loc-dash-small-chart {
       background-color: #222;
@@ -1942,7 +1947,7 @@ td {
     }
   }
 
-  .breadcrumb-item+.breadcrumb-item::before {
+  .breadcrumb-item + .breadcrumb-item::before {
     color: #fff !important;
   }
 
@@ -1995,7 +2000,6 @@ td {
     div {
       &:first-child {
         background-color: #222 !important;
-
       }
     }
   }
@@ -2023,15 +2027,82 @@ td {
 // table
 
 @media screen and (max-width: 426px) {
-  .table-responsive{
-    overflow-x:scroll
+  .table-responsive {
+    overflow-x: scroll;
   }
 
-  .me-head-table .m-fileds{
-    font-size: .8rem;
+  .me-head-table .m-fileds {
+    font-size: 0.8rem;
   }
-  .me-tr-table .m-fileds{
-    font-size: .8rem;
+  .me-tr-table .m-fileds {
+    font-size: 0.8rem;
+  }
 
+  .field-cover {
+    flex-direction: column;
+  }
+
+  .products-columns {
+    min-width: 100%;
+  }
+
+  .css-2rbg70-MuiPaper-root-MuiDialog-paper {
+    margin: 10px;
+  }
+
+  .css-ypiqx9-MuiDialogContent-root {
+    padding: 10px;
+
+    .modal-body {
+      div {
+        &:last-child {
+          min-width: 270px !important;
+        }
+      }
+    }
+  }
+  .body-container .btn {
+    font-size: 0.7rem;
+    padding: 0.7rem !important;
+  }
+  .table {
+    min-width: max-content !important;
+  }
+
+  .css-mhc70k-MuiGrid-root  {
+    flex-direction: column !important;
+  }
+  .css-1osj8n2-MuiGrid-root {
+    width: 100%;
+  }
+
+  .purchase-item {
+    .purchase-text {
+      flex-direction: column;
+    }
+  }
+}
+
+// pos
+.pos_layout {
+  display: flex;
+  max-width: calc(100% - 4.5rem);
+  min-height: 100vh;
+  margin: auto;
+}
+
+@media screen and (max-width: 990px) {
+  .pos_layout {
+    flex-direction: column;
+    align-items: center;
+
+    .CartPanel_cart__container__X6NjH {
+      margin: 10px 0 0 0;
+      width: 97%;
+    }
+    .card {
+      width:97% !important;
+      margin: 10px 0 0 0 !important;
+    }
   }
 }

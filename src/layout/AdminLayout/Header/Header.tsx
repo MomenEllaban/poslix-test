@@ -111,7 +111,7 @@ export default function Header(props: HeaderProps) {
           </Dropdown.Menu>
         </Dropdown>
         <div className="header-nav ms-auto">
-          <div>Hi {fullname}</div>
+          <h4 className='header__user-name'>Hi {fullname}</h4>
         </div>
         <div className="header-nav ms-2">
           <HeaderProfileNav />

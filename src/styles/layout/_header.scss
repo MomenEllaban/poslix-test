@@ -47,6 +47,18 @@ $header-brand-color: #4f5d73;
           color: $header-link-color-hover;
         }
       }
+      .header__user-name{
+        font-size: 1rem;
+        font-weight: 400;
+      }
+
+      @media screen and (max-width:423px) {
+        .header__user-name{
+        font-size: .7rem;
+
+        }
+        
+        }
     }
   }
 

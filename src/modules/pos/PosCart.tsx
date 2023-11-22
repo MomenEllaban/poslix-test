@@ -26,11 +26,13 @@ export default function PosCart({ shopId }) {
   });
   return (
     <>
-      <NavMenu shopId={shopId} />
+      <NavMenu shopId={shopId} />       
+    <div className='pos_layout'>
 
-      <CartPanel customer={customer} setCustomer={setCustomer} shopId={shopId} />
+    <CartPanel customer={customer} setCustomer={setCustomer} shopId={shopId} />
       {/* <OrdersComponent shopId={shopId} lang={lang.pos} direction={lang == ar ? 'rtl' : ''} /> */}
-      <ItemList customer={customer} shopId={shopId} />
+        <ItemList customer={customer} shopId={shopId} />
+    </div>
     </>
   );
 }

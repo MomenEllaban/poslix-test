@@ -11,6 +11,7 @@ import AddNewUser from 'src/components/dashboard/AddNewUser';
 import AlertDialog from 'src/components/utils/AlertDialog';
 import { Toastify } from 'src/libs/allToasts';
 import { findAllData } from 'src/services/crud.api';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 
 const Locations = () => {
   const [users, setUsers] = useState<userDashboard[]>([]);
@@ -134,3 +135,13 @@ const Locations = () => {
 };
 
 export default withAuth(Locations);
+
+
+export async function getServerSideProps({locale}) {
+
+  return {
+    props: {
+      ...(await serverSideTranslations(locale)),
+    },
+  };
+}
