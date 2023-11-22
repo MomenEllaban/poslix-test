@@ -1,8 +1,7 @@
+import { Dispatch, SetStateAction, useState } from 'react';
 import { joiResolver } from '@hookform/resolvers/joi';
 import { getSession } from 'next-auth/react';
-import Image from 'next/image';
-import { Dispatch, SetStateAction, useState } from 'react';
-import { Form } from 'react-bootstrap';
+import { Form, Spinner } from 'react-bootstrap';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { handleAxiosError } from 'src/components/backend-response-handlers/axios-error-handler';
 import ErrorHandler from 'src/components/backend-response-handlers/error-handler';
@@ -13,6 +12,7 @@ import api from 'src/utils/app-api';
 import { registerFields } from '../_fields/register-fields';
 import registerSchema from '../register.schema';
 
+import PhoneInput from 'react-phone-input-2';
 import 'react-phone-number-input/style.css';
 
 type Inputs = {
@@ -44,6 +44,7 @@ export default function RegisterView({
     register,
     control,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<Inputs>({
     mode: 'onTouched',
@@ -53,10 +54,13 @@ export default function RegisterView({
   });
 
   const [isLoading, setLoading] = useState(false);
+  const [isPending, setIsPending] = useState(false);
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     setLoading(true);
+    setIsPending(true);
     const { repeat_password, ..._data } = data;
+
     api
       .post('/register', _data)
       .then((res) => {
@@ -77,9 +81,12 @@ export default function RegisterView({
       })
       .finally(() => {
         setLoading(false);
+        setIsPending(false);
       });
   };
   const onError = (errors: any, e: any) => console.error(errors, e);
+
+  const { name, ref } = register('number');
 
   return (
     <Form noValidate onSubmit={handleSubmit(onSubmit, onError)}>
@@ -111,6 +118,23 @@ export default function RegisterView({
             return <FormField key={field.name} {...field} register={register} errors={errors} />;
           })}
         </div>
+        <div>
+          <label className="fw-semibold fs-6 form-label">
+            Phone Number<span className="text-danger ms-2">*</span>
+          </label>
+          <PhoneInput
+            country={'om'}
+            enableAreaCodes
+            enableTerritories
+            countryCodeEditable
+            inputProps={{ required: true, ref: ref, name: name }}
+            onlyCountries={['om']}
+            autoFormat={true}
+            onChange={(e) => setValue('number', e)}
+          />
+          {errors.number && <Form.Text className="text-danger">{errors.number?.message}</Form.Text>}
+        </div>
+
         {registerFields.map((field) => {
           if (field.type === 'password')
             return (
@@ -133,19 +157,13 @@ export default function RegisterView({
           );
         })}
 
-        <button className="btn-login mt-auto" type="submit">
+        <button className="btn-login mt-auto" type="submit" disabled={isPending}>
           {isLoading && (
-            <Image
-              alt="loading"
-              width={25}
-              height={25}
-              className="login-loading"
-              src={'/images/loading.gif'}
-            />
+            <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
           )}
           Register{' '}
         </button>
-      </div>
+      </div>isPending
     </Form>
   );
 }

@@ -85,7 +85,7 @@ export default function Breadcrumb(props: any) {
       <div className="ineer-breadcrumb-style ms-auto">
         {!isSlug && locations.length > 1 && (
           <Select
-            className={`mt-3 ${darkMode ? 'dark-mode-body' : 'light-mode-body'} w-100`}
+            className={`ineer-breadcrumb-style--select ${darkMode ? 'dark-mode-body' : 'light-mode-body'} w-100`}
             options={locations}
             value={locations[locationIndex]}
             styles={selectStyles}

@@ -4,7 +4,7 @@ import { getSession, useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
-import { Form } from 'react-bootstrap';
+import { Form, Spinner } from 'react-bootstrap';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import 'react-phone-number-input/style.css';
 import FormField from 'src/components/form/FormField';
@@ -14,6 +14,8 @@ import { createBusinessSchema } from 'src/modules/business/create-business/creat
 import { useBusinessTypesList } from 'src/services/business.service';
 import { createNewData } from 'src/services/crud.api';
 import api from 'src/utils/app-api';
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-number-input/style.css';
 
 type Inputs = {
   name: string;
@@ -30,6 +32,7 @@ export default function RegisterBusinessView() {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<Inputs>({
     mode: 'onTouched',
@@ -101,6 +104,7 @@ export default function RegisterBusinessView() {
       });
   };
   const onError = (errors: any, e: any) => console.error(errors, e);
+  const { name, ref } = register('mobile');
 
   return (
     <Form noValidate onSubmit={handleSubmit(onSubmit, onError)}>
@@ -123,7 +127,7 @@ export default function RegisterBusinessView() {
           required
           errors={errors}
         />
-        <FormField
+        {/* <FormField
           label="Mobile"
           name="mobile"
           type="text"
@@ -131,8 +135,25 @@ export default function RegisterBusinessView() {
           register={register}
           required
           errors={errors}
-        />
+        /> */}
 
+        <div>
+          <label className="fw-semibold fs-6 form-label">
+            Mobile<span className="text-danger ms-2">*</span>
+          </label>
+          <PhoneInput
+            country={'om'}
+            enableAreaCodes
+            enableTerritories
+            placeholder="Enter Mobile number"
+            countryCodeEditable
+            inputProps={{ required: true, ref: ref, name: name }}
+            onlyCountries={['om']}
+            autoFormat={true}
+            onChange={(e) => setValue('mobile', e)}
+          />
+          {errors.mobile && <Form.Text className="text-danger">{errors.mobile?.message}</Form.Text>}
+        </div>
         <SelectField
           label="Business Type"
           name="business_type_id"
@@ -144,13 +165,7 @@ export default function RegisterBusinessView() {
 
         <button className="btn-login mt-auto" type="submit">
           {isLoading && (
-            <Image
-              alt="loading"
-              width={25}
-              height={25}
-              className="login-loading"
-              src="/images/loading.gif"
-            />
+            <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
           )}
           Create business
         </button>

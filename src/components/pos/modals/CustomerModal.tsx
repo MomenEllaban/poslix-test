@@ -11,10 +11,12 @@ import { addCustomerSchema } from 'src/modules/pos/_schema/add-customer.schema';
 import api from 'src/utils/app-api';
 import { useSWRConfig } from 'swr';
 import { useProducts } from '../../../context/ProductContext';
-import { apiUpdateCtr } from '../../../libs/dbUtils';
+// import { apiUpdateCtr } from '../../../libs/dbUtils';
 import { findAllData } from 'src/services/crud.api';
-import { usePosContext } from 'src/modules/pos/_context/PosContext';
+// import { usePosContext } from 'src/modules/pos/_context/PosContext';
 import { useTranslation } from 'next-i18next';
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-number-input/style.css';
 
 const customerTemplate = {
   id: 0,
@@ -131,7 +133,7 @@ const CustomerModal = (props: any) => {
       .then((res) => {
         const selCustomer = res?.data?.result?.profile;
         console.log(selCustomer);
-        
+
         Object.entries(selCustomer).forEach(([key, value]) => {
           if (!value) value = '';
           setValue(key, value);
@@ -176,6 +178,8 @@ const CustomerModal = (props: any) => {
     if (router.query.id) getPricingGroups();
   }, [router.asPath]);
 
+  const { name, ref } = register('mobile');
+
   if (isLoading)
     return (
       <Modal show={open} onHide={handleClose}>
@@ -216,7 +220,7 @@ const CustomerModal = (props: any) => {
                 errors={errors}
                 register={register}
               />
-              <FormField
+              {/* <FormField
                 required
                 type="text"
                 name="mobile"
@@ -224,7 +228,29 @@ const CustomerModal = (props: any) => {
                 placeholder={t('customer.enter_mobile')}
                 errors={errors}
                 register={register}
-              />
+              /> */}
+
+              <div>
+                <label className="fw-semibold fs-6 form-label">
+                  {t('customer.mobile')}
+                  {/* <span className="text-danger ms-2">*</span> */}
+                </label>
+                <PhoneInput
+                  country={'om'}
+                  enableAreaCodes
+                  enableTerritories
+                  specialLabel=""
+                  countryCodeEditable
+                  inputProps={{ ref: ref, name: name }}
+                  onlyCountries={['om']}
+                  autoFormat={true}
+                  onChange={(e) => setValue('mobile', e)}
+                />
+                {/* {errors.mobile && (
+                  <Form.Text className="text-danger">First mobile is required</Form.Text>
+                )} */}
+              </div>
+
               <div className="col-lg-6 mb-3">
                 <label>{t('customer.pricing_group')}</label>
                 <select
@@ -266,8 +292,8 @@ const CustomerModal = (props: any) => {
                   <FormField
                     type="text"
                     name="address_line_1"
-                    label={t('customer.address_line') + " 1"}
-                    placeholder={t('customer.enter_address_line') + " 1"}
+                    label={t('customer.address_line') + ' 1'}
+                    placeholder={t('customer.enter_address_line') + ' 1'}
                     errors={errors}
                     register={register}
                   />
@@ -277,8 +303,8 @@ const CustomerModal = (props: any) => {
                   <FormField
                     type="text"
                     name="address_line_2"
-                    label={t('customer.address_line') + " 2"}
-                    placeholder={t('customer.enter_address_line') + " 2"}
+                    label={t('customer.address_line') + ' 2'}
+                    placeholder={t('customer.enter_address_line') + ' 2'}
                     errors={errors}
                     register={register}
                   />
