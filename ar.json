@@ -123,5 +123,26 @@
     "order_summary" : "ملخص الطلب"
   },
   "add_customer": "اضافة عميل",
-  "edit_customer": "تعدل بيانات عميل"
+  "edit_customer": "تعدل بيانات عميل",
+  "paymentCheckoutModal": {
+    "payment": "الدفع",
+    "amount": "المبلغ",
+    "enterAmount": "أدخل المبلغ",
+    "taxes": "الضريبة",
+    "discount": "التخفيض",
+    "old": "عمر",
+    "total": "الإجمالي",
+    "orderNotes": "ملاحظات الطلب",
+    "enterNotes": "أدخل ملاحظاتك",
+    "method": "الطريقة",
+    "payNote": "ملحوظات الدفع",
+    "enterPayNote": "ملاحظاتك",
+    "addPaymentRow": "إضافة صف الدفع",
+    "totalPayable": "مجموع المستحق الدفع",
+    "totalPaying": "إجمالي الدفع",
+    "changeReturn": "الباقي",
+    "balance": "الرصيد",
+    "remove": "إزالة",
+    "completeOrder": "اكمل الطلب"
+  }
 }

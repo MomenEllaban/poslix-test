@@ -16,7 +16,7 @@ export const DigitalNavbar = ({ shopId }) => {
   const { lang, setLang } = useDigitalContext();
   const fetchApperance = async () => {
     try {
-      const res = await findAllData(`appearance/${shopId}`);
+      const res = await findAllData(`appearance/${shopId}?digital_menu=true`);
       setAppearance(res.data.result);
     } catch (err) {
       Toastify('error', 'Something went wrong with getting Apperance, please try again later!');

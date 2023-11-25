@@ -10,6 +10,10 @@ import AlertDialog from 'src/components/utils/AlertDialog';
 import { Toastify } from 'src/libs/allToasts';
 import { findAllData } from 'src/services/crud.api';
 
+
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { useTranslation } from 'next-i18next';
+
 const Roles = () => {
   const [stuffs, setStuffs] = useState<IRoles[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -19,6 +23,9 @@ const Roles = () => {
   const [selectedRole, setSelectedRole] = useState(0);
   const [selectedStuff, setSelectedStuff] = useState('');
   const [selectedName, setSelectedName] = useState('');
+
+  const { t } = useTranslation();
+
 
   async function initDataPage() {
     const res = await findAllData('roles/get');
@@ -60,7 +67,7 @@ const Roles = () => {
         }}
         id={selectedId}
         url={'roles/delete'}>
-        Are you Sure You Want Delete This Role ?
+          {t("g.Are_you_Sure_You_Want_Delete_This_Role")}
       </AlertDialog>
       <button
         className="mb-4 btn btn-primary p-3"
@@ -72,7 +79,7 @@ const Roles = () => {
           setIsAddNew(!isAddNew);
         }}>
         <FontAwesomeIcon icon={!isAddNew ? faPlus : faArrowAltCircleLeft} />{' '}
-        {!isAddNew ? 'Add Role' : 'Back'}
+        {!isAddNew ? t('g.AddRole') : t('g.Back')}
       </button>
       {isAddNew && (
         <AddNewRole
@@ -90,7 +97,7 @@ const Roles = () => {
           <div className="col-md-12">
             <Card>
               <Card.Header className="p-3 bg-white">
-                <h5>Roles</h5>
+                <h5>{t("g.Roles")}</h5>
               </Card.Header>
               <Card.Body>
                 {!isLoading ? (
@@ -98,9 +105,9 @@ const Roles = () => {
                     <thead className="thead-dark">
                       <tr>
                         <th style={{ width: '6%' }}>#</th>
-                        <th>Name</th>
-                        <th>Stuff</th>
-                        <th>Action</th>
+                        <th>{t("g.name")}</th>
+                        <th>{t("g.Stuff")}</th>
+                        <th>{t("g.action")}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -154,3 +161,13 @@ const Roles = () => {
   );
 };
 export default withAuth(Roles);
+
+
+export async function getServerSideProps({locale}) {
+
+  return {
+    props: {
+      ...(await serverSideTranslations(locale)),
+    },
+  };
+}
