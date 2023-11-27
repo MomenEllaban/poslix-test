@@ -34,7 +34,7 @@ const ExtraModal = (props: any) => {
 
 
   const [name,setName] = React.useState('');
-  const [secondName,setSecondName] = React.useState('');
+  const [second_name,setSecond_name] = React.useState('');
   const [price,setPrice] = React.useState('');
 
     ////////  to be Edited  ///////
@@ -82,14 +82,14 @@ const ExtraModal = (props: any) => {
     setCategoryExtrasList([]);
     
     setName("");
-    setSecondName("");
+    setSecond_name("");
     setPrice("");
   };
 
-  const [multiSelectChecked, setMultiSelectChecked] = React.useState(false);
+  // const [multiSelectChecked, setMultiSelectChecked] = React.useState(false);
 
   const handleMultiSelect = () => {
-    setMultiSelectChecked((prev) => !prev);
+    setMultiSelection((prev) => !prev);
   };
 
 
@@ -97,7 +97,7 @@ const ExtraModal = (props: any) => {
 
   const handleAdditem = () => {
     event.preventDefault();
-    if(name === "" || secondName === "" || price === "")
+    if(name === "" || second_name === "" || price === "")
       return;
 
       
@@ -106,18 +106,18 @@ const ExtraModal = (props: any) => {
       {
         id:Date.now(), 
         name: name,
-        secondName:secondName,
+        second_name:second_name,
         price: price,
       },
     ]);
     setName("");
-    setSecondName("");
+    setSecond_name("");
     setPrice("");
   }
 
   const handleEditItem = (item) => {
     setName(item.name);
-    setSecondName(item.secondName);
+    setSecond_name(item.second_name);
     setPrice(item.price);
 
     const updatedCategoryExtrasList = categoryExtrasList.filter(i => i.id !== item.id);
@@ -208,7 +208,7 @@ const ExtraModal = (props: any) => {
              <FormControlLabel
                 control={
                   <Switch
-                   checked={multiSelectChecked}
+                   checked={multiSelection}
                    onChange={handleMultiSelect}
                    className='px-2 '
                   />}
@@ -236,14 +236,14 @@ const ExtraModal = (props: any) => {
             </fieldset>
             <fieldset style={{ width: '30%' }}>
               <input
-                id="secondName"
+                id="second_name"
                 type="text"
-                name="secondName"
+                name="second_name"
                 className="form-control"
                 required
                 placeholder="Extra Second Name"
-                value={secondName}
-                onChange={(e)=>setSecondName(e.target.value)}
+                value={second_name}
+                onChange={(e)=>setSecond_name(e.target.value)}
               />
             </fieldset>
             <fieldset style={{ width: '30%' }}>
@@ -288,7 +288,7 @@ const ExtraModal = (props: any) => {
                             {item.name}
                           </td>
                           <td>
-                            {item.secondName}
+                            {item.second_name}
                           </td>
                           <td>
                             {item.price}
