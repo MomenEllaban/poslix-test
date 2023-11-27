@@ -13,16 +13,17 @@ import { useReactToPrint } from 'react-to-print';
 import FormField from 'src/components/form/FormField';
 import SelectField from 'src/components/form/SelectField';
 import MainModal from 'src/components/modals/MainModal';
-import { useProducts } from 'src/context/ProductContext';
+// import { useProducts } from 'src/context/ProductContext';
 import { useUser } from 'src/context/UserContext';
 import { useAppDispatch, useAppSelector } from 'src/hooks';
-import { usePosContext } from 'src/modules/pos/_context/PosContext';
-import { clearCart, selectCartByLocation } from 'src/redux/slices/cart.slice';
+// import { usePosContext } from 'src/modules/pos/_context/PosContext';
+// import { clearCart, selectCartByLocation } from 'src/redux/slices/cart.slice';
 import api from 'src/utils/app-api';
 // import InvoiceToPrint from './InvoiceToPrint';
-import { useRouter } from 'next/router';
+// import { useRouter } from 'next/router';
 
 import { useDigitalContext } from 'src/modules/digital/_context/DigitalContext';
+import { Toastify } from 'src/libs/allToasts';
 
 export default function PaymentCheckoutModal({
   show,
@@ -31,6 +32,9 @@ export default function PaymentCheckoutModal({
   invoiceType,
   invoiceDetails,
   cartItems,
+  cartData,
+  setCartItems,
+setRenderedScreen
 }) {
   const { lang, setLang } = useDigitalContext();
 
@@ -62,8 +66,6 @@ export default function PaymentCheckoutModal({
     lastDue: 0,
   });
 
-
-
   const [lastEdited, setLastEdited] = useState<number>(0);
 
   const [paidAmount, setPaidAmount] = useState<{ [x: string]: number }>({ '0': 0 });
@@ -72,41 +74,40 @@ export default function PaymentCheckoutModal({
   // const { customers } = useProducts();
   // const currentCustomer = customers?.filter((c) => c.value === cart?.customer_id) ?? [];
 
-  // const totalDiscount =
-  //   cart?.cartDiscountType === 'percentage'
-  //     ? (+(cart?.cartDiscount ?? 0) / 100) * +(cart?.cartSellTotal ?? 0)
-  //     : +(cart?.cartDiscount ?? 0);
+  const totalDiscount =
+    cart?.cartDiscountType === 'percentage'
+      ? (+(cart?.cartDiscount ?? 0) / 100) * +(cart?.cartSellTotal ?? 0)
+      : +(cart?.cartDiscount ?? 0);
 
-  // const totalTax =
-  //   cart?.cartTaxType === 'percentage'
-  //     ? (+(cart?.cartTax ?? 0) / 100) * +(cart?.cartSellTotal ?? 0)
-  //     : +(cart?.cartTax ?? 0);
+  const totalTax =
+    cart?.cartTaxType === 'percentage'
+      ? (+(cart?.cartTax ?? 0) / 100) * +(cart?.cartSellTotal ?? 0)
+      : +(cart?.cartTax ?? 0);
 
-  // const totalNoTax = +(cart?.cartSellTotal ?? 0) + +(cart?.shipping ?? 0);
+  const totalNoTax = +(cart?.cartSellTotal ?? 0) + +(cart?.shipping ?? 0);
 
-  // const totalAmount = cart?.orderId
-  //   ?   + totalTax - totalDiscount
-  //   : totalNoTax + totalTax - totalDiscount - +cart?.lastTotal || 0 + +cart?.lastDue || 0;
+  const totalAmount =
+    totalNoTax + totalTax - totalDiscount - +cart?.lastTotal || 0 + +cart?.lastDue || 0;
 
   const [calcTotal, setCalcTotal] = useState<any>(totalAmount);
 
+  
   useEffect(() => {
+    if (!show) {
+      return;
+    }
     let cartSellTotal = 0;
     let cartCostTotal = 0;
-    cartItems.forEach(item => {
-      cartSellTotal  =+ item.sell_price
-      cartCostTotal  =+ item?.cost_price ? item?.cost_price : item.cost
-
-    })
-    setCart((prev)=>({
+    cartItems.forEach((item) => {
+      cartSellTotal += +item.itemTotalPrice;
+      cartCostTotal += +item?.cost_price ? item?.cost_price : item.cost;
+    });
+    setCart((prev) => ({
       ...prev,
-      cartSellTotal:+cartSellTotal,
-      cartCostTotal:+cartCostTotal
-      
-    }))
-
-  }, [cartItems]);
-
+      cartSellTotal: +cartSellTotal,
+      cartCostTotal: +cartCostTotal,
+    }));
+  }, [cartItems, show]);
 
   useEffect(() => {
     reset({ payment: [] });
@@ -174,15 +175,15 @@ export default function PaymentCheckoutModal({
       notes: data?.notes,
       payment: data?.payment,
       location_id: shopId,
-      customer_id: cart?.customer_id || undefined,
+      customer_id: undefined,
       disount_type: cart?.cartDiscountType,
       discount_amount: cart?.cartDiscount,
       tax_type: cart?.cartTaxType,
       tax_amount: cart?.cartTax,
-      related_invoice_id: cart.orderId > 0 ? cart.orderId : null,
-      cart: cart?.cartItems.map((product) => ({
+      related_invoice_id: null,
+      cart: cartData.map((product) => ({
         product_id: product?.product_id,
-        variation_id: product?.variation_id ?? undefined,
+        variation_id: product?.variation_id,
         qty: product?.quantity,
         note: data?.notes,
       })),
@@ -192,23 +193,33 @@ export default function PaymentCheckoutModal({
     api
       .post('/checkout', checkoutData)
       .then((res) => {
-        setPrintReceipt({
-          ...res.data.result.sales,
-          ...res.data.result.data,
-          due: res.data.result.sales.due,
-          paid: res.data.result.sales.payed,
-          tax: res.data.result.sales.tax,
-          customerName: res.data.result.sales.data[0].contact_name,
-        });
-        setPrint(true);
-        setShow(false);
-        setPaidAmount({ '0': 0 });
+        // setPrintReceipt({
+        //   ...res.data.result.sales,
+        //   ...res.data.result.data,
+        //   due: res.data.result.sales.due,
+        //   paid: res.data.result.sales.payed,
+        //   tax: res.data.result.sales.tax,
+        //   customerName: res.data.result.sales.data[0].contact_name,
+        // });
+        // setPrint(true);
+        if(res.status === 200){
+          Toastify('success', 'The product has been purchased Success');
+          setShow(false);
+          setPaidAmount({ '0': 0 });
+          setCartItems([])
+         
+        }
       })
-      .then(() => {
-        dispatch(clearCart({ location_id: shopId }));
+      .catch((error) => {
+        console.log(error);
+        const {response:{data}}= error
+        Toastify('error',data?.error?.message);
+
       })
       .finally(() => {
         setIsPending(false);
+        setShow(false);
+
       });
   };
 
@@ -224,11 +235,6 @@ export default function PaymentCheckoutModal({
     content: () => componentRef.current,
     onAfterPrint: () => setPrint(false),
   });
-  const router = useRouter();
-  console.log(router.query.id);
-  // const selectCartForLocation = selectCartByLocation(shopId);
-
-  // const cart = useAppSelector(selectCartForLocation);
 
   return (
     <div>
@@ -258,9 +264,7 @@ export default function PaymentCheckoutModal({
                     {lang?.paymentCheckoutModal?.amount}:{' '}
                   </span>
                   <span>
-                    {cart?.orderId
-                      ? totalNoTax - cart.lastTotal
-                      : totalNoTax?.toFixed(locationSettings?.location_decimal_places) ?? ''}{' '}
+                    {totalNoTax?.toFixed(locationSettings?.location_decimal_places) ?? ''}{' '}
                   </span>
                   <span>{locationSettings?.currency_code ?? ''}</span>
                 </h5>
@@ -282,18 +286,7 @@ export default function PaymentCheckoutModal({
                   </span>
                   <span>{locationSettings?.currency_code ?? ''}</span>
                 </h6>
-                {cart?.orderId && (
-                  <h6 className="fw-normal">
-                    <span style={{ width: '6rem', display: 'inline-block' }}>
-                      {lang?.paymentCheckoutModal?.old}:{' '}
-                    </span>
-                    +{' '}
-                    <span>
-                      {cart.lastDue?.toFixed(locationSettings?.location_decimal_places) ?? ''}{' '}
-                    </span>
-                    <span>{locationSettings?.currency_code ?? ''}</span>
-                  </h6>
-                )}
+
                 <h6 className="fw-semibold">
                   <span style={{ width: '6rem', display: 'inline-block' }}>
                     {lang?.paymentCheckoutModal?.total}:{' '}
@@ -307,7 +300,7 @@ export default function PaymentCheckoutModal({
             </Stack>
             <Form
               noValidate
-              hidden={cart?.cartItems?.length === 0 || !locationSettings?.currency_code}
+              hidden={cartData?.length === 0}
               onSubmit={handleSubmit(onSubmit)}
               id="hook-form">
               <Row>
@@ -454,9 +447,7 @@ export default function PaymentCheckoutModal({
           <div
             style={{
               display:
-                cart?.cartItems?.length === 0 || !locationSettings?.currency_code
-                  ? 'hidden'
-                  : 'flex',
+                cartData?.length === 0 || !locationSettings?.currency_code ? 'hidden' : 'flex',
               gap: '1rem',
               alignItems: 'center',
               justifyContent: 'flex-end',

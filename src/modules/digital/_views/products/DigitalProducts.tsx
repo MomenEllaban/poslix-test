@@ -189,9 +189,6 @@ export default function DigitalProducts({ shopId }) {
   }, []);
 
 
-  console.log(cartItems)
-
-
   return (
     <>
       {renderedScreen === 'products' ? (
@@ -375,6 +372,7 @@ export default function DigitalProducts({ shopId }) {
             addByQuantity={addByQuantity}
             cartItems={cartItems}
             shopId={shopId}
+            setCartItems={setCartItems}
           />
         )
       )}

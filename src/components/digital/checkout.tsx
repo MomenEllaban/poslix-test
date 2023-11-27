@@ -1,4 +1,4 @@
-import { useState,useEffect } from 'react';
+import { useState, useEffect } from 'react';
 // import { TextField } from '@mui/material';
 import styles from './digital.module.css';
 import { Button } from 'react-bootstrap';
@@ -19,6 +19,7 @@ const Checkout = ({
   totalPrice,
   location,
   shopId,
+  setCartItems,
 }) => {
   const { lang } = useDigitalContext();
 
@@ -26,9 +27,9 @@ const Checkout = ({
 
   const [invoiceType, setInvoiceType] = useState('receipt');
   const [invoiceDetails, setInvoiceDetails] = useState<any>({});
+  const [cartData, setCartData] = useState([]);
 
   const router = useRouter();
-
 
   const checkPrintType = async () => {
     const res2 = await findAllData(`appearance/${shopId}?digital_menu=true`);
@@ -41,13 +42,25 @@ const Checkout = ({
   };
 
   useEffect(() => {
-    try {
-      if (router.isReady) checkPrintType();
-    } catch (error) {
-      console.log(error);
+    if (router.isReady) {
+      checkPrintType();
+
+      cartItems.forEach((item) => {
+        setCartData((prev) => [
+          ...prev,
+          {
+            product_id: item?.parent_id ? item.parent_id : item.id,
+            variation_id: Array.isArray(item?.variations) ? undefined : item.id,
+            quantity: item?.quantity,
+          },
+        ]);
+      });
+    }
+
+    return ()=>{
+      setCartData([])
     }
   }, [router.asPath]);
-
 
   return (
     <>
@@ -104,7 +117,12 @@ const Checkout = ({
             <div className={styles.checkout_user_info_container}>
               <div className={`mt-2 ${styles.user_info_form}`}>
                 <div className="digital-cart-checkout w-100 ">
-                  <Button className="checkout_btn" variant="contained" color="error"  onClick={() => setPaymentModalShow(true)}>
+                  <Button
+                    className="checkout_btn"
+                    variant="contained"
+                    color="error"
+                    disabled={!cartItems?.length}
+                    onClick={() => setPaymentModalShow(true)}>
                     {lang.pos.cartComponent.checkout}{' '}
                     {totalPrice?.toFixed(location?.location_decimal_places)}{' '}
                     {location?.currency_code}
@@ -175,7 +193,9 @@ const Checkout = ({
         invoiceType={invoiceType}
         invoiceDetails={invoiceDetails}
         cartItems={cartItems}
-
+        cartData={cartData}
+        setCartItems={setCartItems}
+        setRenderedScreen={setRenderedScreen}
       />
     </>
   );
