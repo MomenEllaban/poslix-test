@@ -13,12 +13,14 @@ export async function middleware(request: NextRequest) {
 
   const KEY_LANG = 'lang';
   const DEFAULT_LANG = 'en';
+  const DIGITAL = "/digital"
 
-  const hasToken = cookies.get(KEY_COOKIES_TOKE)?.value ?? undefined;
   const hasLang = cookies.get(KEY_LANG)?.value ?? DEFAULT_LANG;
 
+  const hasToken = cookies.get(KEY_COOKIES_TOKE)?.value ?? undefined;
+
   if (!hasToken) {
-    if (pathname !== '/user/auth' && !pathname.includes('/api/auth')) {
+    if (pathname !== '/user/auth' && !pathname.includes('/api/auth') && !pathname.includes(DIGITAL)) {
       request.nextUrl.pathname = `/${hasLang}/user/auth`;
       return NextResponse.redirect(request.nextUrl);
     }
