@@ -39,7 +39,7 @@ const Extras: NextPage = (props: any) => {
 
 
   
-  const [showType, setShowType] = useState(String);
+  const [showType, setShowType] = useState(String); 
   const [extra, setExtra] = useState<{
     value: string;
     label: string;
