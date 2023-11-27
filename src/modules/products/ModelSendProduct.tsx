@@ -48,14 +48,16 @@ export default function ModelSendProduct({ show, setShow, selectedItems, product
       setIsPending(true);
       const res = await createNewData(`/send-products`, data);
       if (res.data.success) {
-        Toastify('success', "success send product");
-        setShow(false)
+        Toastify('success', 'success send product');
+        setShow(false);
+        // setSendProducts([]);
       }
     } catch (e) {
       console.log(e);
       alert('error..Try Again');
     } finally {
       setIsPending(false);
+      setSendProducts([]);
     }
   }
 
@@ -65,31 +67,45 @@ export default function ModelSendProduct({ show, setShow, selectedItems, product
     getLocations();
   }, []);
 
-  useEffect(() => {
-    if (!show) {
-      return;
-    }
-    for (const item of products) {
-      if (selectedItems.includes(item.id)) {
-        if (item?.variations.length > 0) {
-          for (const variation of item.variations) {
-            setSendProducts((prev) => [
-              ...prev,
-              {
-                product_id: item.id,
-                variation_id: variation.id,
-              },
-            ]);
-          }
-        }
+  const handleFilterDataSelect = () => {
+    const data = [];
+    products.forEach((product) => {
+      if (selectedItems.includes(product.id)) {
+        data.push(product);
+      }
+    });
+
+    return data;
+  };
+
+  const handleData = () => {
+    const _products = handleFilterDataSelect();
+
+    for (const item of _products) {
+      if (item?.variations.length) {
         setSendProducts((prev) => [
           ...prev,
           {
             product_id: item.id,
+            variations: item.variations.map((variation) => variation.id),
           },
         ]);
+        continue;
       }
+      setSendProducts((prev) => [
+        ...prev,
+        {
+          product_id: item.id,
+        },
+      ]);
     }
+  };
+
+  useEffect(() => {
+    if (!show) {
+      return;
+    }
+    handleData();
   }, [show]);
 
   return (

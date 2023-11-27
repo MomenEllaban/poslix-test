@@ -2,7 +2,7 @@
 import { paymentTypeData } from '@models/data';
 import classNames from 'classnames';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Button, Form, InputGroup, Stack,Spinner } from 'react-bootstrap';
+import { Button, Form, InputGroup, Stack, Spinner } from 'react-bootstrap';
 
 import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
@@ -13,14 +13,17 @@ import { useReactToPrint } from 'react-to-print';
 import FormField from 'src/components/form/FormField';
 import SelectField from 'src/components/form/SelectField';
 import MainModal from 'src/components/modals/MainModal';
-import { useProducts } from 'src/context/ProductContext';
+// import { useProducts } from 'src/context/ProductContext';
 import { useUser } from 'src/context/UserContext';
 import { useAppDispatch, useAppSelector } from 'src/hooks';
-import { usePosContext } from 'src/modules/pos/_context/PosContext';
-import { clearCart, selectCartByLocation } from 'src/redux/slices/cart.slice';
+// import { usePosContext } from 'src/modules/pos/_context/PosContext';
+// import { clearCart, selectCartByLocation } from 'src/redux/slices/cart.slice';
 import api from 'src/utils/app-api';
-import InvoiceToPrint from './InvoiceToPrint';
-import { useRouter } from 'next/router';
+// import InvoiceToPrint from './InvoiceToPrint';
+// import { useRouter } from 'next/router';
+
+import { useDigitalContext } from 'src/modules/digital/_context/DigitalContext';
+import { Toastify } from 'src/libs/allToasts';
 
 export default function PaymentCheckoutModal({
   show,
@@ -28,31 +31,49 @@ export default function PaymentCheckoutModal({
   shopId,
   invoiceType,
   invoiceDetails,
+  cartItems,
+  cartData,
+  setCartItems,
+  setRenderedScreen,
+  locationSettings,
 }) {
-  const { lang: _lang } = usePosContext();
-  const lang = _lang?.pos;
+  const { lang, setLang } = useDigitalContext();
+
   const dispatch = useAppDispatch();
-  const { locationSettings, tailoringSizes, tailoringExtras } = useUser();
+  const { tailoringSizes, tailoringExtras } = useUser();
   const componentRef = React.useRef(null);
-  const [customer, setCustomer] = useState<{
-    value: number | string;
-    label: string;
-    isNew: boolean;
-  }>({ value: 0, label: 'walk-in customer', isNew: false });
+  // const [customer, setCustomer] = useState<{
+  //   value: number | string;
+  //   label: string;
+  //   isNew: boolean;
+  // }>({ value: 0, label: 'walk-in customer', isNew: false });
   const [printReceipt, setPrintReceipt] = useState<any>();
   const [print, setPrint] = useState<boolean>(false);
   const [__WithDiscountFeature__total, set__WithDiscountFeature__total] = useState<number>(0);
-  const [isPending, setIsPending] = useState(false)
+  const [isPending, setIsPending] = useState(false);
 
-  const [remaining, setRemaining] = useState<number>(0);
+  // const [remaining, setRemaining] = useState<number>(0);
+  const [cart, setCart] = useState({
+    location_id: 0,
+    cartItems: [],
+    cartSellTotal: 0,
+    cartCostTotal: 0,
+    cartDiscount: 0,
+    cartTax: 0,
+    cartTaxType: 'fixed',
+    cartDiscountType: 'fixed',
+    shipping: 0,
+    lastTotal: 0,
+    lastDue: 0,
+  });
 
   const [lastEdited, setLastEdited] = useState<number>(0);
 
   const [paidAmount, setPaidAmount] = useState<{ [x: string]: number }>({ '0': 0 });
-  const selectCartForLocation = selectCartByLocation(shopId);
-  const cart = useAppSelector(selectCartForLocation); // current location order
-  const { customers } = useProducts();
-  const currentCustomer = customers?.filter((c) => c.value === cart?.customer_id) ?? [];
+  // const selectCartForLocation = selectCartByLocation(shopId);
+  // const cart = useAppSelector(selectCartForLocation); // current location order
+  // const { customers } = useProducts();
+  // const currentCustomer = customers?.filter((c) => c.value === cart?.customer_id) ?? [];
 
   const totalDiscount =
     cart?.cartDiscountType === 'percentage'
@@ -65,33 +86,53 @@ export default function PaymentCheckoutModal({
       : +(cart?.cartTax ?? 0);
 
   const totalNoTax = +(cart?.cartSellTotal ?? 0) + +(cart?.shipping ?? 0);
-  const totalAmount = cart?.orderId
-    ? totalNoTax + totalTax - totalDiscount
-    : totalNoTax + totalTax - totalDiscount - +cart?.lastTotal || 0 + +cart?.lastDue || 0;
+
+  const totalAmount =
+    totalNoTax + totalTax - totalDiscount - +cart?.lastTotal || 0 + +cart?.lastDue || 0;
+
   const [calcTotal, setCalcTotal] = useState<any>(totalAmount);
+
   useEffect(() => {
-    reset({payment: []})
-      append({
-        payment_id: '1',
-        amount: '',
-        note: '',
-      })
+    if (!show) {
+      return;
+    }
+    let cartSellTotal = 0;
+    let cartCostTotal = 0;
+    cartItems.forEach((item) => {
+      cartSellTotal += +item.itemTotalPrice;
+      cartCostTotal += +item?.cost_price ? item?.cost_price : item.cost;
+    });
+    setCart((prev) => ({
+      ...prev,
+      cartSellTotal: +cartSellTotal,
+      cartCostTotal: +cartCostTotal,
+    }));
+  }, [cartItems, show]);
+
+  useEffect(() => {
+    reset({ payment: [] });
+    append({
+      payment_id: '1',
+      amount: '',
+      note: '',
+    });
     setValue(`payment.0.amount`, totalAmount.toString());
     setPaidAmount({ '0': totalAmount });
     setCalcTotal(totalAmount);
   }, [totalAmount]);
-  useEffect(() => {
-    if (cart?.orderId) {
-      const newTotal = Number(
-        (totalNoTax + totalTax - totalDiscount - +cart.lastTotal + +cart.lastDue).toFixed(
-          locationSettings?.location_decimal_places
-        )
-      );
-      setValue(`payment.0.amount`, newTotal.toString());
-      setPaidAmount({ '0': newTotal });
-      setCalcTotal(newTotal);
-    }
-  }, [cart?.orderId]);
+
+  // useEffect(() => {
+  //   if (cart?.orderId) {
+  //     const newTotal = Number(
+  //       (totalNoTax + totalTax - totalDiscount - +cart.lastTotal + +cart.lastDue).toFixed(
+  //         locationSettings?.location_decimal_places
+  //       )
+  //     );
+  //     setValue(`payment.0.amount`, newTotal.toString());
+  //     setPaidAmount({ '0': newTotal });
+  //     setCalcTotal(newTotal);
+  //   }
+  // }, [cart?.orderId]);
 
   const paymentTypes = useMemo(
     () =>
@@ -127,50 +168,58 @@ export default function PaymentCheckoutModal({
     control, // control props comes from useForm (optional: if you are using FormContext)
     name: 'payment', // unique name for your Field Array
   });
-const [sentData, setSentData] = useState<any>()
+  const [sentData, setSentData] = useState<any>();
   const onSubmit = (data) => {
-    setIsPending(true)
+    setIsPending(true);
     const checkoutData = {
       notes: data?.notes,
       payment: data?.payment,
       location_id: shopId,
-      customer_id: cart?.customer_id || undefined,
+      customer_id: undefined,
       disount_type: cart?.cartDiscountType,
       discount_amount: cart?.cartDiscount,
       tax_type: cart?.cartTaxType,
       tax_amount: cart?.cartTax,
-      related_invoice_id: cart.orderId > 0 ? cart.orderId : null,
-      cart: cart?.cartItems.map((product) => ({
+      related_invoice_id: null,
+      cart: cartData.map((product) => ({
         product_id: product?.product_id,
-        variation_id: product?.variation_id ?? undefined,
+        variation_id: product?.variation_id,
         qty: product?.quantity,
         note: data?.notes,
       })),
     };
-    
-    setSentData(checkoutData)
+
+    setSentData(checkoutData);
     api
       .post('/checkout', checkoutData)
       .then((res) => {
-        
-        setPrintReceipt({
-          ...res.data.result.sales,
-          ...res.data.result.data,
-          due: res.data.result.sales.due,
-          paid: res.data.result.sales.payed,
-          tax: res.data.result.sales.tax,
-          customerName: res.data.result.sales.data[0].contact_name
-        });
-        setPrint(true);
+        // setPrintReceipt({
+        //   ...res.data.result.sales,
+        //   ...res.data.result.data,
+        //   due: res.data.result.sales.due,
+        //   paid: res.data.result.sales.payed,
+        //   tax: res.data.result.sales.tax,
+        //   customerName: res.data.result.sales.data[0].contact_name,
+        // });
+        // setPrint(true);
+        if (res.status === 200) {
+          Toastify('success', 'The product has been purchased Success');
+          setShow(false);
+          setPaidAmount({ '0': 0 });
+          setCartItems([]);
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+        const {
+          response: { data },
+        } = error;
+        Toastify('error', data?.error?.message);
+      })
+      .finally(() => {
+        setIsPending(false);
         setShow(false);
-        setPaidAmount({ '0': 0 })
-      })
-      .then(() => {
-        dispatch(clearCart({ location_id: shopId }));
-      }).finally( ()=>{
-        setIsPending(false)
-
-      })
+      });
   };
 
   const paidSum = useMemo(() => {
@@ -185,17 +234,12 @@ const [sentData, setSentData] = useState<any>()
     content: () => componentRef.current,
     onAfterPrint: () => setPrint(false),
   });
-  const router=useRouter()
-    console.log(router.query.id);
-    // const selectCartForLocation = selectCartByLocation(shopId);
 
-    // const cart = useAppSelector(selectCartForLocation);
+  console.log(locationSettings);
 
-  console.log(cart)
-  
   return (
     <div>
-      <div style={{ display: 'none' }}>
+      {/* <div style={{ display: 'none' }}>
         <InvoiceToPrint
         // tax={cart?.cartTax}
           ref={componentRef}
@@ -207,9 +251,9 @@ const [sentData, setSentData] = useState<any>()
           locationSettings={locationSettings}
           __WithDiscountFeature__total={__WithDiscountFeature__total}
         />
-      </div>
+      </div> */}
       <MainModal
-        title={lang.paymentCheckoutModal.payment}
+        title={lang?.paymentCheckoutModal?.payment}
         show={show}
         setShow={setShow}
         body={
@@ -218,18 +262,16 @@ const [sentData, setSentData] = useState<any>()
               <Row>
                 <h5 className="fw-bold">
                   <span style={{ width: '6rem', display: 'inline-block' }}>
-                    {lang.paymentCheckoutModal.amount}:{' '}
+                    {lang?.paymentCheckoutModal?.amount}:{' '}
                   </span>
                   <span>
-                    {cart?.orderId
-                      ? totalNoTax - cart.lastTotal
-                      : totalNoTax?.toFixed(locationSettings?.location_decimal_places) ?? ''}{' '}
+                    {totalNoTax?.toFixed(locationSettings?.location_decimal_places) ?? ''}{' '}
                   </span>
                   <span>{locationSettings?.currency_code ?? ''}</span>
                 </h5>
                 <h6 className="fw-normal">
                   <span style={{ width: '6rem', display: 'inline-block' }}>
-                    {lang.paymentCheckoutModal.taxes}:{' '}
+                    {lang?.paymentCheckoutModal?.taxes}:{' '}
                   </span>
                   +{' '}
                   <span>{totalTax?.toFixed(locationSettings?.location_decimal_places) ?? ''} </span>
@@ -237,7 +279,7 @@ const [sentData, setSentData] = useState<any>()
                 </h6>
                 <h6 className="fw-normal">
                   <span style={{ width: '6rem', display: 'inline-block' }}>
-                    {lang.paymentCheckoutModal.discount}:
+                    {lang?.paymentCheckoutModal?.discount}:
                   </span>
                   -{' '}
                   <span>
@@ -245,21 +287,10 @@ const [sentData, setSentData] = useState<any>()
                   </span>
                   <span>{locationSettings?.currency_code ?? ''}</span>
                 </h6>
-                {cart?.orderId && (
-                  <h6 className="fw-normal">
-                    <span style={{ width: '6rem', display: 'inline-block' }}>
-                      {lang.paymentCheckoutModal.old}:{' '}
-                    </span>
-                    +{' '}
-                    <span>
-                      {cart.lastDue?.toFixed(locationSettings?.location_decimal_places) ?? ''}{' '}
-                    </span>
-                    <span>{locationSettings?.currency_code ?? ''}</span>
-                  </h6>
-                )}
+
                 <h6 className="fw-semibold">
                   <span style={{ width: '6rem', display: 'inline-block' }}>
-                    {lang.paymentCheckoutModal.total}:{' '}
+                    {lang?.paymentCheckoutModal?.total}:{' '}
                   </span>
                   <span>
                     {totalAmount.toFixed(locationSettings?.location_decimal_places) ?? ''}{' '}
@@ -270,7 +301,7 @@ const [sentData, setSentData] = useState<any>()
             </Stack>
             <Form
               noValidate
-              hidden={cart?.cartItems?.length === 0 || !locationSettings?.currency_code}
+              hidden={cartData?.length === 0 || !locationSettings?.currency_code}
               onSubmit={handleSubmit(onSubmit)}
               id="hook-form">
               <Row>
@@ -279,9 +310,9 @@ const [sentData, setSentData] = useState<any>()
                     textArea
                     type="text"
                     name="notes"
-                    placeholder={lang.paymentCheckoutModal.enterNotes}
+                    placeholder={lang?.paymentCheckoutModal?.enterNotes}
                     register={register}
-                    label={lang.paymentCheckoutModal.orderNotes}
+                    label={lang?.paymentCheckoutModal?.orderNotes}
                     errors={errors}
                   />
                 </Col>
@@ -291,13 +322,13 @@ const [sentData, setSentData] = useState<any>()
                   <Col xs={3}>
                     <Form.Group>
                       <Form.Label className="fw-semibold fs-6">
-                        {lang.paymentCheckoutModal.amount}
+                        {lang?.paymentCheckoutModal?.amount}
                       </Form.Label>
                       <InputGroup className="mb-3">
                         <Form.Control
                           autoFocus={lastEdited === idx}
                           autoComplete="off"
-                          placeholder={lang.paymentCheckoutModal.enterAmount}
+                          placeholder={lang?.paymentCheckoutModal?.enterAmount}
                           type="number"
                           name={`payment.${idx}.amount`}
                           min={0}
@@ -321,7 +352,7 @@ const [sentData, setSentData] = useState<any>()
                       name={`payment.${idx}.payment_id`}
                       options={paymentTypes}
                       register={register}
-                      label={lang.paymentCheckoutModal.method}
+                      label={lang?.paymentCheckoutModal?.method}
                       errors={errors}
                     />
                   </Col>
@@ -329,9 +360,9 @@ const [sentData, setSentData] = useState<any>()
                     <FormField
                       type="text"
                       name={`payment.${idx}.note`}
-                      placeholder={lang.paymentCheckoutModal.enterPayNote}
+                      placeholder={lang?.paymentCheckoutModal?.enterPayNote}
                       register={register}
-                      label={lang.paymentCheckoutModal.payNote}
+                      label={lang?.paymentCheckoutModal?.payNote}
                       errors={errors}
                     />
                   </Col>
@@ -346,7 +377,7 @@ const [sentData, setSentData] = useState<any>()
                             return rest;
                           });
                         }}>
-                        {lang.paymentCheckoutModal.remove} <MdDelete />
+                        {lang?.paymentCheckoutModal?.remove} <MdDelete />
                       </Button>
                     </Col>
                   )}
@@ -363,7 +394,7 @@ const [sentData, setSentData] = useState<any>()
                         note: '',
                       })
                     }>
-                    {lang.paymentCheckoutModal.addPaymentRow}
+                    {lang?.paymentCheckoutModal?.addPaymentRow}
                   </Button>
                 </Col>
               </Row>
@@ -371,7 +402,7 @@ const [sentData, setSentData] = useState<any>()
             <Row className="p-1 mt-1 mb-1 rounded-2 bg-primary">
               <Col xs={3} className="d-flex flex-column">
                 <p className="fw-semibold fs-6" style={{ height: '3rem' }}>
-                  {lang.paymentCheckoutModal.totalPayable}
+                  {lang?.paymentCheckoutModal?.totalPayable}
                 </p>
 
                 <span className="fw-semibold fs-6">
@@ -382,7 +413,7 @@ const [sentData, setSentData] = useState<any>()
               <Col xs={3}>
                 {' '}
                 <p className="fw-semibold fs-6" style={{ height: '3rem' }}>
-                  {lang.paymentCheckoutModal.totalPaying}
+                  {lang?.paymentCheckoutModal?.totalPaying}
                 </p>
                 <span className="fw-semibold fs-6">
                   {paidSum?.toFixed(locationSettings?.location_decimal_places) ?? ''}
@@ -391,7 +422,7 @@ const [sentData, setSentData] = useState<any>()
               <Col xs={3}>
                 {' '}
                 <p className="fw-semibold fs-6" style={{ height: '3rem' }}>
-                  {lang.paymentCheckoutModal.changeReturn}{' '}
+                  {lang?.paymentCheckoutModal?.changeReturn}{' '}
                 </p>
                 <span className="fw-semibold fs-6">
                   {Math.max(paidSum - totalAmount, 0)?.toFixed(
@@ -402,7 +433,7 @@ const [sentData, setSentData] = useState<any>()
               <Col xs={3}>
                 {' '}
                 <p className="fw-semibold fs-6" style={{ height: '3rem' }}>
-                  {lang.paymentCheckoutModal.balance}{' '}
+                  {lang?.paymentCheckoutModal?.balance}{' '}
                 </p>
                 <span className="fw-semibold fs-6">
                   {Math.max(calcTotal - paidSum, 0)?.toFixed(
@@ -417,9 +448,7 @@ const [sentData, setSentData] = useState<any>()
           <div
             style={{
               display:
-                cart?.cartItems?.length === 0 || !locationSettings?.currency_code
-                  ? 'hidden'
-                  : 'flex',
+                cartData?.length === 0 || !locationSettings?.currency_code ? 'hidden' : 'flex',
               gap: '1rem',
               alignItems: 'center',
               justifyContent: 'flex-end',
@@ -434,7 +463,7 @@ const [sentData, setSentData] = useState<any>()
             )}
 
             <Button
-            disabled={isPending}
+              disabled={isPending}
               type="submit"
               form="hook-form"
               className={classNames(
@@ -442,11 +471,11 @@ const [sentData, setSentData] = useState<any>()
                 'btn-primary',
                 ' right nexttab'
               )}>
-                {
-                  isPending ? 
-                  <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
-                :
-              <span>{lang.paymentCheckoutModal.completeOrder}</span>}
+              {isPending ? (
+                <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+              ) : (
+                <span>{lang?.paymentCheckoutModal?.completeOrder}</span>
+              )}
               <MdOutlineShoppingCartCheckout />
             </Button>
           </div>

@@ -29,28 +29,27 @@ html[dir='rtl'] {
   .btn-group-vertical {
     justify-content: flex-end;
     flex-direction: row-reverse;
-    float: right
+    float: right;
   }
 
-  .table thead tr th{
-    &:last-child{
-      text-align:right
+  .table thead tr th {
+    &:last-child {
+      text-align: right;
     }
   }
 
-  .sidebar .sidebar-nav .nav-link{
-    padding-right:0 !important;
+  .sidebar .sidebar-nav .nav-link {
+    padding-right: 0 !important;
   }
-  .sidebar .sidebar-nav .nav-link .nav-icon{
-    margin-left:0 !important;
+  .sidebar .sidebar-nav .nav-link .nav-icon {
+    margin-left: 0 !important;
+  }
+  .ineer-breadcrumb-style--select {
+    margin-left: 1rem;
+  }
 
-  }
-  .ineer-breadcrumb-style--select{
-    margin-left:1rem
-  }
-
-  .modal-header .btn-close{
-    margin: 0 !important
+  .modal-header .btn-close {
+    margin: 0 !important;
   }
 }
 
@@ -61,8 +60,8 @@ html[dir='ltr'] {
     direction: ltr;
   }
 
-   .ineer-breadcrumb-style--select{
-    margin-right:1rem
+  .ineer-breadcrumb-style--select {
+    margin-right: 1rem;
   }
 }
 
@@ -1544,7 +1543,7 @@ td {
   display: none;
 }
 
-.digital-cart-small-sm {
+.digital-cart-small-sm, .pos-cart-small-sm {
   height: 60px;
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
@@ -1710,7 +1709,7 @@ td {
   }
 
   .digital-cart-small,
-  .digital-cart-small-sm {
+  .digital-cart-small-sm ,.pos-cart-small-sm{
     display: flex;
     justify-content: space-between;
     align-content: center;
@@ -1818,8 +1817,6 @@ td {
   div,
   a,
   li,
-  svg,
-  button,
   select,
   input,
   label,
@@ -1829,9 +1826,15 @@ td {
     color: #fff !important;
   }
 
-  // button> :not(svg) {
-  //   color: #fff !important;
-  // }
+  button > :not(svg) {
+    color: #fff !important;
+  }
+
+  .header-toggler {
+    svg {
+      color: #fff !important;
+    }
+  }
 
   input {
     &::placeholder {
@@ -2115,12 +2118,39 @@ td {
   }
 }
 
+//
+
+@media screen and (max-width: 1200px) {
+  .MuiDataGrid-cell.MuiDataGrid-cell--textLeft.MuiDataGrid-cell--withRenderer {
+    &[data-field='action'] {
+      max-width: 160px !important;
+      min-width: 90px !important;
+    }
+  }
+  .css-1w5m2wr-MuiDataGrid-virtualScroller {
+    overflow-x: scroll !important;
+  }
+}
+
 // pos
 .pos_layout {
   display: flex;
   max-width: calc(100% - 4.5rem);
   min-height: 100vh;
   margin: auto;
+}
+
+.fade {
+  &.modal-backdrop {
+    &.show {
+      z-index: 9999;
+    }
+  }
+  &.modal {
+    &.show {
+      z-index: 99999;
+    }
+  }
 }
 
 @media screen and (max-width: 990px) {

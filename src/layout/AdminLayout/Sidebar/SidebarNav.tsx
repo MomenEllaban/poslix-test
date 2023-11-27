@@ -565,6 +565,14 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
               {t('sidebarNav.PrintSetting')}
             </SidebarNavItem>
           )}
+           {permissions.hasPrint && (
+              <SidebarNavItem
+                href={'/shop/' + shopId + '/extrasetting'}
+                sub={true}
+                isShown={!!router.query.id}>
+                Extra setting
+              </SidebarNavItem>
+            )}
         </SidebarNavGroup>
       )}
       {permissions.hasPos && (
