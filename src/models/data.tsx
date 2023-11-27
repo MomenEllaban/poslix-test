@@ -157,6 +157,12 @@ export function BusinessTypeData(): {
     { label: 'Grocery', value: 1 },
     { label: 'Boutiques', value: 2 },
     { label: 'Tailor', value: 3 },
+    { label: 'Retail', value: 4 },
+    { label: 'Café & Restaurant', value: 5 },
+    { label: 'Grocery', value: 6 },
+    { label: 'Boutiques', value:7 },
+    { label: 'Bakery', value: 8 },
+    { label: 'Tailor', value: 9 },
   ];
 }
 export function productTypeData(): {

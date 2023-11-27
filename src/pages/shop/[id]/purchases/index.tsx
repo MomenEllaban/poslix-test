@@ -75,7 +75,7 @@ const Purchases: NextPage = ({ shopId, id }: any) => {
       renderCell: ({ row }: Partial<GridRowParams>) => (
         <ButtonGroup className="mb-2 m-buttons-style">
           <Button
-            disabled={row.status == 'draft'}
+            disabled={(row.status == 'draft' || row.status == 'received')}
             onClick={() => {
               setPurchaseId(row.id);
               setIsShowQtyManager(!isShowQtyManager);

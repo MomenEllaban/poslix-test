@@ -13,6 +13,8 @@ import { Toastify } from 'src/libs/allToasts';
 import { findAllData } from 'src/services/crud.api';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 
+import { useTranslation } from 'next-i18next';
+
 const Locations = () => {
   const [users, setUsers] = useState<userDashboard[]>([]);
   const [show, setShow] = useState(false);
@@ -20,6 +22,7 @@ const Locations = () => {
   const [isAddUser, setIsAddUser] = useState(false);
   const [selectedId, setSelectedId] = useState(0);
   const router = useRouter();
+  const { t } = useTranslation();
 
   // const handleDeleteFunc = () => {};
 
@@ -47,7 +50,7 @@ const Locations = () => {
         }}
         id={selectedId}
         url={'delete-user'}>
-        Are you Sure You Want Delete This Customer ?
+        {t("g.Are_you_Sure_You_Want_Delete_This_Customer")}
       </AlertDialog>
       <ToastContainer />
       <button
@@ -58,7 +61,7 @@ const Locations = () => {
           setIsAddUser(!isAddUser);
         }}>
         <FontAwesomeIcon icon={!isAddUser ? faPlus : faArrowAltCircleLeft} />{' '}
-        {!isAddUser ? 'Add User' : 'Back'}
+        {!isAddUser ? t("g.AddUser") : t('g.Back')}
       </button>
       {isAddUser && (
         <AddNewUser
@@ -73,7 +76,7 @@ const Locations = () => {
           <div className="col-md-12">
             <Card>
               <Card.Header className="p-3 bg-white">
-                <h5>My Users </h5>
+                <h5>{t("g.MyUsers")} </h5>
               </Card.Header>
               <Card.Body>
                 {!isLoading ? (
@@ -81,10 +84,10 @@ const Locations = () => {
                     <thead className="thead-dark">
                       <tr>
                         <th style={{ width: '6%' }}>#</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Password</th>
-                        <th>Action</th>
+                        <th>{t("g.name")}</th>
+                        <th>{t("g.email")}</th>
+                        <th>{t("g.password")}</th>
+                        <th>{t("g.action")}</th>
                       </tr>
                     </thead>
                     <tbody>
