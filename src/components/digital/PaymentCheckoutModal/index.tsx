@@ -34,12 +34,13 @@ export default function PaymentCheckoutModal({
   cartItems,
   cartData,
   setCartItems,
-setRenderedScreen
+  setRenderedScreen,
+  locationSettings,
 }) {
   const { lang, setLang } = useDigitalContext();
 
   const dispatch = useAppDispatch();
-  const { locationSettings, tailoringSizes, tailoringExtras } = useUser();
+  const { tailoringSizes, tailoringExtras } = useUser();
   const componentRef = React.useRef(null);
   // const [customer, setCustomer] = useState<{
   //   value: number | string;
@@ -91,7 +92,6 @@ setRenderedScreen
 
   const [calcTotal, setCalcTotal] = useState<any>(totalAmount);
 
-  
   useEffect(() => {
     if (!show) {
       return;
@@ -202,24 +202,23 @@ setRenderedScreen
         //   customerName: res.data.result.sales.data[0].contact_name,
         // });
         // setPrint(true);
-        if(res.status === 200){
+        if (res.status === 200) {
           Toastify('success', 'The product has been purchased Success');
           setShow(false);
           setPaidAmount({ '0': 0 });
-          setCartItems([])
-         
+          setCartItems([]);
         }
       })
       .catch((error) => {
         console.log(error);
-        const {response:{data}}= error
-        Toastify('error',data?.error?.message);
-
+        const {
+          response: { data },
+        } = error;
+        Toastify('error', data?.error?.message);
       })
       .finally(() => {
         setIsPending(false);
         setShow(false);
-
       });
   };
 
@@ -235,6 +234,8 @@ setRenderedScreen
     content: () => componentRef.current,
     onAfterPrint: () => setPrint(false),
   });
+
+  console.log(locationSettings);
 
   return (
     <div>
@@ -300,7 +301,7 @@ setRenderedScreen
             </Stack>
             <Form
               noValidate
-              hidden={cartData?.length === 0}
+              hidden={cartData?.length === 0 || !locationSettings?.currency_code}
               onSubmit={handleSubmit(onSubmit)}
               id="hook-form">
               <Row>

@@ -196,6 +196,7 @@ const Checkout = ({
         cartData={cartData}
         setCartItems={setCartItems}
         setRenderedScreen={setRenderedScreen}
+        locationSettings={location}
       />
     </>
   );

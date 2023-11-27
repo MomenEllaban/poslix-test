@@ -698,7 +698,7 @@
   "expenses": {
     "list": "List",
     "category": "Category",
-    "expense_ list": "Expense List",
+    "expense_list": "Expense List",
     "add_expense": "Add Expense",
     "name": "Name",
     "amount": "Amount",
