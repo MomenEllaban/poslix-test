@@ -87,6 +87,7 @@ export const ItemList = ({ customer,shopId }: any) => {
     SetProductsItems(products);
     setIsLoading(false);
   }, [products]);
+  
 
   useEffect(() => {
     if (jobType.req == 102) setIsLoading(true);

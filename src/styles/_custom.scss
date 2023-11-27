@@ -24,6 +24,34 @@ html[dir='rtl'] {
     margin-right: auto !important;
     margin-left: 0 !important;
   }
+
+  .btn-group,
+  .btn-group-vertical {
+    justify-content: flex-end;
+    flex-direction: row-reverse;
+    float: right
+  }
+
+  .table thead tr th{
+    &:last-child{
+      text-align:right
+    }
+  }
+
+  .sidebar .sidebar-nav .nav-link{
+    padding-right:0 !important;
+  }
+  .sidebar .sidebar-nav .nav-link .nav-icon{
+    margin-left:0 !important;
+
+  }
+  .ineer-breadcrumb-style--select{
+    margin-left:1rem
+  }
+
+  .modal-header .btn-close{
+    margin: 0 !important
+  }
 }
 
 html[dir='ltr'] {
@@ -31,6 +59,10 @@ html[dir='ltr'] {
 
   body {
     direction: ltr;
+  }
+
+   .ineer-breadcrumb-style--select{
+    margin-right:1rem
   }
 }
 
@@ -2069,7 +2101,7 @@ td {
     min-width: max-content !important;
   }
 
-  .css-mhc70k-MuiGrid-root  {
+  .css-mhc70k-MuiGrid-root {
     flex-direction: column !important;
   }
   .css-1osj8n2-MuiGrid-root {
@@ -2101,7 +2133,7 @@ td {
       width: 97%;
     }
     .card {
-      width:97% !important;
+      width: 97% !important;
       margin: 10px 0 0 0 !important;
     }
   }

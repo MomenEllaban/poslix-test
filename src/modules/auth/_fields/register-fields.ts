@@ -14,14 +14,14 @@ export const registerFields: any[] = [
   //   placeholder: 'Enter Last Name',
   //   autoComplete: 'off',
   // },
-  {
-    label: 'Phone Number',
-    name: 'number',
-    type: 'text',
-    placeholder: 'Enter Phone Number',
-    autoComplete: 'off',
-    required: true,
-  },
+  // {
+  //   label: 'Phone Number',
+  //   name: 'number',
+  //   type: 'text',
+  //   placeholder: 'Enter Phone Number',
+  //   autoComplete: 'off',
+  //   required: true,
+  // },
   {
     label: 'Email',
     name: 'email',
