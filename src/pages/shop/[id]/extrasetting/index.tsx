@@ -1,6 +1,6 @@
 import type { NextPage } from 'next';
 import withAuth from 'src/HOCs/withAuth';
-import { faPenToSquare, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faEye, faPenToSquare, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { AdminLayout } from '@layout';
 import {
@@ -25,10 +25,15 @@ import ExtraModal from '../../../../components/pos/modals/ExtraModal';
 const Extras: NextPage = (props: any) => {
     const { shopId, rules } = props;
     const router = useRouter();
-  const [extrasList, setExtrasList] = useState<
+    const [extrasCategoriesList, setExtrasCategoriesList] = useState<
     {
+      id: number;
       name: string;
-      price: number;
+      extras: {
+        id: number;
+        name: string;
+        price: number;
+      }[];
     }[]
   >([]);
 
@@ -40,12 +45,12 @@ const Extras: NextPage = (props: any) => {
 
   
   const [showType, setShowType] = useState(String); 
-  const [extra, setExtra] = useState<{
+  const [category, setCategory] = useState<{
     value: string;
     label: string;
     isNew: boolean;
-  }>({ value: '1', label: 'sample extra', isNew: false });
-  const [extraIsModal, setExtraIsModal] = useState<boolean>(false);
+  }>({ value: '1', label: 'sample category', isNew: false });
+  const [categoryIsModal, setCategoryIsModal] = useState<boolean>(false);
 
 
   async function initDataPage() {
@@ -61,26 +66,26 @@ const Extras: NextPage = (props: any) => {
 
         return false ;
       }
-      setExtrasList(res.data.result);
+      setExtrasCategoriesList(res.data.result);
   }catch(e){
-setExtrasList([])
+    setExtrasCategoriesList([])
   }
      
     }
     setIsLoading(false);
   }
   const extraModalHandler = (status: any) => {
-    setExtraIsModal(false);
+    setCategoryIsModal(false);
     initDataPage();
   };
 
   const columns: GridColDef[] = [
     { field: 'id', headerName: '#', minWidth: 50 },
-    { field: 'name', headerName: 'extra Name', flex: 1 },
-    { field: 'price', headerName: 'price', flex: 1 },
+    { field: 'name', headerName: 'Category Name', flex: 1 },
+    { field: 'second_name', headerName: 'Category Second Name', flex: 1 },
     {
-      field: 'action',
-      headerName: 'Action ',
+      field: 'actions',
+      headerName: 'Actions ',
       sortable: false,
       disableExport: true,
       flex: 1,
@@ -91,19 +96,34 @@ setExtrasList([])
               <Button
                 onClick={(event) => {
                   event.stopPropagation();
-                  setExtra({
+                  setCategory({
                     value: row.id,
                     label: row.name,
                     isNew: false,
                   });
                   setSelectId(row.id);
                   setShowType('edit');
-                  setExtraIsModal(true);
+                  setCategoryIsModal(true);
                 }}>
                 
                 <FontAwesomeIcon icon={faPenToSquare} />
               </Button>
             )}
+              <Button
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setCategory({
+                    value: row.id,
+                    label: row.name,
+                    isNew: false,
+                  });
+                  setSelectId(row.id);
+                  setShowType('show');
+                  setCategoryIsModal(true);
+                }}>
+                
+                <FontAwesomeIcon icon={faEye} />
+              </Button>
 
             <Button
               onClick={(event) => {
@@ -153,7 +173,7 @@ setExtrasList([])
           id={selectId}
           locatiooID={locationID}
           url={'extra-settings'}>
-          Are you Sure You Want Delete This Extra ?
+          Are you Sure You Want Delete This Category ?
         </AlertDialog>
         {!isLoading && (
           <div className="mb-2">
@@ -161,16 +181,16 @@ setExtrasList([])
               className="btn btn-primary p-3"
               onClick={() => {
                 setShowType('add');
-                setExtraIsModal(true);
+                setCategoryIsModal(true);
               }}>
-              <FontAwesomeIcon icon={faPlus} /> Add New Extra{' '}
+              <FontAwesomeIcon icon={faPlus} /> Add New Category{' '}
             </button>
           </div>
         )}
         {!isLoading ? (
           <>
             <div className="page-content-style card">
-              <h5>Extra List</h5>
+              <h5>Categories List</h5>
               <DataGrid
                 className="datagrid-style"
                 sx={{
@@ -181,7 +201,7 @@ setExtrasList([])
                     border: 'none',
                   },
                 }}
-                rows={extrasList}
+                rows={extrasCategoriesList}
                 columns={columns}
                 pageSize={10}
                 rowsPerPageOptions={[10]}
@@ -198,12 +218,12 @@ setExtrasList([])
       </AdminLayout>
       <ExtraModal
         shopId={locationID}
-        extrasList={extrasList}
+        extrasList={extrasCategoriesList}
         selectId={selectId}
         showType={showType}
-        userdata={extra}
-        extras={extrasList}
-        statusDialog={extraIsModal}
+        userdata={category}
+        extras={extrasCategoriesList}
+        statusDialog={categoryIsModal}
         openDialog={extraModalHandler} />
     </>
     );

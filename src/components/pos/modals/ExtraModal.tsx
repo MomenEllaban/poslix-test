@@ -23,6 +23,7 @@ const ExtraModal = (props: any) => {
   const { openDialog, statusDialog, userdata, showType, shopId,selectId,extrasList } = props;
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isViewMode, setIsViewMode] = useState(false);
   const {register,handleSubmit,formState: { errors },reset,setValue,clearErrors,} = useForm({
     mode: 'onTouched',
     reValidateMode: 'onBlur',
@@ -49,6 +50,8 @@ const ExtraModal = (props: any) => {
       .catch(() => Toastify('error', 'Has Error, Try Again...'))
       .finally(() => setIsLoading(false));
   };
+
+
     ////////  to be Edited  ///////
   const handleAddextra = (data: any) => {
     api.post('/extra-settings/', {...data,location_id:shopId})
@@ -65,6 +68,14 @@ const ExtraModal = (props: any) => {
       });
       setCategoryExtrasList([]);
   };
+
+  //// to be edited
+  const handleViewCategory = () => {
+    setIsViewMode(true);
+    setOpen(true);
+  };
+
+  
   
   const onSubmit = async (data: any) => {
     setIsLoading(true);
@@ -86,7 +97,6 @@ const ExtraModal = (props: any) => {
     setPrice("");
   };
 
-  // const [multiSelectChecked, setMultiSelectChecked] = React.useState(false);
 
   const handleMultiSelect = () => {
     setMultiSelection((prev) => !prev);
@@ -134,6 +144,10 @@ const ExtraModal = (props: any) => {
     if (!statusDialog) return;
     setOpen(statusDialog);
 
+    if (showType === 'show') {
+      handleViewCategory();
+    }
+
   }, [statusDialog]);
 
   useEffect(() => {
@@ -148,7 +162,7 @@ const ExtraModal = (props: any) => {
 
     selectedExtra.forEach(function(item, index) {
     for (let [key, value] of Object.entries(item)) {
-      if (showType == "edit") {
+      if (showType == "edit" || showType == "show") {
           setValue(key, value);
 
       } else {
@@ -189,7 +203,7 @@ const ExtraModal = (props: any) => {
               type="text"
               name="categoryName"
               className="form-control mb-2"
-              // placeholder="Category Name"
+              placeholder="Arabic Name"
               value={categoryName}
               onChange={(e)=>{setCategoryName(e.target.value)}}
               required
@@ -200,7 +214,7 @@ const ExtraModal = (props: any) => {
               type="text"
               name="categorySecondName"
               className="form-control mb-2"
-              // placeholder="Category Second Name"
+              placeholder="English Name"
               value={categorySecondName}
               onChange={(e)=>{setCategorySecondName(e.target.value)}}
               required
