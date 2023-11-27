@@ -11,7 +11,7 @@ import api from 'src/utils/app-api';
 const PurchasesQtyCheckList = (props: any) => {
   const { shopId, purchaseId } = props;
   const [transactionLines, setTransactionLines] = useState<any[]>([]);
-  const [products, setProducts] = useState([]);
+  const [changed, setChanged] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedIndex, setSlectedIndex] = useState(-1);
   const router = useRouter();
@@ -21,12 +21,45 @@ const PurchasesQtyCheckList = (props: any) => {
       alert('Failed');
       return;
     }
-    console.log(res.data);
+    const products = res.data.result.products;
+    const transactionLine = res.data.result.transactionLines;
+    const formatedTransactionLines = [];
+    let last_id = 0;
+    let variations = [];
+    for (const line of transactionLine) {
+      const { product_id, qty, qty_received, variation_id } = line;
+      const { type, name, id } = products.find((product) => product.id === product_id);
+      let current_id = id;
+      let current_variations = [];
+      let product_name = name;
+      if (type === 'variable' && current_id !== last_id) {
+        const res = await findAllData(`products/${id}/show`);
+        variations = res.data.result.variations;
+        current_variations = variations;
+      }
+      if (type === 'variable' && current_id === last_id) {
+        current_variations = variations;
+      }
+      if (current_variations.length > 0) {
+        product_name =
+          product_name +
+          ': ' +
+          current_variations.find((variation) => variation.id === variation_id).name;
+      }
+      formatedTransactionLines.push({
+        id: type === 'variable' ? variation_id : product_id,
+        name: product_name,
+        qty,
+        product_id,
+        qty_received,
+        variation_id,
+        entered_qty: 0,
+      });
+      last_id = current_id;
+    }
 
-    setProducts(res.data.result.products);
+    setTransactionLines(formatedTransactionLines);
     setIsLoading(false);
-    setTransactionLines(res.data.result.transactionLines);
-    console.log(res.data.result.stocks);
   }
 
   const columns: GridColDef[] = [
@@ -35,13 +68,9 @@ const PurchasesQtyCheckList = (props: any) => {
       headerName: 'Product Name',
       minWidth: 250,
       renderCell: ({ row }: Partial<GridRowParams>) => {
-        const product = products?.find((product) => +product.id === +row.product_id);
-
-        return <p>{product?.name}</p>;
+        return <p>{row.name}</p>;
       },
     },
-    // { field: 'cost', headerName: 'Cost', minWidth: 150 },
-    // { field: 'price', headerName: 'Price', minWidth: 150 },
     {
       field: 'qty',
       headerName: 'Total Qty',
@@ -66,28 +95,14 @@ const PurchasesQtyCheckList = (props: any) => {
       },
     },
     {
-      field: 'qty_entered',
+      field: 'entered_qty',
       headerName: 'Enter Qty',
       minWidth: 150,
       type: 'number',
       editable: true,
       renderCell: ({ row }: Partial<GridRowParams>) => {
-        return <div>{Number(row.qty_received).toFixed(2)}</div>;
+        return <div>{row.entered_qty}</div>;
       },
-      // renderEditCell: (params) => {
-      //   // const product = products?.find(product => +product.id === +params.row.product_id)
-      //   params.value = Number(params.row.qty_received).toFixed(2)
-      //   console.log(params.value);
-      //   return (
-      //     <GridEditInputCell
-      //       {...params}
-      //       inputProps={{
-      //         min: 0,
-      //         max: params.row.qty,
-      //       }}
-      //     />
-      //   )
-      // }
     },
   ];
 
@@ -96,28 +111,75 @@ const PurchasesQtyCheckList = (props: any) => {
     if (found > -1) {
       params.value = params.value !== undefined || params.value > 0 ? parseFloat(params.value) : 0;
       var _datas: any = transactionLines;
-      if (params.value > _datas[found].qty) {
+      if (params.value > _datas[found].qty && _datas[found].qty_received === 0) {
         params.value = _datas[found].qty;
+      }
+      if (_datas[found].qty_received > 0) {
+        console.log(11111111);
+        const sum = +_datas[found].qty_received + +params.value;
+        console.log(sum);
+
+        if (sum > _datas[found].qty) {
+          console.log('before: ', params.value);
+
+          params.value = _datas[found].qty - _datas[found].qty_received;
+          console.log('before: ', params.value);
+        }
       }
       if (params.value < 0) {
         params.value = 0;
       }
-      _datas[found].qty_received = Number(params.value).toFixed(2);
+
+      _datas[found].qty_received = Number(+params.value + +_datas[found].qty_received).toFixed(2);
+      _datas[found].entered_qty += +params.value;
+      setChanged(true);
       setTransactionLines([..._datas]);
     }
   };
 
   const updateRecivedQty = () => {
-    api.put(`/purchase/update-quantity/${purchaseId}`, {
-      entered_qty: transactionLines[0].qty_received 
-    }).then((res) => {
-      if (!res.data.success) {
-        Toastify('error', 'Has Error ,try Again');
-        return;
+    const products = [];
+    for (const line of transactionLines) {
+      const { product_id, variation_id, entered_qty } = line;
+      if(entered_qty === 0 ){
+        continue;
       }
-      Toastify('success', 'Purchase Successfully Updated..');
-      router.push('/shop/' + shopId + '/purchases');
-    });
+      if(variation_id === 0){
+        products.push({
+          product_id,
+          entered_qty
+        })
+      }
+      if(variation_id > 0){
+        const found = products.findIndex(product => product.product_id === product_id);
+        if(found > -1){
+          products[found].variations.push({
+            id: variation_id,
+            entered_qty
+          })
+        }else{
+          products.push({
+            product_id,
+            variations: [{
+              id: variation_id,
+              entered_qty
+            }]
+          })
+        }
+      }
+    }
+    api
+      .put(`/purchase/update-quantity/${purchaseId}`, {
+        products
+      })
+      .then((res) => {
+        if (!res.data.success) {
+          Toastify('error', 'Has Error ,try Again');
+          return;
+        }
+        Toastify('success', 'Purchase Successfully Updated..');
+        router.push('/shop/' + shopId + '/purchases');
+      });
   };
   useEffect(() => {
     const f_index2 = props.purchases.findIndex((itm: any) => {
@@ -187,7 +249,10 @@ const PurchasesQtyCheckList = (props: any) => {
           <button
             type="button"
             hidden={transactionLines.length === 0}
-            disabled={(transactionLines[0]?.qty_received == '0.00' || transactionLines[0]?.qty_received === +transactionLines[0]?.qty)}
+            disabled={
+              transactionLines[0]?.qty_received == '0.00' ||
+              transactionLines[0]?.qty_received === +transactionLines[0]?.qty
+            }
             className="btn m-btn btn-primary p-2"
             onClick={updateRecivedQty}>
             Save
