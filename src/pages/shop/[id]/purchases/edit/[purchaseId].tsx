@@ -82,8 +82,6 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
   const [errorForm, setErrorForm] = useState(purchasesInitFormError);
   const [suppliers, setSuppliers] = useState<ISupplierSelect[]>(initialSupplier);
   const [purchaseDetails, setPurchaseDetails] = useState(purchasesInitPurchaseDetails);
-
-  const [isEdit, setIsEdit] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isEditSort, setIsEditSort] = useState(false);
   const [vatInColumn, setVatInColumn] = useState(false);
@@ -99,19 +97,18 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
 
   const [purchaseStatus, setPurchaseStatus] =
     useState<{ value: string; label: string }[]>(purchaseStatusDataAdd);
-  const [paymentTypes, setPaymentTypes] =
-    useState<{ value: string; label: string }[]>([
-      { label: 'Cash', value: "cash" },
-      { label: 'Card', value: 'card' },
-      { label: 'Bank', value: 'bank' },
-      { label: 'Cheque', value: 'cheque' },
-    ]);
+  const [paymentTypes, setPaymentTypes] = useState<{ value: string; label: string }[]>([
+    { label: 'Cash', value: 'cash' },
+    { label: 'Card', value: 'card' },
+    { label: 'Bank', value: 'bank' },
+    { label: 'Cheque', value: 'cheque' },
+  ]);
   const [paymentStatus, setPaymentStatus] =
     useState<{ value: string; label: string }[]>(paymentStatusData);
   const [products, setProducts] = useState<{ value: number; label: string }[]>([]);
   const [selectProducts, setSelectProducts] = useState<IpurchaseProductItem[]>([]);
   console.log(selectProducts);
-  
+
   const [allVariations, setAllVariations] = useState([]);
   const [expends, setExpends] = useState<{ label: ''; value: 0 }[]>([]);
   const [selectedExpends, setSelectedExpends] = useState<IPurchaseExpndes[]>([]);
@@ -149,7 +146,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
 
   async function updatePurchase() {
     console.log(selectProducts);
-    
+
     const data = {
       // ...formObj,
       location_id: +shopId, //  "required|numeric",
@@ -158,8 +155,17 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
       supplier_id: formObj?.supplier_id ?? 0,
       payment_type: formObj?.paymentType,
       currency_id: formObj?.currency_id,
-      ...((formObj?.paymentStatus === 'partially_paid') && {total_paid: formObj?.paid_amount}),
-      cart: [...selectProducts.map((item: any) => ({ variation_id: item.variation_id || null, qty: item.quantity, note: '', product_id: item.id, cost: item.cost_price, price: item.sell_price }))],
+      ...(formObj?.paymentStatus === 'partially_paid' && { total_paid: formObj?.paid_amount }),
+      cart: [
+        ...selectProducts.map((item: any) => ({
+          variation_id: item.variation_id || null,
+          qty: item.quantity,
+          note: '',
+          product_id: item.id,
+          cost: item.cost_price,
+          price: item.sell_price,
+        })),
+      ],
       // expense: {
       //   amount: null,
       //   category: {
@@ -178,26 +184,6 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
     });
   }
 
-  async function editPurchase() {
-    const { success } = await apiUpdateCtr({
-      type: 'transactions',
-      subType: 'editPurchase',
-      shopId,
-      data: {
-        totalOrder: formObjRef.current,
-        lines: selectProducts,
-        expenses: selectedExpends,
-        taxes: selectedTaxes,
-      },
-    });
-    if (!success) {
-      Toastify('error', 'Has Error ,Check You Inputs Try Again');
-      return;
-    }
-    Toastify('success', 'Purchase Successfully Edited..');
-
-    router.push('/shop/' + shopId + '/purchases');
-  }
   var errors = [];
 
   function getPriority(type: string, subTotal: number): number {
@@ -365,17 +351,19 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
     if (found > -1) {
       var _datas: any = selectProducts;
       _datas[found][params.field] = params.value;
-      console.log('fffffffffffff',(_datas[found].cost || _datas[found].cost_price));
-      
+      console.log('fffffffffffff', _datas[found].cost || _datas[found].cost_price);
+
       if (params.field == 'cost' || params.field == 'quantity')
         _datas[found].lineTotal =
           locationSettings?.currency_id == formObj?.currency_id
-            ? Number((_datas[found].cost || _datas[found].cost_price) * _datas[found].quantity).toFixed(
-              locationSettings?.location_decimal_places
-            )
-            : Number((_datas[found].cost || _datas[found].cost_price) * formObj?.currency_rate * _datas[found].quantity).toFixed(
-              locationSettings?.location_decimal_places
-            );
+            ? Number(
+                (_datas[found].cost || _datas[found].cost_price) * _datas[found].quantity
+              ).toFixed(locationSettings?.location_decimal_places)
+            : Number(
+                (_datas[found].cost || _datas[found].cost_price) *
+                  formObj?.currency_rate *
+                  _datas[found].quantity
+              ).toFixed(locationSettings?.location_decimal_places);
 
       setSelectProducts([..._datas]);
       calculationLabels(formObj?.total_expense, formObj?.total_tax);
@@ -404,7 +392,6 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
 
   console.log(formObj.subTotal_price);
 
-
   function calculationLabels(totalEpx: number, totalTax: number) {
     var _subtotal = 0;
     var _rows: any = [...selectProducts];
@@ -417,16 +404,16 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
       _rows[i].notifyExpensePrice =
         _ExpVal > 0
           ? +Number(_ExpVal + parseFloat(getCost(sp.cost).toString())).toFixed(
-            locationSettings?.location_decimal_places
-          )
+              locationSettings?.location_decimal_places
+            )
           : 0;
       if (_ExpVal == 0 && _rows[i].costType == 1) _rows[i].costType = 0;
 
       _rows[i].notifyTaxPrice =
         _TaxVal > 0
           ? +Number(_TaxVal + parseFloat(getCost(sp.cost).toString())).toFixed(
-            locationSettings?.location_decimal_places
-          )
+              locationSettings?.location_decimal_places
+            )
           : 0;
       if (_TaxVal == 0 && _rows[i].costType == 2) _rows[i].costType = 0;
 
@@ -437,8 +424,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
     });
     setSelectProducts(_rows);
   }
-  
-  
+
   const columns = useMemo(
     () =>
       purchasesColumns({
@@ -487,9 +473,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
         (_purchaseDetails?.payment[0] as IPayment).created_at,
         new Date(_purchaseDetails?.created_at)
       );
-      console.log(
-        _purchaseDetails
-      );
+      console.log(_purchaseDetails);
       setFormObj((prev) => ({
         ...prev,
         ..._purchaseDetails,
@@ -523,14 +507,34 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
 
       const _selectedProducts = [];
       _purchaseDetails?.stocks.forEach((stock) => {
-
+        console.log(stock);
+        
         const _product = _products.find((product: IProduct) => +product.id === +stock.product_id);
         if (_product) {
-          const quantity = (_purchaseDetails.products.find((product: any) => product.id == _product.id) as any ).pivot.qty || 1;
-          console.log(_product)
-          _selectedProducts.push({ ..._product, quantity, lineTotal: quantity * +_product.cost_price});
+          const quantity =
+            (_purchaseDetails.products.find((product: any) => product.id == _product.id) as any)
+              .pivot.qty || 1;
+          console.log(_product);
+          if (_product.type === 'variable'){
+            // const variation = _product.variations.find((var) => var.id == stock.variation_id);
+            const varia = _product.variations.find(variation => variation.id == stock.variation_id);
+            _selectedProducts.push({
+              ..._product,
+              name: _product.name + ' '+ varia.name,
+              sell_price: varia.price,
+              cost_price: varia.cost,
+              variation_id: stock.variation_id, 
+              quantity,
+              lineTotal: quantity * +varia.cost,
+            });
+          }else{
+            _selectedProducts.push({
+              ..._product,
+              quantity,
+              lineTotal: quantity * +_product.cost_price,
+            });
+          }         
         }
-
       });
       setSelectProducts([..._selectedProducts]);
     } catch {
@@ -550,7 +554,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
       _qty = 0;
     selectProducts.map((p: IpurchaseProductItem) => {
       console.log(p.lineTotal);
-      
+
       _qty += Number(p.quantity);
       _prices += Number(p.lineTotal);
     });
@@ -668,7 +672,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
     if (!shopId) return Toastify('warning', 'Please refresh the page!');
     getPageData(shopId);
   }, [shopId]);
-console.log();
+  console.log();
 
   return (
     <AdminLayout shopId={shopId}>
@@ -730,7 +734,7 @@ console.log();
         <>
           <Card className="mb-4">
             <Card.Header className="p-3 bg-white">
-              <h5>{isEdit ? 'Edit Purchase ' : 'Add Purchase'}</h5>
+              <h5>Edit Purchase</h5>
             </Card.Header>
             <Card.Body>
               <div className="form-style2">
@@ -1207,7 +1211,7 @@ console.log();
                     updatePurchase();
                   } else Toastify('error', 'Enter Requires Field');
                 }}>
-                 Save
+                Save
               </button>
             </Card.Body>
           </Card>

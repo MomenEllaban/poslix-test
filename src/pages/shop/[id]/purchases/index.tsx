@@ -158,7 +158,6 @@ const Purchases: NextPage = ({ shopId, id }: any) => {
     setPermissions(getPermissions);
   }, [router.asPath]);
   function getStatusStyle(status: string) {
-    console.log(status);
     
     switch (status) {
       case 'paid':
