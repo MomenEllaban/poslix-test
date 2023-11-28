@@ -178,7 +178,7 @@ const PurchasesQtyCheckList = (props: any) => {
           return;
         }
         Toastify('success', 'Purchase Successfully Updated..');
-        router.push('/shop/' + shopId + '/purchases');
+        props.setIsShowQtyManager(false)
       });
   };
   useEffect(() => {

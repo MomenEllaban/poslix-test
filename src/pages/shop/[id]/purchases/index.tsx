@@ -158,14 +158,21 @@ const Purchases: NextPage = ({ shopId, id }: any) => {
     setPermissions(getPermissions);
   }, [router.asPath]);
   function getStatusStyle(status: string) {
+    console.log(status);
+    
     switch (status) {
       case 'paid':
       case 'received':
         return <span className="purchase-satus-style">{status}</span>;
-
+        case 'partially_received':
+        case 'partially_paid':
+          return <span className="purchase-satus-style">{status.split("_").join(" ")}</span>;
+        case '':
+        case null:
+          return <span className="purchase-satus-style paid-othe">Due</span>;
       default:
         return (
-          <span className="purchase-satus-style paid-other">{status.split('_').join(' ')}</span>
+          <span className="purchase-satus-style paid-other">{status}</span>
         );
     }
   }
