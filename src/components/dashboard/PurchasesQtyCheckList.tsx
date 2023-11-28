@@ -40,7 +40,14 @@ const PurchasesQtyCheckList = (props: any) => {
       if (type === 'variable' && current_id === last_id) {
         current_variations = variations;
       }
-      if (current_variations.length > 0) {
+      console.log(current_variations.length);
+      
+      if (type === 'variable' && current_variations.length > 0) {
+        console.log(type);
+        
+        console.log(variation_id);
+        console.log(current_variations);
+        
         product_name =
           product_name +
           ': ' +
@@ -178,7 +185,7 @@ const PurchasesQtyCheckList = (props: any) => {
           return;
         }
         Toastify('success', 'Purchase Successfully Updated..');
-        router.push('/shop/' + shopId + '/purchases');
+        props.setIsShowQtyManager(false)
       });
   };
   useEffect(() => {

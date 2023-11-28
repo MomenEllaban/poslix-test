@@ -172,6 +172,7 @@ export default function PaymentCheckoutModal({
   const onSubmit = (data) => {
     setIsPending(true);
     const checkoutData = {
+      digital_menu:true,
       notes: data?.notes,
       payment: data?.payment,
       location_id: shopId,
