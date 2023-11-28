@@ -21,7 +21,7 @@ const Digital: NextPage = ({ shopId }: any) => {
   const fetchAppDigital = async () => {
     setLoading(true);
     try {
-      const res = await findAllData(`appearance/${router.query.id}`);
+      const res = await findAllData(`appearance/${router.query.id}?digital_menu=true`);
       setAppearance(res.data.result);
     } catch (err) {
       Toastify('error', 'Something went wrong with getting Apperance, please try again later!');
@@ -95,7 +95,7 @@ export async function getServerSideProps(context: any) {
   return {
     props: {
       shopId: context.query.id,
-      rules: { hasDelete: true, hasEdit: true, hasView: true, hasInsert: true },
+      // rules: { hasDelete: true, hasEdit: true, hasView: true, hasInsert: true },
     },
   };
 }

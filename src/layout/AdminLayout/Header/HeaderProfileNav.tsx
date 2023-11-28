@@ -9,6 +9,8 @@ import { PropsWithChildren } from 'react';
 import { Dropdown, Nav, NavItem } from 'react-bootstrap';
 import { deleteCookie } from 'cookies-next';
 
+import { useTranslation } from 'next-i18next';
+
 type NavItemProps = {
   icon: IconDefinition;
 } & PropsWithChildren;
@@ -26,6 +28,9 @@ const ProfileDropdownItem = (props: NavItemProps) => {
 
 export default function HeaderProfileNav() {
   const router = useRouter();
+
+  const { t } = useTranslation();
+
 
   const handelCleanStorage = () => {
     deleteCookie('next-auth.session-token');
@@ -58,21 +63,21 @@ export default function HeaderProfileNav() {
           </div>
         </Dropdown.Toggle>
         <Dropdown.Menu className="pt-0">
-          <Dropdown.Header className="bg-light fw-bold">Settings</Dropdown.Header>
+          <Dropdown.Header className="bg-light fw-bold">{t("g.Settings")}</Dropdown.Header>
           <Link href="/" passHref legacyBehavior>
             <Dropdown.Item>
-              <ProfileDropdownItem icon={faUser}>Profile</ProfileDropdownItem>
+              <ProfileDropdownItem icon={faUser}>{t("g.Profile")}</ProfileDropdownItem>
             </Dropdown.Item>
           </Link>
           <Link href="/" passHref legacyBehavior>
             <Dropdown.Item>
-              <ProfileDropdownItem icon={faGear}>Settings</ProfileDropdownItem>
+              <ProfileDropdownItem icon={faGear}>{t("g.Settings")}</ProfileDropdownItem>
             </Dropdown.Item>
           </Link>
           <Dropdown.Divider />
 
           <Dropdown.Item onClick={handleLogout}>
-            <ProfileDropdownItem icon={faPowerOff}>Logout</ProfileDropdownItem>
+            <ProfileDropdownItem icon={faPowerOff}>{t("g.Logout")}</ProfileDropdownItem>
           </Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>

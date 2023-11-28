@@ -8,50 +8,47 @@ import { addToCart, selectCartByLocation } from 'src/redux/slices/cart.slice';
 import PackageItemsModal from '../../modals/package-item/PackageItemsModal';
 import styles from './ItemCard.module.scss';
 import { Toastify } from 'src/libs/allToasts';
-import { useRouter } from 'next/router';
-import { findAllData } from 'src/services/crud.api';
+// import { useRouter } from 'next/router';
+// import { findAllData } from 'src/services/crud.api';
 import { useProducts } from 'src/context/ProductContext';
 
-export const ItemCard = ({groups, customer,product }) => {
-  
+export const ItemCard = ({ groups, customer, product }) => {
   const dispatch = useAppDispatch();
   const { locationSettings } = useUser();
   // const selectCartForLocation = selectCartByLocation(shopId);
   // const cart = useAppSelector(selectCartForLocation);
-  const [selectedCustomer, setSelectedCustomer] = useState<any>()
+  const [selectedCustomer, setSelectedCustomer] = useState<any>();
 
   const [isOpenDialog, setIsOpenDialog] = useState<boolean>(false);
   const [productVariations, setProductVariations] = useState<IProduct['variations']>([]);
-// =-----------------------------------------------------------------------------------------------
-const { customers } = useProducts();
-const [customerPricingGroup, setCustomerPricingGroup] = useState<any>()
+  // =-----------------------------------------------------------------------------------------------
+  const { customers } = useProducts();
+  const [customerPricingGroup, setCustomerPricingGroup] = useState<any>();
 
   // ------------------------------------------------------------------------------------------------
-//   useEffect(() => {
-//     setSelectedCustomer(customers?.find(el => customer?.label?.includes(el?.mobile)))
+  //   useEffect(() => {
+  //     setSelectedCustomer(customers?.find(el => customer?.label?.includes(el?.mobile)))
 
-// console.log(customer);
-// console.log(customers?.find(el => customer?.label?.includes(el?.mobile)));
+  // console.log(customer);
+  // console.log(customers?.find(el => customer?.label?.includes(el?.mobile)));
 
-//   }, [customer])
+  //   }, [customer])
   // ------------------------------------------------------------------------------------------------
- 
+
   // ------------------------------------------------------------------------------------------------
   useEffect(() => {
-
-    if(customer?.value===0){
-      setCustomerPricingGroup(undefined)
-    }else{
-    setCustomerPricingGroup(groups?.find(el => el.id === customer?.price_groups_id))
-  }
-  }, [customer,customers])
+    if (customer?.value === 0) {
+      setCustomerPricingGroup(undefined);
+    } else {
+      setCustomerPricingGroup(groups?.find((el) => el.id === customer?.price_groups_id));
+    }
+  }, [customer, customers]);
   // ------------------------------------------------------------------------------------------------
   // useEffect(() => {
 
   //   if ( customerPricingGroup?.products) {
 
   //     let cartWithPricingData = cart?.cartItems.map(itm => {
-
 
   //       const groupPrice = customerPricingGroup?.products?.find((el: any) => el.id === itm.id)
 
@@ -74,48 +71,44 @@ const [customerPricingGroup, setCustomerPricingGroup] = useState<any>()
   // }, [cart?.cartItems, customerPricingGroup])
   // ------------------------------------------------------------------------------------------------
 
-const handleAddToCart = () => {
-  let groupPrice
-  let cartProduct={ ...product, product_id: product.id }
-  
-  if ( customerPricingGroup?.products) {
-    
-     groupPrice =  customerPricingGroup?.products?.find(el=>product.id === el.id)
-     
-    if (groupPrice&&customer?.id) {
-      // console.log(product,'variantWithPricingGroup');
+  const handleAddToCart = () => {
+    let groupPrice;
+    let cartProduct = { ...product, product_id: product.id };
 
-      if (product.type?.includes('variable') ) {
-        // console.log(groupPrice,'variantWithPricingGroup');
+    if (customerPricingGroup?.products) {
+      groupPrice = customerPricingGroup?.products?.find((el) => product.id === el.id);
 
-        cartProduct={
-          ...product,variations:product?.variations?.map(v=>{
-           let variantWithPricingGroup= groupPrice.variants?.find(el=>el.id===v.id)
-           
-            return{...v, old_price: variantWithPricingGroup.old_price,
-              price: variantWithPricingGroup.price,}
-          })
+      if (groupPrice && customer?.id) {
+        // console.log(product,'variantWithPricingGroup');
+
+        if (product.type?.includes('variable')) {
+          // console.log(groupPrice,'variantWithPricingGroup');
+
+          cartProduct = {
+            ...product,
+            variations: product?.variations?.map((v) => {
+              let variantWithPricingGroup = groupPrice.variants?.find((el) => el.id === v.id);
+
+              return {
+                ...v,
+                old_price: variantWithPricingGroup.old_price,
+                price: variantWithPricingGroup.price,
+              };
+            }),
+          };
+        } else {
+          cartProduct = {
+            ...product,
+            old_price: groupPrice.old_price,
+            sell_price: groupPrice.price,
+            product_id: product.id,
+          };
         }
-      }else{
-
-      cartProduct= {
-        ...product,
-        old_price: groupPrice.old_price,
-        sell_price: groupPrice.price,
-        product_id: product.id
       }
     }
-    
-  }
 
-
-  }
-
-
-
-    let test = product.stock > 0 || product.sell_over_stock    
+    let test = product.stock > 0 || product.sell_over_stock;
     if (product.type?.includes('variable') && test) {
-     
       setProductVariations(cartProduct.variations);
       setIsOpenDialog(true);
     } else {

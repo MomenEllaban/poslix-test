@@ -11,8 +11,8 @@ import AddNewUser from 'src/components/dashboard/AddNewUser';
 import AlertDialog from 'src/components/utils/AlertDialog';
 import { Toastify } from 'src/libs/allToasts';
 import { findAllData } from 'src/services/crud.api';
-import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useTranslation } from 'next-i18next';
 
 const Locations = () => {

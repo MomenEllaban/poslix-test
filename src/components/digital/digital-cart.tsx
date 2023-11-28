@@ -107,7 +107,7 @@ const DigitalCart = ({
           {lang.pos.cartComponent.checkout}{' '}
           {totalPrice.toFixed(location?.location_decimal_places || 2)} {location?.currency_code}
         </Button>
-        <Button>{lang.digital.apply_coupon}</Button>
+        {/* <Button>{lang.digital.apply_coupon}</Button> */}
       </div>
       {selectedVariantProduct && (
         <VariantsProductModal

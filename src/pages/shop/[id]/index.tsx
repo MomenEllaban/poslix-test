@@ -441,7 +441,7 @@ const Home = (props: any) => {
                       )?.location_name} */}
                       { itm.user && itm.user.last_name !== null
                         ? itm.user.first_name + ' ' + itm.user.last_name
-                        : itm.user && itm.user.first_name !==null ? itm.user.first_name : '' }
+                        : itm.user && itm.user.first_name !==null ? itm.user.first_name : 'Digital Menu' }
                     </div>
                   </div>
                 );
