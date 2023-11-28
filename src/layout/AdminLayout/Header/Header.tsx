@@ -16,6 +16,9 @@ import classNames from 'classnames';
 import { ELocalStorageKeys } from 'src/utils/local-storage';
 import DarkModeToggle from '../DarkModeToggle';
 
+import { useTranslation } from 'next-i18next';
+
+
 type HeaderProps = {
   toggleSidebar: () => void;
   toggleSidebarMd: () => void;
@@ -26,6 +29,9 @@ export default function Header(props: HeaderProps) {
   const [fullname, setFullname] = useState('');
 
   const pathname = usePathname();
+
+  const { t } = useTranslation();
+
 
   const KEY_LANG = 'lang';
   const handleSetLangToCookie = (lang: string) => {
@@ -111,7 +117,7 @@ export default function Header(props: HeaderProps) {
           </Dropdown.Menu>
         </Dropdown>
         <div className="header-nav ms-auto">
-          <h4 className='header__user-name'>Hi {fullname}</h4>
+          <h4 className='header__user-name'>{t("g.Hi")} {fullname}</h4>
         </div>
         <div className="header-nav ms-2">
           <HeaderProfileNav />

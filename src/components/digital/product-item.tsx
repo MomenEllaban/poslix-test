@@ -85,7 +85,9 @@ const ProductItem = ({ product, addItemTocart, location }) => {
         <div className="digital-product-button">
           <Button
             variant=""
+            disabled={product?.stock===0}
             onClick={(e) => {
+              if(product?.stock===0){return}
               if (product.type === 'variable') {
                 setOpenVariablesModal(true);
                 return;

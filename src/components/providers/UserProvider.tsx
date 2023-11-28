@@ -51,6 +51,11 @@ export default function UserProvider({ children }: { children: React.ReactNode }
     setTailoringExtras,
   };
 
+  const PATH_DIGITAL_PRODUCTS = '/shop/[id]/digital/products';
+  const PATH_DIGITAL = '/shop/[id]/digital';
+
+  const { pathname } = router;
+
   useEffect(() => {
     const language = window.localStorage.getItem('lang');
     if (!language) window.localStorage.setItem('lang', 'en');
@@ -59,7 +64,9 @@ export default function UserProvider({ children }: { children: React.ReactNode }
       if (session) {
         setUser(session.user);
       } else {
-        router.replace(ROUTES.AUTH);
+        if (pathname !== PATH_DIGITAL && pathname !== PATH_DIGITAL_PRODUCTS) {
+          router.replace(ROUTES.AUTH);
+        }
       }
     });
   }, []);

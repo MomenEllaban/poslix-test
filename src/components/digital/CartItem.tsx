@@ -60,7 +60,7 @@ const CartItem = ({
       </div>
 
       <div className="order_btn col-3">
-        {price.toFixed(location?.location_decimal_places || 2)} {location?.currency_code}
+        {price?.toFixed(location?.location_decimal_places || 2)} {location?.currency_code}
       </div>
     </div>
   );
