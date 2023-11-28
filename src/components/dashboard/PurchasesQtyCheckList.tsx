@@ -151,12 +151,19 @@ const PurchasesQtyCheckList = (props: any) => {
       if(entered_qty === 0 ){
         continue;
       }
-      if(variation_id === 0){
+      if(!variation_id){
         products.push({
           product_id,
           entered_qty
         })
       }
+
+      // if(variation_id === 0){
+      //   products.push({
+      //     product_id,
+      //     entered_qty
+      //   })
+      // }
       if(variation_id > 0){
         const found = products.findIndex(product => product.product_id === product_id);
         if(found > -1){
