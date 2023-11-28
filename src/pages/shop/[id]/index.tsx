@@ -437,9 +437,9 @@ const Home = (props: any) => {
                     <div className="m-fileds" style={{ width: '25%' }}>
                       {/* {_locs.find(l => l.location_id == itm.created_by
                       )?.location_name} */}
-                      {itm.user.last_name !== null
+                      { itm.user && itm.user.last_name !== null
                         ? itm.user.first_name + ' ' + itm.user.last_name
-                        : itm.user.first_name}
+                        : itm.user && itm.user.first_name !==null ? itm.user.first_name : 'Digital Menu' }
                     </div>
                   </div>
                 );
