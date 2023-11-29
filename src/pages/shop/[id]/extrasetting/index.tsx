@@ -20,22 +20,38 @@ import AlertDialog from 'src/components/utils/AlertDialog';
 import { Toastify } from 'src/libs/allToasts';
 import { findAllData } from 'src/services/crud.api';
 import ExtraModal from '../../../../components/pos/modals/ExtraModal';
-
+import { useTranslation } from 'next-i18next';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 
 const Extras: NextPage = (props: any) => {
+    const { t } = useTranslation();
     const { shopId, rules } = props;
     const router = useRouter();
-    const [extrasCategoriesList, setExtrasCategoriesList] = useState<
+    const [categoriesList, setCategoriesList] = useState<
     {
       id: number;
       name: string;
+      second_name: string;
       extras: {
         id: number;
         name: string;
+        second_name:string;
         price: number;
       }[];
     }[]
   >([]);
+
+  const [category, setCategory] = useState<{
+    id: string;
+    name: string;
+    second_name: string;
+    allow_multi_selection:boolean;
+  }>({ id: '1', name: 'sample category', second_name: 'sample', allow_multi_selection:false });
+  
+  const [categoryExtrasList,setCategoryExtrasList] = useState([]);
+  const [categoryIsModal, setCategoryIsModal] = useState<boolean>(false);
+
+  const [showType, setShowType] = useState(String); 
 
   const [show, setShow] = useState(false);
   const [selectId, setSelectId] = useState(0);
@@ -43,20 +59,12 @@ const Extras: NextPage = (props: any) => {
   const [locationID, setLocationID] = useState(shopId);
 
 
+
   
-  const [showType, setShowType] = useState(String); 
-  const [category, setCategory] = useState<{
-    value: string;
-    label: string;
-    isNew: boolean;
-  }>({ value: '1', label: 'sample category', isNew: false });
-  const [categoryIsModal, setCategoryIsModal] = useState<boolean>(false);
-
-
   async function initDataPage() {
     if (router.query.id) {
       try{
-      const res = await findAllData(`extra-settings/showAll/${router.query.id}`);
+      const res = await findAllData(`extras-categories/`);
       if (res.data.status == 404) {
         Toastify('error', 'not found');
         return false ;
@@ -66,14 +74,33 @@ const Extras: NextPage = (props: any) => {
 
         return false ;
       }
-      setExtrasCategoriesList(res.data.result);
-  }catch(e){
-    setExtrasCategoriesList([])
-  }
-     
+      setCategoriesList(res.data.result);
+      }catch(e){
+        setCategoriesList([])
+      }
     }
     setIsLoading(false);
   }
+  
+// only temporary until i solve the eager loading on the backend
+  async function getExtras(id){
+    try{
+      const res = await findAllData(`extras-categories/extras/${id}`);
+      if (res.data.status == 404) {
+        Toastify('error', 'not found');
+        return false ;
+      }
+      if (res.data.status !== 200) {
+        Toastify('error', 'Somthing wrong!!, try agian');
+
+        return false ;
+      }
+      setCategoryExtrasList(res.data.result);
+    }catch(e){
+      setCategoryExtrasList([]);
+    }
+  }
+
   const extraModalHandler = (status: any) => {
     setCategoryIsModal(false);
     initDataPage();
@@ -81,11 +108,11 @@ const Extras: NextPage = (props: any) => {
 
   const columns: GridColDef[] = [
     { field: 'id', headerName: '#', minWidth: 50 },
-    { field: 'name', headerName: 'Category Name', flex: 1 },
-    { field: 'second_name', headerName: 'Category Second Name', flex: 1 },
+    { field: 'name', headerName: t('extra.category_name'), flex: 1 },
+    { field: 'second_name', headerName: t('extra.category_second_name'), flex: 1 },
     {
       field: 'actions',
-      headerName: 'Actions ',
+      headerName: t('extra.actions'),
       sortable: false,
       disableExport: true,
       flex: 1,
@@ -97,25 +124,10 @@ const Extras: NextPage = (props: any) => {
                 onClick={(event) => {
                   event.stopPropagation();
                   setCategory({
-                    value: row.id,
-                    label: row.name,
-                    isNew: false,
-                  });
-                  setSelectId(row.id);
-                  setShowType('edit');
-                  setCategoryIsModal(true);
-                }}>
-                
-                <FontAwesomeIcon icon={faPenToSquare} />
-              </Button>
-            )}
-              <Button
-                onClick={(event) => {
-                  event.stopPropagation();
-                  setCategory({
-                    value: row.id,
-                    label: row.name,
-                    isNew: false,
+                    id: row.id,
+                    name: row.name,
+                    second_name: row.second_name,
+                    allow_multi_selection: row.allow_multi_selection,
                   });
                   setSelectId(row.id);
                   setShowType('show');
@@ -123,6 +135,24 @@ const Extras: NextPage = (props: any) => {
                 }}>
                 
                 <FontAwesomeIcon icon={faEye} />
+              </Button>
+            )}
+              <Button
+                onClick={(event) => {
+                  event.stopPropagation();
+                  getExtras(row.id);
+                  setCategory({
+                    id: row.id,
+                    name: row.name,
+                    second_name: row.second_name,
+                    allow_multi_selection: row.allow_multi_selection,
+                  });
+                  setSelectId(row.id);
+                  setShowType('edit');
+                  setCategoryIsModal(true);
+                }}>
+                
+                <FontAwesomeIcon icon={faPenToSquare} />
               </Button>
 
             <Button
@@ -148,8 +178,6 @@ const Extras: NextPage = (props: any) => {
     );
   }
 
-
-  
   useEffect(() => {
     initDataPage();
     setLocationID(router.query.id)
@@ -160,6 +188,7 @@ const Extras: NextPage = (props: any) => {
     initDataPage();
     setShow(false);
   };
+  
   const onRowsSelectionHandler = (ids: any) => {};
 
     return (
@@ -171,8 +200,8 @@ const Extras: NextPage = (props: any) => {
           alertFun={handleDeleteFuc}
           shopId={shopId}
           id={selectId}
-          locatiooID={locationID}
-          url={'extra-settings'}>
+          locationID={locationID}
+          url={'extras-categories'}>
           Are you Sure You Want Delete This Category ?
         </AlertDialog>
         {!isLoading && (
@@ -183,14 +212,14 @@ const Extras: NextPage = (props: any) => {
                 setShowType('add');
                 setCategoryIsModal(true);
               }}>
-              <FontAwesomeIcon icon={faPlus} /> Add New Category{' '}
+              <FontAwesomeIcon icon={faPlus} /> {t('extra.add_new_category')}{' '}
             </button>
           </div>
         )}
         {!isLoading ? (
           <>
             <div className="page-content-style card">
-              <h5>Categories List</h5>
+              <h5>{t('extra.categories_list')}</h5>
               <DataGrid
                 className="datagrid-style"
                 sx={{
@@ -201,7 +230,7 @@ const Extras: NextPage = (props: any) => {
                     border: 'none',
                   },
                 }}
-                rows={extrasCategoriesList}
+                rows={categoriesList}
                 columns={columns}
                 pageSize={10}
                 rowsPerPageOptions={[10]}
@@ -218,14 +247,20 @@ const Extras: NextPage = (props: any) => {
       </AdminLayout>
       <ExtraModal
         shopId={locationID}
-        extrasList={extrasCategoriesList}
+        extrasList={categoryExtrasList}
+        category={category}
         selectId={selectId}
         showType={showType}
-        userdata={category}
-        extras={extrasCategoriesList}
         statusDialog={categoryIsModal}
         openDialog={extraModalHandler} />
     </>
     );
 }
 export default withAuth(Extras);
+
+export async function getServerSideProps({ params, locale }) {
+  const { id } = params;
+  return {
+    props: { id, ...(await serverSideTranslations(locale)) },
+  };
+}

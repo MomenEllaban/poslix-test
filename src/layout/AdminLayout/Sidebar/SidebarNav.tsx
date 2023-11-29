@@ -570,7 +570,7 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
                 href={'/shop/' + shopId + '/extrasetting'}
                 sub={true}
                 isShown={!!router.query.id}>
-                Extra setting
+                {t('extra.extra_setting')}
               </SidebarNavItem>
             )}
         </SidebarNavGroup>

@@ -749,5 +749,26 @@
     "method": "Method",
     "total_price": "Total Price",
     "products": "products"
+  },
+  "extra": {
+    "extra_setting":"Extra Setting",
+    "categories_list": "Categories List",
+    "export": "EXPORT",
+    "columns": "COLUMNS",
+    "category_name": "Category Name",
+    "category_second_name": "Category Second Name",
+    "actions": "Actions",
+    "add_new_category": "Add New Category",
+    "arabic_name": "Arabic Name",
+    "english_name": "English Name",
+    "enable_multi_selection": "Enable Multi Selection",
+    "extra_name": "Extra Name",
+    "extra_second_name": "Extra Second Name",
+    "extra_price": "Extra Price",
+    "add_item": "Add Item",
+    "list_of_extras": "List Of Extras",
+    "add_category": "Add Category",
+    "close":"Close",
+    "category":"Category"
   }
 }
