@@ -224,8 +224,8 @@ const ExtraModal = (props: any) => {
                 {t('extra.enable_multi_selection')}
               </label>
               {category.allow_multi_selection?
-                (<FontAwesomeIcon icon={faCheck} size='lg'/>) 
-              : (<FontAwesomeIcon icon={faTimes} size='lg'/>) }
+                (<Switch checked disabled/>) 
+              : (<Switch disabled/>) }
             </div>
           </div>
           <table className="table table-striped">
@@ -304,14 +304,18 @@ const ExtraModal = (props: any) => {
              <FormControlLabel
                 control={
                   <Switch
-                  {...register('allow_multi_selection')}
-                  id='allow_multi_selection'
-                  //  checked={multiSelection}
-                   onChange={()=>{}}
-                   className='px-2 '
-                  />}
+                    {...register('allow_multi_selection')}
+                    id='allow_multi_selection'
+                    onChange={(e) => {
+                      const currentValue = form.getValues('allow_multi_selection');
+                      form.setValue('allow_multi_selection', !currentValue);
+                    }}
+                    className='px-2 '
+                  />
+                }
                 label={t("extra.enable_multi_selection")}
               />
+
             </fieldset>
             {fields.map((field, index) => {
   return (
