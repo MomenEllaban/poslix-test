@@ -86,6 +86,7 @@ const Extras: NextPage = (props: any) => {
   async function getExtras(id){
     try{
       const res = await findAllData(`extras-categories/extras/${id}`);
+      console.log('Extras API Response:', res.data); 
       if (res.data.status == 404) {
         Toastify('error', 'not found');
         return false ;
@@ -123,6 +124,7 @@ const Extras: NextPage = (props: any) => {
               <Button
                 onClick={(event) => {
                   event.stopPropagation();
+                  getExtras(row.id)
                   setCategory({
                     id: row.id,
                     name: row.name,

@@ -4,7 +4,7 @@ import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useEffect, useState } from 'react';
 import { Button, Form, Modal, Table } from 'react-bootstrap';
-import { useForm } from 'react-hook-form';
+import {useForm, useFieldArray} from 'react-hook-form'; 
 import FormField from 'src/components/form/FormField';
 import SelectField from 'src/components/form/SelectField';
 import { Toastify } from 'src/libs/allToasts';
@@ -17,6 +17,9 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { useTranslation } from 'next-i18next';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCheck, faPlus, faTimes, faTrash } from '@fortawesome/free-solid-svg-icons';
+
 
 
 
@@ -25,35 +28,46 @@ const ExtraModal = (props: any) => {
   const { openDialog, statusDialog, category, showType, shopId,selectId,extrasList } = props;
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  // const [isViewMode, setIsViewMode] = useState(false);
-  const {register,handleSubmit,formState: { errors },reset,setValue,clearErrors,} = useForm({
-    mode: 'onTouched',
-    reValidateMode: 'onBlur',
+  const [isViewMode, setIsViewMode] = useState(false);
+
+  type FormValues = {
+    category_name: string,
+    category_second_name: string,
+    allow_multi_selection: boolean,
+    extras:{
+      name: string,
+      second_name: string,
+      price:string
+    }[]
+  };
+
+  const form = useForm<FormValues>({
+    defaultValues: {
+      category_name: '',
+      category_second_name: '',
+      allow_multi_selection: false,
+      extras: [{
+        name: '',
+        second_name: '',
+        price: ''
+      }]
+    }
   });
 
-  const [categoryName,setCategoryName] = React.useState('');
-  const [categorySecondName,setCategorySecondName] = React.useState('');
-  const [multiSelection,setMultiSelection] = React.useState(false);
+  const {register, control, handleSubmit, formState} = form;
+  const {errors} = formState;
 
+  const {fields, append, remove} = useFieldArray({
+    name:"extras",
+    control,
+  });
 
-  const [name,setName] = React.useState('');
-  const [second_name,setSecond_name] = React.useState('');
-  const [price,setPrice] = React.useState('');
-
-  const [categoryExtrasList,setCategoryExtrasList] = React.useState([]);
-
-
-    ////////  submit button for Editing  ///////
   const handleEditCategory = () => {
-    const request = {
-      name: categoryName,
-      second_name: categorySecondName,
-      allow_multi_selection: multiSelection,
-      extras: categoryExtrasList
-    };
+    // Retrieve form data
+    const formData = form.getValues();
+
     api
-      .put(`/extras-categories/${category.value}` ,{params:{...request,location_id:shopId}} )
-      .then((res) => res.data.result)
+      .put(`/extras-categories/${category.value}/edit-with-extras`, { params: { ...formData, location_id: shopId } })
       .then((res) => {
         Toastify('success', 'Successfully Update');
         handleClose();
@@ -63,16 +77,13 @@ const ExtraModal = (props: any) => {
   };
 
 
-    ////////  submit button for Adding  ///////
-    const handleAddCategory = () => {
-    const request = {
-      category_name: categoryName,
-      category_second_name: categorySecondName,
-      allow_multi_selection: multiSelection,
-      extras: categoryExtrasList
-    };
-    api.post('/extras/category-with-list/', {...request,location_id:shopId})
-      .then((res) => res.data.result)
+
+  const handleAddCategory = () => {
+    // Retrieve form data
+    const formData = form.getValues();
+    console.log('Form Data:', formData);
+    api
+      .post('/extras/category-with-list/', { ...formData, location_id: shopId })
       .then((res) => {
         Toastify('success', 'Successfully Created');
         handleClose();
@@ -83,22 +94,25 @@ const ExtraModal = (props: any) => {
       .finally(() => {
         setIsLoading(false);
       });
-      setCategoryExtrasList([]);
   };
 
-  // For initializing fields in case of editing or showing
+
   const handleModalIsForEditing = () => {
-    setCategoryName(category.name);
-    setCategorySecondName(category.second_name);
-    setMultiSelection(category.allow_multi_selection);
-    setCategoryExtrasList(extrasList);
+    // Set form values for editing
+    form.reset({
+      category_name: category.name,
+      category_second_name: category.second_name,
+      allow_multi_selection: category.allow_multi_selection,
+      extras: extrasList,
+    });
+  
     setOpen(true);
   };
 
   //   // For initializing fields in case od editing
-  // const handleViewCategory = () => {
-  //   setIsViewMode(true);
-  // }
+  const handleViewCategory = () => {
+    setIsViewMode(true);
+  }
   
   //submit logic
   const onSubmit = async (data: any) => {
@@ -111,59 +125,23 @@ const ExtraModal = (props: any) => {
   };
   const onError = (errors: any, e: any) => console.log(errors, e);
 
-  const emptyVariables = () =>{
-    setCategoryName("");
-  setCategorySecondName("");
-  setMultiSelection(false);
-  setName("");
-  setSecond_name("");
-  setPrice("");
-  setCategoryExtrasList([]);
-  }
+
+  const emptyVariables = () => {
+    // Reset form to default values
+    form.reset({
+      category_name: '',
+      category_second_name: '',
+      allow_multi_selection: false,
+      extras: [{ name: '', second_name: '', price: '' }],
+    });
+  };
 
   const handleClose = () => {
     setOpen(false);
     openDialog(false);
-    emptyVariables();
+    // emptyVariables();
   };
 
-  const handleMultiSelect = () => {
-    setMultiSelection((prev) => !prev);
-  };
-
-  //adding extras for the category
-  const handleAdditem = () => {
-    event.preventDefault();
-    if(name === "" || second_name === "" || price === "")
-      return;
-    setCategoryExtrasList((prevList) => [
-      ...prevList,
-      {
-        name: name,
-        second_name:second_name,
-        price: price,
-      },
-    ]);
-    setName("");
-    setSecond_name("");
-    setPrice("");
-  }
-
-  //editing one extra for the category
-  const handleEditItem = (item) => {
-    setName(item.name);
-    setSecond_name(item.second_name);
-    setPrice(item.price);
-
-    const updatedCategoryExtrasList = categoryExtrasList.filter(i => i.id !== item.id);
-    setCategoryExtrasList(updatedCategoryExtrasList);
-  }
-
-  //deleting an extra for the category
-  const handleDeleteItem = (item) => {
-    const updatedCategoryExtrasList = categoryExtrasList.filter(i => i.id !== item.id);
-    setCategoryExtrasList(updatedCategoryExtrasList);
-  }
   
 
   useEffect(() => {
@@ -178,8 +156,8 @@ const ExtraModal = (props: any) => {
 
   useEffect(() => {
     if (!open) {
-      reset();
-      clearErrors();
+      // reset();
+      // clearErrors();
       emptyVariables();
     }
   }, [open]);
@@ -225,7 +203,7 @@ const ExtraModal = (props: any) => {
               </label>
               <input 
                 id="categoryName"
-                value={categoryName}
+                value={category.name}
                 className="form-control mb-2"
                 disabled
               />
@@ -236,10 +214,18 @@ const ExtraModal = (props: any) => {
               </label>
               <input 
                 id="categorySecondName"
-                value={categorySecondName}
+                value={category.second_name}
                 className="form-control "
                 disabled
               />
+            </div>
+            <div className="mx-5">
+              <label htmlFor="categorySecondName">
+                {t('extra.enable_multi_selection')}
+              </label>
+              {category.allow_multi_selection?
+                (<FontAwesomeIcon icon={faCheck} size='lg'/>) 
+              : (<FontAwesomeIcon icon={faTimes} size='lg'/>) }
             </div>
           </div>
           <table className="table table-striped">
@@ -254,13 +240,13 @@ const ExtraModal = (props: any) => {
             </thead>
             <tbody>
               {
-                extrasList.map(e=>{
+                extrasList.map(extra=>{
                   return(
-                    <tr>
-                      <td>{e.id}</td>
-                      <td>{e.name}</td>
-                      <td>{e.second_name}</td>
-                      <td>{e.price}</td>
+                    <tr key={extra.id}>
+                      <td>{extra.id}</td>
+                      <td>{extra.name}</td>
+                      <td>{extra.second_name}</td>
+                      <td>{extra.price}</td>
                     </tr>
                   );
                 })
@@ -291,133 +277,97 @@ const ExtraModal = (props: any) => {
         <Form noValidate onSubmit={handleSubmit(onSubmit, onError)}>
           <Modal.Body>
             <fieldset className='w-75 m-auto justify-content-center mb-3'>
-            <label htmlFor="categoryName" className="form-label">{t('extra.category_name')}</label>
+            <label htmlFor="category_name" className="form-label">{t('extra.category_name')}</label>
             <input
-              id="categoryName"
+              {...register('category_name')}
+              id="category_name"
               type="text"
-              name="categoryName"
+              name="category_name"
               className="form-control mb-2"
               placeholder="Arabic Name"
-              value={categoryName}
-              onChange={(e)=>{setCategoryName(e.target.value)}}
+              // value={categoryName}
+              // onChange={(e)=>{setCategoryName(e.target.value)}}
               required
             />
-            <label htmlFor="categorySecondName" className="form-label">{t('extra.category_second_name')}</label>
+            <label htmlFor="category_second_name" className="form-label">{t('extra.category_second_name')}</label>
             <input
-              id="categorySecondName"
+            {...register('category_second_name')}
+              id="category_second_name"
               type="text"
-              name="categorySecondName"
+              name="category_second_name"
               className="form-control mb-2"
               placeholder="English Name"
-              value={categorySecondName}
-              onChange={(e)=>{setCategorySecondName(e.target.value)}}
+              // value={categorySecondName}
+              // onChange={(e)=>{setCategorySecondName(e.target.value)}}
               required
             />
              <FormControlLabel
                 control={
                   <Switch
-                   checked={multiSelection}
-                   onChange={handleMultiSelect}
+                  {...register('allow_multi_selection')}
+                  id='allow_multi_selection'
+                  //  checked={multiSelection}
+                   onChange={()=>{}}
                    className='px-2 '
                   />}
                 label={t("extra.enable_multi_selection")}
               />
             </fieldset>
-            {/* <Card className='my-3'>
-              <CardContent>
-                
-              </CardContent>
-            </Card> */}
-
-            <div className="d-flex justify-content-between">
-              <fieldset style={{ width: '30%' }}>
-              <input
-                id="name"
-                type="text"
-                name="name"
-                className="form-control"
-                required
-                placeholder={t("extra.extra_name")}
-                value={name}
-                onChange={(e)=>setName(e.target.value)}
-              />
-            </fieldset>
-            <fieldset style={{ width: '30%' }}>
-              <input
-                id="second_name"
-                type="text"
-                name="second_name"
-                className="form-control"
-                required
-                placeholder={t("extra.extra_second_name")}
-                value={second_name}
-                onChange={(e)=>setSecond_name(e.target.value)}
-              />
-            </fieldset>
-            <fieldset style={{ width: '30%' }}>
-              <input
-                id="price"
-                type="number"
-                name="price"
-                className="form-control"
-                required
-                placeholder={t("extra.extra_price")}
-                value={price}
-                onChange={(e)=>setPrice(e.target.value)}
-              />
-            </fieldset>
-          </div>
-          <div className='d-flex justify-content-center mt-3 me-2' >
-            <button
-              className='btn btn-outline-warning text-black '
-              onClick={handleAdditem}
-            >
-              {t('extra.add_item')}
-            </button>
-          </div>
-
-            <Card className='my-3'>
-              <CardContent>
-                <h5 className='text-center text-primary'>{t('extra.list_of_extras')}</h5>
-                <fieldset>
-                  <Table responsive>
-                    <thead>
-                      <tr>
-                        <th>{t('extra.extra_name')}</th>
-                        <th>{t('extra.extra_second_name')}</th>
-                        <th>{t('extra.extra_price')}</th>
-                        <th>{t('extra.actions')}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {categoryExtrasList.map((item) => (
-                        <tr key={item.id}>
-                          <td>
-                            {item.name}
-                          </td>
-                          <td>
-                            {item.second_name}
-                          </td>
-                          <td>
-                            {item.price}
-                          </td>
-                          <td>
-                            <IconButton 
-                              children = {<EditIcon />}
-                              onClick={()=>{handleEditItem(item)}}
-                            />
-                            <IconButton 
-                              children ={<DeleteIcon />} 
-                              onClick={()=>{handleDeleteItem(item)}}
-                            />
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                </fieldset>
-              </CardContent>
-            </Card>
+            {fields.map((field, index) => {
+  return (
+    <div className="d-flex justify-content-between my-2" key={field.id}>
+      <fieldset style={{ width: '25%' }}>
+        <input
+          {...register(`extras.${index}.name`)}
+          id={`extras.${index}.name`}
+          type="text"
+          name={`extras.${index}.name`}
+          className="form-control"
+          required
+          placeholder={t("extra.extra_name")}
+        />
+      </fieldset>
+      <fieldset style={{ width: '25%' }}>
+        <input
+          {...register(`extras.${index}.second_name`)}
+          id={`extras.${index}.second_name`}
+          type="text"
+          name={`extras.${index}.second_name`}
+          className="form-control"
+          required
+          placeholder={t("extra.extra_second_name")}
+        />
+      </fieldset>
+      <fieldset style={{ width: '25%' }}>
+        <input
+          {...register(`extras.${index}.price`)}
+          id={`extras.${index}.price`}
+          type="number"
+          name={`extras.${index}.price`}
+          className="form-control"
+          required
+          placeholder={t("extra.extra_price")}
+        />
+      </fieldset>
+      {index > 0 ? (
+        <fieldset>
+          <Button onClick={() => remove(index)}>
+            <FontAwesomeIcon icon={faTrash} />
+          </Button>
+        </fieldset>
+      ) : (
+        <Button disabled>
+          <FontAwesomeIcon icon={faTrash} />
+        </Button>
+      )}
+      <fieldset>
+        <Button onClick={() => append({ name: '', second_name: '', price: '' })}>
+          <FontAwesomeIcon icon={faPlus} />
+        </Button>
+      </fieldset>
+    </div>
+  );
+})}
           </Modal.Body>
           <Modal.Footer>
             <a className="btn btn-link link-success fw-medium" onClick={() => handleClose()}>
