@@ -11,8 +11,11 @@ import PersonIcon from '@mui/icons-material/Person';
 import { useDigitalContext } from 'src/modules/digital/_context/DigitalContext';
 import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
 
-export const DigitalNavbar = ({ shopId }) => {
+import ModelCustomer from './auth/modelCustomer';
+
+export const DigitalNavbar = ({ shopId ,openModelAuth,setOpenModelAuth}) => {
   const [appearance, setAppearance] = useState<any>();
+
   const { lang, setLang } = useDigitalContext();
   const fetchApperance = async () => {
     try {
@@ -35,36 +38,48 @@ export const DigitalNavbar = ({ shopId }) => {
     }
   }, []);
 
+  
+  const handleOpenModel = () => {
+    const token = JSON.parse(localStorage.getItem('userdata'))?.token?.length > 150
+    if(token){return}
+    setOpenModelAuth(true);
+  };
+
   return (
-    <div className={`${styles.navbar_wrapper} ${lang == ar ? styles.ar : ""}`}>
-      {/* right part */}
-      <div style={{ padding: '.5rem' }}>
-        <img alt="" src={appearance?.en?.logo} className={styles.logo} />
+    <>
+      <ModelCustomer shopId={shopId} setOpen={setOpenModelAuth} open={openModelAuth} />
+      <div className={`${styles.navbar_wrapper} ${lang == ar ? styles.ar : ''}`}>
+        {/* right part */}
+        <div style={{ padding: '.5rem' }}>
+          <img alt="" src={appearance?.en?.logo} className={styles.logo} />
+        </div>
+        {/* middle part */}
+        <div className="d-none d-md-flex align-items-center">
+          <LightModeIcon sx={{ cursor: 'pointer' }} />
+          <span
+            className="mx-2 d-flex align-items-center"
+            style={{ cursor: 'pointer' }}
+            onClick={() => {
+              if (lang == en) {
+                localStorage.setItem(ELocalStorageKeys.LANGUAGE, 'ar');
+                setLang(ar);
+              } else {
+                localStorage.setItem(ELocalStorageKeys.LANGUAGE, 'en');
+                setLang(en);
+              }
+            }}>
+            {lang == ar ? 'EN' : 'العربية'}
+            <LanguageIcon sx={{ marginX: '.5rem' }} />
+          </span>
+        </div>
+        {/* left part */}
+        <div>
+          <button style={{ all: 'unset' }} type="button" onClick={handleOpenModel}>
+            <PersonIcon sx={{ cursor: 'pointer' }} className="mx-4" />
+          </button>
+          <SettingsOutlinedIcon sx={{ cursor: 'pointer' }} />
+        </div>
       </div>
-      {/* middle part */}
-      <div className="d-none d-md-flex align-items-center">
-        <LightModeIcon sx={{ cursor: 'pointer' }} />
-        <span className="mx-2 d-flex align-items-center" 
-        style={{ cursor: 'pointer' }}
-        onClick={()=>{
-          if (lang == en) {
-            localStorage.setItem(ELocalStorageKeys.LANGUAGE, 'ar');
-            setLang(ar);
-          } else {
-            localStorage.setItem(ELocalStorageKeys.LANGUAGE, 'en');
-            setLang(en);
-          }
-        }}
-        >
-          {lang == ar ? 'EN' : 'العربية'}
-          <LanguageIcon sx={{ marginX: '.5rem' }} />
-        </span>
-      </div>
-      {/* left part */}
-      <div>
-        <PersonIcon sx={{ cursor: 'pointer' }} className="mx-4" />
-        <SettingsOutlinedIcon sx={{ cursor: 'pointer' }} />
-      </div>
-    </div>
+    </>
   );
 };

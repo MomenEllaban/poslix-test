@@ -14,7 +14,7 @@ import { Checkout } from 'src/components/digital/checkout';
 import { Toastify } from 'src/libs/allToasts';
 import { useDigitalContext } from '../../_context/DigitalContext';
 
-export default function DigitalProducts({ shopId }) {
+export default function DigitalProducts({ shopId ,setOpenModelAuth}) {
   const [type, setType] = useState('all');
   const [showCart, setShowCart] = useState(true);
   const [open, setOpen] = useState(false);
@@ -321,6 +321,7 @@ export default function DigitalProducts({ shopId }) {
                 addItemTocart={addItemTocart}
                 addByQuantity={addByQuantity}
                 cartItems={cartItems}
+                setOpenModelAuth={setOpenModelAuth}
               />
               {matches ? (
                 <>
@@ -355,6 +356,7 @@ export default function DigitalProducts({ shopId }) {
                     addByQuantity={addByQuantity}
                     getTotalPrice={getTotalPrice}
                     setRenderedScreen={setRenderedScreen}
+                    setOpenModelAuth={setOpenModelAuth}
                   />
                 </>
               ) : null}

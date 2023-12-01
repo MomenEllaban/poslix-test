@@ -40,13 +40,26 @@ function MobDrawer({
   location,
   cartItems,
   getTotalPrice,
-  setRenderedScreen
+  setRenderedScreen,
+  setOpenModelAuth
 }) {
   const handleDrawer = (open) => {
     setShowCart((s) => !s);
     setOpen(!open);
     toggleDrawer(!open);
   };
+
+  const handleOpenCheckout = ()=>{
+    const user = JSON.parse(localStorage.getItem('userdata'));
+    const token = user?.token?.length > 150;
+
+    if(token){
+      setRenderedScreen('checkout')
+      return
+    }
+    setOpenModelAuth(true)
+  }
+  
 
   return (
     <Root>
@@ -132,7 +145,7 @@ function MobDrawer({
           <div className="digital-cart-checkout">
             <Button className="checkout_btn" variant="contained" color="error" 
                 disabled={!cartItems.length}
-                onClick={() => setRenderedScreen('checkout')}
+                onClick={handleOpenCheckout}
             >
               Checkout {getTotalPrice().toFixed(location?.location_decimal_places || 2)}{' '}
               {location?.currency_code}

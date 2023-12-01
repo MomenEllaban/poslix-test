@@ -24,6 +24,7 @@ import { addMultipleToCart, selectCartByLocation } from 'src/redux/slices/cart.s
 import { findAllData } from 'src/services/crud.api';
 import SalesPaymentModal from '../pos/modals/SalesPaymentModal';
 import { useAppDispatch, useAppSelector } from 'src/hooks';
+import api from 'src/utils/app-api';
 
 export default function SalesListTable({
   id,
@@ -33,6 +34,7 @@ export default function SalesListTable({
   salesList,
   loading,
   CustomPagination,
+  initDataPage,
 }: any) {
   const dispatch = useAppDispatch();
   const componentRef = useRef(null);
@@ -60,6 +62,7 @@ export default function SalesListTable({
   const [invoiceDetails, setInvoiceDetails] = useState<any>({});
   const [paymentModalShow, setPaymentModalShow] = useState<boolean>(false);
   const [paymentModalData, setPaymentModalData] = useState({});
+  const [isPending, setIsPending] = useState(false);
   const selectCartForLocation = selectCartByLocation(shopId);
   const cart = useAppSelector(selectCartForLocation);
 
@@ -69,6 +72,26 @@ export default function SalesListTable({
       ...res.data.result,
       en: { ...res.data.result.en, is_multi_language: !!res.data.result.en.is_multi_language },
     });
+  };
+
+  const handelApprovedInvoices = (id: number) => {
+    setIsPending(true);
+    api
+      .post(`digital-menu/order/approve/${id}`)
+      .then((res) => {
+        if (res.status === 200) {
+          Toastify('success', res.data?.result?.message);
+          setShowViewPopUp(false);
+          setEdit(false);
+          initDataPage();
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      })
+      .finally(() => {
+        setIsPending(false);
+      });
   };
 
   useEffect(() => {
@@ -125,6 +148,22 @@ export default function SalesListTable({
           return <div className="sty_n_Paid">Not Paid</div>;
         }
         return <div className="sty_p_Paid">Partially Paid</div>;
+      },
+    },
+    {
+      flex: 1,
+      field: 'transaction_type',
+      headerName: t('invoices.transaction_type'),
+      renderCell: ({ row }: Partial<GridRowParams>) => {
+        if(row.transaction_type === "digital_menu" && row.transaction_type !== "pos"){
+          if(row.record_state){
+            return <div className="invoices-approved">Digital menu</div>
+          }else{
+            return <div className="invoices-pending">Digital menu</div>
+          }
+        }else{
+          return <div className="invoices-pos">Pos</div>
+        }
       },
     },
     {
@@ -285,10 +324,9 @@ export default function SalesListTable({
                   {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtTax}
                 </td>
                 <td></td>
-                <td>  
-                   {(+selectRow?.tax ||0
-                  ).toFixed(locationSettings?.location_decimal_places)}
-                               {/* {(
+                <td>
+                  {(+selectRow?.tax || 0).toFixed(locationSettings?.location_decimal_places)}
+                  {/* {(
                     ((+selectRow.sub_total / (1 + +selectRow?.tax / 100)) * +selectRow?.tax) /
                     100
                   ).toFixed(locationSettings?.location_decimal_places)} */}
@@ -449,7 +487,9 @@ export default function SalesListTable({
                     <td>{line.product_name}</td>
                     <td>{Number(line.product_qty).toFixed(0)}</td>
                     <td>
-                      {Number(line.product_price).toFixed(locationSettings?.location_decimal_places)}
+                      {Number(line.product_price).toFixed(
+                        locationSettings?.location_decimal_places
+                      )}
                     </td>
                     {/* <td>
                       {Number((+tax / 100) * +line.product_price).toFixed(
@@ -476,16 +516,14 @@ export default function SalesListTable({
                 </td>
               </tr>
               <tr>
-                  {/* <td>{invoiceDetails?.txtTax} {invoiceDetails?.en?.is_multi_language && invoiceDetails?.txtTax}</td> */}
-                  <td colSpan={4} className="txt_bold_invoice">
-                    Tax Amount 
-                    {" "}
-                    {invoiceDetails?.en?.is_multi_language && 'قيمة الضريبة'}
-                  </td>
-                  <td className="txt_bold_invoice">
-                    {Number(selectRow?.tax).toFixed(locationSettings?.location_decimal_places)}
-                  </td>
-                </tr>
+                {/* <td>{invoiceDetails?.txtTax} {invoiceDetails?.en?.is_multi_language && invoiceDetails?.txtTax}</td> */}
+                <td colSpan={4} className="txt_bold_invoice">
+                  Tax Amount {invoiceDetails?.en?.is_multi_language && 'قيمة الضريبة'}
+                </td>
+                <td className="txt_bold_invoice">
+                  {Number(selectRow?.tax).toFixed(locationSettings?.location_decimal_places)}
+                </td>
+              </tr>
               <tr>
                 <td colSpan={4} className="txt_bold_invoice">
                   Total Paid {invoiceDetails?.en?.is_multi_language && 'إجمالى المدفوعات'}
@@ -521,7 +559,7 @@ export default function SalesListTable({
     if (res.data.success) {
       setSalesRep(res.data.result);
       setLines(res.data.result.products);
-      setTax(res.data.result.tax_amount)
+      setTax(res.data.result.tax_amount);
       setIsLoadItems(false);
     }
   };
@@ -531,9 +569,9 @@ export default function SalesListTable({
     if (_locs.toString().length > 10)
       setLocationSettings(
         _locs[
-        _locs.findIndex((loc: any) => {
-          return loc.value == id;
-        })
+          _locs.findIndex((loc: any) => {
+            return loc.value == id;
+          })
         ]
       );
 
@@ -622,6 +660,8 @@ export default function SalesListTable({
     return components;
   };
 
+ 
+
   return (
     <>
       <ToastContainer />
@@ -634,9 +674,10 @@ export default function SalesListTable({
         {t('alert_dialog.delete_msg')}
       </AlertDialog>
       <div style={{ display: 'none' }}>
-        <ComponentToPrint 
-        // tax={cart?.cartTax}
-         ref={componentRef} />
+        <ComponentToPrint
+          // tax={cart?.cartTax}
+          ref={componentRef}
+        />
       </div>
       <div style={{ display: 'none' }}>
         <ComponentToPrint2 ref={componentRef2} />
@@ -822,8 +863,18 @@ export default function SalesListTable({
           </div>
         </DialogContent>
         <DialogActions>
+          {!selectRow.record_state ? (
+            <Button
+              disabled={isPending}
+              type="button"
+              onClick={() => handelApprovedInvoices(selectRow.id)}>
+              {t('quotation_sale_model.approved')}
+            </Button>
+          ) : null}
           {edit && (
             <Button
+              disabled={isPending}
+              type="button"
               onClick={() => {
                 setShowViewPopUp(false);
                 setEdit(false);
@@ -832,6 +883,8 @@ export default function SalesListTable({
             </Button>
           )}
           <Button
+            disabled={isPending}
+            type="button"
             onClick={() => {
               setEdit(false);
               setShowViewPopUp(false);

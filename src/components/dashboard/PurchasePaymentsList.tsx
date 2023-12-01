@@ -12,6 +12,9 @@ import { Toastify } from 'src/libs/allToasts';
 import { findAllData } from 'src/services/crud.api';
 import AddNewPayment from './AddNewPayment';
 
+import { useTranslation } from 'next-i18next';
+
+
 const PurchasePaymentsList = (props: any) => {
   const { shopId, purchaseId, purchases } = props;
   const [information, setInformation] = useState<any>({ totalPaid: 0, totalLeft: 0, isPaid: 0 });
@@ -22,6 +25,10 @@ const PurchasePaymentsList = (props: any) => {
   const [isAddNew, setIsAddNew] = useState(false);
   const [selectedIndex, setSlectedIndex] = useState(-1);
   const [isLoading, setIsLoading] = useState(true);
+
+  const { t } = useTranslation();
+
+
   async function intPageData() {
     const res = await findAllData(`purchase/${purchaseId}/show`)
     if (res.data.success) {
@@ -32,9 +39,9 @@ const PurchasePaymentsList = (props: any) => {
 
   }
   const columns: GridColDef[] = [
-    { field: 'payment_type', headerName: 'Payment Name', minWidth: 200 },
-    { field: 'amount', headerName: 'Amount', minWidth: 100 },
-    { field: 'created_at', headerName: 'Date', minWidth: 300 },
+    { field: 'payment_type', headerName: t('purchases.Payment_Name'), minWidth: 200 },
+    { field: 'amount', headerName: t('purchases.Amount'), minWidth: 100 },
+    { field: 'created_at', headerName: t('purchases.Date'), minWidth: 300 },
   ];
   var errors = [];
   useEffect(() => {
@@ -72,22 +79,22 @@ const PurchasePaymentsList = (props: any) => {
             <button
               className="btn m-btn btn-primary p-3"
               onClick={() => props.setIsShowPayments(false)}>
-              <FontAwesomeIcon icon={faArrowAltCircleLeft} /> Back To List{' '}
+              <FontAwesomeIcon icon={faArrowAltCircleLeft} /> {t("purchases.Back_To_List")}{' '}
             </button>
           </div>
           {/* {JSON.stringify(selectedIndex)} */}
-          <h5>Purchase Payments List</h5>
+          <h5>{t("purchases.Purchase_Payments_List")}</h5>
           <div className="quick-suppier-info">
-            <div>ID: {orderDetails.id}</div>
-            <div>Supplier: {orderDetails?.supplier?.name}</div>
-            <div>Status: {orderDetails.status}</div>
-            <div>Payment Status: {orderDetails.payment_status}</div>
-            <div>Total Price: {orderDetails.total_price}</div>
+            <div>{t("purchases.ID")}: {orderDetails.id}</div>
+            <div>{t("purchases.Supplier")}: {orderDetails?.supplier?.name}</div>
+            <div>{t("purchases.Status")}: {orderDetails.status}</div>
+            <div>{t("purchases.Payment_Status")}: {orderDetails.payment_status}</div>
+            <div>{t("purchases.Total_Price")}: {orderDetails.total_price}</div>
             <div>
-              Total Paid: {information.totalPaid}{' '}
+              {t("purchases.Total_Paid")}: {information.totalPaid}{' '}
               {information.isPaid && <FontAwesomeIcon icon={faCircleCheck} />}
             </div>
-            <div>Total Left: {information.totalLeft}</div>
+            <div>{t("purchases.Total_Left")}: {information.totalLeft}</div>
           </div>
           {!information.isPaid && (
             <div className="mb-4">
@@ -95,7 +102,7 @@ const PurchasePaymentsList = (props: any) => {
                 className="btn m-btn p-3"
                 style={{ background: '#5daf34', color: 'white' }}
                 onClick={() => setIsAddNew(!isAddNew)}>
-                <FontAwesomeIcon icon={!isAddNew ? faPlus : faMinus} /> Add New Payment
+                <FontAwesomeIcon icon={!isAddNew ? faPlus : faMinus} />{t("purchases.Add_New_Payment")}
               </button>
             </div>
           )}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-// import { TextField } from '@mui/material';
+import { TextField } from '@mui/material';
 import styles from './digital.module.css';
 import { Button } from 'react-bootstrap';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -9,7 +9,13 @@ import { useDigitalContext } from 'src/modules/digital/_context/DigitalContext';
 import PaymentCheckoutModal from './PaymentCheckoutModal';
 import { findAllData } from 'src/services/crud.api';
 import { useRouter } from 'next/router';
-
+import { MenuItem } from '@mui/material';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import { Toastify } from 'src/libs/allToasts';
+// import PhoneInput from 'react-phone-input-2';
+// import 'react-phone-number-input/style.css';
 const Checkout = ({
   cartItems,
   removeFromCart,
@@ -28,6 +34,15 @@ const Checkout = ({
   const [invoiceType, setInvoiceType] = useState('receipt');
   const [invoiceDetails, setInvoiceDetails] = useState<any>({});
   const [cartData, setCartData] = useState([]);
+  const [customerData, setCustomerData] = useState({
+    customer: '',
+    customer_id: '',
+    phone: '',
+    address: '',
+    email: '',
+    order_type: '',
+    notes: '',
+  });
 
   const router = useRouter();
 
@@ -57,10 +72,56 @@ const Checkout = ({
       });
     }
 
-    return ()=>{
-      setCartData([])
-    }
+    return () => {
+      setCartData([]);
+    };
   }, [router.asPath]);
+
+  const typeOrder = [
+    { value: 'none', label: 'none' },
+    { value: 'dine_in', label: 'dine in' },
+    { value: 'pick_up', label: 'pick up' },
+  ];
+
+  // ** var - data required
+  // const required = ['customer', 'address', 'phone'];
+
+  // ** functions
+  const handleOpenModelCheckout = () => {
+    // for (const [key, value] of Object.entries(customerData)) {
+    //   if (required.includes(key)) {
+    //     if (!value) {
+    //       Toastify('error', `${key?.replace(/_/g, ' ')} is required`);
+    //       return;
+    //     }
+    //   }
+    // }
+    if (!customerData.order_type) {
+      Toastify('error', `Order type is required`);
+      return;
+    }
+    setPaymentModalShow(true);
+  };
+
+  const handleOnChange = (e: { target: { name: string; value: string } }) => {
+    setCustomerData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('userdata'));
+    setCustomerData({
+      customer: `${user?.first_name} ${user?.last_name}`,
+      customer_id: user?.id,
+      phone: user?.phone,
+      address: user?.address,
+      email: user?.email,
+      order_type: '',
+      notes: '',
+    });
+  }, []);
 
   return (
     <>
@@ -79,31 +140,72 @@ const Checkout = ({
       <div className={`pt-2 ${styles.checkout_wrapper}`}>
         <div className={styles.checkout_container}>
           <div className={styles.checkout_left_side_container}>
-            {/* <div className={styles.checkout_user_info_container}>
+            <div className={styles.checkout_user_info_container}>
               <div className={styles.user_info_form}>
                 <div className="w-100">{lang.digital.your_info}</div>
                 <TextField
                   id="standard-basic"
                   label={lang.digital.full_name}
                   variant="standard"
-                  style={{ width: '45%' }}
+                  style={{ marginTop: '1rem', width: '45%' }}
                   required
+                  value={customerData.customer}
+                  name="customer"
+                  type="text"
+                  onChange={handleOnChange}
                 />
                 <TextField
                   id="standard-basic"
                   label={lang.digital.email_address}
                   variant="standard"
-                  style={{ width: '45%' }}
+                  style={{ marginTop: '1rem', width: '45%' }}
+                  value={customerData.email}
+                  type="email"
+                  name="email"
+                  onChange={handleOnChange}
                 />
+
                 <TextField
                   id="standard-basic"
                   label={lang.digital.phone_number}
                   variant="standard"
-                  style={{ width: '45%' }}
+                  style={{ marginTop: '1rem' }}
+                  required
+                  type="number"
+                  name="phone"
+                  value={customerData.phone}
+                  onChange={handleOnChange}
                 />
+
+                <TextField
+                  id="standard-basic"
+                  label={'address'}
+                  variant="standard"
+                  style={{ marginTop: '1rem', width: '45%' }}
+                  required
+                  value={customerData.address}
+                  name="address"
+                  onChange={handleOnChange}
+                />
+                <FormControl sx={{ marginTop: '1rem', width: '45%' }}>
+                  <InputLabel id="type_order-label">Order Type</InputLabel>
+                  <Select
+                    labelId="type_order-label"
+                    id="type_order-select"
+                    defaultValue={customerData.order_type}
+                    name="order_type"
+                    onChange={handleOnChange}
+                    label="Type Order">
+                    {typeOrder.map((item) => (
+                      <MenuItem key={item.value} value={item.value}>
+                        {item.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
               </div>
-            </div> */}
-            {/* <div className={styles.checkout_user_info_container}>
+            </div>
+            <div className={styles.checkout_user_info_container}>
               <div className={`mt-2 ${styles.user_info_form}`}>
                 <div className="w-100">{lang.digital.order_note}</div>
                 <TextField
@@ -111,9 +213,12 @@ const Checkout = ({
                   label={lang.digital.order_note}
                   variant="standard"
                   style={{ width: '45%' }}
+                  value={customerData.notes}
+                  name="notes"
+                  onChange={handleOnChange}
                 />
               </div>
-            </div> */}
+            </div>
             <div className={styles.checkout_user_info_container}>
               <div className={`mt-2 ${styles.user_info_form}`}>
                 <div className="digital-cart-checkout w-100 ">
@@ -122,7 +227,7 @@ const Checkout = ({
                     variant="contained"
                     color="error"
                     disabled={!cartItems?.length}
-                    onClick={() => setPaymentModalShow(true)}>
+                    onClick={handleOpenModelCheckout}>
                     {lang.pos.cartComponent.checkout}{' '}
                     {totalPrice?.toFixed(location?.location_decimal_places)}{' '}
                     {location?.currency_code}
@@ -197,6 +302,10 @@ const Checkout = ({
         setCartItems={setCartItems}
         setRenderedScreen={setRenderedScreen}
         locationSettings={location}
+        customerData={{
+          customer_id: customerData?.customer_id,
+          order_type: customerData?.order_type,
+        }}
       />
     </>
   );

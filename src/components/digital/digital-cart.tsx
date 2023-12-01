@@ -21,11 +21,12 @@ const DigitalCart = ({
   addByQuantity,
   totalPrice,
   location,
+  setOpenModelAuth,
 }) => {
-  const { digitalCart } = useSelector((state: any) => state.digitalCart);
+  // const { digitalCart } = useSelector((state: any) => state.digitalCart);
   const { lang, setLang } = useDigitalContext();
   const [selectedVariantProduct, setSelectedVariantProduct] = useState<any>();
-  const [openVariablesModal, setOpenVariablesModal] = useState(false);
+  // const [openVariablesModal, setOpenVariablesModal] = useState(false);
 
   // const dispatch = useDispatch()
   // const getTotal = () => {
@@ -39,6 +40,17 @@ const DigitalCart = ({
   //     return {totalPrice, totalQuantity}
   //   }
   //   console.log(products,'products');
+
+  const handleOpenCheckout = () => {
+    const user = JSON.parse(localStorage.getItem('userdata'));
+    const token = user?.token?.length > 150;
+
+    if (token) {
+      setRenderedScreen('checkout');
+      return;
+    }
+    setOpenModelAuth(true);
+  };
 
   return (
     <div className="digital-cart">
@@ -60,20 +72,20 @@ const DigitalCart = ({
             if (newValue) addItemTocart(newValue);
           }}
           sx={{ width: '100%' }}
-          renderInput={(params) => 
+          renderInput={(params) => (
             <TextField
-            inputProps={{
-              ...params.inputProps,
-            }}
-            fullWidth
-            size="small"
-            id="Select Product"
-            InputProps={{
-              ...params.InputProps,
-            }}
-            label={'Select Product'}
-          />          
-        }
+              inputProps={{
+                ...params.inputProps,
+              }}
+              fullWidth
+              size="small"
+              id="Select Product"
+              InputProps={{
+                ...params.InputProps,
+              }}
+              label={'Select Product'}
+            />
+          )}
         />
         <div className="digital-cart-items-list">
           {cartItems?.length >= 1 ? (
@@ -103,7 +115,7 @@ const DigitalCart = ({
           className="checkout_btn"
           variant="contained"
           color="error"
-          onClick={() => setRenderedScreen('checkout')}>
+          onClick={handleOpenCheckout}>
           {lang.pos.cartComponent.checkout}{' '}
           {totalPrice.toFixed(location?.location_decimal_places || 2)} {location?.currency_code}
         </Button>

@@ -46,6 +46,9 @@ import { cartJobType } from 'src/recoil/atoms';
 import api from 'src/utils/app-api';
 import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
 
+import { useTranslation } from 'next-i18next';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+
 import 'react-datepicker/dist/react-datepicker.css';
 
 interface ICurrencySelect extends ICurrency {
@@ -77,6 +80,8 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
   const { locationSettings, setLocationSettings } = useUser();
 
   const formObjRef = useRef<any>();
+
+  const { t } = useTranslation();
 
   const [formObj, setFormObj] = useState(purchasesInitFormObj);
   const [errorForm, setErrorForm] = useState(purchasesInitFormError);
@@ -145,7 +150,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
   );
 
   async function updatePurchase() {
-    console.log(selectProducts);
+    // console.log(selectProducts);
 
     const data = {
       // ...formObj,
@@ -351,7 +356,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
     if (found > -1) {
       var _datas: any = selectProducts;
       _datas[found][params.field] = params.value;
-      console.log('fffffffffffff', _datas[found].cost || _datas[found].cost_price);
+      // console.log('fffffffffffff', _datas[found].cost || _datas[found].cost_price);
 
       if (params.field == 'cost' || params.field == 'quantity')
         _datas[found].lineTotal =
@@ -390,7 +395,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
       : cost * formObj?.currency_rate;
   }
 
-  console.log(formObj.subTotal_price);
+  // console.log(formObj.subTotal_price);
 
   function calculationLabels(totalEpx: number, totalTax: number) {
     var _subtotal = 0;
@@ -433,6 +438,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
         onCostClick,
         setSelecetdId,
         setOpenRemoveDialog,
+        t
       }),
     [locationSettings, formObj, formObjRef]
   );
@@ -469,11 +475,11 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
         (currency) => currency?.id === _purchaseDetails?.currency_id
       );
 
-      console.log(
-        (_purchaseDetails?.payment[0] as IPayment).created_at,
-        new Date(_purchaseDetails?.created_at)
-      );
-      console.log(_purchaseDetails);
+      // console.log(
+      //   (_purchaseDetails?.payment[0] as IPayment).created_at,
+      //   new Date(_purchaseDetails?.created_at)
+      // );
+      // console.log(_purchaseDetails);
       setFormObj((prev) => ({
         ...prev,
         ..._purchaseDetails,
@@ -507,33 +513,35 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
 
       const _selectedProducts = [];
       _purchaseDetails?.stocks.forEach((stock) => {
-        console.log(stock);
-        
+        // console.log(stock);
+
         const _product = _products.find((product: IProduct) => +product.id === +stock.product_id);
         if (_product) {
           const quantity =
             (_purchaseDetails.products.find((product: any) => product.id == _product.id) as any)
               .pivot.qty || 1;
           console.log(_product);
-          if (_product.type === 'variable'){
+          if (_product.type === 'variable') {
             // const variation = _product.variations.find((var) => var.id == stock.variation_id);
-            const varia = _product.variations.find(variation => variation.id == stock.variation_id);
+            const varia = _product.variations.find(
+              (variation) => variation.id == stock.variation_id
+            );
             _selectedProducts.push({
               ..._product,
-              name: _product.name + ' '+ varia.name,
+              name: _product.name + ' ' + varia.name,
               sell_price: varia.price,
               cost_price: varia.cost,
-              variation_id: stock.variation_id, 
+              variation_id: stock.variation_id,
               quantity,
               lineTotal: quantity * +varia.cost,
             });
-          }else{
+          } else {
             _selectedProducts.push({
               ..._product,
               quantity,
               lineTotal: quantity * +_product.cost_price,
             });
-          }         
+          }
         }
       });
       setSelectProducts([..._selectedProducts]);
@@ -692,10 +700,10 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
         }}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description">
-        <DialogTitle id="alert-dialog-title">Remove Product</DialogTitle>
+        <DialogTitle id="alert-dialog-title">{t('g.RemoveProduct')}</DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            Are you Sure You Want Remove This Item ?
+            {t('purchases.Are_you_Sure_You_Want_Remove_This_Item')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -721,7 +729,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
         <button
           className="btn m-btn btn-primary p-3"
           onClick={() => router.push('/shop/' + shopId + '/purchases')}>
-          <FontAwesomeIcon icon={faArrowAltCircleLeft} /> Back To List{' '}
+          <FontAwesomeIcon icon={faArrowAltCircleLeft} /> {t("purchases.Back_To_List")}{' '}
         </button>
       </div>
       {loading ? (
@@ -734,7 +742,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
         <>
           <Card className="mb-4">
             <Card.Header className="p-3 bg-white">
-              <h5>Edit Purchase</h5>
+              <h5>{t('purchases.Edit_Purchase')}</h5>
             </Card.Header>
             <Card.Body>
               <div className="form-style2">
@@ -742,7 +750,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
                   <div className="col-md-3">
                     <div className="form-group2">
                       <label>
-                        Supplier : <span className="text-danger">*</span>
+                        {t('g.Supplier')} : <span className="text-danger">*</span>
                       </label>
                       <Select
                         isLoading={dataLoading}
@@ -754,13 +762,13 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
                         }}
                       />
                       {errorForm.supplier_id && (
-                        <p className="p-1 h6 text-danger ">Select a Supplier</p>
+                        <p className="p-1 h6 text-danger ">{t('purchases.Select_a_Supplier')}</p>
                       )}
                     </div>
                   </div>
                   <div className="col-md-3">
                     <div className="form-group2">
-                      <label>Reference No :</label>
+                      <label>{t('purchases.Reference_No')} :</label>
                       <input
                         type="text"
                         className="form-control p-2"
@@ -774,7 +782,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
                   </div>
                   <div className="col-md-3">
                     <div className="form-group2">
-                      <label>Purchase Date :</label>
+                      <label>{t('purchases.Purchase_Date')} :</label>
                       <DatePicker
                         className="form-control p-2"
                         selected={formObj?.date}
@@ -786,14 +794,14 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
                 <div className="row">
                   <div className="col-md-3" style={{ display: 'none' }}>
                     <div className="form-group">
-                      <label>Document : </label>
+                      <label>{t('purchases.Document')} : </label>
                       <input type="file" accept="image/*" className="form-control" />
                     </div>
                   </div>
                   <div className="col-md-3">
                     <div className="form-group">
                       <label>
-                        Purchase Status: <span className="text-danger">*</span>
+                        {t('purchases.Purchase_Status')}: <span className="text-danger">*</span>
                       </label>
                       <Select
                         styles={purchasesColourStyles}
@@ -806,7 +814,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
                         }}
                       />
                       {errorForm.purchaseStatus && (
-                        <p className="p-1 h6 text-danger ">Select One Item</p>
+                        <p className="p-1 h6 text-danger ">{t('purchases.Select_One_Item')}</p>
                       )}
                     </div>
                   </div>
@@ -817,7 +825,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
                     <div className="col-md-3">
                       <div className="form-group">
                         <label>
-                          Payment Status: <span className="text-danger">*</span>
+                          {t('purchases.Payment_Status')}: <span className="text-danger">*</span>
                         </label>
                         <Select
                           styles={purchasesColourStyles}
@@ -837,14 +845,14 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
                           }}
                         />
                         {errorForm.paymentStatus && (
-                          <p className="p-1 h6 text-danger ">Select One Item</p>
+                          <p className="p-1 h6 text-danger ">{t('purchases.Select_One_Item')}</p>
                         )}
                       </div>
                     </div>
                     {formObj?.paymentStatus == 'partially_paid' && (
                       <div className="col-md-3">
                         <div className="form-group2">
-                          <label>Paid Amount :</label>
+                          <label>{t('purchases.Paid_Amount')} :</label>
                           <input
                             type="text"
                             className="form-control p-2"
@@ -854,28 +862,32 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
                               setFormObj({ ...formObj, paid_amount: +e.target.value });
                             }}
                           />
-                          {errorForm.paid && <p className="p-1 h6 text-danger ">Enter A Amount</p>}
+                          {errorForm.paid && (
+                            <p className="p-1 h6 text-danger ">{t('purchases.Enter_A_Amount')}</p>
+                          )}
                         </div>
                       </div>
                     )}
                     {formObj?.paymentStatus != 'due' && (
                       <div className="col-md-3">
                         <div className="form-group2">
-                          <label>Payment Date :</label>
+                          <label>{t('purchases.Payment_Date')} :</label>
                           <DatePicker
                             className="form-control p-2"
                             selected={formObj?.paymentDate}
                             onChange={(date: Date) => setFormObj({ ...formObj, paymentDate: date })}
                           />
                           {errorForm.paymentDate && (
-                            <p className="p-1 h6 text-danger ">Enter Payment Date From Calander</p>
+                            <p className="p-1 h6 text-danger ">
+                              {t('purchases.Enter_Payment_Date_From_Calendar')}
+                            </p>
                           )}
                         </div>
                       </div>
                     )}
                     <div className="col-md-3">
                       <div className="form-group2">
-                        <label>Payment Type :</label>
+                        <label>{t('purchases.Payment_Type')} :</label>
                         <Select
                           styles={purchasesColourStyles}
                           options={paymentTypes}
@@ -887,7 +899,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
                           }}
                         />
                         {errorForm.paymentType && (
-                          <p className="p-1 h6 text-danger ">Select One Item</p>
+                          <p className="p-1 h6 text-danger ">{t('purchases.Select_One_Item')}</p>
                         )}
                       </div>
                     </div>
@@ -915,7 +927,9 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
                     });
                   }}
                 />
-                {errorForm.currency_id && <p className="p-1 h6 text-danger ">Select a Currency</p>}
+                {errorForm.currency_id && (
+                  <p className="p-1 h6 text-danger ">{t('Purchases.Select_a_Currency')}</p>
+                )}
               </div>
             </div>
             <div className="col-md-3" style={{ display: 'none' }}>
@@ -942,7 +956,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
                 onChange={(e) => addToProductQuotations(e)}
               />
               {errorForm.products && (
-                <p className="p-1 h6 text-danger ">Select One Product at Least</p>
+                <p className="p-1 h6 text-danger ">{t("purchases.Select_One_Product_at_Least")}</p>
               )}
             </Card.Header>
             <Card.Body>
@@ -983,7 +997,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
                             className="btn m-btn btn-primary p-2"
                             style={{ borderRadius: '0px' }}>
                             {' '}
-                            + Add Shipping Expends
+                            + {t("purchases.Add_Shipping_Expends")}
                           </button>
                         </td>
                       </tr>
@@ -1010,7 +1024,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
                     <div className="purchase-item">
                       {isEditSort && <p className="puchase-arrow" style={{ width: '100px' }}></p>}
                       <div className="purchase-text">
-                        <p>items</p>
+                        <p>{t("purchases.items")}</p>
                         <p>
                           {selectProducts.length}{' '}
                           <span style={{ opacity: '0.5' }}> [{total_qty}]</span>{' '}
@@ -1021,7 +1035,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
                     <div className="purchase-item">
                       {isEditSort && <p className="puchase-arrow" style={{ width: '100px' }}></p>}
                       <div className="purchase-text">
-                        <p>Sub Total</p>
+                        <p>{t("purchases.Sub_Total")}</p>
                         <p>
                           {Number(formObj?.subTotal_price).toFixed(
                             locationSettings?.location_decimal_places
@@ -1059,8 +1073,8 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
                                       onChange={(e) => {
                                         setFormObj({ ...formObj, discount_type: e.target.value });
                                       }}>
-                                      <option value={'fixed'}>Fixed</option>
-                                      <option value={'percent'}>Percent %</option>
+                                      <option value={'fixed'}>{t("purchases.Fixed")}</option>
+                                      <option value={'percent'}>{t("purchases.Percent")} %</option>
                                     </Form.Select>
                                   </div>
                                   <div>
@@ -1109,7 +1123,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
                                             className="btn m-btn btn-primary p-2"
                                             style={{ borderRadius: '0px' }}>
                                             {' '}
-                                            + Add Taxe(s)
+                                            + {t("purchases.Add_Taxe")}(s)
                                           </button>
                                         </td>
                                       </tr>
@@ -1133,7 +1147,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
                     <div className="purchase-item">
                       {isEditSort && <p className="puchase-arrow" style={{ width: '100px' }}></p>}
                       <div className="purchase-text">
-                        <p>Total</p>
+                        <p>{t("purchases.Total")}</p>
                         <p>
                           {Number(formObj?.total_price).toFixed(
                             locationSettings?.location_decimal_places
@@ -1145,7 +1159,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
                         </p>
                       </div>
                       <div className="purchase-text">
-                        <p>Total Paid</p>
+                        <p>{t("purchases.Total_Paid")}</p>
                         <p>
                           {formObj?.paid_amount.toFixed(locationSettings?.location_decimal_places)}
                           <span style={{ opacity: '0.5', fontSize: '10px' }}>
@@ -1155,7 +1169,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
                         </p>
                       </div>
                       <div className="purchase-text">
-                        <p>Total Remaining</p>
+                        <p>{t("purchases.Total_Remaining")}</p>
                         <p>
                           {(formObj?.total_price - formObj?.paid_amount).toFixed(
                             locationSettings?.location_decimal_places
@@ -1167,7 +1181,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
                         </p>
                       </div>
                       {errorForm.morePaid && (
-                        <p className="p-1 h6 text-danger ">Error! ,Enter Right Amount</p>
+                        <p className="p-1 h6 text-danger ">{t("purchases.Error!_,Enter_Right_Amount")}</p>
                       )}
                     </div>
                   </div>
@@ -1211,7 +1225,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
                     updatePurchase();
                   } else Toastify('error', 'Enter Requires Field');
                 }}>
-                Save
+                {t("purchases.Save")}
               </button>
             </Card.Body>
           </Card>
@@ -1221,7 +1235,7 @@ const EditPurchase: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
   );
 };
 
-export const getServerSideProps: GetServerSideProps = async ({ query }) => {
+export const getServerSideProps: GetServerSideProps = async ({ query, locale }) => {
   if (!query.purchaseId) {
     return {
       notFound: true,
@@ -1230,7 +1244,11 @@ export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   }
 
   return {
-    props: { shopId: query.id, purchaseId: query.purchaseId },
+    props: {
+      shopId: query.id,
+      purchaseId: query.purchaseId,
+      ...(await serverSideTranslations(locale)),
+    },
   };
 };
 

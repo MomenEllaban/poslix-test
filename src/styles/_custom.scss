@@ -1543,7 +1543,8 @@ td {
   display: none;
 }
 
-.digital-cart-small-sm, .pos-cart-small-sm {
+.digital-cart-small-sm,
+.pos-cart-small-sm {
   height: 60px;
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
@@ -1709,7 +1710,8 @@ td {
   }
 
   .digital-cart-small,
-  .digital-cart-small-sm ,.pos-cart-small-sm{
+  .digital-cart-small-sm,
+  .pos-cart-small-sm {
     display: flex;
     justify-content: space-between;
     align-content: center;
@@ -2167,4 +2169,39 @@ td {
       margin: 10px 0 0 0 !important;
     }
   }
+}
+
+// ** digital product styles
+
+.code-country {
+  margin-right: 0.5rem;
+  margin-bottom: 0.35rem;
+
+  .code-om {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #000000d3;
+  }
+}
+
+// ** invoices
+
+.invoices-approved {
+  background-color: #05fd05;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.invoices-pending {
+  background-color: #ffeb00;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.invoices-pos {
+  height: 100%;
+  display: flex;
+  align-items: center;
 }

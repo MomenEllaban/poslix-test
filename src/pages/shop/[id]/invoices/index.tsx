@@ -88,6 +88,8 @@ export default function SalesList(props: any) {
     setPermissions(getPermissions);
   }, [router.asPath]);
 
+  console.log(sales)
+
   function CustomPagination(): React.JSX.Element {
     return (
       <Pagination
@@ -109,6 +111,7 @@ export default function SalesList(props: any) {
         salesList={sales}
         loading={isLoadItems}
         CustomPagination={CustomPagination}
+        initDataPage={initDataPage}
       />
     </AdminLayout>
   );

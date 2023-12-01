@@ -246,7 +246,19 @@
     "Cost": "التكلفة",
     "VAT %": "ضريبة القيمة المضافة %",
     "Line_Total": "إجمالي السطر",
-    "Purchases_List": "قائمة المشتريات"
+    "Purchases_List": "قائمة المشتريات",
+    "Purchase_Payments_List":"قائمة مدفوعات الشراء",
+    "ID":"ID",
+    "Status":"حالة",
+    "Total_Left":"إجمالي اليسار",
+    "Add_New_Payment":"إضافة دفعة جديدة",
+    "Date":"تاريخ",
+    "Amount":"كمية",
+    "Payment_Name":"اسم الدفع",
+    "Qty_Received":"الكمية المستلمة",
+    "Total_Qty":"إجمالي الكمية",
+    "Enter_Qty":"أدخل الكمية",
+    "Purchase_Quantity_Manager_List":"قائمة مدير كمية الشراء"
   },
   "transfers": {
     "Transfers_List": "قائمة التحويلات",
@@ -361,7 +373,8 @@
     "invoice_date": "تاريخ الفاتوره",
     "loading": "تحميل...",
     "save": "حفظ",
-    "cancel": "الغاء"
+    "cancel": "الغاء",
+    "approved":"موافقة"
   },
   "invoices": {
     "invoices_list": "قائمة الفواتير",
@@ -382,7 +395,9 @@
     "close": "اغلاق",
     "complete_order": "اتمام الطلب",
     "location": "المكان",
-    "payment_note": "ملاحظات الدفع"
+    "payment_note": "ملاحظات الدفع",
+    "transaction_type":"نوع المعاملة"
+
   },
   "taxes": {
     "taxes_list": "قائمة الضرائب",
@@ -537,7 +552,12 @@
     "buy_call": "اشتري 11 مكالمة واحصل على الثانية عشرة مجانا!",
     "last_login": "آخر تسجيل دخول",
     "address": "العنوان",
-    "orders": "طلبات"
+    "orders": "طلبات",
+    "email": "بريد إلكتروني",
+    "password":"كلمة المرور",
+    "Signup":"اشتراك",
+    "Login":" تسجيل دخول",
+    "fullName": "الاسم الكامل"
   },
   "pos": {
     "search": "بحث...",

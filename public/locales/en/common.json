@@ -107,7 +107,8 @@
     "register": "register",
     "ItemsReport": "Items Report",
     "back_to_list": "Back to list",
-    "SoldBy": "Sold By"
+    "SoldBy": "Sold By",
+    "RemoveProduct":"Remove Product"  
   },
   "products": {
     "Add_New_Product": "Add New Product",
@@ -246,7 +247,19 @@
     "Cost": "Cost",
     "VAT %": "VAT %",
     "Line_Total": "Line Total",
-    "Purchases_List": "Purchases List"
+    "Purchases_List": "Purchases List",
+    "Purchase_Payments_List":"Purchase Payments List",
+    "ID":"ID",
+    "Status":"Status",
+    "Total_Left":"Total Left",
+    "Add_New_Payment":"Add New Payment",
+    "Date":"Date",
+    "Amount":"Amount",
+    "Payment_Name":"Payment Name",
+    "Qty_Received":"Qty Received",
+    "Total_Qty":"Total Qty",
+    "Enter_Qty":"Enter Qty",
+    "Purchase_Quantity_Manager_List":"Purchase Quantity Manager List"
   },
   "transfers": {
     "Transfers_List": "Transfers List",
@@ -361,7 +374,8 @@
     "invoice_date": "Invoice Date",
     "loading": "loading...",
     "save": "Save",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "approved":"approved"
   },
   "invoices": {
     "invoices_list": "Invoices List",
@@ -382,7 +396,8 @@
     "close": "Close",
     "complete_order": "Complete Order",
     "location": "Location",
-    "payment_note": "Payment Note"
+    "payment_note": "Payment Note",
+    "transaction_type":"Transaction Type"
   },
   "taxes": {
     "taxes_list": "Taxes List",
@@ -495,6 +510,11 @@
     "add_customer": "Add Customer",
     "edit_customer": "Edit Customer",
     "first_name": "First Name",
+    "email": "Email",
+    "password":"Password",
+    "Signup":"Signup",
+    "Login":"Login",
+    "fullName": "Full Name",
     "last_name": "Last Name",
     "enter_mobile": "Enter customer mobile number",
     "pricing_group": "Pricing Group",

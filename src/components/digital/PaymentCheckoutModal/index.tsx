@@ -36,11 +36,12 @@ export default function PaymentCheckoutModal({
   setCartItems,
   setRenderedScreen,
   locationSettings,
+  customerData
 }) {
   const { lang, setLang } = useDigitalContext();
 
-  const dispatch = useAppDispatch();
-  const { tailoringSizes, tailoringExtras } = useUser();
+  // const dispatch = useAppDispatch();
+  // const { tailoringSizes, tailoringExtras } = useUser();
   const componentRef = React.useRef(null);
   // const [customer, setCustomer] = useState<{
   //   value: number | string;
@@ -66,6 +67,7 @@ export default function PaymentCheckoutModal({
     lastTotal: 0,
     lastDue: 0,
   });
+
 
   const [lastEdited, setLastEdited] = useState<number>(0);
 
@@ -173,10 +175,11 @@ export default function PaymentCheckoutModal({
     setIsPending(true);
     const checkoutData = {
       digital_menu:true,
+      ...customerData,
       notes: data?.notes,
       payment: data?.payment,
       location_id: shopId,
-      customer_id: undefined,
+      // customer_id: undefined,
       disount_type: cart?.cartDiscountType,
       discount_amount: cart?.cartDiscount,
       tax_type: cart?.cartTaxType,
@@ -208,6 +211,7 @@ export default function PaymentCheckoutModal({
           setShow(false);
           setPaidAmount({ '0': 0 });
           setCartItems([]);
+          setRenderedScreen("products")
         }
       })
       .catch((error) => {
@@ -236,7 +240,6 @@ export default function PaymentCheckoutModal({
     onAfterPrint: () => setPrint(false),
   });
 
-  console.log(locationSettings);
 
   return (
     <div>

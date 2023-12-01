@@ -8,13 +8,18 @@ import { Toastify } from 'src/libs/allToasts';
 import { findAllData } from 'src/services/crud.api';
 import api from 'src/utils/app-api';
 
+import { useTranslation } from 'next-i18next';
+
+
 const PurchasesQtyCheckList = (props: any) => {
   const { shopId, purchaseId } = props;
   const [transactionLines, setTransactionLines] = useState<any[]>([]);
   const [changed, setChanged] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedIndex, setSlectedIndex] = useState(-1);
-  const router = useRouter();
+  // const router = useRouter();
+  const { t } = useTranslation();
+
   async function intPageData() {
     const res = await findAllData(`purchase/complete-purchase/${purchaseId}`);
     if (!res.data.success) {
@@ -72,7 +77,7 @@ const PurchasesQtyCheckList = (props: any) => {
   const columns: GridColDef[] = [
     {
       field: 'name',
-      headerName: 'Product Name',
+      headerName: t('purchases.Product_Name'),
       minWidth: 250,
       renderCell: ({ row }: Partial<GridRowParams>) => {
         return <p>{row.name}</p>;
@@ -80,7 +85,7 @@ const PurchasesQtyCheckList = (props: any) => {
     },
     {
       field: 'qty',
-      headerName: 'Total Qty',
+      headerName: t('purchases.Total_Qty'),
       minWidth: 150,
       renderCell: ({ row }: Partial<GridRowParams>) => {
         return <>{Number(row.qty).toFixed(2) || '-'}</>;
@@ -88,7 +93,7 @@ const PurchasesQtyCheckList = (props: any) => {
     },
     {
       field: 'qty_received',
-      headerName: 'Qty Received',
+      headerName: t('purchases.Qty_Received'),
       minWidth: 150,
       renderCell: ({ row }: Partial<GridRowParams>) => {
         return (
@@ -103,7 +108,7 @@ const PurchasesQtyCheckList = (props: any) => {
     },
     {
       field: 'entered_qty',
-      headerName: 'Enter Qty',
+      headerName: t('purchases.Enter_Qty'),
       minWidth: 150,
       type: 'number',
       editable: true,
@@ -220,14 +225,14 @@ const PurchasesQtyCheckList = (props: any) => {
               <FontAwesomeIcon icon={faArrowAltCircleLeft} /> Back To List{' '}
             </button>
           </div>
-          <h5>Purchase Quantity Manager List {props.purchases[selectedIndex].status}</h5>
+          <h5>{t("purchases.Purchase_Quantity_Manager_List")} {props.purchases[selectedIndex].status}</h5>
           <hr />
           <div className="quick-suppier-info">
             <div>
-              Supplier: {props.purchases[selectedIndex]?.supplier?.name || 'walk-in supplier'}
+              {t("purchases.Supplier")}: {props.purchases[selectedIndex]?.supplier?.name || 'walk-in supplier'}
             </div>
-            <div>Status: {props.purchases[selectedIndex].status}</div>
-            <div>Total Price: {props.purchases[selectedIndex].total_price}</div>
+            <div>{t("purchases.Status")}: {props.purchases[selectedIndex].status}</div>
+            <div>{t("purchases.Total_Price")}: {props.purchases[selectedIndex].total_price}</div>
           </div>
           <hr />
           <DataGrid
@@ -269,7 +274,7 @@ const PurchasesQtyCheckList = (props: any) => {
             }
             className="btn m-btn btn-primary p-2"
             onClick={updateRecivedQty}>
-            Save
+            {t("purchases.Save")}
           </button>
         </div>
       ) : (

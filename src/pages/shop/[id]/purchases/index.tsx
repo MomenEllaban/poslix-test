@@ -75,7 +75,7 @@ const Purchases: NextPage = ({ shopId, id }: any) => {
       renderCell: ({ row }: Partial<GridRowParams>) => (
         <ButtonGroup className="mb-2 m-buttons-style">
           <Button
-            disabled={(row.status == 'draft' || row.status == 'received')}
+            disabled={row.status == 'draft' || row.status == 'received'}
             onClick={() => {
               setPurchaseId(row.id);
               setIsShowQtyManager(!isShowQtyManager);
@@ -158,21 +158,18 @@ const Purchases: NextPage = ({ shopId, id }: any) => {
     setPermissions(getPermissions);
   }, [router.asPath]);
   function getStatusStyle(status: string) {
-    
     switch (status) {
       case 'paid':
       case 'received':
         return <span className="purchase-satus-style">{status}</span>;
-        case 'partially_received':
-        case 'partially_paid':
-          return <span className="purchase-satus-style">{status.split("_").join(" ")}</span>;
-        case '':
-        case null:
-          return <span className="purchase-satus-style paid-othe">Due</span>;
+      case 'partially_received':
+      case 'partially_paid':
+        return <span className="purchase-satus-style">{status.split('_').join(' ')}</span>;
+      case '':
+      case null:
+        return <span className="purchase-satus-style paid-othe">Due</span>;
       default:
-        return (
-          <span className="purchase-satus-style paid-other">{status}</span>
-        );
+        return <span className="purchase-satus-style paid-other">{status}</span>;
     }
   }
 
@@ -197,8 +194,8 @@ const Purchases: NextPage = ({ shopId, id }: any) => {
         shopId={id}
         id={selectId}
         url={'purchase'}>
-       {t("purchases.Are_you_Sure_You_Want_Delete_This_Item?")}
-   </AlertDialog>
+        {t('purchases.Are_you_Sure_You_Want_Delete_This_Item?')}
+      </AlertDialog>
       {isShowQtyManager && (
         <PurchasesQtyCheckList
           selectedIndex={selectedIndex}
@@ -228,32 +225,31 @@ const Purchases: NextPage = ({ shopId, id }: any) => {
                   onClick={() => {
                     router.push('/shop/' + shopId + '/purchases/add');
                   }}>
-                  <FontAwesomeIcon icon={faPlus} /> {t("purchases.New_Purchase")}
+                  <FontAwesomeIcon icon={faPlus} /> {t('purchases.New_Purchase')}
                 </button>
               </div>
             )}
-         
-              <div>
-                <div className="page-content-style card">
-                  <h5>{t("purchases.Purchases_List")}</h5>
-                  <DataGrid
+
+            <div>
+              <div className="page-content-style card">
+                <h5>{t('purchases.Purchases_List')}</h5>
+                <DataGrid
                   loading={isloading}
-                    className="datagrid-style"
-                    sx={{
-                      '.MuiDataGrid-columnSeparator': { display: 'none' },
-                      '&.MuiDataGrid-root': { border: 'none' },
-                    }}
-                    sortModel={sortModel}
-                    onSortModelChange={handleSortModelChange}
-                    rows={purchases}
-                    columns={columns}
-                    pageSize={10}
-                    rowsPerPageOptions={[10]}
-                    components={{ Toolbar: CustomToolbar }}
-                  />
-                </div>
+                  className="datagrid-style"
+                  sx={{
+                    '.MuiDataGrid-columnSeparator': { display: 'none' },
+                    '&.MuiDataGrid-root': { border: 'none' },
+                  }}
+                  sortModel={sortModel}
+                  onSortModelChange={handleSortModelChange}
+                  rows={purchases}
+                  columns={columns}
+                  pageSize={10}
+                  rowsPerPageOptions={[10]}
+                  components={{ Toolbar: CustomToolbar }}
+                />
               </div>
-           
+            </div>
           </div>
         </div>
       )}
@@ -261,11 +257,11 @@ const Purchases: NextPage = ({ shopId, id }: any) => {
   );
 };
 export default withAuth(Purchases);
-export async function getServerSideProps({ params, query,locale }) {
+
+
+export async function getServerSideProps({ params, query, locale }) {
   const { id } = params;
   return {
-    props: { id, shopId: query.id , 
-           ...(await serverSideTranslations(locale))
-    },
+    props: { id, shopId: query.id, ...(await serverSideTranslations(locale)) },
   };
 }
