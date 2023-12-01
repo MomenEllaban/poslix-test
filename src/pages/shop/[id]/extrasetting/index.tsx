@@ -1,6 +1,6 @@
 import type { NextPage } from 'next';
 import withAuth from 'src/HOCs/withAuth';
-import { faPenToSquare, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faEye, faPenToSquare, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { AdminLayout } from '@layout';
 import {
@@ -20,17 +20,38 @@ import AlertDialog from 'src/components/utils/AlertDialog';
 import { Toastify } from 'src/libs/allToasts';
 import { findAllData } from 'src/services/crud.api';
 import ExtraModal from '../../../../components/pos/modals/ExtraModal';
-
+import { useTranslation } from 'next-i18next';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 
 const Extras: NextPage = (props: any) => {
+    const { t } = useTranslation();
     const { shopId, rules } = props;
     const router = useRouter();
-  const [extrasList, setExtrasList] = useState<
+    const [categoriesList, setCategoriesList] = useState<
     {
+      id: number;
       name: string;
-      price: number;
+      second_name: string;
+      extras: {
+        id: number;
+        name: string;
+        second_name:string;
+        price: number;
+      }[];
     }[]
   >([]);
+
+  const [category, setCategory] = useState<{
+    id: string;
+    name: string;
+    second_name: string;
+    allow_multi_selection:boolean;
+  }>({ id: '1', name: 'sample category', second_name: 'sample', allow_multi_selection:false });
+  
+  const [categoryExtrasList,setCategoryExtrasList] = useState([]);
+  const [categoryIsModal, setCategoryIsModal] = useState<boolean>(false);
+
+  const [showType, setShowType] = useState(String); 
 
   const [show, setShow] = useState(false);
   const [selectId, setSelectId] = useState(0);
@@ -38,20 +59,12 @@ const Extras: NextPage = (props: any) => {
   const [locationID, setLocationID] = useState(shopId);
 
 
+
   
-  const [showType, setShowType] = useState(String); 
-  const [extra, setExtra] = useState<{
-    value: string;
-    label: string;
-    isNew: boolean;
-  }>({ value: '1', label: 'sample extra', isNew: false });
-  const [extraIsModal, setExtraIsModal] = useState<boolean>(false);
-
-
   async function initDataPage() {
     if (router.query.id) {
       try{
-      const res = await findAllData(`extra-settings/showAll/${router.query.id}`);
+      const res = await findAllData(`extras-categories/`);
       if (res.data.status == 404) {
         Toastify('error', 'not found');
         return false ;
@@ -61,26 +74,46 @@ const Extras: NextPage = (props: any) => {
 
         return false ;
       }
-      setExtrasList(res.data.result);
-  }catch(e){
-setExtrasList([])
-  }
-     
+      setCategoriesList(res.data.result);
+      }catch(e){
+        setCategoriesList([])
+      }
     }
     setIsLoading(false);
   }
+  
+// only temporary until i solve the eager loading on the backend
+  async function getExtras(id){
+    try{
+      const res = await findAllData(`extras-categories/extras/${id}`);
+      console.log('Extras API Response:', res.data); 
+      if (res.data.status == 404) {
+        Toastify('error', 'not found');
+        return false ;
+      }
+      if (res.data.status !== 200) {
+        Toastify('error', 'Somthing wrong!!, try agian');
+
+        return false ;
+      }
+      setCategoryExtrasList(res.data.result);
+    }catch(e){
+      setCategoryExtrasList([]);
+    }
+  }
+
   const extraModalHandler = (status: any) => {
-    setExtraIsModal(false);
+    setCategoryIsModal(false);
     initDataPage();
   };
 
   const columns: GridColDef[] = [
     { field: 'id', headerName: '#', minWidth: 50 },
-    { field: 'name', headerName: 'extra Name', flex: 1 },
-    { field: 'price', headerName: 'price', flex: 1 },
+    { field: 'name', headerName: t('extra.category_name'), flex: 1 },
+    { field: 'second_name', headerName: t('extra.category_second_name'), flex: 1 },
     {
-      field: 'action',
-      headerName: 'Action ',
+      field: 'actions',
+      headerName: t('extra.actions'),
       sortable: false,
       disableExport: true,
       flex: 1,
@@ -91,19 +124,38 @@ setExtrasList([])
               <Button
                 onClick={(event) => {
                   event.stopPropagation();
-                  setExtra({
-                    value: row.id,
-                    label: row.name,
-                    isNew: false,
+                  getExtras(row.id)
+                  setCategory({
+                    id: row.id,
+                    name: row.name,
+                    second_name: row.second_name,
+                    allow_multi_selection: row.allow_multi_selection,
+                  });
+                  setSelectId(row.id);
+                  setShowType('show');
+                  setCategoryIsModal(true);
+                }}>
+                
+                <FontAwesomeIcon icon={faEye} />
+              </Button>
+            )}
+              <Button
+                onClick={(event) => {
+                  event.stopPropagation();
+                  getExtras(row.id);
+                  setCategory({
+                    id: row.id,
+                    name: row.name,
+                    second_name: row.second_name,
+                    allow_multi_selection: row.allow_multi_selection,
                   });
                   setSelectId(row.id);
                   setShowType('edit');
-                  setExtraIsModal(true);
+                  setCategoryIsModal(true);
                 }}>
                 
                 <FontAwesomeIcon icon={faPenToSquare} />
               </Button>
-            )}
 
             <Button
               onClick={(event) => {
@@ -128,8 +180,6 @@ setExtrasList([])
     );
   }
 
-
-  
   useEffect(() => {
     initDataPage();
     setLocationID(router.query.id)
@@ -140,6 +190,7 @@ setExtrasList([])
     initDataPage();
     setShow(false);
   };
+  
   const onRowsSelectionHandler = (ids: any) => {};
 
     return (
@@ -151,9 +202,9 @@ setExtrasList([])
           alertFun={handleDeleteFuc}
           shopId={shopId}
           id={selectId}
-          locatiooID={locationID}
-          url={'extra-settings'}>
-          Are you Sure You Want Delete This Extra ?
+          locationID={locationID}
+          url={'extras-categories'}>
+          Are you Sure You Want Delete This Category ?
         </AlertDialog>
         {!isLoading && (
           <div className="mb-2">
@@ -161,16 +212,16 @@ setExtrasList([])
               className="btn btn-primary p-3"
               onClick={() => {
                 setShowType('add');
-                setExtraIsModal(true);
+                setCategoryIsModal(true);
               }}>
-              <FontAwesomeIcon icon={faPlus} /> Add New Extra{' '}
+              <FontAwesomeIcon icon={faPlus} /> {t('extra.add_new_category')}{' '}
             </button>
           </div>
         )}
         {!isLoading ? (
           <>
             <div className="page-content-style card">
-              <h5>Extra List</h5>
+              <h5>{t('extra.categories_list')}</h5>
               <DataGrid
                 className="datagrid-style"
                 sx={{
@@ -181,7 +232,7 @@ setExtrasList([])
                     border: 'none',
                   },
                 }}
-                rows={extrasList}
+                rows={categoriesList}
                 columns={columns}
                 pageSize={10}
                 rowsPerPageOptions={[10]}
@@ -198,14 +249,20 @@ setExtrasList([])
       </AdminLayout>
       <ExtraModal
         shopId={locationID}
-        extrasList={extrasList}
+        extrasList={categoryExtrasList}
+        category={category}
         selectId={selectId}
         showType={showType}
-        userdata={extra}
-        extras={extrasList}
-        statusDialog={extraIsModal}
+        statusDialog={categoryIsModal}
         openDialog={extraModalHandler} />
     </>
     );
 }
 export default withAuth(Extras);
+
+export async function getServerSideProps({ params, locale }) {
+  const { id } = params;
+  return {
+    props: { id, ...(await serverSideTranslations(locale)) },
+  };
+}

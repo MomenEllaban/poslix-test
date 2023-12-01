@@ -767,5 +767,26 @@
     "method": "الطريقة",
     "total_price": "السعر الكلي",
     "products": "منتجات"
+  },
+  "extra": {
+    "extra_setting":"إعدادات الإضافات",
+    "categories_list": "قائمة الفئات",
+    "export": "تصدير",
+    "columns": "أعمدة",
+    "category_name": "اسم الفئة",
+    "category_second_name": "الاسم الثاني للفئة",
+    "actions": "عمليات",
+    "add_new_category": "إضافة فئة جديدة",
+    "arabic_name": "الاسم باللغة العربية",
+    "english_name": "الاسم باللغةالانجليزية",
+    "enable_multi_selection": "تعدد الخيارات",
+    "extra_name": "اسم الإضافة",
+    "extra_second_name": "الاسم الثاني للإضافة",
+    "extra_price": "سعر الإضافة",
+    "add_item": "إضافة عنصر",
+    "list_of_extras": "قائمة الإضافات",
+    "add_category": "إصافة الفئة",
+    "close":"إغلاق",
+    "category":"فئة"
   }
 }
