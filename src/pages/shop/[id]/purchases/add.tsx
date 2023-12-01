@@ -520,6 +520,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
         onCostClick,
         setSelecetdId,
         setOpenRemoveDialog,
+        t
       }),
     [locationSettings, formObj, formObjRef]
   );
