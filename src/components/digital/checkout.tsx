@@ -14,8 +14,9 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import { Toastify } from 'src/libs/allToasts';
-// import PhoneInput from 'react-phone-input-2';
-// import 'react-phone-number-input/style.css';
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-number-input/style.css';
+
 const Checkout = ({
   cartItems,
   removeFromCart,
@@ -35,7 +36,7 @@ const Checkout = ({
   const [invoiceDetails, setInvoiceDetails] = useState<any>({});
   const [cartData, setCartData] = useState([]);
   const [customerData, setCustomerData] = useState({
-    customer: '',
+    full_name: '',
     customer_id: '',
     phone: '',
     address: '',
@@ -84,26 +85,28 @@ const Checkout = ({
   ];
 
   // ** var - data required
-  // const required = ['customer', 'address', 'phone'];
+  const required = ['full_name', 'address', 'phone', 'order_type'];
 
   // ** functions
   const handleOpenModelCheckout = () => {
-    // for (const [key, value] of Object.entries(customerData)) {
-    //   if (required.includes(key)) {
-    //     if (!value) {
-    //       Toastify('error', `${key?.replace(/_/g, ' ')} is required`);
-    //       return;
-    //     }
-    //   }
-    // }
-    if (!customerData.order_type) {
-      Toastify('error', `Order type is required`);
-      return;
+    for (const [key, value] of Object.entries(customerData)) {
+      if (required.includes(key)) {
+        if (value === 'phone') {
+          if (value?.length <= 3) {
+            Toastify('error', `${key?.replace(/_/g, ' ')} is required`);
+          }
+        }
+        if (!value) {
+          Toastify('error', `${key?.replace(/_/g, ' ')} is required`);
+          return;
+        }
+      }
     }
+
     setPaymentModalShow(true);
   };
 
-  const handleOnChange = (e: { target: { name: string; value: string } }) => {
+  const handleOnChange = (e) => {
     setCustomerData((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
@@ -113,9 +116,9 @@ const Checkout = ({
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('userdata'));
     setCustomerData({
-      customer: `${user?.first_name} ${user?.last_name}`,
+      full_name: `${user?.first_name} ${user?.last_name}`,
       customer_id: user?.id,
-      phone: user?.phone,
+      phone: `+${user?.mobile}`,
       address: user?.shipping_address,
       email: user?.email,
       order_type: '',
@@ -149,7 +152,7 @@ const Checkout = ({
                   variant="standard"
                   style={{ marginTop: '1rem', width: '45%' }}
                   required
-                  value={customerData.customer}
+                  value={customerData.full_name}
                   name="customer"
                   type="text"
                   onChange={handleOnChange}
@@ -164,7 +167,7 @@ const Checkout = ({
                   name="email"
                   onChange={handleOnChange}
                 />
-
+                {/* 
                 <TextField
                   id="standard-basic"
                   label={lang.digital.phone_number}
@@ -175,8 +178,33 @@ const Checkout = ({
                   name="phone"
                   value={customerData.phone}
                   onChange={handleOnChange}
-                />
+                /> */}
 
+                <div className="mt-2 phone-control">
+                  <label className="fw-semibold">
+                    {lang.Customer.mobile}
+                    <span className="text-danger ms-1">*</span>
+                  </label>
+
+                  <PhoneInput
+                    inputClass="MuiInputBase-input MuiInput-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
+                    containerClass="d-block MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-formControl css-v4u5dn-MuiInputBase-root-MuiInput-root"
+                    country={'om'}
+                    enableAreaCodes
+                    enableTerritories
+                    specialLabel=""
+                    countryCodeEditable
+                    onlyCountries={['om']}
+                    autoFormat={true}
+                    onChange={(e) => {
+                      setCustomerData((prev) => ({
+                        ...prev,
+                        phone: e,
+                      }));
+                    }}
+                    value={customerData?.phone}
+                  />
+                </div>
                 <TextField
                   id="standard-basic"
                   label={'address'}
@@ -302,10 +330,7 @@ const Checkout = ({
         setCartItems={setCartItems}
         setRenderedScreen={setRenderedScreen}
         locationSettings={location}
-        customerData={{
-          customer_id: customerData?.customer_id,
-          order_type: customerData?.order_type,
-        }}
+        customerData={customerData}
       />
     </>
   );

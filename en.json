@@ -188,6 +188,7 @@
   },
   "add_customer": "Add Customer",
   "edit_customer": "Edit Customer",
+  "Hi":"Hi",
   "paymentCheckoutModal": {
     "payment": "Payment",
     "amount": "Amount",

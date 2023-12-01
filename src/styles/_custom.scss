@@ -2205,3 +2205,27 @@ td {
   display: flex;
   align-items: center;
 }
+
+//
+
+.phone-control {
+  width: 45%;
+  
+  .react-tel-input .form-control {
+    border: none !important;
+  }
+  .fw-semibold {
+    color: rgba(0, 0, 0, 0.6);
+    font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
+    font-weight: 400 !important;
+    font-size: .8rem;
+  }
+  .text-danger{
+    color: rgba(0, 0, 0, 0.6) !important;
+
+  }
+
+  label + .css-v4u5dn-MuiInputBase-root-MuiInput-root {
+    margin-top: 0;
+  }
+}

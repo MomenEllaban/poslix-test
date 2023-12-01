@@ -13,8 +13,9 @@ import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
 
 import ModelCustomer from './auth/modelCustomer';
 
-export const DigitalNavbar = ({ shopId ,openModelAuth,setOpenModelAuth}) => {
+export const DigitalNavbar = ({ shopId, openModelAuth, setOpenModelAuth }) => {
   const [appearance, setAppearance] = useState<any>();
+  const [userData, setUserData] = useState<any>();
 
   const { lang, setLang } = useDigitalContext();
   const fetchApperance = async () => {
@@ -26,8 +27,15 @@ export const DigitalNavbar = ({ shopId ,openModelAuth,setOpenModelAuth}) => {
     }
   };
   useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('userdata'));
+    setUserData(user);
     fetchApperance();
   }, []);
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('userdata'));
+    setUserData(user);
+    
+  }, [openModelAuth]);
 
   useLayoutEffect(() => {
     const defaultLang = getLocalStorage(ELocalStorageKeys.LANGUAGE) || 'en';
@@ -38,10 +46,11 @@ export const DigitalNavbar = ({ shopId ,openModelAuth,setOpenModelAuth}) => {
     }
   }, []);
 
-  
   const handleOpenModel = () => {
-    const token = JSON.parse(localStorage.getItem('userdata'))?.token?.length > 150
-    if(token){return}
+    const token = JSON.parse(localStorage.getItem('userdata'))?.token?.length > 150;
+    if (token) {
+      return;
+    }
     setOpenModelAuth(true);
   };
 
@@ -73,7 +82,14 @@ export const DigitalNavbar = ({ shopId ,openModelAuth,setOpenModelAuth}) => {
           </span>
         </div>
         {/* left part */}
-        <div>
+        <div className="d-flex align-items-center">
+          {userData?.token && (
+            <div>
+              <h6 className="m-0">
+                {lang?.Hi} {`${userData?.first_name} ${userData?.last_name ?? ""}`}
+              </h6>
+            </div>
+          )}
           <button style={{ all: 'unset' }} type="button" onClick={handleOpenModel}>
             <PersonIcon sx={{ cursor: 'pointer' }} className="mx-4" />
           </button>

@@ -8,9 +8,8 @@ import FormField from 'src/components/form/FormField';
 import { Toastify } from 'src/libs/allToasts';
 import { customerSingUpSchema, customerLoginSchema } from '../_schema/customerAuth.schema';
 import api from 'src/utils/app-api';
-import { findAllData } from 'src/services/crud.api';
+// import { findAllData } from 'src/services/crud.api';
 
-import { useTranslation } from 'next-i18next';
 
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-number-input/style.css';
@@ -23,12 +22,11 @@ const ModelCustomer = (props: any) => {
   const LOGIN = 'login';
   const SIGN_UP = 'signup';
 
-  const { t } = useTranslation();
   const [showType, setShowType] = useState(SIGN_UP);
   const [isLoading, setIsLoading] = useState(false);
   const [moreInfo, setMoreInfo] = useState(false);
-  const [currentPricingGroup, setCurrentPricingGroup] = useState<number | null>();
-  const [pricingGroups, setPricingGroups] = useState([]);
+  // const [currentPricingGroup, setCurrentPricingGroup] = useState<number | null>();
+  // const [pricingGroups, setPricingGroups] = useState([]);
   const [initState, setInitState] = useState(customerSingUpSchema);
   const { lang, setLang } = useDigitalContext();
 
@@ -55,7 +53,7 @@ const ModelCustomer = (props: any) => {
         ...data,
         mobile: +data.mobile,
         digital_menu: true,
-        price_groups_id: currentPricingGroup,
+        // price_groups_id: currentPricingGroup,
       };
     } else {
       body = {
@@ -75,9 +73,10 @@ const ModelCustomer = (props: any) => {
             first_name: user?.first_name,
             id: user?.id,
             email: user?.email,
+            mobile: user?.mobile,
             user_type: user?.user_type,
             customer_id: data?.customer_id ? data?.customer_id : user?.id,
-            token: data?.authorization?.token,
+            token: data?.authorization?.token ? data?.authorization?.token : data?.token,
             shipping_address: user?.shipping_address,
           };
           localStorage.setItem('userdata', JSON.stringify(_user));
@@ -120,7 +119,7 @@ const ModelCustomer = (props: any) => {
     reset();
     clearErrors();
     setMoreInfo(false);
-    setCurrentPricingGroup(null);
+    // setCurrentPricingGroup(null);
     setIsLoading(false);
   };
 
@@ -143,19 +142,19 @@ const ModelCustomer = (props: any) => {
     setInitState(customerLoginSchema);
   };
 
-  const getPricingGroups = async () => {
-    const res = await findAllData(`pricing-group/${router.query.id}?digital_menu=true`);
-    if (res?.data?.success)
-      setPricingGroups([
-        ...res.data.result.data.map((pg) => {
-          return { ...pg, label: pg.name, value: pg.id };
-        }),
-      ]);
-  };
+  // const getPricingGroups = async () => {
+  //   const res = await findAllData(`pricing-group/${router.query.id}?digital_menu=true`);
+  //   if (res?.data?.success)
+  //     setPricingGroups([
+  //       ...res.data.result.data.map((pg) => {
+  //         return { ...pg, label: pg.name, value: pg.id };
+  //       }),
+  //     ]);
+  // };
 
-  useEffect(() => {
-    if (router.query.id) getPricingGroups();
-  }, [router.asPath]);
+  // useEffect(() => {
+  //   if (router.query.id) getPricingGroups();
+  // }, [router.asPath]);
 
   return (
     <Modal show={open} onHide={handleClose}>
@@ -184,14 +183,14 @@ const ModelCustomer = (props: any) => {
                   errors={errors}
                   register={register}
                 />
-                <FormField
+                {/* <FormField
                   type="text"
                   name="last_name"
                   label={lang.Customer.last_name}
                   placeholder={lang.Customer.last_name}
                   errors={errors}
                   register={register}
-                />
+                /> */}
                 <div>
                   <label className="fw-semibold fs-6 form-label">
                     {lang.Customer.mobile}
@@ -233,7 +232,7 @@ const ModelCustomer = (props: any) => {
                   />
                 </div>
 
-                <div className="col-lg-6 mb-3">
+                {/* <div className="col-lg-6 mb-3">
                   <label>{lang.Customer.pricing_group}</label>
                   <select
                     className="form-select"
@@ -253,9 +252,9 @@ const ModelCustomer = (props: any) => {
                       );
                     })}
                   </select>
-                </div>
+                </div> */}
               </fieldset>
-              <div className="d-flex flex-row mb-3">
+              {/* <div className="d-flex flex-row mb-3">
                 <Button
                   variant="primary"
                   className="ms-auto"
@@ -263,12 +262,12 @@ const ModelCustomer = (props: any) => {
                     setMoreInfo(!moreInfo);
                   }}>
                   {moreInfo ? lang.Customer.less_info : lang.Customer.more_info}
-                  {/* {lang.CustomerModal.information}{' '} */}
+                  {lang.CustomerModal.information}{' '}
                   <i className={`ri-arrow-${moreInfo ? 'up' : 'down'}-s-line ps-1`} />
                 </Button>
-              </div>
+              </div> */}
 
-              {moreInfo ? (
+              {/* {moreInfo ? (
                 <div className="row">
                   <div className="col-lg-6 mb-3">
                     <FormField
@@ -343,7 +342,7 @@ const ModelCustomer = (props: any) => {
                     register={register}
                   />
                 </div>
-              ) : null}
+              ) : null} */}
             </Modal.Body>
           ) : (
             // **  TODO: logIn
