@@ -116,7 +116,7 @@ const Checkout = ({
       customer: `${user?.first_name} ${user?.last_name}`,
       customer_id: user?.id,
       phone: user?.phone,
-      address: user?.address,
+      address: user?.shipping_address,
       email: user?.email,
       order_type: '',
       notes: '',

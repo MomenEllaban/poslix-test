@@ -48,49 +48,62 @@ const ModelCustomer = (props: any) => {
     // defaultValues: initState,
   });
 
-  type Res = {
-    authorization: { token: string };
-    customer_id: string | null | number;
-    user: {
-      last_name: string;
-      first_name: string;
-      id: number;
-      email: string;
-      user_type: string;
-    };
-  };
-
   const handleCustomer = (data: any, endpoing = `/customers/${shopId}`) => {
+    let body = {};
+    if (showType === SIGN_UP) {
+      body = {
+        ...data,
+        mobile: +data.mobile,
+        digital_menu: true,
+        price_groups_id: currentPricingGroup,
+      };
+    } else {
+      body = {
+        digital_menu: true,
+        email: data.email,
+        password: data.password,
+      };
+    }
     api
-      .post(endpoing, { ...data, digital_menu: true, price_groups_id: currentPricingGroup })
+      .post(endpoing, body)
       .then((res) => {
-        console.log(res);
         if (res.status === 200) {
           const data = res?.data?.result;
+          const user = data?.user ? data?.user : data?.customer;
           const _user = {
-            last_name: data.user.last_name,
-            first_name: data.user.first_name,
-            id: data.user.id,
-            email: data.user.email,
-            user_type: data.user.user_type,
-            customer_id: data.customer_id,
-            token: data.authorization?.token,
+            last_name: user.last_name,
+            first_name: user?.first_name,
+            id: user?.id,
+            email: user?.email,
+            user_type: user?.user_type,
+            customer_id: data?.customer_id ? data?.customer_id : user?.id,
+            token: data?.authorization?.token,
+            shipping_address: user?.shipping_address,
           };
           localStorage.setItem('userdata', JSON.stringify(_user));
           Toastify('success', 'Successfully Created');
           handleClose();
         }
       })
-      .catch((error) => {
-        console.log(error);
-        Toastify('error', 'Has Error, Try Again...');
+      .catch((err) => {
+        console.log(err);
+        const { error, status } = err?.response?.data;
+        if (status === 401) {
+          Toastify('error', error?.message);
+        } else if (status === 422) {
+          for (const v of Object.values(error)) {
+            const message: any = v || ['Has Error, Try Again...'];
+            Toastify('error', message?.join(''));
+          }
+        } else {
+          Toastify('error', 'Has Error, Try Again...');
+        }
       })
       .finally(() => {
         setIsLoading(false);
       });
   };
 
-  console.log(errors);
 
   const onSubmit = async (data: any) => {
     setIsLoading(true);
@@ -107,6 +120,8 @@ const ModelCustomer = (props: any) => {
     reset();
     clearErrors();
     setMoreInfo(false);
+    setCurrentPricingGroup(null);
+    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -157,14 +172,15 @@ const ModelCustomer = (props: any) => {
       <Modal.Body>
         <Form noValidate onSubmit={handleSubmit(onSubmit, onError)}>
           {showType === SIGN_UP ? (
+            // **  TODO: Sing_up
             <Modal.Body>
               <fieldset>
                 <FormField
                   required
                   type="text"
-                  name="first_name"
-                  label={lang.Customer.first_name}
-                  placeholder={lang.Customer.first_name}
+                  name="full_name"
+                  label={lang.Customer.fullName}
+                  placeholder={lang.Customer.fullName}
                   errors={errors}
                   register={register}
                 />
@@ -330,6 +346,7 @@ const ModelCustomer = (props: any) => {
               ) : null}
             </Modal.Body>
           ) : (
+            // **  TODO: logIn
             <Modal.Body>
               <fieldset>
                 <FormField

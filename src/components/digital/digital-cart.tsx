@@ -1,17 +1,17 @@
 import { Autocomplete, Button, TextField } from '@mui/material';
 import CartItem from './CartItem';
 
-import { useDispatch, useSelector } from 'react-redux';
-import {
-  addTodigitalCart,
-  incrementQuantity,
-  decrementQuantity,
-  removeItem,
-} from '../../redux/slices/digitalCartSlice';
+// import { useDispatch, useSelector } from 'react-redux';
+// import {
+//   addTodigitalCart,
+//   incrementQuantity,
+//   decrementQuantity,
+//   removeItem,
+// } from '../../redux/slices/digitalCartSlice';
 import { useDigitalContext } from 'src/modules/digital/_context/DigitalContext';
 import { useState } from 'react';
 import { VariantsProductModal } from './variants-product-modal';
-import ProductVariablesModal from './product-variables-modal';
+// import ProductVariablesModal from './product-variables-modal';
 const DigitalCart = ({
   products,
   cartItems,

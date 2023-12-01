@@ -2,8 +2,8 @@ import Joi from 'joi';
 
 export const customerSingUpSchema = Joi.object()
   .keys({
-    first_name: Joi.string().required().messages({
-      'string.empty': 'First name is required',
+    full_name: Joi.string().required().messages({
+      'string.empty': 'Full name is required',
     }),
     last_name: Joi.string().required().messages({
       'string.empty': 'Last name is required',
