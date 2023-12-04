@@ -1,6 +1,9 @@
 {
   "compilerOptions": {
     "baseUrl": ".",
+    "types": [
+      "@types/cookie"
+    ],
     "paths": {
       "@components": [
         "src/components"
