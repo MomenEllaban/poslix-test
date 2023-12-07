@@ -91,8 +91,8 @@ const Checkout = ({
   const handleOpenModelCheckout = () => {
     for (const [key, value] of Object.entries(customerData)) {
       if (required.includes(key)) {
-        if (value === 'phone') {
-          if (value?.length <= 3) {
+        if (key === 'phone') {
+          if (value?.length <= 5) {
             Toastify('error', `${key?.replace(/_/g, ' ')} is required`);
           }
         }

@@ -52,12 +52,12 @@ const ModelCustomer = (props: any) => {
       body = {
         ...data,
         mobile: +data.mobile,
-        digital_menu: true,
+        digital_menu: 1,
         // price_groups_id: currentPricingGroup,
       };
     } else {
       body = {
-        digital_menu: true,
+        digital_menu: 1,
         email: data.email,
         password: data.password,
       };
