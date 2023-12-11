@@ -1,4 +1,5 @@
-import { faCalendarDay, faDesktop, faListSquares, faUser } from '@fortawesome/free-solid-svg-icons';
+import { faCalendarDay, faDesktop, faListSquares, faUser, faUtensils } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Money from '@mui/icons-material/Money';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
@@ -596,6 +597,21 @@ export function SidebarNav({ shopId }: any): React.JSX.Element {
           <small className="ms-auto"></small>
         </SidebarNavItem>
       )}
+      {/* need to update permissions */}
+      {permissions.hasAppStore && (
+        <SidebarNavItem
+        href={'/shop/' + shopId + '/kds'}
+        isShown={!!router.query.id}
+        >
+          <FontAwesomeIcon icon={faUtensils} className="nav-icon ms-n3" />
+
+          {t('sidebarNav.kds')}
+
+          <Soon />
+          <small className="ms-auto"></small>
+        </SidebarNavItem>
+      )}
+
     </ul>
   );
 }
