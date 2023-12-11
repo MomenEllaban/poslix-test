@@ -2,6 +2,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "types": [
+      "node",
       "@types/cookie"
     ],
     "paths": {

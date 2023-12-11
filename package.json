@@ -45,7 +45,7 @@
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
     "mysql2": "^2.3.3",
-    "next": "^13.5.2",
+    "next": "^14.0.4",
     "next-auth": "^4.22.3",
     "next-i18next": "^15.0.0",
     "next-redux-wrapper": "^8.1.0",
