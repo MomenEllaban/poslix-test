@@ -234,7 +234,7 @@ const updatedProduct:any=products.find((p:any)=>p.id===id)
       <AdminLayout shopId={id}>
         <ToastContainer />
         <AlertDialog
-          alertShow={show}
+          alertShow={show}    
           alertFun={handleDeleteFuc}
           shopId={id}
           id={selectId}
