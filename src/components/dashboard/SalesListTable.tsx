@@ -622,7 +622,7 @@ export default function SalesListTable({
     return (
       <GridToolbarContainer>
         <GridToolbarExport />
-        <GridToolbarColumnsButton />
+        <GridToolbarColumnsButton placeholder="grid" />
         <GridToolbarQuickFilter />
       </GridToolbarContainer>
     );

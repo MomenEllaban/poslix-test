@@ -175,7 +175,7 @@ const Extras: NextPage = (props: any) => {
     return (
       <GridToolbarContainer>
         <GridToolbarExport />
-        <GridToolbarColumnsButton />
+        <GridToolbarColumnsButton placeholder="grid"/>
       </GridToolbarContainer>
     );
   }

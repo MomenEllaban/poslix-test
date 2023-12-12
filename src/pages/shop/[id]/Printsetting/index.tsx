@@ -128,7 +128,7 @@ setPrinters([])
     return (
       <GridToolbarContainer>
         <GridToolbarExport />
-        <GridToolbarColumnsButton />
+        <GridToolbarColumnsButton placeholder="grid" />
       </GridToolbarContainer>
     );
   }

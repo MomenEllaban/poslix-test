@@ -269,7 +269,7 @@ const Product: NextPage = (props: any) => {
         <MButton onClick={importFileClickHandler}>Import</MButton>
         <input style={{ display: 'none' }} ref={fileRef} type="file" onChange={importFileHandler} />
 
-        <GridToolbarColumnsButton />
+        <GridToolbarColumnsButton placeholder="grid" />
         <MButton onClick={() => setShowDeleteSelected(true)}>Delete Selected</MButton>
         <MButton onClick={() => setShowModelSendProduct(true)} disabled={!selectedItems?.length}>
           Send

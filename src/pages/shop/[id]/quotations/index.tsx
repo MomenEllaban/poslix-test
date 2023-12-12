@@ -665,7 +665,7 @@ const SalesList: NextPage = (props: any) => {
     return (
       <GridToolbarContainer>
         <GridToolbarExport />
-        <GridToolbarColumnsButton />
+        <GridToolbarColumnsButton placeholder="grid" />
         <GridToolbarQuickFilter />
       </GridToolbarContainer>
     );

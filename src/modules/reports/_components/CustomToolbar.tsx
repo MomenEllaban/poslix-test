@@ -9,7 +9,7 @@ export default function CustomToolbar() {
   return (
     <GridToolbarContainer>
       <GridToolbarExport />
-      <GridToolbarColumnsButton />
+      <GridToolbarColumnsButton placeholder="grid"/>
       <GridToolbarQuickFilter />
     </GridToolbarContainer>
   );

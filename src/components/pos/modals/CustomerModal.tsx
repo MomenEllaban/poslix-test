@@ -256,7 +256,7 @@ const CustomerModal = (props: any) => {
                 <select
                   className="form-select"
                   name="pricing_group"
-                  placeholder={t('customer.selected_pricing_group')}
+                  // placeholder={t('customer.selected_pricing_group')}
                   defaultValue={0}
                   value={currentPricingGroup ? currentPricingGroup : null}
                   onChange={(e) => setCurrentPricingGroup(+e.target.value)}>
