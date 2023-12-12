@@ -12,10 +12,10 @@
   "dependencies": {
     "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",
-    "@fortawesome/fontawesome-svg-core": "^6.2.0",
+    "@fortawesome/fontawesome-svg-core": "^6.5.1",
     "@fortawesome/free-brands-svg-icons": "^6.2.0",
     "@fortawesome/free-regular-svg-icons": "^6.2.0",
-    "@fortawesome/free-solid-svg-icons": "^6.2.0",
+    "@fortawesome/free-solid-svg-icons": "^6.5.1",
     "@fortawesome/react-fontawesome": "^0.2.0",
     "@hookform/resolvers": "^3.1.1",
     "@mui/icons-material": "^5.10.16",
@@ -45,7 +45,7 @@
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
     "mysql2": "^2.3.3",
-    "next": "^13.5.2",
+    "next": "^14.0.4",
     "next-auth": "^4.22.3",
     "next-i18next": "^15.0.0",
     "next-redux-wrapper": "^8.1.0",
@@ -89,6 +89,7 @@
   },
   "devDependencies": {
     "@hookform/devtools": "^4.3.1",
+    "@types/cookie": "^0.6.0",
     "@types/node": "^18.7.23",
     "@types/react": "^18.0.21",
     "@types/react-alert": "^7.0.2",
@@ -115,5 +116,4 @@
   "engines": {
     "node": ">=16"
   }
- 
 }

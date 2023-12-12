@@ -66,6 +66,7 @@ const initialFormObject: TFormObject = {
   isTailoring: 0,
   variations: [{ name: '', name2: '', sku: '', cost: 0, price: 0, isNew: true }],
   tailoringPrices: [{ name: '', from: 0, to: 0, price: 0 }],
+  extrasCategories: [],
 };
 
 const initFormError = {
@@ -90,6 +91,7 @@ const Product: NextPage = ({
   resTaxes,
   resUnits,
   resBrands,
+  resExtrasCategories,
   dataProduct,
 }: any) => {
   const { locationSettings, setLocationSettings } = useUser();
@@ -216,6 +218,9 @@ const Product: NextPage = ({
   const taxGroup = resTaxes?.taxes.map((tax) => {
     return { ...tax, label: tax.name, value: tax.id };
   });
+  const extrasCategories = resExtrasCategories?.map((cat)=>{
+    return {...cat,label: cat.name, value: cat.id};
+  });
   async function handleUpload() {
     if (prevUrlRef.current.length < 2) {
     } else {
@@ -255,6 +260,7 @@ const Product: NextPage = ({
       sell_over_stock: formObjRef.current.isSellOverStock,
       never_tax: 0,
       is_fifo: formObjRef.current.isFifo,
+      extrasCategories: formObjRef.current?.extrasCategories || [],
       variations:
         formObjRef.current === 'single'
           ? []
@@ -798,7 +804,7 @@ const Product: NextPage = ({
                         </div>
                         <div className="field-section">
                           <Select
-                            styles={colourStyles}
+                            styles={colourStyles(false)}
                             options={barcodes}
                             value={barcodes.filter((f: any) => {
                               return f.value == formObj.barcode_type;
@@ -823,7 +829,7 @@ const Product: NextPage = ({
 
                           <div className="field-section">
                             <Select
-                              styles={colourStyles}
+                              styles={colourStyles(false)}
                               options={tailoring}
                               value={tailoring.filter((f: any) => {
                                 return f.value == formObj.isTailoring;
@@ -845,7 +851,7 @@ const Product: NextPage = ({
                         </div>
                         <div className="field-section">
                           <Select
-                            styles={colourStyles}
+                            styles={colourStyles(false)}
                             options={units}
                             value={units.filter((f: any) => {
                               return f.value == formObj.unit_id;
@@ -878,7 +884,7 @@ const Product: NextPage = ({
                         </div>
                         <div className="field-section">
                           <Select
-                            styles={colourStyles}
+                            styles={colourStyles(false)}
                             options={brands}
                             value={brands.find((f: any) => {
                               return f.value == formObj.brand;
@@ -908,7 +914,7 @@ const Product: NextPage = ({
                         </div>
                         <div className="field-section">
                           <Select
-                            styles={colourStyles}
+                            styles={colourStyles(false)}
                             options={cats}
                             value={cats.find((f: any) => {
                               return f.value == formObj.category_id;
@@ -935,7 +941,7 @@ const Product: NextPage = ({
                           <p>{t('products.Sub_Category')}:</p>
                         </div>
                         <div className="field-section">
-                          <Select styles={colourStyles} />
+                          <Select styles={colourStyles(false)} />
                         </div>
                       </div>
                     </>
@@ -993,7 +999,7 @@ const Product: NextPage = ({
                       <div className="field-section">
                         <Select
                           // isDisabled={isEdit}
-                          styles={colourStyles}
+                          styles={colourStyles(false)}
                           options={producTypes}
                           value={producTypes.find((f: any) => {
                             return f.value == formObj.type;
@@ -1009,7 +1015,7 @@ const Product: NextPage = ({
                       <div className="form-group mt-4">
                         <Select
                           formatOptionLabel={formatProductsOptions}
-                          styles={colourStyles}
+                          styles={colourStyles(false)}
                           options={products}
                           onChange={(e) => addPackageProducts(e)}
                         />
@@ -1128,7 +1134,7 @@ const Product: NextPage = ({
                       <div className="form-group mt-4">
                         <p>{t('products.Select_Fabrics')}: *</p>
                         <Select
-                          styles={colourStyles}
+                          styles={colourStyles(false)}
                           options={allFabrics}
                           onChange={(e) => addToTailoringPackage(e)}
                         />
@@ -1370,6 +1376,53 @@ const Product: NextPage = ({
                         </div>
                       </>
                     )}
+                    {/* Extras Categories */}
+                    <div className="field-cover">
+                      <div className="field-section">
+                        <p>
+                          {t('extra.extras_categories')}:{' '}
+                          <CustomWidthTooltip
+                            PopperProps={{
+                              disablePortal: true,
+                            }}
+                            placement="right-start"
+                            onClose={handleTooltipClose}
+                            open={open}
+                            disableFocusListener
+                            disableHoverListener
+                            disableTouchListener
+                            title={
+                              <React.Fragment>
+                                <Typography color="inherit">
+                                  {t('extra.extras_categories')}
+                                </Typography>
+                                {t('extra.you_can_Choose_as_many_extras_categories_for_this_product')}
+                                <br />
+                                <em>{t('extra.to_create_extras_category,_go_to_setting/extras')}</em>
+                              </React.Fragment>
+                            }>
+                            <span onClick={() => handleTooltipOpen('tax')}>
+                              {' '}
+                              <FontAwesomeIcon icon={faInfoCircle} className={'text-primary'} />
+                            </span>
+                          </CustomWidthTooltip>
+                        </p>
+                      </div>
+                      <div className="field-section">
+                        <Select
+                          isMulti
+                          onKeyDown={(e) => e.stopPropagation()}
+                          styles={colourStyles(true)}
+                          options={extrasCategories} 
+                          value={extrasCategories.filter((f: any) => formObj.extrasCategories.includes(f.value))}
+                          onChange={(selectedItems) => {
+                            const selectedValues = selectedItems.map((item) => item.value);
+                            setFormObj({ ...formObj, extrasCategories: selectedValues });
+                          }}
+
+                        />
+                      </div>
+                    </div>
                     {/* Custom Tax */}
                     <div className="field-cover">
                       <div className="field-section">
@@ -1404,7 +1457,7 @@ const Product: NextPage = ({
                       </div>
                       <div className="field-section">
                         <Select
-                          styles={colourStyles}
+                          styles={colourStyles(false)}
                           options={taxGroup}
                           value={taxGroup.find((f: any) => {
                             return f.value == formObj.tax_id;
@@ -1415,6 +1468,9 @@ const Product: NextPage = ({
                         />
                       </div>
                     </div>
+
+
+
                     <button
                       type="button"
                       style={{
@@ -1578,6 +1634,15 @@ type TFormObject = {
     to: number;
     price: number;
   }[];
+  extrasCategories:{
+    name:string;
+    second_name:string;
+    extras:{
+      name:string;
+      second_name:string;
+      price:number;
+    }[];
+  }[]
 };
 
 async function getData(endPoint: string, API_BASE: string, _token: string) {
@@ -1626,9 +1691,12 @@ export async function getServerSideProps(context) {
   const resBrands = (await getData(`brands/${query.id}`, API_BASE, _token)) ?? [];
   const resUnits = (await getData(`units`, API_BASE, _token)) ?? [];
   const resTaxes = (await getData(`taxes/${query.id}`, API_BASE, _token)) ?? [];
+  const resExtrasCategories = (await getData(`extras-categories`,API_BASE,_token)) ?? [];
+
 
   return {
     props: {
+      resExtrasCategories,
       resCategories,
       resTaxes,
       resUnits,

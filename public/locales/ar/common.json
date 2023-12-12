@@ -787,6 +787,10 @@
     "list_of_extras": "قائمة الإضافات",
     "add_category": "إصافة الفئة",
     "close":"إغلاق",
-    "category":"فئة"
+    "category":"فئة",
+    "extras_categories":"فئات الإضافات",
+    "you_can_Choose_as_many_extras_categories_for_this_product":"يمكنك اختيار عدة فئات إضافات لهذا المنتج",
+    "to_create_extras_category,_go_to_setting/extras":"لإنشاء فئة إضافات جديدة, اذهب الى اعدادات/الإضافات"
+
   }
 }

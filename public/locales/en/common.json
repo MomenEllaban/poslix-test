@@ -789,6 +789,9 @@
     "list_of_extras": "List Of Extras",
     "add_category": "Add Category",
     "close":"Close",
-    "category":"Category"
+    "category":"Category",
+    "extras_categories":"Extras Categories",
+    "you_can_Choose_as_many_extras_categories_for_this_product":"You can choose as many extras categories for this product",
+    "to_create_extras_category,_go_to_setting/extras":"To Create Extras Category, Go To: Settings/extras"
   }
 }

@@ -67,7 +67,7 @@ const ExtraModal = (props: any) => {
     const formData = form.getValues();
 
     api
-      .put(`/extras-categories/${category.value}/edit-with-extras`, { params: { ...formData, location_id: shopId } })
+      .put(`/extras-categories/${selectId}/edit-with-extras`, {  ...formData, location_id: shopId })
       .then((res) => {
         Toastify('success', 'Successfully Update');
         handleClose();
