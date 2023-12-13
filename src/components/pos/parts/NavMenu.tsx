@@ -12,7 +12,8 @@ import CloseRegister from '../modals/CloseRegister';
 import styles from './NavMenu.module.scss';
 // import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCoffee, faCompress, faExpand } from '@fortawesome/free-solid-svg-icons';
+import { faCartShopping, faCompress, faExpand } from '@fortawesome/free-solid-svg-icons';
+import OrdersModal from '../modals/OrdersModal';
 
 const NavMenu: any = ({ shopId }: any) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
@@ -23,6 +24,8 @@ const NavMenu: any = ({ shopId }: any) => {
   const { lang, setLang } = usePosContext();
 
   const [customerIsModal, setCustomerIsModal] = useState<boolean>(false);
+  
+  const [ordersIsModal, setOrdersIsModal] = useState<boolean>(false);
 
   const customerModalHandler = (status: any) => {
     setCustomerIsModal(false);
@@ -32,6 +35,14 @@ const NavMenu: any = ({ shopId }: any) => {
     signOut({ redirect: false }).then(() => {
       router.push('/'); // Redirect to the home page after signing out
     });
+  };
+  
+  const handleShowOrders = () => {
+    setOrdersIsModal(true);
+  };
+
+  const OrdersModalHandler = (status: any) => {
+    setOrdersIsModal(false);
   };
 
   const handleSwitchRegister = () => {
@@ -133,6 +144,10 @@ const NavMenu: any = ({ shopId }: any) => {
             }}>
             <i className="ri-global-fill" /> <span>{lang == ar ? 'EN' : 'العربية'}</span>
           </a>
+          <button className="nav-link menu-link mt-2" type="button" onClick={handleShowOrders}>
+            <FontAwesomeIcon icon={faCartShopping} />
+            <span data-key="t-dashboards">{lang.pos.navmenu.orders}</span>
+          </button>
           <button className="nav-link menu-link" type="button" onClick={handleLogout}>
             <i className="ri-logout-circle-line"></i>
             <span data-key="t-dashboards">{lang.pos.navmenu.logout}</span>
@@ -140,6 +155,11 @@ const NavMenu: any = ({ shopId }: any) => {
         </div>
       </div>
       <div className={styles.navbar__sizer} />
+      
+      <OrdersModal
+        shopId={shopId}
+        statusDialog={ordersIsModal}
+        openDialog={OrdersModalHandler} />
     </>
   );
 };
