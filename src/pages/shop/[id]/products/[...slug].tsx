@@ -260,7 +260,7 @@ const Product: NextPage = ({
       sell_over_stock: formObjRef.current.isSellOverStock,
       never_tax: 0,
       is_fifo: formObjRef.current.isFifo,
-      extrasCategories: formObjRef.current?.extrasCategories || [],
+      // extrasCategories: formObjRef.current?.extrasCategories || [],
       variations:
         formObjRef.current === 'single'
           ? []
@@ -1634,7 +1634,7 @@ type TFormObject = {
     to: number;
     price: number;
   }[];
-  extrasCategories:{
+  extrasCategories?:{
     name:string;
     second_name:string;
     extras:{
