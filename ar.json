@@ -8,7 +8,8 @@
       "refresh": "إعادة تحميل",
       "logout": "تسجيل خروج",
       "fullscreen": "ملء الشاشة",
-      "minimize": "حجم طبيعي"
+      "minimize": "حجم طبيعي",
+      "orders":"الطلبات"
     },
     "cartComponent": {
       "product": "المنتج",

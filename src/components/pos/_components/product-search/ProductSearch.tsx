@@ -29,6 +29,9 @@ export default function ProductSearch({ shopId }) {
       value: item.id,
       label: <ResultItemRow product={item} />,
     }));
+
+    // not best practice momen 
+    
     if (options.length == 1){
       handleAddToCart(options[0]);
     }

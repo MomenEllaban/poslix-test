@@ -711,7 +711,8 @@
     "Sales": "مبيعات",
     "Inventory": "جرد",
     "Report": "تقرير",
-    "Settings": "اعدادات"
+    "Settings": "اعدادات",
+    "kds":"KDS"
   },
   "expenses": {
     "list": "قائمة",

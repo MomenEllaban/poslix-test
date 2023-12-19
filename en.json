@@ -87,7 +87,8 @@
       "refresh": "Refresh",
       "logout": "Logout",
       "fullscreen": "Full Screen",
-      "minimize": "Minimize"
+      "minimize": "Minimize",
+      "orders":"Orders"
     },
     "cartComponent": {
       "product": "Product",
