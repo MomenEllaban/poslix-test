@@ -226,7 +226,7 @@ const OrdersTable = (props: any) => {
     return (
       <GridToolbarContainer>
         <GridToolbarExport />
-        <GridToolbarColumnsButton />
+        <GridToolbarColumnsButton placeholder="grid"/>
         <GridToolbarQuickFilter />
       </GridToolbarContainer>
     );

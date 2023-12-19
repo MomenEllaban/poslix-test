@@ -16,6 +16,7 @@ export default function OrderInfoTable({ isOrderDetails, setIsOrderDetails, orde
 
   const { isLoading, refetch } = useGetItemsSalesReport(shopId, orderId, {
     onSuccess: (data) => {
+          
       setOrderDetails(data.result.data[0]);
       setOrderItems(data.result.data[0].products);
     },
@@ -29,7 +30,7 @@ export default function OrderInfoTable({ isOrderDetails, setIsOrderDetails, orde
     let total = 0;
     if (orderItems !== null) {
       orderItems.forEach((ele) => {
-        const productTotal = ele.product_qty * +ele.sell_price;
+        const productTotal = ele.product_qty * +ele.product_price;
         total += productTotal;
       });
       setTotal(total);
@@ -70,14 +71,14 @@ export default function OrderInfoTable({ isOrderDetails, setIsOrderDetails, orde
             </thead>
             <tbody>
               {orderItems?.map((item) => (
-                <tr key={item.id}>
-                  <th style={{ fontSize: '0.7rem' }}># {item.id}</th>
+                <tr key={item.product_id}>
+                  <th style={{ fontSize: '0.7rem' }}># {item.product_id}</th>
                   <td>
                     {/* {item.contact_first_name} {item.contact_last_name} */}
-                    {item.name}
+                    {item.product_name}
                   </td>
                   <td>
-                    {(+(item.sell_price ?? 0)).toFixed(locationSettings.location_decimal_places)}{' '}
+                    {(+(item.product_price ?? 0)).toFixed(locationSettings.location_decimal_places)}{' '}
                     {locationSettings.currency_name}
                   </td>{' '}
                   {/* <td>

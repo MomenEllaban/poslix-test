@@ -18,6 +18,8 @@ import { findAllData } from 'src/services/crud.api';
 import {ReceiveTransferModal} from '../../../../components/transefers/recieve-transfer-modal';
 import {TransferDetailsModal} from '../../../../components/transefers/transefer-details-modal'
 import CloseIcon from '@mui/icons-material/Close';
+import { useTranslation } from 'next-i18next';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 
 let locations;
 const Transfer: NextPage = (props: any) => {
@@ -42,6 +44,7 @@ const Transfer: NextPage = (props: any) => {
   const [type, setType] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isOpenPriceDialog, setIsOpenPriceDialog] = useState(false);
+  const { t } = useTranslation();
 
   async function initDataPage() {
     if (router.isReady) {
@@ -131,7 +134,7 @@ const updatedProduct:any=products.find((p:any)=>p.id===id)
   const columns: GridColDef[] = [
     { field: 'id', headerName: '#', minWidth: 50 },
     {
-      field: 'created_at', headerName: 'Date', flex: 1, valueGetter: (params) => {
+      field: 'created_at', headerName: t('transfers.Date'), flex: 1, valueGetter: (params) => {
      
 
         return new Date(params.value)?.toLocaleString('en-US', {
@@ -143,21 +146,21 @@ const updatedProduct:any=products.find((p:any)=>p.id===id)
         });
       },
     },
-    { field: 'ref_no', headerName: 'Refrence No', flex: 1 },
-    { field: 'status', headerName: 'Status', flex: 1 },
+    { field: 'ref_no', headerName: t('transfers.Refrence_No'), flex: 1 },
+    { field: 'status', headerName: t('transfers.Status'), flex: 1 },
     {
-      field: 'location_from_name', headerName: 'Location From', flex: 1, valueGetter: (params) => {
+      field: 'location_from_name', headerName: t('transfers.Location_From'), flex: 1, valueGetter: (params) => {
        return params.value
       },
     },
     {
-      field: 'location_to_name', headerName: 'Location To', flex: 1, valueGetter: (params) => {
+      field: 'location_to_name', headerName: t('transfers.Location_To'), flex: 1, valueGetter: (params) => {
       return  params.value
       },
     },
     {
       field: 'name',
-      headerName: 'Products',
+      headerName: t('transfers.Products'),
       flex: 1,
       valueGetter: (params) => {
         
@@ -183,7 +186,7 @@ const updatedProduct:any=products.find((p:any)=>p.id===id)
 
     {
       field: 'action',
-      headerName: 'Action ',
+      headerName: t('transfers.Action'),
       sortable: false,
       disableExport: true,
       flex: 1.5,
@@ -231,12 +234,12 @@ const updatedProduct:any=products.find((p:any)=>p.id===id)
       <AdminLayout shopId={id}>
         <ToastContainer />
         <AlertDialog
-          alertShow={show}
+          alertShow={show}    
           alertFun={handleDeleteFuc}
           shopId={id}
           id={selectId}
           url={'transfer'}>
-          Are you Sure You Want Cancel This transefer ?
+         {t("transfers.Are_you_Sure_You_Want_Cancel_This_transefer_?")}
         </AlertDialog>
         {!isLoading && permissions.hasInsert && (
           <div className="mb-2">
@@ -245,14 +248,14 @@ const updatedProduct:any=products.find((p:any)=>p.id===id)
               onClick={() => {
                 router.push(`/shop/${router.query.id}/transfers/add`);
               }}>
-              <FontAwesomeIcon icon={faPlus} /> Add New Transfer{' '}
+              <FontAwesomeIcon icon={faPlus} /> {t("transfers.Add_New_Transfer")}{' '}
             </button>
             {/* <AddTranseferModal getTransefers={initDataPage}/> */}
           </div>
         )}
        
           <div className="page-content-style card">
-            <h5>Transfers List</h5>
+            <h5>{t("transfers.Transfers_List")}</h5>
             <DataGrid
             loading={isLoading}
               className="datagrid-style"
@@ -287,9 +290,10 @@ const updatedProduct:any=products.find((p:any)=>p.id===id)
   );
 };
 export default withAuth(Transfer);
-export async function getServerSideProps({ params }) {
+export async function getServerSideProps({ params,locale }) {
   const { id } = params;
   return {
-    props: { id },
+    props: { id ,
+      ...(await serverSideTranslations(locale))},
   };
 }

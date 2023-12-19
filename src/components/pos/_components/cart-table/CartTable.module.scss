@@ -9,7 +9,7 @@
     overflow: hidden;
     overflow-y: auto;
     td {
-      width: 3rem;
+      width: 1rem;
       text-overflow: ellipsis;
       overflow: hidden;
       white-space: nowrap;
@@ -28,6 +28,7 @@
   justify-content: center;
   align-items: center;
   gap: 0.5rem;
+  width: 9rem;
   .cart-quantity-btn {
     width: 2rem;
     height: 1.2rem;

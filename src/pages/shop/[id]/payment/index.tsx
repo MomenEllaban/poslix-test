@@ -17,11 +17,13 @@ import { findAllData } from 'src/services/crud.api';
 import api from 'src/utils/app-api';
 import useSWR from 'swr';
 import PaymentModal from './component/PaymentModal';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { useTranslation } from 'next-i18next';
 
 const PaymentMethods: NextPage = ({ id }: any) => {
   const router = useRouter();
   const shopId = router.query.id;
-
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [permissions, setPermissions] = useState<any>();
   const [showEditModal, setShowEditModal] = useState(false);
@@ -129,11 +131,12 @@ const PaymentMethods: NextPage = ({ id }: any) => {
                 onClick={() => {
                   setPaymentMethodsModals(true);
                 }}>
-                <FontAwesomeIcon icon={faPlus} /> Add New Method
+                <FontAwesomeIcon icon={faPlus} /> {t('payment.add_new_method')}
               </button>
             </div>
           </div>
           <PaymentModal
+            t={t}
             showType={'add'}
             statusDialog={paymentMethodsModal}
             openDialog={methodModalHandler}
@@ -159,11 +162,12 @@ const PaymentMethods: NextPage = ({ id }: any) => {
               onClick={() => {
                 setPaymentMethodsModals(true);
               }}>
-              <FontAwesomeIcon icon={faPlus} /> Add New Method
+              <FontAwesomeIcon icon={faPlus} /> {t('payment.add_new_method')}
             </button>
           </div>
         </div>
         <PaymentModal
+          t={t}
           showType={'add'}
           statusDialog={paymentMethodsModal}
           openDialog={methodModalHandler}
@@ -217,7 +221,7 @@ const PaymentMethods: NextPage = ({ id }: any) => {
                   loading={loading}
                   show={showConfirmation}
                   onConfirm={() => handleDeleteBusiness(method.id)}
-                  message="Are you sure to delete this method?"
+                  message={t('alert_dialog.delete_method')}
                   onClose={() => setShowConfirmation(false)}
                 />
               </Card>
@@ -231,11 +235,11 @@ const PaymentMethods: NextPage = ({ id }: any) => {
           setEditField('');
           setSelectedMethod(null);
         }}
-        title="Edit payment method"
+        title={t('payment.edit_payment_method')}
         body={
           <MainTextInput
             autoFocus
-            label="Payment Method"
+            label={t('payment.payment_method')}
             name={editField}
             onChange={(e) => setEditField(e.target.value)}
             value={editField}
@@ -244,7 +248,7 @@ const PaymentMethods: NextPage = ({ id }: any) => {
         }
         footer={
           <Button disabled={loading} onClick={handleUpdateMethod}>
-            Save
+            {t('payment.save')}
           </Button>
         }
       />
@@ -252,7 +256,7 @@ const PaymentMethods: NextPage = ({ id }: any) => {
   );
 };
 export default withAuth(PaymentMethods);
-export async function getServerSideProps({ params }) {
+export async function getServerSideProps({ params, locale }) {
   const { id } = params;
-  return { props: { id } };
+  return { props: { id, ...(await serverSideTranslations(locale)) } };
 }

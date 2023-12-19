@@ -14,10 +14,10 @@ import { Checkout } from 'src/components/digital/checkout';
 import { Toastify } from 'src/libs/allToasts';
 import { useDigitalContext } from '../../_context/DigitalContext';
 
-export default function DigitalProducts({ shopId }) {
+export default function DigitalProducts({ shopId ,setOpenModelAuth}) {
   const [type, setType] = useState('all');
   const [showCart, setShowCart] = useState(true);
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
   const [products, setProducts] = useState<Array<any>>([]);
   const [categories, setCategories] = useState<Array<any>>([]);
   const [brands, setBrands] = useState<Array<any>>([]);
@@ -36,9 +36,20 @@ export default function DigitalProducts({ shopId }) {
 
     return totalPrice;
   };
+
   // ------------------------------------------------------------------------------------------------
   const addItemTocart = (item: any) => {
-    if (cartItems.find((p) => p.id === item.id)) {
+    const updatedItem = cartItems.find((p) => p.id === item.id);
+    if (updatedItem) {
+      if (
+        item?.is_service != 1 &&
+        item?.sell_over_stock != 1 &&
+        item.stock > 0 &&
+        item.stock <= updatedItem.quantity
+      ) {
+        Toastify('error', 'You have selected the maximum available quantity for this product.');
+        return;
+      }
       const updatedItems = cartItems.map((cart_item) => {
         if (item.id === cart_item.id) {
           return {
@@ -84,7 +95,12 @@ export default function DigitalProducts({ shopId }) {
       if (cartItms[index].quantity === 0) {
         setCartItems(cartItms.filter((el) => el.id !== item.id));
       }
-      cartItms[index].itemTotalPrice = (cartItms[index].sell_price || cartItms[index].price) * cartItms[index].quantity;   
+      if (item.stock > 0 && item.stock <= cartItms[index].quantity) {
+        Toastify('error', 'You have selected the maximum available quantity for this product.');
+        return;
+      }
+      cartItms[index].itemTotalPrice =
+        (cartItms[index].sell_price || cartItms[index].price) * cartItms[index].quantity;
       setCartItems(cartItms);
     }
   };
@@ -104,7 +120,6 @@ export default function DigitalProducts({ shopId }) {
   const getTotal = () => {
     let totalQuantity = 0;
     let totalPrice = 0;
-    console.log(digitalCart);
     digitalCart?.forEach((item) => {
       totalQuantity += item.quantity;
       totalPrice += item.price * item.quantity;
@@ -113,7 +128,7 @@ export default function DigitalProducts({ shopId }) {
   };
   // ------------------------------------------------------------------------------------------------
   const matches = useMediaQuery('(max-width:850px)');
-  const [value, setValue] = React.useState('0');
+  const [value, setValue] = useState('0');
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -122,7 +137,7 @@ export default function DigitalProducts({ shopId }) {
   // ----------------------------------------------------------------------------------------------
   const fetchLocation = async () => {
     try {
-      const res = await findAllData(`business/locations/${shopId}`);
+      const res = await findAllData(`business/locations/${shopId}?digital_menu=true`);
 
       setLocation(res.data.result);
     } catch (err) {
@@ -134,7 +149,7 @@ export default function DigitalProducts({ shopId }) {
   const fetchProducts = async () => {
     setIsloading(true);
     try {
-      const res = await findAllData(`products/${shopId}?all_data=1`);
+      const res = await findAllData(`products/${shopId}?all_data=1&digital_menu=true`);
       setProducts(res.data.result);
     } catch (err) {
       Toastify('error', 'Something went wrong with getting products, please try again later!');
@@ -143,7 +158,7 @@ export default function DigitalProducts({ shopId }) {
   // ----------------------------------------------------------------------------------------------
   const fetchCategories = async () => {
     try {
-      const resCategories = await findAllData(`categories/${shopId}`);
+      const resCategories = await findAllData(`categories/${shopId}?digital_menu=true`);
       setCategories(resCategories.data.result);
     } catch (err) {
       Toastify('error', 'Something went wrong with getting categories , please try again later!');
@@ -152,7 +167,7 @@ export default function DigitalProducts({ shopId }) {
   // ----------------------------------------------------------------------------------------------
   const fetchBrands = async () => {
     try {
-      const resBrands = await findAllData(`brands/${shopId}`);
+      const resBrands = await findAllData(`brands/${shopId}?digital_menu=true`);
       setBrands(resBrands.data.result);
     } catch (err) {
       Toastify('error', 'Something went wrong with getting brands, please try again later!');
@@ -172,22 +187,24 @@ export default function DigitalProducts({ shopId }) {
     fetchProducts();
     fetchCategories();
   }, []);
+
+
   return (
     <>
       {renderedScreen === 'products' ? (
         <div style={{ direction: lang == en ? 'ltr' : 'rtl' }}>
           <div className="digital-products-main bg-white">
-            <div className="digital-products-header">
+            {/* <div className="digital-products-header">
               <h1>{lang.digital.digital_product}</h1>
-            </div>
+            </div> */}
 
             <div className="digital-products-container">
               <div className="digital-products">
                 <div className="digital-product-list bg-light">
-                  <div
+                  {/* <div
                     style={{ borderRadius: '8px' }}
-                    className="toggle-brands-catigories-buttons-wrapper ">
-                    <div
+                    className="toggle-brands-catigories-buttons-wrapper "> */}
+                  {/* <div
                       onClick={() => {
                         setRenderedTabs('categories');
                       }}
@@ -196,8 +213,8 @@ export default function DigitalProducts({ shopId }) {
                         renderedTabs === 'categories' ? 'bg-success' : 'bg-light'
                       } ${renderedTabs === 'categories' ? 'text-light' : 'text-success'}`}>
                       {lang.pos.itemList.category}
-                    </div>
-                    <div
+                    </div> */}
+                  {/* <div
                       onClick={() => {
                         setRenderedTabs('brands');
                       }}
@@ -206,8 +223,8 @@ export default function DigitalProducts({ shopId }) {
                         renderedTabs === 'brands' ? 'bg-success' : 'bg-light'
                       } ${renderedTabs === 'brands' ? 'text-light' : 'text-success'}`}>
                       {lang.pos.itemList.brand}
-                    </div>
-                  </div>
+                    </div> */}
+                  {/* </div> */}
                   <div className="w-100 d-flex justify-content-center bg-light">
                     <Tabs
                       value={value}
@@ -296,6 +313,7 @@ export default function DigitalProducts({ shopId }) {
                 </div>
               </div>
               <DigitalCart
+                products={products}
                 location={location}
                 totalPrice={getTotalPrice()}
                 setRenderedScreen={setRenderedScreen}
@@ -303,36 +321,44 @@ export default function DigitalProducts({ shopId }) {
                 addItemTocart={addItemTocart}
                 addByQuantity={addByQuantity}
                 cartItems={cartItems}
+                setOpenModelAuth={setOpenModelAuth}
               />
               {matches ? (
-                <div
-                  className="digital-cart-small"
-                  style={{
-                    display: showCart ? 'flex' : 'none',
-                    transition: 'all 1.5s ease-in-out',
-                    background: getTotal().totalPrice ? '#045c54' : '#909090',
-                  }}>
-                  <div className="d-flex h-100 align-items-center ">
-                    <ShoppingCartIcon />
-                    <p className="m-0">Total:{getTotal().totalPrice} OMR</p>
+                <>
+                  <div
+                    className="digital-cart-small"
+                    style={{
+                      display: showCart ? 'flex' : 'none',
+                      transition: 'all 1.5s ease-in-out',
+                      background: getTotalPrice() ? '#045c54' : '#909090',
+                    }}>
+                    <div className="d-flex h-100 align-items-center ">
+                      <ShoppingCartIcon />
+                      <p className="m-0">
+                        Total: {getTotalPrice().toFixed(location?.location_decimal_places || 2)}{' '}
+                        {location?.currency_code}
+                      </p>
+                    </div>
+                    <Button className="mobDrawer_btn" onClick={() => handleDrawer(open)}>
+                      View Cart
+                    </Button>
                   </div>
-                  <Button className="mobDrawer_btn" onClick={() => handleDrawer(open)}>
-                    View Cart
-                  </Button>
-                </div>
-              ) : null}
 
-              {matches ? (
-                <MobDrawer
-                  location={location}
-                  removeFromCart={removeFromCart}
-                  addItemTocart={addItemTocart}
-                  toggleDrawer={toggleDrawer}
-                  setOpen={setOpen}
-                  open={open}
-                  setShowCart={setShowCart}
-                  addByQuantity={addByQuantity}
-                />
+                  <MobDrawer
+                    cartItems={cartItems}
+                    location={location}
+                    removeFromCart={removeFromCart}
+                    addItemTocart={addItemTocart}
+                    toggleDrawer={toggleDrawer}
+                    setOpen={setOpen}
+                    open={open}
+                    setShowCart={setShowCart}
+                    addByQuantity={addByQuantity}
+                    getTotalPrice={getTotalPrice}
+                    setRenderedScreen={setRenderedScreen}
+                    setOpenModelAuth={setOpenModelAuth}
+                  />
+                </>
               ) : null}
             </div>
           </div>
@@ -347,6 +373,8 @@ export default function DigitalProducts({ shopId }) {
             removeFromCart={removeFromCart}
             addByQuantity={addByQuantity}
             cartItems={cartItems}
+            shopId={shopId}
+            setCartItems={setCartItems}
           />
         )
       )}

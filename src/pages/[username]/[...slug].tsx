@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import BusinessList from 'src/components/dashboard/BusinessList';
 import Locations from 'src/components/dashboard/Locations';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 
 const Home: NextPage = () => {
   const router = useRouter();
@@ -22,9 +23,19 @@ const Home: NextPage = () => {
   return (
     <OwnerAdminLayout>
       {pageType}
-      {pageType == 'business_list' && <BusinessList />}
-      {pageType == 'users' && <Locations />}
+      {pageType === 'business_list' && <BusinessList />}
+      {pageType === 'users' && <Locations />}
     </OwnerAdminLayout>
   );
 };
 export default Home;
+
+
+export async function getServerSideProps({locale}) {
+
+  return {
+    props: {
+      ...(await serverSideTranslations(locale)),
+    },
+  };
+}

@@ -20,6 +20,8 @@ import CustomerProfileView from 'src/modules/customers/_views/customer-profile-v
 import CustomToolbar from 'src/modules/reports/_components/CustomToolbar';
 import { findAllData } from 'src/services/crud.api';
 import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
+import { useTranslation } from 'next-i18next';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -40,29 +42,31 @@ const customerTemplate: Partial<ICustomer> = {
 const Customer: NextPage = ({ shopId, rules, customerId }: any) => {
   const router = useRouter();
   const { locationSettings, setLocationSettings } = useUser();
-
+  const { t } = useTranslation();
   const [key, setKey] = useState('profile');
   const [sales, setSales] = useState<any>([]);
   const [quotations, setQuotations] = useState<any>([]);
   const [isOrder, setIsOrder] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [customerInfo, setCustomerInfo] = useState(customerTemplate);
-
+  const [earnings, setEarnings] = useState();
+  const [invoices, setInvoices] = useState();
+  const [totalQuotations, setTotalQuotations] = useState();
   const columns: GridColDef[] = [
     { field: 'id', headerName: '#', minWidth: 50 },
     {
       field: 'customer_name',
-      headerName: 'Customer Name',
+      headerName: t('customer.customer_name'),
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) => {
         return customerInfo.first_name + ' ' + customerInfo.last_name;
       },
     },
-    { field: 'sale_date', headerName: 'Quotation Date', flex: 1 },
+    { field: 'sale_date', headerName: t('customer.quotation_date'), flex: 1 },
     {
       flex: 1,
       field: 'status',
-      headerName: 'Status',
+      headerName: t('customer.status'),
       renderCell: ({ row }: Partial<GridRowParams>) => {
         if (+(+row.total_price - +row.amount) === 0) {
           return <div className="sty_Accepted">Accepted</div>;
@@ -76,7 +80,7 @@ const Customer: NextPage = ({ shopId, rules, customerId }: any) => {
     {
       flex: 1,
       field: 'action',
-      headerName: 'Action ',
+      headerName: t('customer.action'),
       filterable: false,
       sortable: false,
       disableExport: true,
@@ -113,7 +117,13 @@ const Customer: NextPage = ({ shopId, rules, customerId }: any) => {
         setSales({ data: res.data.result?.sales });
         setQuotations([...res.data.result?.quotations]);
         const selCustomer = res.data.result?.profile;
+        const earnings = res.data.result?.earnings[0];
+        const invoices = res.data.result?.invoices;
+        const quotations = res.data.result?.quotationsCount;
         setCustomerInfo({ ...customerTemplate, ...selCustomer });
+        setEarnings(earnings);
+        setInvoices(invoices);
+        setTotalQuotations(quotations)
       } else {
         Toastify('error', 'has error, Try Again...');
       }
@@ -149,12 +159,12 @@ const Customer: NextPage = ({ shopId, rules, customerId }: any) => {
           activeKey={key}
           onSelect={(k) => setKey(k)}
           className="mb-3">
-          <Tab eventKey="profile" title="Profile">
-            <CustomerProfileView customer={customerInfo} />
+          <Tab eventKey="profile" title={t('customer.profile')}>
+            <CustomerProfileView customer={customerInfo} earnings={earnings} invoices={invoices} totalQuotations={totalQuotations}/>
           </Tab>
-          <Tab eventKey="Quotations" title="Quotations">
+          <Tab eventKey="Quotations" title={t('customer.quotations')}>
             <div className="page-content-style card">
-              <h5>Quotations List</h5>
+              <h5>{t('customer.quotation_list')}</h5>
               <DataGrid
                 className="datagrid-style"
                 sx={{
@@ -176,8 +186,9 @@ const Customer: NextPage = ({ shopId, rules, customerId }: any) => {
               />
             </div>
           </Tab>
-          <Tab eventKey="Sales" title="Sales">
+          <Tab eventKey="Sales" title={t('customer.sales')}>
             <SalesListTable
+              t={t}
               shopId={router.query.id}
               customerId={router.query.id}
               rules={{ hasDelete: true }}
@@ -185,16 +196,16 @@ const Customer: NextPage = ({ shopId, rules, customerId }: any) => {
             />
           </Tab>
           {isOrder && (
-            <Tab eventKey="Orders" title="Orders">
+            <Tab eventKey="Orders" title={t('customer.orders')}>
               <OrdersTable shopId={shopId} rules={rules} />
             </Tab>
           )}
-          <Tab eventKey="loyaltycard" title="Loyalty card">
+          <Tab eventKey="loyaltycard" title={t('customer.loyalty_card')}>
             <div className="card">
               <div className="card-body">
                 <section className="punchcard-wrapper">
                   <header>
-                    <p>BUY 9 SERVICES WITH US AND GET THE 10TH FREE!</p>
+                    <p>{t('customer.buy_service')}</p>
                   </header>
 
                   <figure className="punchcard">
@@ -216,9 +227,7 @@ const Customer: NextPage = ({ shopId, rules, customerId }: any) => {
                   </figure>
 
                   <footer>
-                    <p>
-                      Buy 11 calls, get the 12<sup>th</sup> free!
-                    </p>
+                    <p>{t('customer.buy_call')}</p>
                   </footer>
                 </section>
                 <div className="text-center">
@@ -238,3 +247,9 @@ const Customer: NextPage = ({ shopId, rules, customerId }: any) => {
 };
 
 export default Customer;
+
+export async function getServerSideProps({ locale }) {
+  return {
+    props: { ...(await serverSideTranslations(locale)) },
+  };
+}

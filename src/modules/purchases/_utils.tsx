@@ -43,9 +43,9 @@ export const purchasesInitFormError = {
 };
 
 export const purchasesInitPurchaseDetails: { label: string; value: string; priority: number }[] = [
-  { label: 'Discount :', value: 'discount', priority: 1 },
-  { label: 'Total Expenses :', value: 'expense', priority: 2 },
-  { label: 'Taxes :', value: 'taxes', priority: 3 },
+  { label: 'Discount', value: 'discount', priority: 1 },
+  { label: 'Total_Expenses', value: 'expense', priority: 2 },
+  { label: 'Taxes', value: 'taxes', priority: 3 },
 ];
 
 export const purchasesSelectStyle = {
@@ -61,23 +61,26 @@ export const purchasesColumns: ({
   onCostClick,
   setSelecetdId,
   setOpenRemoveDialog,
+  t,
 }: {
   locationSettings: ILocationSettings;
   formObj: any;
   onCostClick: any;
   setSelecetdId: any;
   setOpenRemoveDialog: any;
+  t:any;
 }) => GridColDef[] = ({
   locationSettings,
   formObj,
   onCostClick,
   setSelecetdId,
   setOpenRemoveDialog,
+  t,
 }) => [
-  { field: 'name', headerName: 'Product Name', minWidth: 200 },
+  { field: 'name', headerName: t('purchases.Product_Name'), minWidth: 200 },
   {
     field: 'cost',
-    headerName: 'Cost',
+    headerName: t('purchases.Cost'),
     colSpan: 1,
     minWidth: 350,
     // editable: true,
@@ -120,7 +123,7 @@ export const purchasesColumns: ({
   },
   {
     field: 'price',
-    headerName: 'Price',
+    headerName: t('purchases.Price'),
     minWidth: 150,
     // editable: true,
     type: 'number',
@@ -136,7 +139,7 @@ export const purchasesColumns: ({
   },
   {
     field: 'quantity',
-    headerName: 'Qty',
+    headerName: t('purchases.Qty'),
     renderHeader(params) {
       return (
         <div className="d-flex w-100 flex-row gap-3 align-items-center justify-content-center">
@@ -153,10 +156,10 @@ export const purchasesColumns: ({
       </div>
     )
   },
-  { field: 'vat', headerName: 'VAT %', minWidth: 150, editable: true, type: 'number' },
+  { field: 'vat', headerName: t('purchases.VAT %'), minWidth: 150, editable: true, type: 'number' },
   {
     field: 'lineTotal',
-    headerName: 'Line Total',
+    headerName: t('purchases.Line_Total'),
     minWidth: 100,
     type: 'number',
     renderCell: ({ row }: Partial<GridRowParams>) => (
@@ -171,7 +174,7 @@ export const purchasesColumns: ({
   },
   {
     field: 'action',
-    headerName: 'Action',
+    headerName: t('purchases.Action'),
     minWidth: 100,
     sortable: false,
     disableExport: true,

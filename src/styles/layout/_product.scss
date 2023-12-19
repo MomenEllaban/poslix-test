@@ -1,0 +1,12 @@
+.send-products {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  flex-wrap: wrap;
+
+  .form-input {
+    width: 173px;
+    height: 38px;
+    padding-left: 10px;
+  }
+}

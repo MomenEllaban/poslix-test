@@ -1,85 +1,211 @@
 import { faArrowAltCircleLeft, faCircleCheck } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { DataGrid, GridColDef, GridRowParams } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridEditInputCell, GridRowParams } from '@mui/x-data-grid';
+import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { Spinner } from 'react-bootstrap';
 import { Toastify } from 'src/libs/allToasts';
 import { findAllData } from 'src/services/crud.api';
+import api from 'src/utils/app-api';
+
+import { useTranslation } from 'next-i18next';
+
 
 const PurchasesQtyCheckList = (props: any) => {
   const { shopId, purchaseId } = props;
-  const [orderLines, setOrderLines] = useState<any[]>([]);
-  const [products, setProducts] = useState([])
+  const [transactionLines, setTransactionLines] = useState<any[]>([]);
+  const [changed, setChanged] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedIndex, setSlectedIndex] = useState(-1);
+  // const router = useRouter();
+  const { t } = useTranslation();
+
   async function intPageData() {
-    const res = await findAllData(`purchase/${purchaseId}/show`)
+    const res = await findAllData(`purchase/complete-purchase/${purchaseId}`);
     if (!res.data.success) {
-      alert("Failed");
+      alert('Failed');
       return;
     }
-    setProducts(res.data.result.products)
+    const products = res.data.result.products;
+    const transactionLine = res.data.result.transactionLines;
+    const formatedTransactionLines = [];
+    let last_id = 0;
+    let variations = [];
+    for (const line of transactionLine) {
+      const { product_id, qty, qty_received, variation_id } = line;
+      const { type, name, id } = products.find((product) => product.id === product_id);
+      let current_id = id;
+      let current_variations = [];
+      let product_name = name;
+      if (type === 'variable' && current_id !== last_id) {
+        const res = await findAllData(`products/${id}/show`);
+        variations = res.data.result.variations;
+        current_variations = variations;
+      }
+      if (type === 'variable' && current_id === last_id) {
+        current_variations = variations;
+      }
+      console.log(current_variations.length);
+      
+      if (type === 'variable' && current_variations.length > 0) {
+        console.log(type);
+        
+        console.log(variation_id);
+        console.log(current_variations);
+        
+        product_name =
+          product_name +
+          ': ' +
+          current_variations.find((variation) => variation.id === variation_id).name;
+      }
+      formatedTransactionLines.push({
+        id: type === 'variable' ? variation_id : product_id,
+        name: product_name,
+        qty,
+        product_id,
+        qty_received,
+        variation_id,
+        entered_qty: 0,
+      });
+      last_id = current_id;
+    }
+
+    setTransactionLines(formatedTransactionLines);
     setIsLoading(false);
-    setOrderLines(res.data.result.stocks);
   }
 
   const columns: GridColDef[] = [
     {
-      field: 'name', headerName: 'Product Name', minWidth: 250,
+      field: 'name',
+      headerName: t('purchases.Product_Name'),
+      minWidth: 250,
       renderCell: ({ row }: Partial<GridRowParams>) => {
-
-        const product = products?.find(product => +product.id === +row.product_id)
-
-        return <p>{product?.name}</p>
+        return <p>{row.name}</p>;
       },
     },
-    { field: 'cost', headerName: 'Cost', minWidth: 150 },
-    { field: 'price', headerName: 'Price', minWidth: 150 },
     {
       field: 'qty',
-      headerName: 'Total Qty',
+      headerName: t('purchases.Total_Qty'),
       minWidth: 150,
-      renderCell: ({ row }: Partial<GridRowParams>) => <>{Number(row.qty_received).toFixed(2) || "-"}</>,
+      renderCell: ({ row }: Partial<GridRowParams>) => {
+        return <>{Number(row.qty).toFixed(2) || '-'}</>;
+      },
     },
     {
       field: 'qty_received',
-      headerName: 'Qty Received',
+      headerName: t('purchases.Qty_Received'),
       minWidth: 150,
-      renderCell: ({ row }: Partial<GridRowParams>) => (
-        <>
-          <div>
-            {Number(row.qty_received).toFixed(2)}{' '}
-            {row.qty - row.qty_received == 0 && <FontAwesomeIcon icon={faCircleCheck} />}
-          </div>
-        </>
-      ),
+      renderCell: ({ row }: Partial<GridRowParams>) => {
+        return (
+          <>
+            <div>
+              {Number(row.qty_received).toFixed(2)}{' '}
+              {row.qty - row.qty_received == 0 && <FontAwesomeIcon icon={faCircleCheck} />}
+            </div>
+          </>
+        );
+      },
     },
-    // {
-    //   field: 'qty_entered',
-    //   headerName: 'Enter Qty',
-    //   minWidth: 150,
-    //   type: 'number',
-    //   editable: true,
-    // },
+    {
+      field: 'entered_qty',
+      headerName: t('purchases.Enter_Qty'),
+      minWidth: 150,
+      type: 'number',
+      editable: true,
+      renderCell: ({ row }: Partial<GridRowParams>) => {
+        return <div>{row.entered_qty}</div>;
+      },
+    },
   ];
+
   const onRowsSelectionHandler = (params: any) => {
-    const found = orderLines.findIndex((el) => el.id === params.id);
+    const found = transactionLines.findIndex((el) => el.id === params.id);
     if (found > -1) {
-      params.value = parseFloat(params.value) > 0 ? parseFloat(params.value) : 0;
-      var _datas: any = orderLines;
-      _datas[found][params.field] =
-        params.value > _datas[found].qty_left
-          ? Number(_datas[found].qty_left).toFixed(2)
-          : Number(params.value).toFixed(2);
-      setOrderLines([..._datas]);
+      params.value = params.value !== undefined || params.value > 0 ? parseFloat(params.value) : 0;
+      var _datas: any = transactionLines;
+      if (params.value > _datas[found].qty && _datas[found].qty_received === 0) {
+        params.value = _datas[found].qty;
+      }
+      if (_datas[found].qty_received > 0) {
+        console.log(11111111);
+        const sum = +_datas[found].qty_received + +params.value;
+        console.log(sum);
+
+        if (sum > _datas[found].qty) {
+          console.log('before: ', params.value);
+
+          params.value = _datas[found].qty - _datas[found].qty_received;
+          console.log('before: ', params.value);
+        }
+      }
+      if (params.value < 0) {
+        params.value = 0;
+      }
+
+      _datas[found].qty_received = Number(+params.value + +_datas[found].qty_received).toFixed(2);
+      _datas[found].entered_qty += +params.value;
+      setChanged(true);
+      setTransactionLines([..._datas]);
     }
+  };
+
+  const updateRecivedQty = () => {
+    const products = [];
+    for (const line of transactionLines) {
+      const { product_id, variation_id, entered_qty } = line;
+      if(entered_qty === 0 ){
+        continue;
+      }
+      if(!variation_id){
+        products.push({
+          product_id,
+          entered_qty
+        })
+      }
+
+      // if(variation_id === 0){
+      //   products.push({
+      //     product_id,
+      //     entered_qty
+      //   })
+      // }
+      if(variation_id > 0){
+        const found = products.findIndex(product => product.product_id === product_id);
+        if(found > -1){
+          products[found].variations.push({
+            id: variation_id,
+            entered_qty
+          })
+        }else{
+          products.push({
+            product_id,
+            variations: [{
+              id: variation_id,
+              entered_qty
+            }]
+          })
+        }
+      }
+    }
+    api
+      .put(`/purchase/update-quantity/${purchaseId}`, {
+        products
+      })
+      .then((res) => {
+        if (!res.data.success) {
+          Toastify('error', 'Has Error ,try Again');
+          return;
+        }
+        Toastify('success', 'Purchase Successfully Updated..');
+        props.setIsShowQtyManager(false)
+      });
   };
   useEffect(() => {
     const f_index2 = props.purchases.findIndex((itm: any) => {
       return itm.id == purchaseId;
     });
     if (f_index2 > -1) {
-      setOrderLines([]);
+      setTransactionLines([]);
       setSlectedIndex(f_index2);
       intPageData();
     } else {
@@ -99,12 +225,14 @@ const PurchasesQtyCheckList = (props: any) => {
               <FontAwesomeIcon icon={faArrowAltCircleLeft} /> Back To List{' '}
             </button>
           </div>
-          <h5>Purchase Quantity Manager List {props.purchases[selectedIndex].status}</h5>
+          <h5>{t("purchases.Purchase_Quantity_Manager_List")} {props.purchases[selectedIndex].status}</h5>
           <hr />
           <div className="quick-suppier-info">
-            <div>Supplier: {props.purchases[selectedIndex]?.supplier?.name || "walk-in supplier"}</div>
-            <div>Status: {props.purchases[selectedIndex].status}</div>
-            <div>Total Price: {props.purchases[selectedIndex].total_price}</div>
+            <div>
+              {t("purchases.Supplier")}: {props.purchases[selectedIndex]?.supplier?.name || 'walk-in supplier'}
+            </div>
+            <div>{t("purchases.Status")}: {props.purchases[selectedIndex].status}</div>
+            <div>{t("purchases.Total_Price")}: {props.purchases[selectedIndex].total_price}</div>
           </div>
           <hr />
           <DataGrid
@@ -123,7 +251,7 @@ const PurchasesQtyCheckList = (props: any) => {
                 color: '#1a3e72',
               },
             }}
-            rows={orderLines}
+            rows={transactionLines}
             columns={columns}
             getRowClassName={(params) => {
               if (params.row.qty - params.row.qty_received == 0) return 'done';
@@ -137,6 +265,17 @@ const PurchasesQtyCheckList = (props: any) => {
             rowsPerPageOptions={[10]}
             onCellEditCommit={onRowsSelectionHandler}
           />
+          <button
+            type="button"
+            hidden={transactionLines.length === 0}
+            disabled={
+              transactionLines[0]?.qty_received == '0.00' ||
+              transactionLines[0]?.qty_received === +transactionLines[0]?.qty
+            }
+            className="btn m-btn btn-primary p-2"
+            onClick={updateRecivedQty}>
+            {t("purchases.Save")}
+          </button>
         </div>
       ) : (
         <div className="d-flex justify-content-around">

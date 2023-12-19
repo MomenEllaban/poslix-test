@@ -557,6 +557,7 @@ a.nav-link.menu-link span {
 }
 
 button.nav-link.menu-link i,
+button.nav-link.menu-link svg,
 a.nav-link.menu-link i {
   font-size: 25px;
   transition: all ease 0.2s;
@@ -568,6 +569,7 @@ a.nav-link.menu-link:hover {
 }
 
 button.nav-link.menu-link:hover i,
+button.nav-link.menu-link:hover svg,
 a.nav-link.menu-link:hover i {
   color: #1e2537;
   font-size: 30px;
@@ -1089,6 +1091,16 @@ a.nav-link.menu-link:hover i {
   border-top: 1px solid #fff;
 }
 
+
+.react-tel-input .form-control {
+  font-size: 1rem;
+  font-weight: 400;
+  border: 1px solid #dee2e6 !important;
+  border-radius: 0.375rem !important;
+  line-height: 1.5;
+  width: 100% !important;
+}
+/* 
 .react-tel-input .form-control {
   font-size: 14px;
   letter-spacing: 0.01rem;
@@ -1103,12 +1115,12 @@ a.nav-link.menu-link:hover i {
   height: 35px;
   width: 100% !important;
   outline: none;
-}
+} */
 
-.react-tel-input .flag-dropdown {
+/* .react-tel-input .flag-dropdown {
   border-radius: 10px 0px 0px 10px !important;
   border: none !important;
-}
+} */
 
 .or {
   display: flex;

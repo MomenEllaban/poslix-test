@@ -235,8 +235,18 @@ export function AddTranseferModal({ getTransefers }) {
                             }}
                             sx={{ width: '48%' }}
                             renderInput={(params) =>
-                                <TextField size='small'
-                                    {...params} label="From" />}
+                                <TextField
+                                inputProps={{
+                                  ...params.inputProps,
+                                }}
+                                fullWidth
+                                size="small"
+                                id="From"
+                                InputProps={{
+                                  ...params.InputProps,
+                                }}
+                                label={'From'}
+                              />}
                         />
                         {/* to auto compolete */}
                         <Autocomplete
@@ -253,8 +263,21 @@ export function AddTranseferModal({ getTransefers }) {
                             }}
                             sx={{ width: '48%' }}
                             renderInput={(params) =>
-                                <TextField size='small'
-                                    {...params} label="To" />}
+                                <TextField
+                                inputProps={{
+                                  ...params.inputProps,
+                                }}
+                                fullWidth
+                                size="small"
+                                id="To"
+                                InputProps={{
+                                  ...params.InputProps,
+                                }}
+                                label={"To"}
+                              />
+                               
+                                
+                                }
                         />
                     </div>
                     {/* products auto complete */}

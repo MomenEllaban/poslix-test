@@ -9,7 +9,7 @@ import { UserContext } from 'src/context/UserContext';
 import { createNewData, findAllData, updateData } from 'src/services/crud.api';
 import { useRouter } from 'next/router';
 function AddGroupModal(props: any) {
-  const { allTaxes, dataItems, shopId, id, type, alertShow } = props;
+  const { allTaxes, dataItems, shopId, id, type, alertShow, t } = props;
   const { taxes, excise, services, taxesGroup } = allTaxes;
   const [allItems, setAllItems] = useState<ITax[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -29,9 +29,9 @@ function AddGroupModal(props: any) {
       } else {
         setAllItems([
           ...taxes,
-          { isSplit: true, name: 'Excise Taxes List' },
+          { isSplit: true, name: t('taxes.excise_taxes_list') },
           ...excise,
-          { isSplit: true, name: 'Service Charge Taxes List' },
+          { isSplit: true, name: t('taxes.service_charge_taxes_list') },
           ...services,
         ]);
         const _taxs = [...allItems];
@@ -159,7 +159,7 @@ function AddGroupModal(props: any) {
         keyboard={false}
         centered>
         <Modal.Header closeButton>
-          <Modal.Title>{type === 'edit' ? 'Edit' : 'Add New'} Group</Modal.Title>
+          <Modal.Title>{type === 'edit' ? 'Edit Group' :  t('taxes.add_new_group')}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Card.Body>
@@ -169,9 +169,9 @@ function AddGroupModal(props: any) {
               <Table className="table table-hover" responsive>
                 <thead className="thead-dark">
                   <tr>
-                    <th style={{ width: '50%' }}>Taxes List</th>
-                    <th style={{ width: '15%' }}>Amount</th>
-                    <th style={{ width: '35%' }}>Choose</th>
+                    <th style={{ width: '50%' }}> {t('taxes.taxes_list')}</th>
+                    <th style={{ width: '15%' }}>{t('taxes.amount')}</th>
+                    <th style={{ width: '35%' }}>{t('taxes.choose')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -215,9 +215,9 @@ function AddGroupModal(props: any) {
                     }
                   })}
                   <tr>
-                    <th>Group Name</th>
+                    <th>{t('taxes.group_name')}</th>
                     <th></th>
-                    <th>Is Default</th>
+                    <th>{t('taxes.is_default')}</th>
                   </tr>
                   <tr>
                     <td>
@@ -226,7 +226,7 @@ function AddGroupModal(props: any) {
                         name="tax-name"
                         value={gname}
                         className="form-control p-2"
-                        placeholder="Enter Group Name"
+                        placeholder={t('taxes.enter_group_name')}
                         onChange={(e) => {
                           setGname(e.target.value);
                         }}
@@ -252,10 +252,10 @@ function AddGroupModal(props: any) {
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleClose}>
-            Close
+          {t('taxes.close')}
           </Button>
           <Button variant="primary" onClick={() => addGroupTax()}>
-            Save
+          {t('taxes.save')}
           </Button>
         </Modal.Footer>
       </Modal>

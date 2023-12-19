@@ -12,6 +12,7 @@ const customersColumns: ({
   setSelectId,
   router,
   setCustomerIsModal,
+  t
 }) => GridColDef[] = ({
   id,
   permissions,
@@ -21,11 +22,12 @@ const customersColumns: ({
   setSelectId,
   router,
   setCustomerIsModal,
+  t
 }) => [
   { field: 'id', headerName: '#', minWidth: 50 },
   {
     field: 'name',
-    headerName: 'Name',
+    headerName: t('customer.name'),
     flex: 1,
     renderCell: ({ row }) => (
       <p>
@@ -33,10 +35,10 @@ const customersColumns: ({
       </p>
     ),
   },
-  { field: 'mobile', headerName: 'Mobile', flex: 1 },
+  { field: 'mobile', headerName: t('customer.mobile'), flex: 1 },
   {
     field: 'action',
-    headerName: 'Action ',
+    headerName: t('customer.action'),
     sortable: false,
     disableExport: true,
     flex: 1,

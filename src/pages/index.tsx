@@ -19,17 +19,26 @@ export default function Home() {
 
 // # this is the new redirect method
 export async function getServerSideProps(context) {
-  const session = await getSession({ req: context.req });
+  const { req } = context;
+
+  const session = await getSession({ req: req });
+
+  const DEFAULT_LANG = 'en';
+
+  const lang = req?.cookies?.lang ?? DEFAULT_LANG;
 
   if (session) {
     if (session.user.user_type === 'owner') {
       return {
-        redirect: { destination: '/' + session.user.id + '/business', permenant: false },
+        redirect: {
+          destination: '/' + `${lang}/` + session.user.id + '/business',
+          permenant: false,
+        },
         props: { session },
       };
     } else {
       return {
-        redirect: { destination: '/shop', permenant: false },
+        redirect: { destination: '/' + `${lang}/` + 'shop', permenant: false },
         props: { session },
       };
     }

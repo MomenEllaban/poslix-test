@@ -39,8 +39,7 @@ const Home: NextPage = ({ shopId: _id }: any) => {
 
   const [shopId, setShopId] = useState(_id);
   const [isLoading, setIsLoading] = useState(false);
-
-  useGetBusinessLocation(shopId, {
+useGetBusinessLocation(shopId, {
     onSuccess(data) {
       setLocationSettings(data?.result ?? {});
     },

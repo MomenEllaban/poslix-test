@@ -11,18 +11,24 @@ export async function middleware(request: NextRequest) {
       ? 'next-auth.session-token'
       : '__Secure-next-auth.session-token';
 
+  const KEY_LANG = 'lang';
+  const DEFAULT_LANG = 'en';
+  const DIGITAL = "/digital"
+
+  const hasLang = cookies.get(KEY_LANG)?.value ?? DEFAULT_LANG;
+
   const hasToken = cookies.get(KEY_COOKIES_TOKE)?.value ?? undefined;
 
   if (!hasToken) {
-    if (pathname !== '/user/auth' && !pathname.includes('/api/auth')) {
-      request.nextUrl.pathname = '/user/auth';
+    if (pathname !== '/user/auth' && !pathname.includes('/api/auth') && !pathname.includes(DIGITAL)) {
+      request.nextUrl.pathname = `/${hasLang}/user/auth`;
       return NextResponse.redirect(request.nextUrl);
     }
   }
 
   if (hasToken) {
     if (pathname === '/user/auth') {
-      request.nextUrl.pathname = '/';
+      request.nextUrl.pathname = `/`;
       return NextResponse.redirect(request.nextUrl);
     }
   }

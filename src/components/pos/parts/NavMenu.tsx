@@ -10,8 +10,13 @@ import { selectPos, setPosRegister } from 'src/redux/slices/pos.slice';
 import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
 import CloseRegister from '../modals/CloseRegister';
 import styles from './NavMenu.module.scss';
+// import classNames from 'classnames';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCartShopping, faCompress, faExpand } from '@fortawesome/free-solid-svg-icons';
+import OrdersModal from '../modals/OrdersModal';
 
 const NavMenu: any = ({ shopId }: any) => {
+  const [isFullScreen, setIsFullScreen] = useState(false);
   const router = useRouter();
   const dispatch = useAppDispatch();
 
@@ -19,6 +24,8 @@ const NavMenu: any = ({ shopId }: any) => {
   const { lang, setLang } = usePosContext();
 
   const [customerIsModal, setCustomerIsModal] = useState<boolean>(false);
+  
+  const [ordersIsModal, setOrdersIsModal] = useState<boolean>(false);
 
   const customerModalHandler = (status: any) => {
     setCustomerIsModal(false);
@@ -28,6 +35,14 @@ const NavMenu: any = ({ shopId }: any) => {
     signOut({ redirect: false }).then(() => {
       router.push('/'); // Redirect to the home page after signing out
     });
+  };
+  
+  const handleShowOrders = () => {
+    setOrdersIsModal(true);
+  };
+
+  const OrdersModalHandler = (status: any) => {
+    setOrdersIsModal(false);
   };
 
   const handleSwitchRegister = () => {
@@ -56,6 +71,29 @@ const NavMenu: any = ({ shopId }: any) => {
     }
   }, []);
 
+  const toggleFullScreen = () => {
+    console.log('ssss');
+
+    if (!isFullScreen) {
+      document.documentElement.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
+    setIsFullScreen(!isFullScreen);
+  };
+  // ------------------------------------------------------------------------------------------------
+  // const handleSetLangToCookie = (name: string) => {
+  //   const KEY_LANG = 'lang';
+  //   localStorage.setItem(ELocalStorageKeys.LANGUAGE,name)
+  //   setCookie(KEY_LANG, name);
+  //   if (name == 'en') {
+
+  //     setLang(en);
+  //   } else {
+  //     setLang(ar);
+  //   }
+  // };
+  // ------------------------------------------------------------------------------------------------
   return (
     <>
       <CloseRegister
@@ -69,10 +107,16 @@ const NavMenu: any = ({ shopId }: any) => {
         </div>
 
         <div id="scrollbar">
-          <Link className="nav-link menu-link" href={'/shop/' + shopId }>
+          <Link className="nav-link menu-link" href={'/shop/' + shopId}>
             <i className="ri-dashboard-2-line"></i>
             <span data-key="t-dashboards">{lang.pos.navmenu.dashboard}</span>
           </Link>
+          <button className="nav-link menu-link d-flex" onClick={toggleFullScreen}>
+            <FontAwesomeIcon icon={isFullScreen ? faCompress : faExpand} />
+            <span data-key="t-dashboards">
+              {!isFullScreen ? lang.pos.navmenu.fullscreen : lang.pos.navmenu.minimize}
+            </span>
+          </button>
           <button className="nav-link menu-link d-flex" onClick={handleSwitchRegister}>
             <i className="ri-stack-line"></i>
             <span data-key="t-dashboards">
@@ -100,6 +144,10 @@ const NavMenu: any = ({ shopId }: any) => {
             }}>
             <i className="ri-global-fill" /> <span>{lang == ar ? 'EN' : 'العربية'}</span>
           </a>
+          <button className="nav-link menu-link mt-2" type="button" onClick={handleShowOrders}>
+            <FontAwesomeIcon icon={faCartShopping} />
+            <span data-key="t-dashboards">{lang.pos.navmenu.orders}</span>
+          </button>
           <button className="nav-link menu-link" type="button" onClick={handleLogout}>
             <i className="ri-logout-circle-line"></i>
             <span data-key="t-dashboards">{lang.pos.navmenu.logout}</span>
@@ -107,6 +155,11 @@ const NavMenu: any = ({ shopId }: any) => {
         </div>
       </div>
       <div className={styles.navbar__sizer} />
+      
+      <OrdersModal
+        shopId={shopId}
+        statusDialog={ordersIsModal}
+        openDialog={OrdersModalHandler} />
     </>
   );
 };

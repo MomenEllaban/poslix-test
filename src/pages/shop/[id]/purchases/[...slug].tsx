@@ -48,6 +48,8 @@ import { findAllData } from 'src/services/crud.api';
 import api from 'src/utils/app-api';
 import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
 import { paymentStatusData, paymentTypeData, purchaseStatusDataAdd } from '../../../../models/data';
+import { useTranslation } from 'next-i18next';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 
 interface ICurrencySelect extends ICurrency {
   value: number;
@@ -58,7 +60,7 @@ interface ICurrencySelect extends ICurrency {
 const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
   const router = useRouter();
   const formObjRef = useRef<any>();
-
+  const { t } = useTranslation();
   const [suppliers, setSuppliers] = useState<any[]>([
     { supplier_id: 0, id: 0, value: 0, label: 'walk-in supplier' },
   ]);
@@ -655,6 +657,7 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
         onCostClick,
         setSelecetdId,
         setOpenRemoveDialog,
+        t
       }),
     [locationSettings, formObj, formObjRef]
   );
@@ -1236,9 +1239,9 @@ const AddPurchase: NextPage = ({ shopId, id: editId }: any) => {
 };
 export default withAuth(AddPurchase);
 
-export async function getServerSideProps({ params, query }) {
+export async function getServerSideProps({ params, query,locale }) {
   const { id } = params;
   return {
-    props: { id, shopId: query.id },
+    props: { id, shopId: query.id ,  ...(await serverSideTranslations(locale)) },
   };
 }

@@ -55,10 +55,10 @@ export default function CustomerDataSelect({
     if (customer?.isNew) setCustomerIsModal(true);
   }, [customer]);
 
-  useEffect(() => {
+  useEffect(() => {   
     const _options = [{ value: 0, label: 'walk-in customer', isNew: false }, ...customers]
     setOptions(_options)
-    setCustomer(_options[0]);
+    // setCustomer(_options[0]);
     if (!cart?.customer_id) dispatch(setCartCustomer({ customer_id: _options[0].value, location_id: shopId, }));
   }, [customers])
 
@@ -77,7 +77,9 @@ export default function CustomerDataSelect({
               setCustomer({ ...choice, isNew: choice.__isNew__ === undefined ? false : true, });
             }}
             placeholder={lang.customerData.selectCustomer}
-            value={+customer.value > 0 && cart.customer_id > 0 ? customer : currentCustomer}
+            // value={+customer.value > 0 && cart.customer_id > 0 ? customer : currentCustomer}
+ 
+            value={customer}
           />
         </div>
         <button

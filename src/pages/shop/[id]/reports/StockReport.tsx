@@ -4,18 +4,18 @@ import { IBrand, ICategory } from '@models/pos.types';
 import { IStockReport } from '@models/reports.types';
 import { Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import { SelectChangeEvent } from '@mui/material/Select';
+// import InputLabel from '@mui/material/InputLabel';
+// import { SelectChangeEvent } from '@mui/material/Select';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { nanoid } from '@reduxjs/toolkit';
 import { useRouter } from 'next/router';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { Button } from 'react-bootstrap';
 import { useReactToPrint } from 'react-to-print';
 import withAuth from 'src/HOCs/withAuth';
 import AlertDialog from 'src/components/utils/AlertDialog';
 import { useUser } from 'src/context/UserContext';
-import { apiFetchCtr } from 'src/libs/dbUtils';
+// import { apiFetchCtr } from 'src/libs/dbUtils';
 import CustomToolbar from 'src/modules/reports/_components/CustomToolbar';
 import posService from 'src/services/pos.service';
 import api from 'src/utils/app-api';
@@ -23,6 +23,10 @@ import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
 import Select from 'react-select';
 import { StateManagerProps } from 'react-select/dist/declarations/src/useStateManager';
 import { intersectionBy } from 'lodash';
+import Pagination from '@mui/material/Pagination';
+
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { useTranslation } from 'next-i18next';
 
 type IBrandWithSelect = IBrand & { label: string; value: number };
 type ICategoryWithSelect = ICategory & { label: string; value: number };
@@ -30,6 +34,8 @@ type ICategoryWithSelect = ICategory & { label: string; value: number };
 function StockReport() {
   const router = useRouter();
   const shopId = router.query.id;
+
+  const { t } = useTranslation();
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [sales, setSales] = useState<any>([]);
@@ -41,14 +47,16 @@ function StockReport() {
     setAnchorEl(null);
   };
 
+  const NUMBER_PAGE_DEFAULT = 1;
+
   const [selectId, setSelectId] = useState(0);
   const [selectRow, setSelectRow] = useState<any>({});
   const [lines, setLines] = useState<any>([]);
   const [show, setShow] = useState(false);
   const [isLoadItems, setIsLoadItems] = useState(false);
   const [showViewPopUp, setShowViewPopUp] = useState(false);
-  const [handleSearchTxt, setHandleSearchTxt] = useState('');
-  const [details, setDetails] = useState({ subTotal: 1, tax: 0, cost: 0 });
+  // const [handleSearchTxt, setHandleSearchTxt] = useState('');
+  // const [details, setDetails] = useState({ subTotal: 1, tax: 0, cost: 0 });
   const { setInvoicDetails, invoicDetails, locationSettings, setLocationSettings } = useUser();
 
   const [selectedBrand, setSelectedBrand] = useState<IBrandWithSelect | null>();
@@ -58,11 +66,15 @@ function StockReport() {
   const [filteredByCategories, setFilteredByCategories] = useState([]);
 
   const [filteredSales, setFilteredSales] = useState<any>([]);
-  const [selectedRange, setSelectedRange] = useState(null);
-  const [strSelectedDate, setStrSelectedDate] = useState([]);
-  const [selectedDateVlaue, setSelectedDateValue] = useState('');
-  const [selectedCustomer, setSelectedCustomer] = useState('');
-  const [customersOptions, setCustomersOptions] = useState([]);
+  // const [selectedRange, setSelectedRange] = useState(null);
+  // const [strSelectedDate, setStrSelectedDate] = useState([]);
+  // const [selectedDateVlaue, setSelectedDateValue] = useState('');
+  // const [selectedCustomer, setSelectedCustomer] = useState('');
+  // const [customersOptions, setCustomersOptions] = useState([]);
+
+  const [paginationTotal, setPaginationTotal] = useState(NUMBER_PAGE_DEFAULT);
+
+  const pageNumRef = useRef(NUMBER_PAGE_DEFAULT) as React.MutableRefObject<number>;
 
   const getLocalizedPrice = useCallback(
     (price: number | string): string =>
@@ -82,6 +94,7 @@ function StockReport() {
     setFilteredByBrands(_filteredSales);
     console.log(_filteredSales);
   };
+
   const handleSelectCategory: StateManagerProps['onChange'] = (
     category: ICategory & { label: string; value: number }
   ) => {
@@ -90,60 +103,60 @@ function StockReport() {
     const _filteredSales = sales?.filter((sale) => sale.category_id === category.id);
     setFilteredByCategories(_filteredSales);
   };
+
   const filteredArr = intersectionBy(filteredByBrands, filteredByCategories, 'id');
 
-  useEffect(() => {
-    let localFilteredSales = [];
-    if (strSelectedDate?.length === 2) {
-      const filteredList = sales?.filter((sale) => {
-        const dateCreated = sale.created_at.split(' ')[0];
-        return (
-          new Date(dateCreated).getDate() >= new Date(strSelectedDate[0]).getDate() &&
-          new Date(dateCreated).getMonth() >= new Date(strSelectedDate[0]).getMonth() &&
-          new Date(dateCreated).getFullYear() >= new Date(strSelectedDate[0]).getFullYear() &&
-          new Date(dateCreated).getDate() <= new Date(strSelectedDate[1]).getDate() &&
-          new Date(dateCreated).getMonth() <= new Date(strSelectedDate[1]).getMonth() &&
-          new Date(dateCreated).getFullYear() <= new Date(strSelectedDate[1]).getFullYear()
-        );
-      });
-      setSelectedDateValue(`${strSelectedDate[0]} - ${strSelectedDate[1]}`);
-      localFilteredSales = filteredList;
-    } else if (strSelectedDate?.length === 1) {
-      const filteredList = sales.filter((sale) => {
-        const dateCreated = sale.created_at.split(' ')[0];
-        return (
-          new Date(dateCreated).getDate() === new Date(strSelectedDate[0]).getDate() &&
-          new Date(dateCreated).getMonth() === new Date(strSelectedDate[0]).getMonth() &&
-          new Date(dateCreated).getFullYear() === new Date(strSelectedDate[0]).getFullYear()
-        );
-      });
-      setSelectedDateValue(strSelectedDate[0]);
-      localFilteredSales = filteredList;
-    } else {
-      localFilteredSales = sales;
-    }
-    if (selectedCustomer) {
-      localFilteredSales = localFilteredSales.filter(
-        (sale) => sale.customer_name === selectedCustomer
-      );
-    }
-    //Eslam 19
-    let totalPrice = 0;
-    let taxAmount = 0;
-    localFilteredSales.forEach((obj) => {
-      const price = parseFloat(obj.total_price);
-      const tax = parseFloat(obj.tax_amount);
-      totalPrice += price;
-      taxAmount += tax;
-    });
-    const totalPriceAndTax = totalPrice + taxAmount;
-    setDetails({
-      subTotal: totalPrice,
-      tax: taxAmount,
-      cost: totalPriceAndTax,
-    });
-    setFilteredSales(localFilteredSales);
-  }, [strSelectedDate, selectedCustomer]);
+  //   let localFilteredSales = [];
+  //   if (strSelectedDate?.length === 2) {
+  //     const filteredList = sales?.filter((sale) => {
+  //       const dateCreated = sale.created_at.split(' ')[0];
+  //       return (
+  //         new Date(dateCreated).getDate() >= new Date(strSelectedDate[0]).getDate() &&
+  //         new Date(dateCreated).getMonth() >= new Date(strSelectedDate[0]).getMonth() &&
+  //         new Date(dateCreated).getFullYear() >= new Date(strSelectedDate[0]).getFullYear() &&
+  //         new Date(dateCreated).getDate() <= new Date(strSelectedDate[1]).getDate() &&
+  //         new Date(dateCreated).getMonth() <= new Date(strSelectedDate[1]).getMonth() &&
+  //         new Date(dateCreated).getFullYear() <= new Date(strSelectedDate[1]).getFullYear()
+  //       );
+  //     });
+  //     setSelectedDateValue(`${strSelectedDate[0]} - ${strSelectedDate[1]}`);
+  //     localFilteredSales = filteredList;
+  //   } else if (strSelectedDate?.length === 1) {
+  //     const filteredList = sales.filter((sale) => {
+  //       const dateCreated = sale.created_at.split(' ')[0];
+  //       return (
+  //         new Date(dateCreated).getDate() === new Date(strSelectedDate[0]).getDate() &&
+  //         new Date(dateCreated).getMonth() === new Date(strSelectedDate[0]).getMonth() &&
+  //         new Date(dateCreated).getFullYear() === new Date(strSelectedDate[0]).getFullYear()
+  //       );
+  //     });
+  //     setSelectedDateValue(strSelectedDate[0]);
+  //     localFilteredSales = filteredList;
+  //   } else {
+  //     localFilteredSales = sales;
+  //   }
+  //   if (selectedCustomer) {
+  //     localFilteredSales = localFilteredSales.filter(
+  //       (sale) => sale.customer_name === selectedCustomer
+  //     );
+  //   }
+  //   //Eslam 19
+  //   let totalPrice = 0;
+  //   let taxAmount = 0;
+  //   localFilteredSales.forEach((obj) => {
+  //     const price = parseFloat(obj.total_price);
+  //     const tax = parseFloat(obj.tax_amount);
+  //     totalPrice += price;
+  //     taxAmount += tax;
+  //   });
+  //   const totalPriceAndTax = totalPrice + taxAmount;
+  //   setDetails({
+  //     subTotal: totalPrice,
+  //     tax: taxAmount,
+  //     cost: totalPriceAndTax,
+  //   });
+  //   setFilteredSales(localFilteredSales);
+  // }, [strSelectedDate, selectedCustomer]);
 
   const resetFilters = () => {
     setFilteredByCategories(sales);
@@ -155,48 +168,49 @@ function StockReport() {
 
   //table columns
   const columns: GridColDef<IStockReport>[] = [
-    { field: 'sku', headerName: 'SKU', width: 80 },
-    { field: 'product_name', headerName: 'Product Name', minWidth: 80, flex: 1 },
-    { field: 'brand_name', headerName: 'Brand Name' },
-    { field: 'category_name', headerName: 'Category' },
+    { field: 'id', headerName: '#', width: 80 },
+    { field: 'sku', headerName: t('g.SKU'), width: 80 },
+    { field: 'product_name', headerName: t('g.ProductName'), minWidth: 80, flex: 1 },
+    { field: 'brand_name', headerName: t('g.BrandName') },
+    { field: 'category_name', headerName: t('g.Category') },
     // { field: 'location_name', headerName: 'Location', flex: 1, minWidth: 120 },
     {
       field: 'unit_name',
-      headerName: 'Unit Price',
+      headerName: t('g.UnitPrice'),
       flex: 1,
       renderCell: ({ row }) => getLocalizedPrice(row.sell_price),
     },
     {
       field: 'available_qty',
-      headerName: 'Current Stock',
+      headerName: t('g.CurrentStock'),
       flex: 1,
       renderCell: ({ row }) => `${+row?.available_qty || 0} ${row.unit_name}`,
     },
     {
       field: 'current_stock_value_purchase',
-      headerName: 'Current Stock (By Purchse)',
+      headerName: t('g.CurrentStock (By Purchse)'),
       renderCell: ({ row }) => getLocalizedPrice(+row?.available_qty * +row.cost_price),
     },
     {
       field: 'current_stock_value_sell',
-      headerName: 'Current Stock (By Sell)',
+      headerName: t('g.CurrentStock(By Sell)'),
       renderCell: ({ row }) => getLocalizedPrice(+row?.available_qty * +row.sell_price),
     },
 
     {
       field: 'profit',
-      headerName: 'Potential Profit',
+      headerName: t('g.PotentialProfit'),
       renderCell: ({ row }) =>
         getLocalizedPrice(+row?.available_qty * (+row.sell_price - +row.cost_price)),
     },
     {
       field: 'sell_price',
-      headerName: 'Sell Price',
+      headerName: t('g.SellPrice'),
       renderCell: ({ row }) => getLocalizedPrice(row.sell_price),
     },
     {
       field: 'sold_qty',
-      headerName: 'Total Unit Sold',
+      headerName: t('g.TotalUnitSold'),
       renderCell: ({ row }) => (+row.sold_qty).toFixed(0),
     },
   ];
@@ -296,62 +310,75 @@ function StockReport() {
       );
     }
   }
+  const handelFilterEndPoint = (): string => {
+    let endPoint = '';
+
+    if (selectedBrand) {
+      endPoint = endPoint + `&brand_id=${selectedBrand.value}`;
+    }
+    if (selectedCategory) {
+      endPoint = endPoint + `&category_id=${selectedCategory.value}`;
+    }
+    return endPoint;
+  };
 
   // init sales data
-  async function initDataPage() {
+  async function initDataPage(numPages = NUMBER_PAGE_DEFAULT) {
     setIsLoadItems(true);
+    pageNumRef.current = numPages;
+    const endPoint = handelFilterEndPoint();
+
     api
-      .get(`reports/itemStock`, { params: { all_data: 1, location_id: shopId } })
+      .get(`reports/itemStock?location_id=${shopId}&page=${numPages}${endPoint}`)
       .then(({ data }) => {
-        const brandSet = new Map();
-        const _sales = data.result.map((item) => ({
-          id: nanoid(5),
-          ...item,
-        }));
+        // const brandSet = new Map();
+        // const _sales = data?.result?.data?.map((item) => ({
+        //   id: nanoid(5),
+        //   ...item,
+        // }));
+
+        const _data = data.result.data;
+        delete _data.rows_count;
+        const _sales = Object.values(_data) ?? [];
+
+        setPaginationTotal(data.result.last_page);
         setSales(_sales);
         setFilteredSales(_sales);
         setFilteredByBrands(_sales);
         setFilteredByCategories(_sales);
-        _sales.forEach(({ brand_id, brand_name }) => {
-          if (!brandSet.has(brand_id)) {
-            brandSet.set(brand_id, {
-              id: brand_id,
-              name: brand_name,
-            });
-          }
-        });
-        const brandList = Array.from(brandSet).map(([name, value]) => ({ ...value }));
-        console.log(brandList);
+        // _sales.forEach(({brand_id,brand_name}) => {
+        //   if (!brandSet.has(brand_id)) {
+        //     brandSet.set(brand_id, {
+        //       id: brand_id,
+        //       name: brand_name,
+        //     });
+        //   }
+        // });
+        // const brandList = Array.from(brandSet).map(([name, value]) => ({ ...value }));
+        // console.log(brandList);
       })
       .finally(() => {
         setIsLoadItems(false);
       });
+  }
 
+  const getSelectedData = () => {
     posService.getBrands(shopId as string).then(({ result }) => {
       setBrands(result.map((p) => ({ ...p, label: p.name, value: p.id })));
     });
     posService.getCategories(shopId as string).then(({ result }) => {
       setCategories(result.map((p) => ({ ...p, label: p.name, value: p.id })));
     });
-  }
-
-  async function getItems(id: number) {
-    setIsLoadItems(true);
-    const { success, newdata } = await apiFetchCtr({
-      fetch: 'transactions',
-      subType: 'getSaleItems',
-      shopId,
-      id,
-    });
-    if (success) {
-      setLines(newdata);
-      setIsLoadItems(false);
-    }
-  }
+  };
 
   useEffect(() => {
     if (!shopId) return;
-    initDataPage();
+    initDataPage(NUMBER_PAGE_DEFAULT);
+  }, [shopId, router.query.slug, selectedBrand, selectedCategory]);
+
+  useEffect(() => {
+    if (!shopId) return;
+    getSelectedData();
 
     const locations: ILocation[] = getLocalStorage(ELocalStorageKeys.LOCATIONS);
     const currentLocation = locations.find((location) => +location.location_id === +shopId);
@@ -361,15 +388,20 @@ function StockReport() {
   const handlePrint = useReactToPrint({
     content: () => componentRef.current,
   });
-  const onRowsSelectionHandler = (selectedRowsData: any) => {
-    setSelectRow(selectedRowsData);
-    setSelectId(selectedRowsData.id);
-    getItems(selectedRowsData.id);
-    setShowViewPopUp(true);
-  };
-  const handleSearch = (e: any) => {
-    setHandleSearchTxt(e.target.value);
-  };
+
+  function CustomPagination(): React.JSX.Element {
+    return (
+      <Pagination
+        color="primary"
+        variant="outlined"
+        shape="rounded"
+        page={pageNumRef.current}
+        count={paginationTotal}
+        onChange={(event, value) => initDataPage(value)}
+      />
+    );
+  }
+
   return (
     <AdminLayout shopId={shopId}>
       <div className="flex" style={{ alignItems: 'center' }}>
@@ -379,7 +411,7 @@ function StockReport() {
             isClearable
             value={selectedCategory}
             id="category-select"
-            placeholder="Category"
+            placeholder={t('g.Category')}
             onChange={handleSelectCategory}
           />
         </FormControl>
@@ -391,13 +423,13 @@ function StockReport() {
             isClearable
             options={brands}
             value={selectedBrand}
-            placeholder="Brand"
+            placeholder={t('g.Brand')}
             onChange={handleSelectBrand}
           />
         </FormControl>
 
         <Button onClick={resetFilters} style={{ height: '2.5rem', marginLeft: 'auto' }}>
-          CLEAR
+          {t('g.CLEAR')}
         </Button>
       </div>
       <AlertDialog
@@ -406,7 +438,7 @@ function StockReport() {
         id={selectId}
         type="deleteSale"
         products={sales}>
-        Are you Sure You Want Delete This Item ?
+        {t('g.Are_you_Sure_You_Want_Delete_This_Item')}
       </AlertDialog>
       {
         <div style={{ display: 'none' }}>
@@ -414,7 +446,7 @@ function StockReport() {
         </div>
       }
       <div className="page-content-style card">
-        <h5> Stock Report</h5>
+        <h5> {t('g.StockReport')}</h5>
         {/* <div className="deatils_box">
           <div>
             <span>SubTotal: </span>
@@ -450,14 +482,14 @@ function StockReport() {
           }}
           rows={filteredArr}
           columns={columns}
-          pageSize={30}
-          rowsPerPageOptions={[10]}
-          components={{ Toolbar: CustomToolbar }}
+          // pageSize={30}
+          // rowsPerPageOptions={[10]}
+          components={{ Toolbar: CustomToolbar, Pagination: CustomPagination }}
         />
       </div>
       {/* FOR VIEW ELEMENT */}
       <Dialog open={showViewPopUp} fullWidth={true} className="poslix-modal" onClose={handleClose}>
-        <DialogTitle className="poslix-modal text-primary">Sale Details</DialogTitle>
+        <DialogTitle className="poslix-modal text-primary">{t('g.SaleDetails')}</DialogTitle>
         <DialogContent className="poslix-modal-content">
           <div className="poslix-modal">
             <div className="top-section-details">
@@ -465,29 +497,30 @@ function StockReport() {
               <div className="item-sections">
                 <div className="top-detials-invoice">
                   <div className="top-detials-item">
-                    <p>Invoice No :</p>
+                    <p>{t('g.InvoiceNo')} :</p>
                     <p>{selectRow.id}</p>
                   </div>
                   <div className="top-detials-item">
-                    <p>Invoice Date :</p>
+                    <p>{t('g.InvoiceDate')} :</p>
                     <p>{selectRow.sale_date}</p>
                   </div>
                   <div className="top-detials-item">
-                    <p>Added By :</p>
+                    <p>{t('g.AddedBy')} :</p>
                     <p>{selectRow.added_by}</p>
                   </div>
                 </div>
                 <div className="top-detials-invoice">
                   <div className="top-detials-item">
-                    <p>Final Total :</p>
+                    <p>{t('g.FinalTotal')} :</p>
                     <p>{selectRow.total_price}</p>
                   </div>
                   <div className="top-detials-item">
-                    <p>Customer Name :</p>
+                    <p>{t('g.CustomerName')} :</p>
+
                     <p>{selectRow.customer_name}</p>
                   </div>
                   <div className="top-detials-item" style={{ fontSize: '13px' }}>
-                    <p>Order Note</p>
+                    <p>{t('g.OrderNote')}</p>
                     <p>{selectRow.notes}</p>
                   </div>
                 </div>
@@ -497,18 +530,18 @@ function StockReport() {
                   onClick={() => {
                     handlePrint();
                   }}>
-                  Print Recipt
+                  {t('g.PrintRecipt')}
                 </Button>{' '}
-                <Button>Print Invoice</Button>
+                <Button>{t('g.PrintInvoice')}</Button>
               </div>
             </div>
             {lines && !isLoadItems ? (
               <div className="row">
                 <div className="invoice-items-container">
                   <div className="header-titles">
-                    <div>Name</div>
-                    <div>Qty</div>
-                    <div>Amount</div>
+                    <div>{t('g.Name')}</div>
+                    <div>{t('g.Qty')}</div>
+                    <div>{t('g.Amount')}</div>
                   </div>
                   {lines.map((line: any, index: number) => {
                     return (
@@ -521,7 +554,7 @@ function StockReport() {
                   })}
                   <div className="header-titles under_items" style={{ marginTop: '20px' }}>
                     <div></div>
-                    <div>Total</div>
+                    <div>{t('g.Total')}</div>
                     <div>{selectRow.total_price}</div>
                   </div>
                 </div>
@@ -536,7 +569,7 @@ function StockReport() {
             onClick={() => {
               setShowViewPopUp(false);
             }}>
-            Cancel
+            {t('g.Cancel')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -544,4 +577,12 @@ function StockReport() {
   );
 }
 
-export default withAuth(StockReport);
+export default StockReport;
+
+export async function getServerSideProps({ locale }) {
+  return {
+    props: {
+      ...(await serverSideTranslations(locale)),
+    },
+  };
+}

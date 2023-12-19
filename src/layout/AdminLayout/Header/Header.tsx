@@ -1,17 +1,23 @@
-import { faBars, faLanguage } from '@fortawesome/free-solid-svg-icons';
+import { faBars } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import HeaderFeaturedNav from '@layout/AdminLayout/Header/HeaderFeaturedNav';
 import HeaderProfileNav from '@layout/AdminLayout/Header/HeaderProfileNav';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
+import { useEffect, useState, useLayoutEffect } from 'react';
 import { Button, Container, Dropdown } from 'react-bootstrap';
-import { GiArabicDoor } from 'react-icons/gi';
-import { RiEnglishInput } from 'react-icons/ri';
+import { setCookie, getCookie } from 'cookies-next';
+
+import { GrLanguage } from 'react-icons/gr';
 
 /*MOHAMMED MAHER */
 import classNames from 'classnames';
-import { useDarkMode } from '../../../context/DarkModeContext';
+// import { useDarkMode } from '../../../context/DarkModeContext';
+import { ELocalStorageKeys } from 'src/utils/local-storage';
 import DarkModeToggle from '../DarkModeToggle';
+
+import { useTranslation } from 'next-i18next';
+
 
 type HeaderProps = {
   toggleSidebar: () => void;
@@ -22,18 +28,37 @@ export default function Header(props: HeaderProps) {
   const { toggleSidebar, toggleSidebarMd } = props;
   const [fullname, setFullname] = useState('');
 
-  const { toggleDarkMode, darkMode, setDarkMode } = useDarkMode();
+  const pathname = usePathname();
+
+  const { t } = useTranslation();
+
+
+  const KEY_LANG = 'lang';
+  const handleSetLangToCookie = (lang: string) => {
+    localStorage.setItem(ELocalStorageKeys.LANGUAGE, lang);
+    setCookie(KEY_LANG, lang);
+    handleSetAttr(lang);
+  };
+
+  const handleSetAttr = (lang: string | boolean) => {
+    const htmlElement = document.getElementsByTagName('html')[0];
+    const isDir = lang === 'ar' ? 'rtl' : 'ltr';
+    htmlElement.setAttribute('dir', isDir);
+  };
 
   useEffect(() => {
     setFullname(localStorage.getItem('userfullname') || '');
   }, []);
+
+  useLayoutEffect(() => {
+    const lang = getCookie(KEY_LANG) ?? 'en';
+    handleSetAttr(lang);
+  }, []);
+
   return (
     <header
       style={{ zIndex: 999 }}
-      className={classNames('header bg-white shadow-sm position-sticky top-0 sticky-top2 p-2', {
-        'dark-mode-body': darkMode,
-        'light-mode-body': !darkMode,
-      })}>
+      className={classNames('header bg-white shadow-sm position-sticky top-0 sticky-top2 p-2')}>
       <Container fluid className="header-navbar d-flex align-items-center">
         <Button
           variant="link"
@@ -49,35 +74,50 @@ export default function Header(props: HeaderProps) {
           onClick={toggleSidebarMd}>
           <FontAwesomeIcon icon={faBars} />
         </Button>
-        <Link href="/" className="header-brand d-md-none">
-          sidebar-brand-full
-        </Link>
+       
         <div className="header-nav d-none d-md-flex">
           <HeaderFeaturedNav />
         </div>
-        {/* <Dropdown className="header-nav ms-auto">
-          <Dropdown.Toggle variant="success" id="dropdown-basic">
-            <FontAwesomeIcon icon={faLanguage} />
+        <div className="dark-mode">
+          <DarkModeToggle />
+        </div>
+        <Dropdown className="header-nav ms-auto">
+          <Dropdown.Toggle
+            variant="success"
+            className="d-flex justify-content-center align-items-center header-language"
+            id="dropdown-basic">
+            <GrLanguage size={19} color="#4f5d73" />
           </Dropdown.Toggle>
 
           <Dropdown.Menu>
-            <Dropdown.Item className="d-flex align-items-center">
-              <GiArabicDoor className="me-2" />
-              Arabic
-            </Dropdown.Item>
-            {
-              <Dropdown.Item className="d-flex align-items-center">
-                <RiEnglishInput className="me-2" />
-                English
-              </Dropdown.Item>
-            }
+            <div className="d-flex flex-column">
+              <Dropdown.ItemText>
+                <Link
+                  href={`/ar${pathname}`}
+                  onClick={() => handleSetLangToCookie('ar')}
+                  role="button"
+                  tabIndex={0}
+                  locale="ar"
+                  className="link-language">
+                  Arabic
+                </Link>
+              </Dropdown.ItemText>
+              <Dropdown.ItemText>
+                <Link
+                  href={`/en${pathname}`}
+                  onClick={() => handleSetLangToCookie('en')}
+                  role="button"
+                  tabIndex={0}
+                  locale="en"
+                  className="link-language">
+                  English
+                </Link>
+              </Dropdown.ItemText>
+            </div>
           </Dropdown.Menu>
-        </Dropdown> */}
-        {/* <div className="ms-2">
-          <DarkModeToggle />
-        </div> */}
+        </Dropdown>
         <div className="header-nav ms-auto">
-          <div>Hi {fullname}</div>
+          <h4 className='header__user-name'>{t("g.Hi")} {fullname}</h4>
         </div>
         <div className="header-nav ms-2">
           <HeaderProfileNav />
@@ -86,28 +126,3 @@ export default function Header(props: HeaderProps) {
     </header>
   );
 }
-const ToggleLanguage = () => (
-  <>
-    <Dropdown className="header-nav ms-auto">
-      <Dropdown.Toggle variant="success" id="dropdown-basic">
-        <FontAwesomeIcon icon={faLanguage} />
-      </Dropdown.Toggle>
-
-      <Dropdown.Menu>
-        <Dropdown.Item className="d-flex align-items-center" /*href="/action-1"*/>
-          <GiArabicDoor className="me-2" />
-          Arabic
-        </Dropdown.Item>
-
-        <Dropdown.Item className="d-flex align-items-center" /*href="/action-2"*/>
-          <RiEnglishInput className="me-2" />
-          English
-        </Dropdown.Item>
-      </Dropdown.Menu>
-    </Dropdown>
-    <div className="ms-2">
-      {/* <FontAwesomeIcon icon={faMoon} /> */}
-      <DarkModeToggle />
-    </div>
-  </>
-);

@@ -6,6 +6,28 @@ $header-brand-color: #4f5d73;
 .header {
   background: $header-background;
 
+  .header-language {
+    background-color: transparent;
+    border-color: $header-brand-color;
+
+    &::after {
+      border-top: 0.3em solid $header-brand-color;
+    }
+  }
+  .link-language {
+    color: $header-brand-color;
+    text-decoration: none;
+
+    &:hover {
+      color: #000;
+    }
+  }
+  .dropdown-item-text {
+    &:first-child {
+      margin-bottom: 0.5rem;
+    }
+  }
+
   .header-brand {
     color: $header-brand-color;
   }
@@ -25,6 +47,18 @@ $header-brand-color: #4f5d73;
           color: $header-link-color-hover;
         }
       }
+      .header__user-name{
+        font-size: 1rem;
+        font-weight: 400;
+      }
+
+      @media screen and (max-width:423px) {
+        .header__user-name{
+        font-size: .7rem;
+
+        }
+        
+        }
     }
   }
 

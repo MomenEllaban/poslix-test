@@ -139,7 +139,7 @@ const TransferModal = (props: any) => {
   }
 
   const getLocationProducts = async (location_id, setState) => {
-    const res = await findAllData(`products/${location_id}?all_data=1`);
+    const res = await findAllData(`products/${location_id}?all_data=1`);   
     if (!res.data.success) {
       Toastify('error', 'Somthing wrong!!, try agian');
       return;

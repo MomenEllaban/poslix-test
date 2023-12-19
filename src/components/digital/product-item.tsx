@@ -1,6 +1,6 @@
 import { Button } from 'react-bootstrap';
 import { useState, useEffect, useContext } from 'react';
-import Box from '@mui/material/Box';
+import styles from './digital.module.css';
 import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
 import { useDispatch, useSelector } from 'react-redux';
@@ -55,7 +55,8 @@ const ProductItem = ({ product, addItemTocart, location }) => {
         </Modal>:null
          }    */}
 
-      <div className="digital-product-item ">
+      <div className="digital-product-item " style={{position:'relative'}}>
+       {product?.stock===0? <div className={styles.out_of_stock_item}>Out of stock</div>:null}
         <img
           className="digital-product-image"
           src={image === 'n' || !image ? place_holder.src : image}
@@ -84,7 +85,9 @@ const ProductItem = ({ product, addItemTocart, location }) => {
         <div className="digital-product-button">
           <Button
             variant=""
+            disabled={product?.stock===0}
             onClick={(e) => {
+              if(product?.stock===0){return}
               if (product.type === 'variable') {
                 setOpenVariablesModal(true);
                 return;

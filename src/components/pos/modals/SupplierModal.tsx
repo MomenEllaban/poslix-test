@@ -12,68 +12,92 @@ import { findAllData } from 'src/services/crud.api';
 import { useUser } from 'src/context/UserContext';
 import CustomToolbar from 'src/modules/reports/_components/CustomToolbar';
 import { useRouter } from 'next/router';
+import { useTranslation } from 'next-i18next';
 
-const supplierFields = [
-  { name: 'name', label: 'Name', placeholder: 'Enter supplier name', type: 'text', required: true },
-  {
-    name: 'email',
-    label: 'Email',
-    placeholder: 'Enter supplier email',
-    type: 'email',
-    required: true,
-  },
-  {
-    name: 'phone',
-    label: 'Phone',
-    placeholder: 'Enter supplier phone number',
-    type: 'text',
-    required: true,
-  },
-  {
-    name: 'facility_name',
-    label: 'Facility Name',
-    placeholder: 'Enter facility name',
-    type: 'text',
-    required: true,
-  },
-  {
-    name: 'tax_number',
-    label: 'Tax Number',
-    placeholder: 'Enter supplier name',
-    type: 'text',
-    required: true,
-  },
-  {
-    name: 'invoice_address',
-    label: 'Invoice Address',
-    placeholder: 'Enter address',
-    type: 'text',
-    required: false,
-  },
-  {
-    name: 'invoice_City',
-    label: 'Invoice City',
-    placeholder: 'Enter invoice city',
-    type: 'text',
-    required: false,
-  },
-  {
-    name: 'invoice_Country',
-    label: 'Invoice Country',
-    placeholder: 'Enter invoice country',
-    type: 'text',
-    required: false,
-  },
-  {
-    name: 'postal_code',
-    label: 'Postal Code',
-    placeholder: 'Enter postal code',
-    type: 'text',
-    required: false,
-  },
-];
+const supplierFields = (t, showType, errors, register) => { 
+  const supplierFields = [
+    {
+      name: 'name',
+      label: t('supplier.name'),
+      placeholder: t('supplier.enter_supplier_name'),
+      type: 'text',
+      required: true,
+    },
+    {
+      name: 'email',
+      label: t('supplier.email'),
+      placeholder: t('supplier.enter_supplier_email'),
+      type: 'email',
+      required: true,
+    },
+    {
+      name: 'phone',
+      label: t('supplier.phone'),
+      placeholder: t('supplier.enter_supplier_phone'),
+      type: 'text',
+      required: true,
+    },
+    {
+      name: 'facility_name',
+      label: t('supplier.facility_name'),
+      placeholder: t('supplier.enter_facility_name'),
+      type: 'text',
+      required: true,
+    },
+    {
+      name: 'tax_number',
+      label: t('supplier.tax_number'),
+      placeholder: t('supplier.enter_tax_number'),
+      type: 'text',
+      required: true,
+    },
+    {
+      name: 'invoice_address',
+      label: t('supplier.invoice_address'),
+      placeholder: t('supplier.enter_address'),
+      type: 'text',
+      required: false,
+    },
+    {
+      name: 'invoice_City',
+      label: t('supplier.invoice_city'),
+      placeholder: t('supplier.enter_invoice_city'),
+      type: 'text',
+      required: false,
+    },
+    {
+      name: 'invoice_Country',
+      label: t('supplier.invoice_country'),
+      placeholder: t('supplier.enter_invoice_country'),
+      type: 'text',
+      required: false,
+    },
+    {
+      name: 'postal_code',
+      label: t('supplier.postal_code'),
+      placeholder: t('supplier.enter_postal_code'),
+      type: 'text',
+      required: false,
+    },
+  ];
+  return supplierFields.map((field) => {
+    return (
+      <div style={{ width: '49%' }}>
+        <FormField
+          key={`supplier-form-${field.name}`}
+          {...field}
+          disabled={showType === 'show'}
+          errors={errors}
+          required={showType === 'show' ? false : field.required}
+          register={register}
+        />
+      </div>
+    );
+  });
+};
 
 const SupplierModal = ({ openDialog, statusDialog, supplierId, showType, shopId }: any) => {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState('');
@@ -99,35 +123,38 @@ const SupplierModal = ({ openDialog, statusDialog, supplierId, showType, shopId 
     { field: 'id', headerName: '#', minWidth: 50 },
     {
       field: 'status',
-      headerName: 'Stock Status',
+      headerName: t('supplier.stock_status'),
       flex: 0.5,
       renderCell: ({ row }: Partial<GridRowParams>) => getStatusStyle(row.status),
     },
     {
       field: 'payment_status',
-      headerName: 'Payment Status',
+      headerName: t('supplier.payment_status'),
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) => getStatusStyle(row.payment_status),
     },
     {
       field: 'payment',
-      headerName: 'Method',
+      headerName: t('supplier.method'),
       flex: 0.5,
-      renderCell: ({ row }: Partial<GridRowParams>) => (row.payment[0]?.payment_type || "-"),
+      renderCell: ({ row }: Partial<GridRowParams>) => row.payment[0]?.payment_type || '-',
     },
     {
       field: 'total_price',
-      headerName: 'Total Price',
+      headerName: t('supplier.total_price'),
       flex: 1,
       renderCell: (params) =>
         Number(params.value).toFixed(locationSettings?.location_decimal_places),
     },
     {
       field: 'products',
-      headerName: 'Products',
+      headerName: t('supplier.products'),
       flex: 1,
-      renderCell: ({ row }) =>
-        <span title={row.products.map(prod => prod.name).join(', ')}>{row.products.map(prod => prod.name).join(', ')}</span>
+      renderCell: ({ row }) => (
+        <span title={row.products.map((prod) => prod.name).join(', ')}>
+          {row.products.map((prod) => prod.name).join(', ')}
+        </span>
+      ),
     },
   ];
   // assumption of one order at a time / one cart
@@ -150,14 +177,13 @@ const SupplierModal = ({ openDialog, statusDialog, supplierId, showType, shopId 
     openDialog(false);
     reset();
   };
-  
+
   const onSubmit = async (data) => {
     setIsLoading(true);
 
-    if (showType === 'add')
-    {  try {
+    if (showType === 'add') {
+      try {
         try {
-          
           await api.post(
             `suppliers/${shopId}`,
             {},
@@ -167,7 +193,7 @@ const SupplierModal = ({ openDialog, statusDialog, supplierId, showType, shopId 
           );
           Toastify('success', 'Successfully Created');
           const currentPath = router.pathname;
-        
+
           if (!currentPath.includes('suppliers')) {
             router.push(`/shop/${shopId}/suppliers`);
           }
@@ -181,7 +207,9 @@ const SupplierModal = ({ openDialog, statusDialog, supplierId, showType, shopId 
         }
       } finally {
         setIsLoading(false);
-      } return}
+      }
+      return;
+    }
     const { id, email: _email, ...rest } = data;
     const _updated = { ...rest };
     if (_email !== email) _updated.email = _email;
@@ -256,7 +284,11 @@ const SupplierModal = ({ openDialog, statusDialog, supplierId, showType, shopId 
     return (
       <Modal show={open} onHide={handleClose}>
         <Modal.Header className="poslix-modal-title text-primary text-capitalize" closeButton>
-          {showType !== 'show' ? showType + ' Supplier' : 'Supplier'}
+          {showType !== 'show'
+            ? showType === 'add'
+              ? t('supplier.add_supplier')
+              : t('supplier.edit_supplier')
+            : t('supplier.supplier')}
         </Modal.Header>
         <Modal.Body>
           <Box sx={{ display: 'flex', justifyContent: 'center', margin: '20px' }}>
@@ -273,68 +305,71 @@ const SupplierModal = ({ openDialog, statusDialog, supplierId, showType, shopId 
           activeKey={key}
           onSelect={(k) => setKey(k)}
           className="mb-3">
-          <Tab eventKey="profile" title="Profile">
+          <Tab eventKey="profile" title={t('supplier.profile')}>
             <Form noValidate onSubmit={handleSubmit(onSubmit, onError)}>
               <Modal.Header className="poslix-modal-title text-primary text-capitalize" closeButton>
-                {showType === 'show' ? 'Supplier' : showType + ' Supplier'}
+                {showType !== 'show'
+                  ? showType === 'add'
+                    ? t('supplier.add_supplier')
+                    : t('supplier.edit_supplier')
+                  : t('supplier.supplier')}
               </Modal.Header>
               <Modal.Body>
-                <div className="scroll-form">
-                  {supplierFields.map((field) => {
-                    return (
-                      <FormField
-                        key={`supplier-form-${field.name}`}
-                        {...field}
-                        disabled={showType === 'show'}
-                        errors={errors}
-                        required={showType === 'show' ? false : field.required}
-                        register={register}
-                      />
-                    );
-                  })}
+                <div className="d-flex flex-row flex-wrap justify-content-between">
+                  {supplierFields(t, showType, errors, register)}
                 </div>
               </Modal.Body>
               <Modal.Footer>
                 <a className="btn btn-link link-success fw-medium" onClick={handleClose}>
-                  Close <i className="ri-close-line me-1 align-middle" />
+                {t('supplier.close')} <i className="ri-close-line me-1 align-middle" />
                 </a>
                 {showType !== 'show' ? (
                   <Button type="submit" variant="primary" className="p-2">
-                    Save
+                    {t('supplier.save')}
                   </Button>
                 ) : null}
               </Modal.Footer>
             </Form>
           </Tab>
-          <Tab eventKey="orders" title="Orders">
-            <div className="page-content-style card">
-              <DataGrid
-                className="datagrid-style"
-                sx={{
-                  '.MuiDataGrid-columnSeparator': {
-                    display: 'none',
-                  },
-                  '&.MuiDataGrid-root': {
-                    border: 'none',
-                  },
-                }}
-                rows={purchases}
-                columns={columns}
-                initialState={{
-                  columns: { columnVisibilityModel: { mobile: false } },
-                }}
-                pageSize={10}
-                rowsPerPageOptions={[10]}
-              />
-            </div>
-          </Tab>
+          {showType === 'show' && (
+            <Tab
+              eventKey="orders"
+              title={t('supplier.orders')}
+              style={{
+                minHeight: '600px',
+              }}>
+              <div className="page-content-style card" style={{ minHeight: '600px' }}>
+                <DataGrid
+                  className="datagrid-style"
+                  sx={{
+                    '.MuiDataGrid-columnSeparator': {
+                      display: 'none',
+                    },
+                    '&.MuiDataGrid-root': {
+                      border: 'none',
+                    },
+                    ' .MuiDataGrid-virtualScroller': {
+                      minHeight: '600px',
+                    },
+                  }}
+                  rows={purchases}
+                  columns={columns}
+                  initialState={{
+                    columns: { columnVisibilityModel: { mobile: false } },
+                  }}
+                  pageSize={10}
+                  rowsPerPageOptions={[10]}
+                />
+              </div>
+            </Tab>
+          )}
         </Tabs>
       </Modal.Body>
-      <Modal.Footer>
+      {/* <Modal.Footer>
         <a className="btn btn-link link-success fw-medium" onClick={handleClose}>
           <i className="ri-close-line me-1 align-middle" /> Close
         </a>
-      </Modal.Footer>
+      </Modal.Footer> */}
     </Modal>
   );
 };

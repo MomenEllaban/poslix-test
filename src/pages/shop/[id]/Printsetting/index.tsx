@@ -20,9 +20,12 @@ import AlertDialog from 'src/components/utils/AlertDialog';
 import { Toastify } from 'src/libs/allToasts';
 import { findAllData } from 'src/services/crud.api';
 import PrinterModal from '../../../../components/pos/modals/PrinterModal';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { useTranslation } from 'next-i18next';
 
 const Printers: NextPage = (props: any) => {
   const { shopId, rules } = props;
+  const { t } = useTranslation();
   const router = useRouter();
   const [printersList, setPrinters] = useState<
     {
@@ -71,20 +74,19 @@ setPrinters([])
     setPrinterIsModal(false);
     initDataPage();
   };
-  console.log(router.query.id, printersList);
   const columns: GridColDef[] = [
     { field: 'id', headerName: '#', minWidth: 50 },
-    { field: 'name', headerName: 'Printer Name', flex: 1 },
+    { field: 'name', headerName: t('printer.printer_name'), flex: 1 },
     { field: 'ip', headerName: 'IP', flex: 1 },
-    { field: 'status', headerName: 'printer status', flex: 1,renderCell({ row }){
+    { field: 'status', headerName: t('printer.printer_status'), flex: 1,renderCell({ row }){
      
       return  row.status==1?"on":"off"
    } },
-    { field: 'print_type', headerName: 'Printer Type', flex: 1 },
-    { field: 'connection', headerName: 'connection method', flex: 1 },
+    { field: 'print_type', headerName: t('printer.printer_type'), flex: 1 },
+    { field: 'connection', headerName: t('printer.connection_method'), flex: 1 },
     {
       field: 'action',
-      headerName: 'Action ',
+      headerName: t('printer.action'),
       sortable: false,
       disableExport: true,
       flex: 1,
@@ -126,7 +128,7 @@ setPrinters([])
     return (
       <GridToolbarContainer>
         <GridToolbarExport />
-        <GridToolbarColumnsButton />
+        <GridToolbarColumnsButton placeholder="grid" />
       </GridToolbarContainer>
     );
   }
@@ -153,7 +155,7 @@ setPrinters([])
           id={selectId}
           locatiooID={locatiooID}
           url={'print-settings'}>
-          Are you Sure You Want Delete This printer ?
+          {t('alert_dialog.delete_printer')}
         </AlertDialog>
         {!isLoading && (
           <div className="mb-2">
@@ -163,14 +165,14 @@ setPrinters([])
                 setShowType('add');
                 setPrinterIsModal(true);
               }}>
-              <FontAwesomeIcon icon={faPlus} /> Add New printer{' '}
+              <FontAwesomeIcon icon={faPlus} /> {t('printer.add_new_printer')}
             </button>
           </div>
         )}
         {!isLoading ? (
           <>
             <div className="page-content-style card">
-              <h5>printer List</h5>
+              <h5>{t('printer.printer_list')}</h5>
               <DataGrid
                 className="datagrid-style"
                 sx={{
@@ -198,6 +200,7 @@ setPrinters([])
       </AdminLayout>
       <PrinterModal
         shopId={locatiooID}
+        t={t}
         printersList={printersList}
         selectId={selectId}
         showType={showType}
@@ -209,3 +212,9 @@ setPrinters([])
   );
 };
 export default withAuth(Printers);
+
+export async function getServerSideProps({ locale }) {
+  return {
+    props: { ...(await serverSideTranslations(locale)) },
+  };
+}

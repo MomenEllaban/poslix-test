@@ -2,10 +2,11 @@ import { faBarcode, faPenToSquare, faPlus, faTrash } from '@fortawesome/free-sol
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { AdminLayout } from '@layout';
 import { Button as MButton } from '@mui/material';
-import TextField from '@mui/material/TextField';
+// import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
-import useMediaQuery from '@mui/material/useMediaQuery';
-import { debounce } from '@mui/material/utils';
+// import useMediaQuery from '@mui/material/useMediaQuery';
+// import { debounce } from '@mui/material/utils';
+import ModelSendProduct from 'src/modules/products/ModelSendProduct';
 import {
   DataGrid,
   GridColDef,
@@ -18,9 +19,9 @@ import {
 import type { NextPage } from 'next';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
-import { ChangeEvent, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { ChangeEvent, useContext, useEffect, useRef, useState } from 'react';
 import { Button, ButtonGroup } from 'react-bootstrap';
-import Spinner from 'react-bootstrap/Spinner';
+// import Spinner from 'react-bootstrap/Spinner';
 import { ToastContainer } from 'react-toastify';
 import withAuth from 'src/HOCs/withAuth';
 import ShowPriceListModal from 'src/components/dashboard/modal/ShowPriceListModal';
@@ -31,8 +32,11 @@ import { Toastify } from 'src/libs/allToasts';
 import { createNewData, findAllData } from 'src/services/crud.api';
 import api from 'src/utils/app-api';
 import { darkModeContext } from '../../../../context/DarkModeContext';
-import styles from './table.module.css';
-import { grey } from '@mui/material/colors';
+import { useTranslation } from 'next-i18next';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+
+// import styles from './table.module.css';
+// import { grey } from '@mui/material/colors';
 
 // const CustomToolbar = ({
 //   importFileClickHandler,
@@ -71,32 +75,41 @@ import { grey } from '@mui/material/colors';
 // };
 
 const Product: NextPage = (props: any) => {
+  const { t } = useTranslation();
   const { id } = props;
-  const {locationSettings: mySit, setLocationSettings: setmySit} = useUser();  
+  const { locationSettings: mySit, setLocationSettings: setmySit } = useUser();
   const [shopId, setShopId] = useState('');
   const myLoader = (img: any) => img.src;
   const [locationSettings, setLocationSettings] = useState<any>();
   const dataGridRef = useRef(null);
   const router = useRouter();
   const [products, setProducts] = useState<
-    { id: number; name: string; sku: string; type: string; qty: number }[]
+    {
+      id: number;
+      name: string;
+      sku: string;
+      type: string;
+      qty: number;
+      variations: [{ id: number }];
+    }[]
   >([]);
-  const [show, setShow] = useState(false);
-  const [showDeleteAll, setShowDeleteAll] = useState(false);
+  const [showModelSendProduct, setShowModelSendProduct] = useState(false);
+  // const [showDeleteAll, setShowDeleteAll] = useState(false);
   const [selectId, setSelectId] = useState(0);
   const [type, setType] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isOpenPriceDialog, setIsOpenPriceDialog] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  // const [searchTerm, setSearchTerm] = useState('');
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [selectedItems, setSelectedItems] = useState<Array<string>>([]);
   const [locationModal, setLocationModal] = useState<boolean>(false);
   const [locations, setLocations] = useState<{ value: number; label: string }[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [lastPage, setLastPage] = useState();
-  const [totalRows, setTotalRows] = useState();
+  // const [currentPage, setCurrentPage] = useState(1);
+  // const [lastPage, setLastPage] = useState();
+  // const [totalRows, setTotalRows] = useState();
   const { darkMode } = useContext(darkModeContext);
   const [permissions, setPermissions] = useState<any>();
+  const [show, setShow] = useState(false);
 
   const [showDeleteSelected, setShowDeleteSelected] = useState(false);
   const columns: GridColDef[] = [
@@ -109,7 +122,7 @@ const Product: NextPage = (props: any) => {
     },
     {
       field: 'image',
-      headerName: 'Image',
+      headerName: t('products.Image'),
       flex: 1,
       headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
@@ -119,34 +132,38 @@ const Product: NextPage = (props: any) => {
           loader={myLoader}
           width={50}
           height={50}
-          src={row.image && (row.image.length > 1) && (row.image !== 'url') ? row.image : '/images/pos/placeholder.png'}
+          src={
+            row.image && row.image.length > 1 && row.image !== 'url'
+              ? row.image
+              : '/images/pos/placeholder.png'
+          }
         />
       ),
     },
     {
       field: 'type',
-      headerName: 'Type',
+      headerName: t('products.Type'),
       flex: 0.5,
       headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
     },
     {
       field: 'sku',
-      headerName: 'sku ',
+      headerName: t('products.sku'),
       flex: 0.5,
       headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
     },
     {
       field: 'name',
-      headerName: 'name ',
+      headerName: t('products.name'),
       flex: 1,
       headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
     },
     {
       field: 'sell_price',
-      headerName: 'Sell (Min - Max)',
+      headerName: t('products.Sell (Min - Max)'),
       flex: 1,
       headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
@@ -167,7 +184,7 @@ const Product: NextPage = (props: any) => {
 
     {
       field: 'category',
-      headerName: 'Category',
+      headerName: t('products.Category'),
       flex: 1,
       headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
@@ -175,7 +192,7 @@ const Product: NextPage = (props: any) => {
     },
     {
       field: 'stock',
-      headerName: 'Qty',
+      headerName: t('products.Qty'),
       flex: 0.5,
       headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
       cellClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
@@ -188,7 +205,7 @@ const Product: NextPage = (props: any) => {
     },
     {
       field: 'action',
-      headerName: 'Action ',
+      headerName: t('products.Action'),
       sortable: false,
       disableExport: true,
       headerClassName: `${darkMode ? 'dark-mode-body' : 'light-mode-body '}`,
@@ -227,7 +244,7 @@ const Product: NextPage = (props: any) => {
   };
   const importFileHandler = async (e: ChangeEvent<HTMLInputElement>) => {
     const formData = new FormData();
-    console.log(e.target.files[0]);
+    // console.log(e.target.files[0]);
     formData.append('file', e.target.files[0]);
     const res = await createNewData(`products/${router.query.id}/import`, formData);
     if (res.data.success) initDataPage();
@@ -235,27 +252,28 @@ const Product: NextPage = (props: any) => {
   };
 
   function CustomToolbar() {
-    const [isHovered, setIsHovered] = useState(false);
-
-    const divStyle = {
-      background: isHovered ? '#99CC66' : '#779933',
-      padding: '4px',
-      display: 'flex',
-      alignItems: 'center',
-      borderRadius: '12px',
-      marginRight: '0.5rem',
-      transition: 'background-color 0.3s',
-    };
     return (
       <GridToolbarContainer className="d-flex align-items-center">
-        <GridToolbarExport />
-        {/* mohamed elsayed */}
+        <GridToolbarExport
+          csvOptions={{
+            fileName: 'poxLix-products',
+            allColumns: true,
+          }}
+          printOptions={{
+            hideFooter: true,
+            hideToolbar: true,
+            allColumns: true,
+          }}
+        />
+
         <MButton onClick={importFileClickHandler}>Import</MButton>
         <input style={{ display: 'none' }} ref={fileRef} type="file" onChange={importFileHandler} />
-        {/* /////////// */}
 
-        <GridToolbarColumnsButton />
+        <GridToolbarColumnsButton placeholder="grid" />
         <MButton onClick={() => setShowDeleteSelected(true)}>Delete Selected</MButton>
+        <MButton onClick={() => setShowModelSendProduct(true)} disabled={!selectedItems?.length}>
+          Send
+        </MButton>
 
         <GridToolbarQuickFilter />
       </GridToolbarContainer>
@@ -313,23 +331,23 @@ const Product: NextPage = (props: any) => {
             return loc.location_id == +id;
           })
         ]
-        );
-        setmySit(_locs[
-          _locs.findIndex((loc: any) => {
-            return loc.location_id == +id;
-          })
-        ])
+      );
+    setmySit(
+      _locs[
+        _locs.findIndex((loc: any) => {
+          return loc.location_id == +id;
+        })
+      ]
+    );
   }, [router.asPath]);
 
-  const handleDeleteFuc = (result: boolean, msg: string, section: string) => {
-    initDataPage();
-    if (msg.length > 0) Toastify(result ? 'success' : 'error', msg);
-    setShow(false);
-    setShowDeleteAll(false);
-  };
   const onRowsSelectionHandler = (ids: any) => {
     setSelectedItems(ids);
+
+  
+    // setSendProducts
   };
+
   const handleCellClick = (params, event) => {
     if (params.field === 'qty') {
       let index = products.findIndex((p) => params.id == p.id);
@@ -341,27 +359,20 @@ const Product: NextPage = (props: any) => {
       }
     }
   };
-  const handleSearch = (event) => {
-    debounceSearchTerm(event.target.value);
-  };
-  // Debounce user input with lodash debounce function
-  const debounceSearchTerm = debounce((value) => {
-    setSearchTerm(value);
-  }, 500);
 
   // Filter products based on search term
-  useEffect(() => {
-    if (searchTerm.trim()) {
-      const filteredList = products.filter(
-        (product) =>
-          product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          product.sku.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setFilteredProducts(filteredList);
-    } else {
-      setFilteredProducts(products);
-    }
-  }, [searchTerm, products]);
+  // useEffect(() => {
+  //   if (searchTerm.trim()) {
+  //     const filteredList = products.filter(
+  //       (product) =>
+  //         product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //         product.sku.toLowerCase().includes(searchTerm.toLowerCase())
+  //     );
+  //     setFilteredProducts(filteredList);
+  //   } else {
+  //     setFilteredProducts(products);
+  //   }
+  // }, [searchTerm, products]);
 
   useEffect(() => {
     if (router.isReady) setShopId(router.query.id.toString());
@@ -371,10 +382,7 @@ const Product: NextPage = (props: any) => {
     initDataPage();
   }, [shopId]);
 
-  const theme = useTheme();
-  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
-  const isMediumScreen = useMediaQuery(theme.breakpoints.between('md', 'lg'));
-  const getRowClassName = () => styles.rowStyling;
+  // const theme = useTheme();
 
   const handleDeleteMultiProducts = () => {
     setIsLoading(true);
@@ -418,57 +426,63 @@ const Product: NextPage = (props: any) => {
       });
   };
   return (
-    <AdminLayout shopId={id}>
-      <ToastContainer />
-      <ConfirmationModal
-        show={show}
-        onClose={() => setShow(false)}
-        onConfirm={handleDeleteSingleProduct}
-        message="Are you sure to delete this item?"
-      />
-      <ConfirmationModal
-        show={showDeleteSelected}
-        onClose={() => setShowDeleteSelected(false)}
-        onConfirm={handleDeleteMultiProducts}
-        message="Are you sure to delete the items?"
-      />
+    <>
+      <AdminLayout shopId={id}>
+        <ModelSendProduct
+          selectedItems={selectedItems}
+          setShow={setShowModelSendProduct}
+          show={showModelSendProduct}
+          products={products}
+        />
+        <ToastContainer />
+        <ConfirmationModal
+          show={show}
+          onClose={() => setShow(false)}
+          onConfirm={handleDeleteSingleProduct}
+          message={t('products.Are_you_sure_to_delete_this_item?')}
+        />
+        <ConfirmationModal
+          show={showDeleteSelected}
+          onClose={() => setShowDeleteSelected(false)}
+          onConfirm={handleDeleteMultiProducts}
+          message={t('products.Are_you_sure_to_delete_the_items?')}
+        />
 
-      <ShowPriceListModal
-        shopId={id}
-        productId={selectId}
-        type={type}
-        isOpenPriceDialog={isOpenPriceDialog}
-        setIsOpenPriceDialog={() => setIsOpenPriceDialog(false)}
-      />
-      <LocationModal
-        showDialog={locationModal}
-        setShowDialog={setLocationModal}
-        locations={locations}
-        data={selectedItems}
-        setData={setSelectedItems}
-        shopId={id}
-        value={locations.findIndex((loc: any) => {
-          return loc.value == id;
-        })}
-      />
-      {/* start */}
-      {!isLoading && permissions.hasInsert && (
-        <div className="mb-2 flex items-center justify-between">
-          <button
-            className="btn btn-primary p-3"
-            onClick={() => router.push('/shop/' + shopId + '/products/add')}>
-            <FontAwesomeIcon icon={faPlus} /> Add New Product{' '}
-          </button>
-          {/* <TextField label="search name/sku" variant="filled" onChange={handleSearch} /> */}
-        </div>
-      )}
+        <ShowPriceListModal
+          shopId={id}
+          productId={selectId}
+          type={type}
+          isOpenPriceDialog={isOpenPriceDialog}
+          setIsOpenPriceDialog={() => setIsOpenPriceDialog(false)}
+        />
+        <LocationModal
+          showDialog={locationModal}
+          setShowDialog={setLocationModal}
+          locations={locations}
+          data={selectedItems}
+          setData={setSelectedItems}
+          shopId={id}
+          value={locations.findIndex((loc: any) => {
+            return loc.value == id;
+          })}
+        />
+        {/* start */}
+        {!isLoading && permissions.hasInsert && (
+          <div className="mb-2 flex items-center justify-between">
+            <button
+              className="btn btn-primary p-3"
+              onClick={() => router.push('/shop/' + shopId + '/products/add')}>
+              <FontAwesomeIcon icon={faPlus} /> {t('products.Add_New_Product')}{' '}
+            </button>
+            {/* <TextField label="search name/sku" variant="filled" onChange={handleSearch} /> */}
+          </div>
+        )}
 
-  
         <>
           <div className="page-content-style card">
-            <h5>Product List</h5>
+            <h5>{t('products.Product_List')}</h5>
             <DataGrid
-            loading={isLoading}
+              loading={isLoading}
               ref={dataGridRef}
               checkboxSelection
               className="datagrid-style"
@@ -490,16 +504,16 @@ const Product: NextPage = (props: any) => {
             />
           </div>
         </>
-      
-    </AdminLayout>
+      </AdminLayout>
+    </>
   );
 };
 
 export default withAuth(Product);
 
-export async function getServerSideProps({ params }) {
+export async function getServerSideProps({ params, locale }) {
   const { id } = params;
   return {
-    props: { id },
+    props: { id, ...(await serverSideTranslations(locale)) },
   };
 }

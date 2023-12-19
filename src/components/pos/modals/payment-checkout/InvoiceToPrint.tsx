@@ -1,12 +1,16 @@
 import { ILocationSettings } from '@models/common-model';
 import { IPayment, IProduct } from '@models/pos.types';
 import { EPaymentStatus } from '@models/reports.types';
+import { useRouter } from 'next/router';
 import React from 'react';
 
 interface IProductWithPivot extends IProduct {
+  product_name?:any;
+  product_price?:any;
+  product_tax?:any;
   pivot: {
     id: number;
-
+   
     cost: string;
     discount_amount?: string;
     price: string;
@@ -56,10 +60,12 @@ interface IProps {
 
   //   is_multi_language: boolean;
   // };
+  // tax?:any;
   invoiceDetails?: any;
   customers: { label: string }[];
   customer: { label: string };
   printReceipt: {
+    data?:any;
     paid: number | string;
     due: number | string;
     tax: number | string;
@@ -69,47 +75,54 @@ interface IProps {
     payment: IPayment[];
     products: IProductWithPivot[];
     customerName: string;
+    tax_amount: string
   };
   locationSettings: ILocationSettings;
   __WithDiscountFeature__total: number;
 }
 
 class InvoiceToPrint extends React.PureComponent<IProps> {
-  perperdForPrint(prods: IProductWithPivot[]) {
+
+  
+  perperdForPrint(tax, prods: IProductWithPivot[]) {
+  
     let counter = 0;
     return prods?.map((prod: IProductWithPivot, i: number) => {
+      console.log(prod);
+
       counter++;
       return (
         <tr key={counter}>
-          <td>{+prod?.pivot?.qty}</td>
-          <td>{prod.name}</td>
+          <td>{+prod?.product_qty}</td>
+          <td>{prod?.product_name}</td>
           <th></th>
           <td>
-            {(+prod.sell_price).toFixed(this.props.locationSettings?.location_decimal_places)}
+            {(+prod?.product_price).toFixed(this.props.locationSettings?.location_decimal_places)}
           </td>
         </tr>
       );
     });
   }
-  perperdForA4Print(prods: IProductWithPivot[]) {
+  
+  perperdForA4Print(tax,prods) {
     let counter = 0;
+    
     return prods?.map((prod: IProductWithPivot, i: number) => {
+      console.log(prod);
+      console.log(tax);
+      
       counter++;
 
       return (
         <tr key={counter + 'product-a4-item'}>
-          <td>{prod.name}</td>
-          <td>{+prod?.pivot?.qty}</td>
+          <td>{prod.product_name}</td>
+          <td>{+prod?.product_qty}</td>
           <td>
-            {(+prod?.pivot?.price).toFixed(this.props.locationSettings?.location_decimal_places)}
+            {(+prod?.product_price).toFixed(this.props.locationSettings?.location_decimal_places)}
           </td>
-          <td>
-            {((+prod?.pivot?.tax_amount / 100) * +prod?.pivot?.price || 0).toFixed(
-              this.props.locationSettings?.location_decimal_places
-            )}
-          </td>
-          <td>
-            {(+prod?.pivot?.price * +prod?.pivot?.qty).toFixed(
+      
+              <td colSpan={2}>
+            {(+prod?.product_price * +prod?.product_qty).toFixed(
               this.props.locationSettings?.location_decimal_places
             )}
           </td>
@@ -120,6 +133,7 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
 
   render() {
     const {
+      // tax,
       invoiceType,
       invoiceDetails,
       printReceipt,
@@ -128,6 +142,9 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
       locationSettings,
       __WithDiscountFeature__total,
     } = this.props;
+   
+    console.log(printReceipt);
+    
 
     if (invoiceType === 'A4') {
       return (
@@ -199,13 +216,7 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
                     {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtQty}
                   </th>
                   <th>Unit Price</th>
-                  {/* <th> {invoiceDetails?.txtItem}<br />{invoiceDetails?.en?.is_multi_language && invoiceDetails?.txtItem2}</th> */}
-                  <th>
-                    {invoiceDetails?.en?.txtTax}
-                    <br />
-                    {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtTax}
-                  </th>
-                  <th>
+                    <th colSpan={2}>
                     {' '}
                     {invoiceDetails?.en?.txtAmount}
                     <br />
@@ -214,13 +225,26 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
                 </tr>
               </thead>
               <tbody>
-                {this.perperdForA4Print(printReceipt?.products)}
+                {this.perperdForA4Print(printReceipt?.tax_amount,printReceipt?.data[0]?.products)}
                 <tr>
                   {/* <td>{invoiceDetails?.txtTax} {invoiceDetails?.en?.is_multi_language && invoiceDetails?.txtTax}</td> */}
                   <td colSpan={4} className="txt_bold_invoice">
-                    Total Paid {invoiceDetails?.en?.is_multi_language && 'إجمالى المدفوعات'}
+                    Tax Amount 
+                    {" "}
+                    {invoiceDetails?.en?.is_multi_language && 'قيمة الضريبة'}
                   </td>
-                  <td>
+                  <td className="txt_bold_invoice">
+                    {Number(printReceipt?.tax_amount).toFixed(locationSettings?.location_decimal_places)}
+                  </td>
+                </tr>
+                <tr>
+                  {/* <td>{invoiceDetails?.txtTax} {invoiceDetails?.en?.is_multi_language && invoiceDetails?.txtTax}</td> */}
+                  <td colSpan={4} className="txt_bold_invoice">
+                    Total Paid 
+                    {" "}
+                    {invoiceDetails?.en?.is_multi_language && 'إجمالى المدفوعات'}
+                  </td>
+                  <td className="txt_bold_invoice">
                     {Number(printReceipt?.paid).toFixed(locationSettings?.location_decimal_places)}
                   </td>
                 </tr>
@@ -313,7 +337,7 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
                   {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtAmount}
                 </th>
               </tr>
-              {this.perperdForPrint(printReceipt?.products)}
+              {this.perperdForPrint(printReceipt?.tax_amount,printReceipt?.data[0]?.products)}
               <tr style={{ borderTop: '2px', height: '2px' }}></tr>
               <tr></tr>
               <tr className="net-amount">
@@ -324,11 +348,7 @@ class InvoiceToPrint extends React.PureComponent<IProps> {
                 </td>
                 <td></td>
                 <td>
-                  {(
-                    ((+printReceipt?.total_price / (1 + +printReceipt?.tax / 100)) *
-                      +printReceipt?.tax) /
-                    100
-                  ).toFixed(locationSettings?.location_decimal_places)}
+                  {(+printReceipt?.tax_amount).toFixed(locationSettings?.location_decimal_places)}
                 </td>
               </tr>
               <tr className="net-amount">

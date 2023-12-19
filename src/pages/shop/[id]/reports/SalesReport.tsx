@@ -21,6 +21,10 @@ import SalesReportToPrint from 'src/modules/reports/_components/SalesReportToPri
 import { findAllData } from 'src/services/crud.api';
 import api from 'src/utils/app-api';
 import { ELocalStorageKeys, getLocalStorage } from 'src/utils/local-storage';
+import Pagination from '@mui/material/Pagination';
+
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { useTranslation } from 'next-i18next';
 
 const pageSizeOptions = [10, 20, 50, 100];
 
@@ -29,6 +33,9 @@ function SalesReport() {
   const shopId = router.query.id ?? '';
 
   const componentRef = useRef(null);
+  const NUMBER_PAGE_DEFAULT = 1;
+
+  const { t } = useTranslation();
 
   const { locationSettings, setLocationSettings, invoicDetails } = useUser();
 
@@ -42,146 +49,195 @@ function SalesReport() {
   const [show, setShow] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showViewPopUp, setShowViewPopUp] = useState(false);
-  const [handleSearchTxt, setHandleSearchTxt] = useState('');
+  // const [handleSearchTxt, setHandleSearchTxt] = useState('');
   const [details, setDetails] = useState({ subTotal: 1, tax: 0, total: 0 });
   const [selectedRange, setSelectedRange] = useState(null);
   const [strSelectedDate, setStrSelectedDate] = useState([]);
-  const [selectedDateVlaue, setSelectedDateValue] = useState('');
+  // const [selectedDateVlaue, setSelectedDateValue] = useState('');
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(pageSizeOptions[0]);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+  const [paginationTotal, setPaginationTotal] = useState(NUMBER_PAGE_DEFAULT);
+
+  const pageNumRef = useRef(NUMBER_PAGE_DEFAULT) as React.MutableRefObject<number>;
+
   const handleClose = () => {
     setAnchorEl(null);
   };
 
-  const columns: GridColDef[] = useMemo(
-    () => [
-      { field: 'id', headerName: '#', maxWidth: 72 },
-      {
-        field: 'date',
-        headerName: 'Date',
-        width: 180,
-        renderCell: ({ row }) => new Date(row.date).toLocaleDateString(),
-      },
-      { field: 'user_name', headerName: 'Sold By', flex: 1 },
-      {
-        field: 'contact_name',
-        headerName: 'Sold To',
-        flex: 1,
-        renderCell: ({ row }) => row.contact_name.trim() || 'walk-in-customer',
-      },
-      {
-        field: 'tax',
-        headerName: 'Tax',
-        flex: 1,
-        disableColumnMenu: true,
-        renderCell: ({ row }: Partial<GridRowParams>) =>
-          (+(row.tax ?? 0))?.toFixed(locationSettings?.location_decimal_places),
-      },
-      {
-        field: 'total_price',
-        headerName: 'Total',
-        maxWidth: 72,
-        renderCell: ({ row }: Partial<GridRowParams>) =>
-          `${(+row.sub_total + +row.tax).toFixed(
-            locationSettings?.location_decimal_places
-          )} ${locationSettings?.currency_code}`,
-      },
-      { field: 'notes', headerName: 'Note', flex: 1, disableColumnMenu: true },
-    ],
-    [locationSettings]
-  );
+  const columns: GridColDef[] = [
+    { field: 'id', headerName: '#', maxWidth: 72 },
+    {
+      field: 'date',
+      headerName: t('g.Date'),
+      width: 180,
+      renderCell: ({ row }) => new Date(row.date).toLocaleDateString(),
+    },
+    {
+      field: 'user_name',
+      headerName: t('g.SoldBy'),
+      flex: 1,
+      valueGetter: ({ row }) => {
+        let name = '';
 
-  async function initDataPage() {
+        if (row?.user_first_name) {
+          name = row?.user_first_name + ' ' + (row?.user_last_name ?? '');
+        } else {
+          name = row?.user_name;
+        }
+
+        return name;
+      },
+    },
+    {
+      field: 'contact_name',
+      headerName: t('g.SoldTo'),
+      flex: 1,
+      // renderCell: ({ row }) => row?.contact_name?.trim() ?? (`${row?.contact_first_name} ${row?.contact_last_name}` || 'walk-in-customer'),
+      valueGetter: ({ row }) => {
+        let name = '';
+
+        if (row?.contact_first_name) {
+          name = row?.contact_first_name + ' ' + row?.contact_last_name;
+        } else {
+          name = row?.contact_name?.trim();
+        }
+
+        return name || 'walk-in-customer';
+      },
+    },
+    {
+      field: 'tax',
+      headerName: t('g.Tax'),
+      flex: 1,
+      disableColumnMenu: true,
+      renderCell: ({ row }: Partial<GridRowParams>) =>
+        (+(row.tax ?? 0))?.toFixed(locationSettings?.location_decimal_places),
+    },
+    {
+      field: 'total_price',
+      headerName: t('g.Total'),
+      maxWidth: 72,
+      renderCell: ({ row }: Partial<GridRowParams>) =>
+        `${(+row.sub_total + +row.tax).toFixed(
+          locationSettings?.location_decimal_places
+        )} ${locationSettings?.currency_code}`,
+    },
+    { field: 'notes', headerName: t('g.Note'), flex: 1, disableColumnMenu: true },
+  ];
+
+  const handelFilterEndPoint = (): string => {
+    let endPoint = '';
+    if (strSelectedDate.length > 0) {
+      endPoint = endPoint + `&start_date=${strSelectedDate[0]}&end_date=${strSelectedDate[1]}`;
+    }
+    if (selectedRange) {
+      endPoint = endPoint + `&dateRange=${selectedRange}`;
+    }
+    if (selectedCustomer) {
+      endPoint = endPoint + `&contact_first_name=${selectedCustomer}`;
+    }
+    return endPoint;
+  };
+
+  async function initDataPage(numPage = NUMBER_PAGE_DEFAULT) {
     setIsLoading(true);
-    api.get(`reports/sales/${shopId}`, { params: { all_data: 1 } }).then(({ data }) => {
-      setSales(data.result.data);
-      setFilteredSales(data.result.data);
-      setDetails({
-        subTotal: data.result.sub_total,
-        total: data.result.total,
-        tax: data.result.tax,
+    const endPoint = handelFilterEndPoint();
+    pageNumRef.current = numPage;
+    api
+      .get(`reports/sales/${shopId}?page=${numPage}${endPoint}`)
+      .then(({ data }) => {
+        setSales(data.result?.pagination?.data);
+        setFilteredSales(data.result?.pagination?.data);
+        setPaginationTotal(data.result?.pagination?.last_page);
+        setDetails({
+          subTotal: data.result.sub_total,
+          total: data.result.total,
+          tax: data.result.tax,
+        });
+      })
+      .catch((error) => {
+        console.log(error);
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
-    });
+  }
 
+  const getSelectedData = async () => {
     const customerRes = await findAllData(`customers/${shopId}`);
     setCustomersOptions(customerRes.data.result);
-
-    setIsLoading(false);
-  }
+  };
 
   useEffect(() => {
     if (!shopId) return;
 
+    initDataPage(NUMBER_PAGE_DEFAULT);
+  }, [shopId, strSelectedDate, selectedRange, selectedCustomer]);
+
+  useEffect(() => {
+    if (!shopId) return;
+    getSelectedData();
     const locations: ILocation[] = getLocalStorage(ELocalStorageKeys.LOCATIONS);
     const currentLocation = locations.find((location) => +location.location_id === +shopId);
     setLocationSettings(currentLocation ?? locationSettings);
-
-    initDataPage();
   }, [shopId]);
 
   const handlePrint = useReactToPrint({
     content: () => componentRef.current,
   });
-  // const onRowsSelectionHandler = (selectedRowsData: any) => {
-  //   setSelectRow(selectedRowsData);
-  //   setSelectId(selectedRowsData.id);
-  //   getItems(selectedRowsData.id);
-  //   setShowViewPopUp(true);
-  // };
-  const handleSearch = (e: any) => {
-    setHandleSearchTxt(e.target.value);
-  };
 
-  useEffect(() => {
-    let localFilteredSales = [];
-    if (strSelectedDate.length === 2) {
-      const filteredList = filteredSales.filter((sale: ISalesReport) => {
-        const dateCreated = sale.date.split(' ')[0];
-        return (
-          new Date(dateCreated).getDate() >= new Date(strSelectedDate[0]).getDate() &&
-          new Date(dateCreated).getMonth() >= new Date(strSelectedDate[0]).getMonth() &&
-          new Date(dateCreated).getFullYear() >= new Date(strSelectedDate[0]).getFullYear() &&
-          new Date(dateCreated).getDate() <= new Date(strSelectedDate[1]).getDate() &&
-          new Date(dateCreated).getMonth() <= new Date(strSelectedDate[1]).getMonth() &&
-          new Date(dateCreated).getFullYear() <= new Date(strSelectedDate[1]).getFullYear()
-        );
-      });
+  //   let localFilteredSales = [];
+  //   if (strSelectedDate.length === 2) {
+  //     const filteredList = filteredSales.filter((sale: ISalesReport) => {
+  //       const dateCreated = sale.date.split(' ')[0];
+  //       return (
+  //         new Date(dateCreated).getDate() >= new Date(strSelectedDate[0]).getDate() &&
+  //         new Date(dateCreated).getMonth() >= new Date(strSelectedDate[0]).getMonth() &&
+  //         new Date(dateCreated).getFullYear() >= new Date(strSelectedDate[0]).getFullYear() &&
+  //         new Date(dateCreated).getDate() <= new Date(strSelectedDate[1]).getDate() &&
+  //         new Date(dateCreated).getMonth() <= new Date(strSelectedDate[1]).getMonth() &&
+  //         new Date(dateCreated).getFullYear() <= new Date(strSelectedDate[1]).getFullYear()
+  //       );
+  //     });
 
-      setSelectedDateValue(`${strSelectedDate[0]} - ${strSelectedDate[1]}`);
-      localFilteredSales = filteredList;
-    } else if (strSelectedDate.length === 1) {
-      const filteredList = sales.filter((sale: ISalesReport) => {
-        const dateCreated = sale.date.split(' ')[0];
-        return (
-          new Date(dateCreated).getDate() === new Date(strSelectedDate[0]).getDate() &&
-          new Date(dateCreated).getMonth() === new Date(strSelectedDate[0]).getMonth() &&
-          new Date(dateCreated).getFullYear() === new Date(strSelectedDate[0]).getFullYear()
-        );
-      });
-      setSelectedDateValue(strSelectedDate[0]);
-      localFilteredSales = filteredList;
-    } else {
-      localFilteredSales = sales;
-    }
+  //     setSelectedDateValue(`${strSelectedDate[0]} - ${strSelectedDate[1]}`);
+  //     localFilteredSales = filteredList;
+  //   } else if (strSelectedDate.length === 1) {
+  //     const filteredList = sales.filter((sale: ISalesReport) => {
+  //       const dateCreated = sale.date.split(' ')[0];
+  //       return (
+  //         new Date(dateCreated).getDate() === new Date(strSelectedDate[0]).getDate() &&
+  //         new Date(dateCreated).getMonth() === new Date(strSelectedDate[0]).getMonth() &&
+  //         new Date(dateCreated).getFullYear() === new Date(strSelectedDate[0]).getFullYear()
+  //       );
+  //     });
+  //     setSelectedDateValue(strSelectedDate[0]);
+  //     localFilteredSales = filteredList;
+  //   } else {
+  //     localFilteredSales = sales;
+  //   }
 
-    //Eslam 19
-    let totalPrice = 0;
-    let taxAmount = 0;
-    localFilteredSales.forEach((obj: ISalesReport) => {
-      const price = +obj.sub_total;
-      const tax = parseFloat(obj.tax);
-      totalPrice += price;
-      taxAmount += tax;
-    });
-    const totalPriceAndTax = totalPrice + taxAmount;
-    setDetails({ subTotal: totalPrice, tax: taxAmount, total: totalPriceAndTax });
+  //   //Eslam 19
+  //   let totalPrice = 0;
+  //   let taxAmount = 0;
+  //   localFilteredSales.forEach((obj: ISalesReport) => {
+  //     const price = +obj.sub_total;
+  //     const tax = parseFloat(obj.tax);
+  //     totalPrice += price;
+  //     taxAmount += tax;
+  //   });
+  //   const totalPriceAndTax = totalPrice + taxAmount;
+  //   setDetails({ subTotal: totalPrice, tax: taxAmount, total: totalPriceAndTax });
 
-    if(selectedCustomer?.length > 0)
-      localFilteredSales = localFilteredSales.filter((el) => el.contact_name.includes(selectedCustomer))
+  //   if (selectedCustomer?.length > 0)
+  //     localFilteredSales = localFilteredSales.filter((el) =>
+  //       el.contact_name.includes(selectedCustomer)
+  //     );
 
-    setFilteredSales(localFilteredSales);
-  }, [strSelectedDate, selectedCustomer]);
+  //   setFilteredSales(localFilteredSales);
+  // }, [strSelectedDate, selectedCustomer]);
 
   const handleChangeCustomer = (event: SelectChangeEvent<string>) => {
     setSelectedCustomer(event.target.value);
@@ -201,8 +257,21 @@ function SalesReport() {
   };
 
   const handlePageChange = (params) => setPage(params.page);
-  const handlePrevPageButtonClick = () => setPage((prevPage) => prevPage - 1);
-  const handleNextPageButtonClick = () => setPage((prevPage) => prevPage + 1);
+  // const handlePrevPageButtonClick = () => setPage((prevPage) => prevPage - 1);
+  // const handleNextPageButtonClick = () => setPage((prevPage) => prevPage + 1);
+
+  function CustomPagination(): React.JSX.Element {
+    return (
+      <Pagination
+        color="primary"
+        variant="outlined"
+        shape="rounded"
+        page={pageNumRef.current}
+        count={paginationTotal}
+        onChange={(event, value) => initDataPage(value)}
+      />
+    );
+  }
 
   return (
     <AdminLayout shopId={shopId}>
@@ -211,14 +280,15 @@ function SalesReport() {
           setStrSelectedDate={setStrSelectedDate}
           selectedRange={selectedRange}
           setSelectedRange={setSelectedRange}
+          valueTextRange
         />
         <FormControl sx={{ m: 1, width: 220 }}>
-          <InputLabel id="customer-select-label">Customer</InputLabel>
+          <InputLabel id="customer-select-label">{t('g.Customer')}</InputLabel>
           <Select
             labelId="customer-select-label"
             id="customer-select"
             value={selectedCustomer}
-            label="Customer"
+            label={t('g.Customer')}
             onChange={handleChangeCustomer}>
             {customersOptions.map((customer) => (
               <MenuItem key={customer.id} value={customer.first_name}>
@@ -228,16 +298,16 @@ function SalesReport() {
           </Select>
         </FormControl>
         <Button onClick={resetFilters} style={{ height: '56px', marginLeft: 'auto' }}>
-          CLEAR
+          {t('g.CLEAR')}
         </Button>
       </div>
       <AlertDialog
         alertShow={show}
         alertFun={(e: boolean) => setShow(e)}
         id={selectId}
-        type="deleteSale"
+        type={t('g.deleteSale')}
         products={filteredSales}>
-        Are you Sure You Want Delete This Item ?
+        {t('g.Are_you_Sure_You_Want_Delete_This_Item')}
       </AlertDialog>
       {
         <div style={{ display: 'none' }}>
@@ -251,20 +321,20 @@ function SalesReport() {
         </div>
       }
       <div className="page-content-style card">
-        <h5> Report Sales</h5>
+        <h5> {t('g.ReportSales')}</h5>
         <div className="deatils_box">
           <div>
-            <span>SubTotal: </span>
+            <span>{t('g.SubTotal')}: </span>
             {details.subTotal.toFixed(locationSettings?.location_decimal_places)}{' '}
             {locationSettings?.currency_code}
           </div>
           <div>
-            <span>Tax: </span>
+            <span>{t('g.Tax')}: </span>
             {details.tax.toFixed(locationSettings?.location_decimal_places)}{' '}
             {locationSettings?.currency_code}
           </div>
           <div>
-            <span>Total: </span>
+            <span>{t('g.Total')}: </span>
             {details.total.toFixed(locationSettings?.location_decimal_places)}{' '}
             {locationSettings?.currency_code}
           </div>
@@ -285,71 +355,72 @@ function SalesReport() {
           columns={columns}
           components={{
             Toolbar: CustomToolbar,
-            Footer: () => {
-              const startingPage = page * pageSize + 1;
-              const endPage =
-                page * pageSize + pageSize > filteredSales.length
-                  ? filteredSales.length
-                  : page * pageSize + pageSize;
-              let total = 0;
-              filteredSales
-                .slice(startingPage - 1, endPage)
-                .forEach((filteredSale) => (total += Number(filteredSale.total_price)));
-              return (
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                  }}>
-                  {/* <p style={{ margin: 0 }}>
-                    <span style={{ fontWeight: 'bold' }}>Page Total: </span>
-                    {total.toFixed(3)} {locationSettings?.currency_code}
-                  </p> */}
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                    }}>
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'flex-end',
-                        marginRight: '16px',
-                      }}>
-                      <span style={{ marginRight: '16px' }}>Rows per page:</span>
-                      <Select value={pageSize} onChange={handlePageSizeChange}>
-                        {pageSizeOptions.map((option) => (
-                          <MenuItem key={option} value={option}>
-                            {option}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </div>
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'flex-end',
-                        marginRight: '16px',
-                      }}>
-                      <IconButton disabled={page === 0} onClick={handlePrevPageButtonClick}>
-                        <KeyboardArrowLeft />
-                      </IconButton>
-                      <div style={{ marginLeft: '16px', marginRight: '16px' }}>
-                        {startingPage} - {endPage} of {filteredSales.length}
-                      </div>
-                      <IconButton
-                        disabled={page >= Math.ceil(filteredSales.length / pageSize) - 1}
-                        onClick={handleNextPageButtonClick}>
-                        <KeyboardArrowRight />
-                      </IconButton>
-                    </div>
-                  </div>
-                </div>
-              );
-            },
+            Pagination: CustomPagination,
+            // Footer: () => {
+            //   const startingPage = page * pageSize + 1;
+            //   const endPage =
+            //     page * pageSize + pageSize > filteredSales.length
+            //       ? filteredSales.length
+            //       : page * pageSize + pageSize;
+            //   let total = 0;
+            //   filteredSales
+            //     .slice(startingPage - 1, endPage)
+            //     .forEach((filteredSale) => (total += Number(filteredSale.total_price)));
+            //   return (
+            //     <div
+            //       style={{
+            //         display: 'flex',
+            //         alignItems: 'center',
+            //         justifyContent: 'space-between',
+            //       }}>
+            //       {/* <p style={{ margin: 0 }}>
+            //         <span style={{ fontWeight: 'bold' }}>Page Total: </span>
+            //         {total.toFixed(3)} {locationSettings?.currency_code}
+            //       </p> */}
+            //       <div
+            //         style={{
+            //           display: 'flex',
+            //           alignItems: 'center',
+            //         }}>
+            //         <div
+            //           style={{
+            //             display: 'flex',
+            //             alignItems: 'center',
+            //             justifyContent: 'flex-end',
+            //             marginRight: '16px',
+            //           }}>
+            //           <span style={{ marginRight: '16px' }}>Rows per page:</span>
+            //           <Select value={pageSize} onChange={handlePageSizeChange}>
+            //             {pageSizeOptions.map((option) => (
+            //               <MenuItem key={option} value={option}>
+            //                 {option}
+            //               </MenuItem>
+            //             ))}
+            //           </Select>
+            //         </div>
+            //         <div
+            //           style={{
+            //             display: 'flex',
+            //             alignItems: 'center',
+            //             justifyContent: 'flex-end',
+            //             marginRight: '16px',
+            //           }}>
+            //           <IconButton disabled={page === 0} onClick={handlePrevPageButtonClick}>
+            //             <KeyboardArrowLeft />
+            //           </IconButton>
+            //           <div style={{ marginLeft: '16px', marginRight: '16px' }}>
+            //             {startingPage} - {endPage} of {filteredSales.length}
+            //           </div>
+            //           <IconButton
+            //             disabled={page >= Math.ceil(filteredSales.length / pageSize) - 1}
+            //             onClick={handleNextPageButtonClick}>
+            //             <KeyboardArrowRight />
+            //           </IconButton>
+            //         </div>
+            //       </div>
+            //     </div>
+            //   );
+            // },
           }}
           pagination
           page={page}
@@ -373,29 +444,29 @@ function SalesReport() {
               <div className="item-sections">
                 <div className="top-detials-invoice">
                   <div className="top-detials-item">
-                    <p>Invoice No :</p>
+                    <p>{t('g.InvoiceNo')} :</p>
                     <p>{selectRow.id}</p>
                   </div>
                   <div className="top-detials-item">
-                    <p>Invoice Date :</p>
+                    <p>{t('g.InvoiceDate')} :</p>
                     <p>{selectRow.sale_date}</p>
                   </div>
                   <div className="top-detials-item">
-                    <p>Added By :</p>
+                    <p>{t('g.AddedBy')} :</p>
                     <p>{selectRow.added_by}</p>
                   </div>
                 </div>
                 <div className="top-detials-invoice">
                   <div className="top-detials-item">
-                    <p>Final Total :</p>
+                    <p>{t('g.FinalTotal')} :</p>
                     <p>{selectRow.total_price}</p>
                   </div>
                   <div className="top-detials-item">
-                    <p>Customer Name :</p>
+                    <p>{t('g.CustomerName')} :</p>
                     <p>{selectRow.customer_name}</p>
                   </div>
                   <div className="top-detials-item" style={{ fontSize: '13px' }}>
-                    <p>Order Note</p>
+                    <p>{t('g.OrderNote')}</p>
                     <p>{selectRow.notes}</p>
                   </div>
                 </div>
@@ -405,18 +476,18 @@ function SalesReport() {
                   onClick={() => {
                     handlePrint();
                   }}>
-                  Print Recipt
+                  {t('g.PrintRecipt')}
                 </Button>{' '}
-                <Button>Print Invoice</Button>
+                <Button>{t('g.PrintInvoice')}</Button>
               </div>
             </div>
             {lines && !isLoading ? (
               <div className="row">
                 <div className="invoice-items-container">
                   <div className="header-titles">
-                    <div>Name</div>
-                    <div>Qty</div>
-                    <div>Amount</div>
+                    <div>{t('g.name')}</div>
+                    <div>{t('g.Qty')}</div>
+                    <div>{t('g.Amount')}</div>
                   </div>
                   {lines.map((line: any, index: number) => {
                     return (
@@ -429,7 +500,7 @@ function SalesReport() {
                   })}
                   <div className="header-titles under_items" style={{ marginTop: '20px' }}>
                     <div></div>
-                    <div>Total</div>
+                    <div>{t('g.Total')}</div>
                     <div>{selectRow.total_price}</div>
                   </div>
                 </div>
@@ -444,7 +515,7 @@ function SalesReport() {
             onClick={() => {
               setShowViewPopUp(false);
             }}>
-            Cancel
+            {t('g.Cancel')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -452,4 +523,12 @@ function SalesReport() {
   );
 }
 
-export default withAuth(SalesReport);
+export default SalesReport;
+
+export async function getServerSideProps({ locale }) {
+  return {
+    props: {
+      ...(await serverSideTranslations(locale)),
+    },
+  };
+}

@@ -18,26 +18,26 @@ import { useReactToPrint } from 'react-to-print';
 import { ToastContainer } from 'react-toastify';
 import { useRecoilState } from 'recoil';
 import AlertDialog from 'src/components/utils/AlertDialog';
-import { useUser } from 'src/context/UserContext';
-import { useAppDispatch } from 'src/hooks';
 import { Toastify } from 'src/libs/allToasts';
 import { cartJobType } from 'src/recoil/atoms';
-import { addMultipleToCart } from 'src/redux/slices/cart.slice';
+import { addMultipleToCart, selectCartByLocation } from 'src/redux/slices/cart.slice';
 import { findAllData } from 'src/services/crud.api';
-import { convertDateStringToDateAndTime } from '../../models/data';
 import SalesPaymentModal from '../pos/modals/SalesPaymentModal';
+import { useAppDispatch, useAppSelector } from 'src/hooks';
+import api from 'src/utils/app-api';
 
 export default function SalesListTable({
   id,
   shopId,
+  t,
   rules,
   salesList,
   loading,
   CustomPagination,
+  initDataPage,
 }: any) {
   const dispatch = useAppDispatch();
   const componentRef = useRef(null);
-
   const [locationSettings, setLocationSettings] = useState<any>();
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -50,6 +50,7 @@ export default function SalesListTable({
   const [selectRow, setSelectRow] = useState<any>({});
   const [, setJobType] = useRecoilState(cartJobType);
   const [lines, setLines] = useState<any>([]);
+  const [tax, setTax] = useState<any>();
   const [salesRep, setSalesRep] = useState<any>({});
 
   const [show, setShow] = useState(false);
@@ -61,6 +62,9 @@ export default function SalesListTable({
   const [invoiceDetails, setInvoiceDetails] = useState<any>({});
   const [paymentModalShow, setPaymentModalShow] = useState<boolean>(false);
   const [paymentModalData, setPaymentModalData] = useState({});
+  const [isPending, setIsPending] = useState(false);
+  const selectCartForLocation = selectCartByLocation(shopId);
+  const cart = useAppSelector(selectCartForLocation);
 
   const checkPrintType = async () => {
     const res = await findAllData(`appearance/${router.query.id}`);
@@ -70,10 +74,25 @@ export default function SalesListTable({
     });
   };
 
-  // const handleCompletePrint = (id) => {
-  //   setSelectRow(salesList.data.filter((row) => row.id == id)[0]);
-  //   handlePrint();
-  // };
+  const handelApprovedInvoices = (id: number) => {
+    setIsPending(true);
+    api
+      .post(`digital-menu/order/approve/${id}`)
+      .then((res) => {
+        if (res.status === 200) {
+          Toastify('success', res.data?.result?.message);
+          setShowViewPopUp(false);
+          setEdit(false);
+          initDataPage();
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      })
+      .finally(() => {
+        setIsPending(false);
+      });
+  };
 
   useEffect(() => {
     checkPrintType();
@@ -83,24 +102,24 @@ export default function SalesListTable({
     { field: 'id', headerName: '#', minWidth: 50 },
     {
       field: 'contact_name',
-      headerName: 'Customer Name',
+      headerName: t('invoices.customer_name'),
       flex: 1,
       renderCell({ row }) {
         return row.contact_name !== ' ' ? row.contact_name : 'walk-in customer';
       },
     },
     { field: 'mobile', headerName: 'Mobile', flex: 1, disableColumnMenu: true },
-    { field: 'date', headerName: 'Sale Date', flex: 1 },
+    { field: 'date', headerName: t('invoices.sale_date'), flex: 1 },
     {
       field: 'total',
-      headerName: 'Final Total ',
+      headerName: t('invoices.final_total'),
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) =>
         Number(+row.total).toFixed(locationSettings?.location_decimal_places),
     },
     {
       field: 'payed',
-      headerName: 'Amount paid',
+      headerName: t('invoices.amount_paid'),
       flex: 1,
       renderCell: ({ row }: Partial<GridRowParams>) =>
         Number(+row.payed).toFixed(locationSettings?.location_decimal_places),
@@ -108,7 +127,7 @@ export default function SalesListTable({
     {
       flex: 1,
       field: 'due',
-      headerName: 'Total Due',
+      headerName: t('invoices.total_due'),
       renderCell: ({ row }: Partial<GridRowParams>) => {
         let renderdDue = Number(+row.due);
         if (renderdDue < 0) {
@@ -120,7 +139,7 @@ export default function SalesListTable({
     {
       flex: 1,
       field: 'status',
-      headerName: 'Status',
+      headerName: t('invoices.status'),
       renderCell: ({ row }: Partial<GridRowParams>) => {
         if (row.due === 0 || row.due < 0) {
           return <div className="sty_Paid">Paid</div>;
@@ -133,8 +152,24 @@ export default function SalesListTable({
     },
     {
       flex: 1,
+      field: 'transaction_type',
+      headerName: t('invoices.transaction_type'),
+      renderCell: ({ row }: Partial<GridRowParams>) => {
+        if(row.transaction_type === "digital_menu" && row.transaction_type !== "pos"){
+          if(row.record_state){
+            return <div className="invoices-approved">Digital menu</div>
+          }else{
+            return <div className="invoices-pending">Digital menu</div>
+          }
+        }else{
+          return <div className="invoices-pos">Pos</div>
+        }
+      },
+    },
+    {
+      flex: 1,
       field: 'action',
-      headerName: 'Action ',
+      headerName: t('invoices.action'),
       filterable: false,
       sortable: false,
       disableExport: true,
@@ -207,6 +242,8 @@ export default function SalesListTable({
 
   class ComponentToPrint extends React.PureComponent {
     render() {
+      // const { tax } = this.props;
+
       if (!selectRow) return;
       return (
         <div className="bill">
@@ -268,11 +305,11 @@ export default function SalesListTable({
                 lines.map((line: any, index: number) => {
                   return (
                     <tr key={index}>
-                      <td>{Number(line.pivot.qty).toFixed(0)}</td>
-                      <td>{line.name}</td>
+                      <td>{Number(line.product_qty).toFixed(0)}</td>
+                      <td>{line.product_name}</td>
                       <td></td>
                       <td>
-                        {Number(+line.pivot.qty * +line.pivot.price).toFixed(
+                        {Number(+line.product_price).toFixed(
                           locationSettings?.location_decimal_places
                         )}
                       </td>
@@ -288,10 +325,11 @@ export default function SalesListTable({
                 </td>
                 <td></td>
                 <td>
-                  {(
+                  {(+selectRow?.tax || 0).toFixed(locationSettings?.location_decimal_places)}
+                  {/* {(
                     ((+selectRow.sub_total / (1 + +selectRow?.tax / 100)) * +selectRow?.tax) /
                     100
-                  ).toFixed(locationSettings?.location_decimal_places)}
+                  ).toFixed(locationSettings?.location_decimal_places)} */}
                 </td>
               </tr>
               <tr className="net-amount">
@@ -415,21 +453,6 @@ export default function SalesListTable({
             </div>
           </div>
           <br />
-          {/* <div className="bill-details">
-                        <div className="flex justify-between">
-                            <div>{invoiceDetails.txtCustomer} {invoiceDetails?.en?.is_multi_language && invoiceDetails.txtCustomer2}</div>
-                            <div>{selectRow.customer_name}</div>
-                        </div>
-                        <div className="flex justify-between">
-                            <div>{invoiceDetails.orderNo} {invoiceDetails?.en?.is_multi_language && invoiceDetails.orderNo2}</div>
-                            <div>{selectRow.id}</div>
-                        </div>
-                        <div className="flex justify-between">
-                            <div>{invoiceDetails.txtDate} {invoiceDetails?.en?.is_multi_language && invoiceDetails.txtDate2}</div>
-                            <div>{new Date().toISOString().slice(0, 10)}</div>
-                        </div>
-                    </div> */}
-
           <table className="GeneratedTable2">
             <thead>
               <tr>
@@ -444,13 +467,12 @@ export default function SalesListTable({
                   {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtQty}
                 </th>
                 <th>Unit Price</th>
-                {/* <th> {invoiceDetails?.en?.txtItem}<br />{invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtItem}</th> */}
-                <th>
+                {/* <th>
                   {invoiceDetails?.en?.txtTax}
                   <br />
                   {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtTax}
-                </th>
-                <th>
+                </th> */}
+                <th colSpan={2}>
                   {' '}
                   {invoiceDetails?.en?.txtAmount}
                   <br />
@@ -462,18 +484,20 @@ export default function SalesListTable({
               lines.map((line: any, index: number) => {
                 return (
                   <tr key={index}>
-                    <td>{line.name}</td>
-                    <td>{Number(line.pivot.qty).toFixed(0)}</td>
+                    <td>{line.product_name}</td>
+                    <td>{Number(line.product_qty).toFixed(0)}</td>
                     <td>
-                      {Number(line.pivot.price).toFixed(locationSettings?.location_decimal_places)}
-                    </td>
-                    <td>
-                      {Number((+line.pivot.tax_amount / 100) * +line.pivot.price).toFixed(
+                      {Number(line.product_price).toFixed(
                         locationSettings?.location_decimal_places
                       )}
                     </td>
-                    <td>
-                      {Number(+line.pivot.qty * +line.pivot.price).toFixed(
+                    {/* <td>
+                      {Number((+tax / 100) * +line.product_price).toFixed(
+                        locationSettings?.location_decimal_places
+                      )}
+                    </td> */}
+                    <td colSpan={2}>
+                      {Number(+line.product_qty * +line.product_price).toFixed(
                         locationSettings?.location_decimal_places
                       )}
                     </td>
@@ -482,12 +506,6 @@ export default function SalesListTable({
               })}
 
             <tbody>
-              {/* <tr>
-                <td colSpan={4} className="txt_bold_invoice">
-                  Sub Total
-                </td>
-                <td></td>
-              </tr> */}
               <tr>
                 <td colSpan={4} className="txt_bold_invoice">
                   {invoiceDetails?.en?.txtTotal}{' '}
@@ -495,6 +513,15 @@ export default function SalesListTable({
                 </td>
                 <td className="txt_bold_invoice">
                   {Number(selectRow.sub_total).toFixed(locationSettings?.location_decimal_places)}
+                </td>
+              </tr>
+              <tr>
+                {/* <td>{invoiceDetails?.txtTax} {invoiceDetails?.en?.is_multi_language && invoiceDetails?.txtTax}</td> */}
+                <td colSpan={4} className="txt_bold_invoice">
+                  Tax Amount {invoiceDetails?.en?.is_multi_language && 'قيمة الضريبة'}
+                </td>
+                <td className="txt_bold_invoice">
+                  {Number(selectRow?.tax).toFixed(locationSettings?.location_decimal_places)}
                 </td>
               </tr>
               <tr>
@@ -515,46 +542,6 @@ export default function SalesListTable({
               </tr>
             </tbody>
           </table>
-
-          {/* <table className="table">
-            <thead>
-              <tr className="header">
-                <th>
-                  {invoiceDetails?.en?.txtQty}<br />{invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtQty}
-                </th>
-                <th>
-                  {invoiceDetails?.en?.txtItem}<br />{invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtItem}
-                </th>
-                <th>
-                </th>
-                <th>
-                  {invoiceDetails?.en?.txtAmount}<br />{invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtAmount}
-                </th>
-              </tr>
-              {lines.length > 0 && lines.map((line: any, index: number) => {
-                return (
-                  <tr key={index}>
-                    <td>{Number(line.qty)}</td>
-                    <td>{line.name}</td>
-                    <td></td>
-                    <td>{line.price}</td>
-                  </tr>
-                );
-              })}
-              <tr className="net-amount">
-                <td></td>
-                <td>{invoiceDetails?.en?.txtTax} {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtTax}</td>
-                <td></td>
-                <td>{(selectRow.total_price).toFixed(locationSettings?.location_decimal_places)}</td>
-              </tr>
-              <tr className="net-amount">
-                <td></td>
-                <td className='txt-bold'>{invoiceDetails?.en?.txtTotal} {invoiceDetails?.en?.is_multi_language && invoiceDetails?.ar?.txtTotal}</td>
-                <td></td>
-                <td className='txt-bold'>{Number(selectRow.total_price).toFixed(locationSettings?.location_decimal_places)}</td>
-              </tr>
-            </thead>
-          </table> */}
           <p className="recipt-footer">
             {invoiceDetails?.en?.footer}
             <br />
@@ -566,27 +553,13 @@ export default function SalesListTable({
       );
     }
   }
-
-  // init sales data
-  // async function initDataPage() {
-  //   // const { success, newdata } = await apiFetchCtr({
-  //   //   fetch: 'transactions',
-  //   //   subType: 'getSales',
-  //   //   shopId,
-  //   // });
-  //   // if (success) {
-  //   //   setSales(newdata.data);
-  //   //   if (newdata.invoiceDetails != null && newdata.invoiceDetails.length > 10)
-  //   //     setinvoiceDetails(JSON.parse(newdata.invoiceDetails));
-  //   // }
-  // }
-
   const getItems = async (id: number) => {
     setIsLoadItems(true);
     const res = await findAllData(`sales/${id}`);
     if (res.data.success) {
       setSalesRep(res.data.result);
       setLines(res.data.result.products);
+      setTax(res.data.result.tax_amount);
       setIsLoadItems(false);
     }
   };
@@ -649,7 +622,7 @@ export default function SalesListTable({
     return (
       <GridToolbarContainer>
         <GridToolbarExport />
-        <GridToolbarColumnsButton />
+        <GridToolbarColumnsButton placeholder="grid" />
         <GridToolbarQuickFilter />
       </GridToolbarContainer>
     );
@@ -687,6 +660,8 @@ export default function SalesListTable({
     return components;
   };
 
+ 
+
   return (
     <>
       <ToastContainer />
@@ -696,16 +671,19 @@ export default function SalesListTable({
         shopId={shopId}
         id={selectId}
         url={'sales'}>
-        Are you Sure You Want Delete This Item ?
+        {t('alert_dialog.delete_msg')}
       </AlertDialog>
       <div style={{ display: 'none' }}>
-        <ComponentToPrint ref={componentRef} />
+        <ComponentToPrint
+          // tax={cart?.cartTax}
+          ref={componentRef}
+        />
       </div>
       <div style={{ display: 'none' }}>
         <ComponentToPrint2 ref={componentRef2} />
       </div>
       <div className="page-content-style card">
-        <h5>Invoices List</h5>
+        <h5>{t('invoices.invoices_list')}</h5>
         {/* {salesList.data && ( */}
         <DataGrid
           className="datagrid-style"
@@ -732,7 +710,7 @@ export default function SalesListTable({
       {/* FOR VIEW ELEMENT */}
       <Dialog open={showViewPopUp} fullWidth={true} className="poslix-modal" onClose={handleClose}>
         <DialogTitle className="poslix-modal text-primary">
-          {edit ? 'Edit Sale' : 'Sale Details'}
+          {edit ? 'Edit Sale' : t('quotation_sale_model.sale_details')}
         </DialogTitle>
         <DialogContent className="poslix-modal-content">
           <div className="poslix-modal">
@@ -741,11 +719,11 @@ export default function SalesListTable({
               <div className="item-sections">
                 <div className="top-detials-invoice">
                   <div className="top-detials-item">
-                    <p>Invoice No :</p>
+                    <p>{t('quotation_sale_model.invoice_no')} :</p>
                     <p>{selectRow.id}</p>
                   </div>
                   <div className="top-detials-item pe-2">
-                    <p>Invoice Date :</p>
+                    <p>{t('quotation_sale_model.invoice_date')} :</p>
                     {edit ? (
                       <input
                         type="text"
@@ -757,7 +735,7 @@ export default function SalesListTable({
                     )}
                   </div>
                   <div className="top-detials-item pe-2">
-                    <p>Added By :</p>
+                    <p>{t('quotation_sale_model.added_by')} :</p>
                     {edit ? (
                       <input type="text" className="form-control" value={selectRow.user_name} />
                     ) : (
@@ -767,7 +745,7 @@ export default function SalesListTable({
                 </div>
                 <div className="top-detials-invoice">
                   <div className="top-detials-item">
-                    <p>Final Total :</p>
+                    <p>{t('quotation_sale_model.final_total')} :</p>
                     {edit ? (
                       <input
                         type="text"
@@ -785,7 +763,7 @@ export default function SalesListTable({
                     )}
                   </div>
                   <div className="top-detials-item">
-                    <p>Customer Name :</p>
+                    <p>{t('quotation_sale_model.customer_name')} :</p>
                     {edit ? (
                       <input type="text" className="form-control" value={selectRow.customer_name} />
                     ) : (
@@ -793,7 +771,7 @@ export default function SalesListTable({
                     )}
                   </div>
                   <div className="top-detials-item" style={{ fontSize: '13px' }}>
-                    <p>Order Note</p>
+                    <p>{t('quotation_sale_model.order_note')}</p>
                     {edit ? (
                       <input type="text" className="form-control" value={selectRow.notes} />
                     ) : (
@@ -809,13 +787,13 @@ export default function SalesListTable({
                     onClick={() => {
                       handlePrint();
                     }}>
-                    Print Recipt
+                    {t('quotation_sale_model.print_recipt')}
                   </Button>
                   <Button
                     onClick={() => {
                       handlePrint2();
                     }}>
-                    Print Invoice
+                    {t('quotation_sale_model.print_invoice')}
                   </Button>
                 </div>
               )}
@@ -824,29 +802,29 @@ export default function SalesListTable({
               <div className="row">
                 <div className="invoice-items-container">
                   <div className="header-titles">
-                    <div>Name</div>
-                    <div>Qty</div>
-                    <div>Amount</div>
+                    <div>{t('quotation_sale_model.name')}</div>
+                    <div>{t('quotation_sale_model.qty')}</div>
+                    <div>{t('quotation_sale_model.amount')}</div>
                     {edit && <div></div>}
                   </div>
                   {lines.length > 0 &&
                     lines?.map((line: any, index: number) => {
                       return (
                         <div className="header-items under_items" key={index}>
-                          <div>{line.name}</div>
+                          <div>{line.product_name}</div>
                           <div>
                             {edit ? (
                               <input
                                 type="text"
                                 className="form-control"
-                                value={Number(+line.pivot.qty).toFixed(0)}
+                                value={Number(+line.product_qty).toFixed(0)}
                               />
                             ) : (
-                              Number(+line.pivot.qty).toFixed(0)
+                              Number(+line.product_qty).toFixed(0)
                             )}
                           </div>
                           <div>
-                            {Number(+line.pivot.price).toFixed(
+                            {Number(+line.product_price).toFixed(
                               locationSettings?.location_decimal_places
                             )}
                           </div>
@@ -860,7 +838,7 @@ export default function SalesListTable({
                     })}
                   <div className="header-titles under_items" style={{ marginTop: '20px' }}>
                     <div></div>
-                    <div>Total</div>
+                    <div>{t('quotation_sale_model.total')}</div>
                     <div>
                       {edit ? (
                         <input
@@ -880,31 +858,44 @@ export default function SalesListTable({
                 </div>
               </div>
             ) : (
-              <div>loading...</div>
+              <div>{t('quotation_sale_model.loading')}</div>
             )}
           </div>
         </DialogContent>
         <DialogActions>
+          {!selectRow.record_state ? (
+            <Button
+              disabled={isPending}
+              type="button"
+              onClick={() => handelApprovedInvoices(selectRow.id)}>
+              {t('quotation_sale_model.approved')}
+            </Button>
+          ) : null}
           {edit && (
             <Button
+              disabled={isPending}
+              type="button"
               onClick={() => {
                 setShowViewPopUp(false);
                 setEdit(false);
               }}>
-              Save
+              {t('quotation_sale_model.save')}
             </Button>
           )}
           <Button
+            disabled={isPending}
+            type="button"
             onClick={() => {
               setEdit(false);
               setShowViewPopUp(false);
             }}>
-            Cancel
+            {t('quotation_sale_model.cancel')}
           </Button>
         </DialogActions>
       </Dialog>
 
       <SalesPaymentModal
+        t={t}
         userData={paymentModalData}
         statusDialog={paymentModalShow}
         setPaymentModalShow={setPaymentModalShow}

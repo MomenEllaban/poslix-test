@@ -2,7 +2,8 @@
 import { paymentTypeData } from '@models/data';
 import classNames from 'classnames';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Button, Form, InputGroup, Stack } from 'react-bootstrap';
+import { Button, Form, InputGroup, Stack,Spinner } from 'react-bootstrap';
+
 import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
@@ -19,6 +20,7 @@ import { usePosContext } from 'src/modules/pos/_context/PosContext';
 import { clearCart, selectCartByLocation } from 'src/redux/slices/cart.slice';
 import api from 'src/utils/app-api';
 import InvoiceToPrint from './InvoiceToPrint';
+import { useRouter } from 'next/router';
 
 export default function PaymentCheckoutModal({
   show,
@@ -40,6 +42,7 @@ export default function PaymentCheckoutModal({
   const [printReceipt, setPrintReceipt] = useState<any>();
   const [print, setPrint] = useState<boolean>(false);
   const [__WithDiscountFeature__total, set__WithDiscountFeature__total] = useState<number>(0);
+  const [isPending, setIsPending] = useState(false)
 
   const [remaining, setRemaining] = useState<number>(0);
 
@@ -126,7 +129,7 @@ export default function PaymentCheckoutModal({
   });
 const [sentData, setSentData] = useState<any>()
   const onSubmit = (data) => {
-    console.log("submittttt")
+    setIsPending(true)
     const checkoutData = {
       notes: data?.notes,
       payment: data?.payment,
@@ -144,13 +147,14 @@ const [sentData, setSentData] = useState<any>()
         note: data?.notes,
       })),
     };
+    
     setSentData(checkoutData)
     api
       .post('/checkout', checkoutData)
       .then((res) => {
-        console.log(res.data.result);
         
         setPrintReceipt({
+          ...res.data.result.sales,
           ...res.data.result.data,
           due: res.data.result.sales.due,
           paid: res.data.result.sales.payed,
@@ -163,7 +167,10 @@ const [sentData, setSentData] = useState<any>()
       })
       .then(() => {
         dispatch(clearCart({ location_id: shopId }));
-      });
+      }).finally( ()=>{
+        setIsPending(false)
+
+      })
   };
 
   const paidSum = useMemo(() => {
@@ -178,11 +185,19 @@ const [sentData, setSentData] = useState<any>()
     content: () => componentRef.current,
     onAfterPrint: () => setPrint(false),
   });
+  const router=useRouter()
+    console.log(router.query.id);
+    // const selectCartForLocation = selectCartByLocation(shopId);
 
+    // const cart = useAppSelector(selectCartForLocation);
+
+  console.log(cart)
+  
   return (
     <div>
       <div style={{ display: 'none' }}>
         <InvoiceToPrint
+        // tax={cart?.cartTax}
           ref={componentRef}
           customer={customer}
           invoiceType={invoiceType}
@@ -419,6 +434,7 @@ const [sentData, setSentData] = useState<any>()
             )}
 
             <Button
+            disabled={isPending}
               type="submit"
               form="hook-form"
               className={classNames(
@@ -426,7 +442,11 @@ const [sentData, setSentData] = useState<any>()
                 'btn-primary',
                 ' right nexttab'
               )}>
-              <span>{lang.paymentCheckoutModal.completeOrder}</span>
+                {
+                  isPending ? 
+                  <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+                :
+              <span>{lang.paymentCheckoutModal.completeOrder}</span>}
               <MdOutlineShoppingCartCheckout />
             </Button>
           </div>
