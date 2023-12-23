@@ -44,17 +44,20 @@ const KDS: NextPage = (props: any) => {
 
   
     const [ordersList,setOrdersList] = useState<
-              {
-                id: string;
-                type: string;
-                time: string;
-                rows: {
-                  id: string;
-                  item: string;
-                  count: number;
-                }[];
-              }[]
-            >([]);
+      {
+        id: string;
+        type: string;
+        time: string;
+        status:string;
+        price:number;
+        items: {
+          id: string;
+          name: string;
+          count: number;
+          price:number;
+        }[];
+      }[]
+    >([]);    
 
     const columns: GridColDef[] = [
       {
@@ -111,9 +114,9 @@ const KDS: NextPage = (props: any) => {
       id:string,
       type:string,
       time: string,
-      rows:{
+      items:{
         id: string,
-        item: string,
+        name: string,
         count: number,
       }[],
     }
@@ -173,7 +176,7 @@ const KDS: NextPage = (props: any) => {
                   style={{
                     border:'none',
                   }}
-                  rows={order.rows}
+                  rows={order.items}
                   columns={columns} 
                   checkboxSelection 
                   hideFooter
@@ -214,10 +217,10 @@ const KDS: NextPage = (props: any) => {
                 id: '12837648',
                 type: 'Dine-in',
                 time:'12:22:21',
-                rows:[
-                  {id:'1', item:'burger', count: 12},
-                  {id:'2', item:'pizza', count: 2},
-                  {id:'3', item:'fries', count: 5},
+                items:[
+                  {id:'1', name:'burger', count: 12},
+                  {id:'2', name:'pizza', count: 2},
+                  {id:'3', name:'fries', count: 5},
                 ]
               }}
               />
