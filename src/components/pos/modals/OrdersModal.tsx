@@ -14,6 +14,19 @@ const OrdersModal = (props: any) => {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+//   const [ordersList, setOrdersList] = useState<
+//   {
+//     id: string;
+//     type: string;
+//     time: string;
+//     rows: {
+//       id: string;
+//       item: string;
+//       count: number;
+//     }[];
+//   }[]
+// >([]);
+
   //submit logic
   const onSubmit = async (data: any) => {
     setIsLoading(true);
