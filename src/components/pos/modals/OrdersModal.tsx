@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Button, Form, Modal, Table } from 'react-bootstrap';
 import { useTranslation } from 'next-i18next';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUtensils } from '@fortawesome/free-solid-svg-icons';
+import { faCheck, faClock, faUtensils } from '@fortawesome/free-solid-svg-icons';
 import Box from '@mui/material/Box';
 import Collapse from '@mui/material/Collapse';
 import IconButton from '@mui/material/IconButton';
@@ -79,7 +79,11 @@ function Row(props: { row: ReturnType<typeof createData> }) {
           </div>
         </TableCell>
         <TableCell align="left">{row.time}</TableCell>
-        <TableCell align="left">{row.status}</TableCell>
+        <TableCell align="left">{row.status == 'pending' ?
+                      <FontAwesomeIcon style={{ marginRight: '5px', color: 'orange'}} icon={faClock} />
+                      :
+                      <FontAwesomeIcon style={{ marginRight: '5px', color: 'green' }} icon={faCheck} />
+                      }{row.status}</TableCell>
         <TableCell align="left">{row.price}</TableCell>
       </TableRow>
       <TableRow>
@@ -87,9 +91,9 @@ function Row(props: { row: ReturnType<typeof createData> }) {
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box sx={{ margin: 1 }}>
               <Paper elevation={1} style={{ padding: '20px', textAlign: 'center', maxHeight: '200px', overflowY: 'auto' }}>
-                <Typography variant="h6" gutterBottom component="div">
+                {/* <Typography variant="h6" gutterBottom component="div">
                   Items
-                </Typography>
+                </Typography> */}
                 <Table size="small" aria-label="purchases">
                   <TableHead>
                     <TableRow>
@@ -127,7 +131,7 @@ const rows = [
     count:0,
     price:0
   }]),
-  createData('1', 'Dine-in', "00:00:00", "pending", 4.0,[{
+  createData('1', 'Dine-in', "00:00:00", "completed", 4.0,[{
     id:'1',
     name:'something',
     count:0,
