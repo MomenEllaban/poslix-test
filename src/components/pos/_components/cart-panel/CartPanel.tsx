@@ -6,6 +6,7 @@ import CustomerDataSelect from '../CustomerDataSelect';
 import CartTable from '../cart-table/CartTable';
 import { OrdersFooter } from '../orders-footer/OrdersFooter';
 import ProductSearch from '../product-search/ProductSearch';
+import TakeawaySlider from '../takeaway-slider/TakeawaySlider';
 import styles from './CartPanel.module.scss';
 import { usePosContext } from 'src/modules/pos/_context/PosContext';
 
@@ -52,6 +53,9 @@ export default function CartPanel({ shopId ,customer, setCustomer}) {
         />
         <hr />
         <ProductSearch shopId={shopId} />
+
+        <hr />
+        <TakeawaySlider />
 
         <hr />
         <CartTable  customer={customer} shopId={shopId} />
