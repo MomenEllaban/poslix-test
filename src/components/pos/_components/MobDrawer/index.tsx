@@ -123,6 +123,7 @@ function MobDrawer({ toggleDrawer, handleDrawer, open, shopId, customer, setCust
               isReturn: 0,
             }}
             lang={lang}
+            orderType={""}
           />
         </div>
       </SwipeableDrawer>
