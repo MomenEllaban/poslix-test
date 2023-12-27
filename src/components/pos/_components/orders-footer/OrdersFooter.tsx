@@ -12,7 +12,7 @@ import classNames from 'classnames';
 import { useRouter } from 'next/router';
 import { findAllData } from 'src/services/crud.api';
 
-export const OrdersFooter = ({ orderEditDetails, details, shopId, lang }) => {
+export const OrdersFooter = ({ orderEditDetails, details, shopId, orderType, lang }) => {
   const dispatch = useAppDispatch();
   const selectCartForLocation = selectCartByLocation(shopId);
   const cart = useAppSelector(selectCartForLocation); // current location order
@@ -38,8 +38,7 @@ export const OrdersFooter = ({ orderEditDetails, details, shopId, lang }) => {
     const res2 = await findAllData(`appearance/${router.query.id}`);
     setInvoiceDetails({
       ...res2.data.result,
-      en: { ...res2.data.result.en, is_multi_language: !!res2.data.result.en.is_multi_language },
-    });
+      en: { ...res2.data.result.en, is_multi_language: !!res2.data.result.en.is_multi_language }    });
     const res = await findAllData(`print-settings/${router.query.id}`);
     setInvoiceType(res.data.result.print_type);
   };
@@ -112,6 +111,7 @@ export const OrdersFooter = ({ orderEditDetails, details, shopId, lang }) => {
         setShow={setPaymentModalShow}
         invoiceType={invoiceType}
         invoiceDetails={invoiceDetails}
+        orderType={orderType}
       />
     </>
   );

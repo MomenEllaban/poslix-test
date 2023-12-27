@@ -9,6 +9,7 @@ import ProductSearch from '../product-search/ProductSearch';
 import TakeawaySlider from '../takeaway-slider/TakeawaySlider';
 import styles from './CartPanel.module.scss';
 import { usePosContext } from 'src/modules/pos/_context/PosContext';
+import { useEffect, useState } from 'react';
 
 
 // interface IOrderItem {
@@ -32,16 +33,28 @@ export default function CartPanel({ shopId ,customer, setCustomer}) {
   // const dispatch = useAppDispatch()
   const selectCartForLocation = selectCartByLocation(shopId ?? 0);
   const cart = useAppSelector(selectCartForLocation);
-
+  
+  
   // useEffect(() => {
-  //   // dispatch(clearCart({ location_id: shopId }));
-  // }, [])
+    //   // dispatch(clearCart({ location_id: shopId }));
+    // }, [])
+    
+    
+    
+    const direction = isRtl ? 'rtl' : 'ltr';
+    const lang = _lang?.pos;
+    
+    const [orderType, setOrderType] = useState('');
+    
+    const handleOrderTypeChange = (newOrderType) => {
+      setOrderType(newOrderType);
+    };
 
-
-
-  const direction = isRtl ? 'rtl' : 'ltr';
-  const lang = _lang?.pos;
-
+    useEffect(() => {
+      console.log('Updated orderType:', orderType);
+    }, [orderType]);
+  
+    
   return (
       <div className={styles['cart__container']} style={{ direction }}>
         <CustomerDataSelect
@@ -55,7 +68,7 @@ export default function CartPanel({ shopId ,customer, setCustomer}) {
         <ProductSearch shopId={shopId} />
 
         <hr />
-        <TakeawaySlider />
+        <TakeawaySlider  onOrderTypeChange={handleOrderTypeChange} orderType={orderType} />
 
         <hr />
         <CartTable  customer={customer} shopId={shopId} />
@@ -71,7 +84,8 @@ export default function CartPanel({ shopId ,customer, setCustomer}) {
       <OrdersFooter
         orderEditDetails={initOrder}
         shopId={shopId}
-        details={{ customerId: customer?.value || undefined, totalAmount: cart?.cartSellTotal, isReturn: 0 }}
+        details={{ customerId: customer?.value || undefined, totalAmount: cart?.cartSellTotal, isReturn: 0}}
+        orderType={orderType}
         lang={lang}
       />
     </div>

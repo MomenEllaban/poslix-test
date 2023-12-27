@@ -1,16 +1,8 @@
-import { IProduct } from '@models/pos.types';
 import { Fragment, useEffect, useState } from 'react';
-import AsyncSelect from 'react-select/async';
 import { useAppDispatch } from 'src/hooks';
-import { addToCart } from 'src/redux/slices/cart.slice';
-import api from 'src/utils/app-api';
-import PackageItemsModal from '../../modals/package-item/PackageItemsModal';
-import { ResultItemRow } from '../result-item-row/ResultItemRow';
 import { usePosContext } from 'src/modules/pos/_context/PosContext';
-
 import * as React from 'react';
 import { styled } from '@mui/material/styles';
-import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch, { SwitchProps } from '@mui/material/Switch';
 import Stack from '@mui/material/Stack';
@@ -19,12 +11,17 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGifts, faUtensils } from '@fortawesome/free-solid-svg-icons';
 
 
-export default function TakeawaySlider() {
+export default function TakeawaySlider({ onOrderTypeChange, orderType }) {
     const dispatch = useAppDispatch();
     const { lang: _lang } = usePosContext();
-  const lang = _lang?.pos;
+    const lang = _lang?.pos;
 
-  const MaterialUISwitch = styled(Switch)(({ theme }) => ({
+    const handleSwitchChange = () => {
+        const newOrderType = orderType === 'dine-in' ? 'take-away' : 'dine-in';
+        onOrderTypeChange(newOrderType);
+        };
+  
+    const MaterialUISwitch = styled(Switch)(({ theme }) => ({
     width: 62,
     height: 34,
     padding: 7,
@@ -67,22 +64,25 @@ export default function TakeawaySlider() {
     <Fragment>
         <Stack direction="row" spacing={1} alignItems="center" justifyContent="center">
         <Typography>
-            Take-away
-            <FontAwesomeIcon 
-                style={{ marginLeft: '5px', marginRight: '5px', color: '#012723' }}
-                icon={faGifts}
-            />
-        </Typography>
-        <FormControlLabel
-        control={<MaterialUISwitch sx={{ m: 1 }} defaultChecked />}
-        label=""
-        />
-        <Typography>
             Dine-in
             <FontAwesomeIcon 
                 style={{ marginLeft: '5px', marginRight: '5px', color: '#012723' }}
                 icon={faUtensils}
             />    
+        </Typography>
+        <FormControlLabel
+        control={
+            <MaterialUISwitch sx={{ m: 1 }} 
+            checked={orderType === 'take-away'}
+            onChange={handleSwitchChange} />}
+        label=""
+        />
+        <Typography>
+            Take-away
+            <FontAwesomeIcon 
+                style={{ marginLeft: '5px', marginRight: '5px', color: '#012723' }}
+                icon={faGifts}
+            />
         </Typography>
         </Stack>
     </Fragment>

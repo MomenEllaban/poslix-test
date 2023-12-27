@@ -28,6 +28,7 @@ export default function PaymentCheckoutModal({
   shopId,
   invoiceType,
   invoiceDetails,
+  orderType,
 }) {
   const { lang: _lang } = usePosContext();
   const lang = _lang?.pos;
@@ -146,9 +147,11 @@ const [sentData, setSentData] = useState<any>()
         qty: product?.quantity,
         note: data?.notes,
       })),
+      orderType: orderType,
     };
     
     setSentData(checkoutData)
+    console.log("sentData: ", checkoutData);
     api
       .post('/checkout', checkoutData)
       .then((res) => {
