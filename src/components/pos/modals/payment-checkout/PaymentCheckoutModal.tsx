@@ -147,7 +147,7 @@ const [sentData, setSentData] = useState<any>()
         qty: product?.quantity,
         note: data?.notes,
       })),
-      orderType: orderType,
+      order_type: orderType,
     };
     
     setSentData(checkoutData)

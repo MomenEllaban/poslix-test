@@ -17,7 +17,7 @@ export default function TakeawaySlider({ onOrderTypeChange, orderType }) {
     const lang = _lang?.pos;
 
     const handleSwitchChange = () => {
-        const newOrderType = orderType === 'dine-in' ? 'take-away' : 'dine-in';
+        const newOrderType = orderType === 'dine_in' ? 'pick_up' : 'dine_in';
         onOrderTypeChange(newOrderType);
         };
   
